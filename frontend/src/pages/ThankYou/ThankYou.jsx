@@ -29,7 +29,7 @@ const ThankYou = () => {
     // Verificăm dacă există deja un rating pentru această comandă
     const fetchRating = async () => {
       try {
-        const response = await axios.get(url + `/api/order/${orderId}/rating`);
+        const response = await axios.get(url + "/api/order/${orderId}/rating");
         if (response.data.success && response.data.rating > 0) {
           setRating(response.data.rating); // Setăm ratingul din baza de date
         }
@@ -47,7 +47,7 @@ const ThankYou = () => {
 
     // Trimitem ratingul la server pentru a fi salvat în baza de date
     try {
-      await axios.post('http://localhost:4000/api/order/update-rating', {
+      await axios.post(url + '/api/order/update-rating', {
         orderId: orderId, // ID-ul comenzii pentru care trimitem ratingul
         rating: value
       });
