@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import './ThankYou.css'; // Stiluri
 import { toast } from 'react-toastify';
+import { StoreContext } from '../../context/StoreContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios'; // Import axios pentru a face cereri HTTP
 
 const ThankYou = () => {
+ const { url } = useContext(StoreContext);
+
   const location = useLocation();
   const tableNo = location.state?.tableNo || {};
   const orderId = location.state?.orderId; // Presupunem că orderId este trimis în location.state
@@ -26,7 +29,7 @@ const ThankYou = () => {
     // Verificăm dacă există deja un rating pentru această comandă
     const fetchRating = async () => {
       try {
-        const response = await axios.get(`http://localhost:4000/api/order/${orderId}/rating`);
+        const response = await axios.get(url + `/api/order/${orderId}/rating`);
         if (response.data.success && response.data.rating > 0) {
           setRating(response.data.rating); // Setăm ratingul din baza de date
         }
