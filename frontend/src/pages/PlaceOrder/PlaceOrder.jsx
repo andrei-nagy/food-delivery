@@ -78,7 +78,7 @@ const PlaceOrder = () => {
     } else if (paymentMethod === 'cashPOS') {
       console.log('plata cash')
       // Plasare comanda fără Stripe (pentru Cash/POS)
-      let response = await axios.post("http://localhost:4000/api/order/place-cash", orderData, { headers: { token } });
+      let response = await axios.post(url + "/api/order/place-cash", orderData, { headers: { token } });
       console.log({
         url: url,
         orderData: orderData,
