@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import './ThankYou.css'; // Stiluri
 import { toast } from 'react-toastify';
 import { StoreContext } from '../../context/StoreContext';
