@@ -45,7 +45,6 @@ const FoodItem = ({id, name, price, description, image}) => {
     )
 }
 
->>>>>>> c54f8a3bc88d18d419ca81400a1c6745b79bd5d9
         </div>
         <div className="food-item-info">
             <div className="food-item-name-rating">
