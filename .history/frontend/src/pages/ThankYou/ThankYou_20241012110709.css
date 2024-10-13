@@ -1,0 +1,16 @@
+/* src/pages/ThankYou.css */
+.thank-you-container {
+    text-align: center;
+    margin-top: 50px;
+  }
+  
+  .thank-you-container h1 {
+    color: #4caf50;
+    font-size: 2.2rem;
+  }
+  
+  .thank-you-container p {
+    color: #333;
+    font-size: 1.2rem;
+  }
+  
