@@ -1,0 +1,36 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+
+    color: white;
+}
+
+.navbar .logo {
+    height: 50px; /* Înălțimea logo-ului */
+    margin-right: auto; /* Logo-ul va fi împins la stânga */
+}
+
+.navbar button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+ 
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-right: 20px; /* Spațiere între buton și imaginea profilului */
+}
+
+.navbar button:hover {
+    background-color: #e60000;
+}
+
+.navbar .profile {
+    height: 40px; /* Înălțimea imaginii de profil */
+    width: 40px;
+    border-radius: 50%; /* Imaginea devine rotundă */
+    object-fit: cover;
+}

@@ -1,0 +1,44 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4%;
+}
+
+.navbar .logo{
+    width: max(10%, 80px);
+}
+
+.navbar .profile {
+    width: 50px;
+}
+
+/* Stilizare pentru Navbar și butonul de logout */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #007bff;
+    color: white;
+}
+
+.navbar h1 {
+    font-size: 24px;
+    margin: 0;
+}
+
+.navbar button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #ff4d4d;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.navbar button:hover {
+    background-color: #e60000;
+}
