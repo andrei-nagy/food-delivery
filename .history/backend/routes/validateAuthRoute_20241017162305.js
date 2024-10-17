@@ -6,19 +6,16 @@ const validateAuthRouter = express.Router();
 
 // Ruta pentru validarea user-ului prin token și tableNumber
 validateAuthRouter.post('/validate', async (req, res) => {
-    const { token, tableNumber } = req.body;
+    const { tableNumber } = req.body;
 
     try {
         // Caută utilizatorul după token și tableNumber
-        const user = await userModel.findOne({ token, tableNumber });
+        const user = await userModel.findOne({ tableNumber });
 
         if (user) {
-            return res.status(200).json({ success: true });
+            return res.status(200).json({ success: true, message: "User found" });
         } else {
-            console.log("Token:", token, "TableNumber:", tableNumber);
-            console.log("Received request body:", req.body); // Afișează tot corpul request-ului
-
-            return res.status(404).json({ success: false, message: 'User not found'});
+            return res.status(404).json({ success: false, message: 'User not found' });
         }
     } catch (error) {
         console.error('Error finding user:', error);

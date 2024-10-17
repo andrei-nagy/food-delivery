@@ -153,10 +153,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  position: relative;
   
 }
-
+.mobile-footer-item {
+  position: relative; /* Adaugă acest lucru pentru a deveni referință pentru .dot */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .mobile-footer-item img {
   height: 24px;
   margin-bottom: 5px;

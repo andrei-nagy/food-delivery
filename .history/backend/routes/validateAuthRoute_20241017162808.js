@@ -5,7 +5,7 @@ import userModel from '../models/userModel.js'; // Asigură-te că modelul User 
 const validateAuthRouter = express.Router();
 
 // Ruta pentru validarea user-ului prin token și tableNumber
-validateAuthRouter.post('/validate', async (req, res) => {
+validateAuthRouter.post('/api/validate', async (req, res) => {
     const { token, tableNumber } = req.body;
 
     try {
@@ -16,7 +16,6 @@ validateAuthRouter.post('/validate', async (req, res) => {
             return res.status(200).json({ success: true });
         } else {
             console.log("Token:", token, "TableNumber:", tableNumber);
-            console.log("Received request body:", req.body); // Afișează tot corpul request-ului
 
             return res.status(404).json({ success: false, message: 'User not found'});
         }

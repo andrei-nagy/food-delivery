@@ -106,7 +106,7 @@ const Navbar = ({ setShowLogin }) => {
     
     <div className={getTotalCartAmount() === 0 ? "mobile-footer-item" : "mobile-footer-item dot"} onClick={handleOpenModal}>
   <img src={getTotalCartAmount() === 0 ? assets.cart_black : assets.cart_orange_full_v2} alt="Order Icon" />
-  {getTotalCartAmount() > 0 && <span className="dot"></span>} {/* Aici apare punctul roșu */}
+  {getTotalCartAmount() > 0 && <span className="cart-dot"></span>} {/* Aici apare punctul roșu */}
   <span>Order</span>
 </div>
 

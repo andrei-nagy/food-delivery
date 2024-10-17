@@ -80,17 +80,17 @@ const Cart = () => {
           <div>
             <div className="cart-total-details">
               <p>Sub-total</p>
-              <p>{getTotalCartAmount()} €</p>
+              <p>${getTotalCartAmount()}</p>
             </div>
             <hr />
            <div className="cart-total-details">
               <p>Promo Code</p>
-              <p>{userEnteredPromoCode && discount > 0 ? userEnteredPromoCode + " (" + discount + " €)" : 0}</p>
+              <p>{userEnteredPromoCode && discount > 0 ? userEnteredPromoCode + " (" + discount + " RON)" : 0}</p>
             </div>
             <hr />
             <div className="cart-total-details">
               <b>Total</b>
-              <b>{getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() - discount} €</b>
+              <b>${getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() - discount}</b>
             </div>
           </div>
           <button onClick={() => navigate('/order', { state: { discount: discount, promoCode: promoCode } })}>PROCEED TO CHECKOUT</button>

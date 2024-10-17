@@ -10,7 +10,6 @@ const CheckUser = ({ url, onValidation }) => {
             const verifyUser = async () => {
                 try {
                     const response = await axios.post(`${url}/api/validate`, { token, tableNumber });
-                 
                     if (response.data.success) {
                         // User valid - cheamă callback-ul și transmite că este valid
                         onValidation(true);

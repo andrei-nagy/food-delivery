@@ -40,7 +40,7 @@ const FoodItem = ({ id, name, price, description, image }) => {
         <>
             <div className='food-item' onClick={openFoodModal}>
                 <div className="food-item-img-container">
-                    <img className='food-item-img' src={url + "/images/" + image} alt={name} />
+                    <img className='food-item-img' src={"http://localhost:5137/images/" + image} alt={name} />
 
                     {cartItems && cartItems[id] !== undefined
                         ? (

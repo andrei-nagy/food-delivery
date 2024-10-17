@@ -62,7 +62,10 @@ const App = () => {
         // După ce verificăm autentificarea și personalizarea
         if (isAuthenticated && !hasCustomization) {
             navigate('/personalize');
-        } 
+        } else if (isAuthenticated /* && hasCustomization*/ && location.pathname === '/personalize') {
+            // Dacă utilizatorul încearcă să acceseze personalizarea dar deja are un restaurantName, redirecționează-l la "/"
+            navigate('/');
+        }
     }, [isAuthenticated, hasCustomization, navigate, location.pathname]);
 
     return (

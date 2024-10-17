@@ -39,17 +39,15 @@ const Add = ({ url }) => {
     const onChangeHandler = (event) => {
         const name = event.target.name;
         const value = event.target.value;
-        setData(data => ({ ...data, [name]: value }))
+    
+        if (name === "price") {
+            // Parse the value to a float and round it to 2 decimal places
+            const roundedValue = parseFloat(value).toFixed(2);
+            setData(data => ({ ...data, [name]: roundedValue }));
+        } else {
+            setData(data => ({ ...data, [name]: value }));
+        }
     }
-  // New onBlur handler for price
-  const onPriceBlur = () => {
-    const numericValue = parseFloat(data.price);
-    if (!isNaN(numericValue)) {
-        const roundedValue = numericValue.toFixed(2);
-        setData((data) => ({ ...data, price: roundedValue }));
-    }
-};
-
     const onSubminHandler = async (event) => {
         event.preventDefault();
 
@@ -107,7 +105,7 @@ const Add = ({ url }) => {
                     </div>
                     <div className="add-price flex-col">
                         <p>Product Price</p>
-                        <input onChange={onChangeHandler}  onBlur={onPriceBlur} value={data.price} type="number" name="price" placeholder='$20' />
+                        <input onChange={onChangeHandler} value={data.price} type="number" name="price" placeholder='$20' />
                     </div>
                 </div>
                 <button type='submit' className='add-btn'>Add product</button>

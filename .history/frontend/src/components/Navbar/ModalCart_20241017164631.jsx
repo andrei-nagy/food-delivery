@@ -41,7 +41,7 @@ import { assets } from '../../assets/assets';
         </div>
         <div className="cart-total-details">
               <b>Total</b>
-              <b>{getTotalCartAmount() === 0 ? 0 : getTotalCartAmount()} €</b>
+              <b>{getTotalCartAmount() === 0 ? 0 : getTotalCartAmount()}€</b>
             </div>
         <button className="checkout-button" onClick={checkoutHandler} >View Cart</button>
       </div>

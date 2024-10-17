@@ -16,7 +16,6 @@ validateAuthRouter.post('/validate', async (req, res) => {
             return res.status(200).json({ success: true });
         } else {
             console.log("Token:", token, "TableNumber:", tableNumber);
-            console.log("Received request body:", req.body); // Afișează tot corpul request-ului
 
             return res.status(404).json({ success: false, message: 'User not found'});
         }

@@ -15,20 +15,20 @@
     margin-bottom: 20px; /* Space between sections */
 }
 
-.add-img-upload-customization {
+.add-img-upload {
     align-items: center; /* Center the image and label */
 }
 
-.add-img-upload-customization p {
+.add-img-upload p {
     font-size: 16px;
     margin-bottom: 10px; /* Space below the text */
 }
 
-.add-img-upload-customization label {
+.add-img-upload label {
     cursor: pointer; /* Indicate that the label is clickable */
 }
 
-.add-img-upload-customization img {
+.add-img-upload img {
     max-width: 100%; /* Responsive image */
     height: auto; /* Maintain aspect ratio */
     border: 2px dashed #ccc; /* Dashed border for image area */

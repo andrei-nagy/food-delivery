@@ -4,7 +4,8 @@ import axios from 'axios';
 const CheckUser = ({ url, onValidation }) => {
     useEffect(() => {
         const token = localStorage.getItem('token');
-        const tableNumber = localStorage.getItem('tableNumber');
+        // const tableNumber = localStorage.getItem('tableNumber');
+        const tableNumber = '2';
 
         if (token && tableNumber) {
             const verifyUser = async () => {

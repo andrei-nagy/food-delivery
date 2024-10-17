@@ -9,7 +9,7 @@ const CheckUser = ({ url, onValidation }) => {
         if (token && tableNumber) {
             const verifyUser = async () => {
                 try {
-                    const response = await axios.post(`${url}/api/validate`, { token, tableNumber });
+                    const response = await axios.post(`${url}/api/validate`, { token, '2' });
                  
                     if (response.data.success) {
                         // User valid - cheamă callback-ul și transmite că este valid

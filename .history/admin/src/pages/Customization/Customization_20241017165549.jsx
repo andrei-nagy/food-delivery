@@ -94,7 +94,7 @@ const Customization = ({ url }) => {
     return (
         <div className='add-customization container'>
             <form className='row' onSubmit={onSubmitHandler}>
-                <div className="add-img-upload-customization col-md-12 mb-4">
+                <div className="add-img-upload col-md-12 mb-4">
                     <p>Upload Image Category</p>
                     <label htmlFor="image" className="d-block">
                         <img 
