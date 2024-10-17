@@ -10,32 +10,32 @@ const Home = () => {
   const [category, setCategory] = useState("All");
   const [isValidUser, setIsValidUser] = useState(null); // null pentru că la început nu știm dacă e validat
   const navigate = useNavigate(); 
-  // const token = localStorage.getItem("token");
-  // const tableNumber = localStorage.getItem("tableNumber");
+  const token = localStorage.getItem("token");
+  const tableNumber = localStorage.getItem("tableNumber");
   // Funcție care va primi rezultatul validării din CheckUser
-  // const handleValidation = (isValid) => {
-  //   setIsValidUser(isValid);
-  // };
+  const handleValidation = (isValid) => {
+    setIsValidUser(isValid);
+  };
 
   // Efect pentru a face navigarea după validare
-  // useEffect(() => {
-  //   if (isValidUser === false && token && tableNumber) {
-  //     navigate('/welcome'); // Redirecționăm utilizatorul dacă nu este valid
-  //   }
-  // }, [isValidUser, navigate]);
+  useEffect(() => {
+    if (isValidUser === false && token && tableNumber) {
+      navigate('/welcome'); // Redirecționăm utilizatorul dacă nu este valid
+    }
+  }, [isValidUser, navigate]);
 
   return (
     <div>
-      {/* <CheckUser url="http://localhost:4000" onValidation={handleValidation} /> */}
+      <CheckUser url="http://localhost:4000" onValidation={handleValidation} />
 
       {/* Afișează conținutul doar dacă user-ul este validat */}
-      {/* {isValidUser === true  ( */}
+      {isValidUser === true && token && tableNumber ? (
         <>
           <Header />
           <ExploreMenu category={category} setCategory={setCategory} />
           <FoodDisplay category={category} />
         </>
-      {/* ) : null} */}
+      ) : null}
     </div>
   );
 };

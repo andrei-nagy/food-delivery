@@ -16,19 +16,18 @@ import CheckUser from './components/CheckUser/CheckUser';
 import Welcome from './components/Welcome/Welcome';
 import { StoreContext } from './context/StoreContext';
 import axios
-  from 'axios';
+ from 'axios';
 const App = () => {
   const { url } = useContext(StoreContext);
   const [showLogin, setShowLogin] = useState(false);
   const [loading, setLoading] = useState(false); // State pentru ecranul de încărcare
   const location = useLocation(); // Pentru a detecta ruta curentă
-  // const [userId, setUserId] = useState(localStorage.getItem("userId") || "");
-  const userId = localStorage.getItem("userId");
+  const [userId, setUserId] = useState(localStorage.getItem("userId") || "");
   const [token, setToken] = useState(localStorage.getItem("token") || "");
   const navigate = useNavigate();
 
-  // Funcție pentru logout
-  const logout = () => {
+   // Funcție pentru logout
+   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("tableNumber");
     localStorage.removeItem("userId");
@@ -41,30 +40,17 @@ const App = () => {
   // Funcție pentru a verifica dacă utilizatorul este activ sau dacă token-ul a expirat
   const checkUserStatus = async () => {
     try {
-
-      // Verificăm doar dacă userId și token există înainte să facem request
-      if (!userId || !token) {
-        console.log('Nu există token sau userId');
-        return;
-      }
-
-
-      const response = await axios.post(`${url}/api/user/check-status`, {}, {
+      const response = await axios.post(`${url}/api/check-status`, {}, {
         headers: {
           userId: userId
         }
-
       });
- 
       const { isActive, tokenExpiry } = response.data;
-// alert('userId ' + userId)
+
       const now = new Date();
-      // Verificăm dacă isActive și tokenExpiry sunt corecte înainte de logout
-      if (isActive === false || new Date(tokenExpiry) < now) {
-        // alert('isActive' + isActive);
-        // alert('tokenExpiry' + tokenExpiry);
-        // alert('date' + new Date(tokenExpiry) < now)
-        // alert('INTRAM AICI 1 - Utilizator inactiv sau token expirat');
+      if (!isActive || new Date(tokenExpiry) < now) {
+        console.log('INTRAM AICI 1')
+        // Dacă utilizatorul nu mai este activ sau token-ul a expirat, facem logout
         logout();
       }
     } catch (error) {
@@ -75,8 +61,8 @@ const App = () => {
   };
 
 
-  // Efect pentru a afișa loading screen pe rutele care necesită timp de încărcare
-  useEffect(() => {
+   // Efect pentru a afișa loading screen pe rutele care necesită timp de încărcare
+   useEffect(() => {
     if (location.pathname === '/register') {
       setLoading(true); // Setează loading la true când ajunge pe /register
       setTimeout(() => {
@@ -89,7 +75,7 @@ const App = () => {
     if (token) {
       // Setăm un interval pentru a verifica la fiecare 10 minute dacă utilizatorul este activ
       // const interval = setInterval(() => {
-      checkUserStatus(); // Verifică statusul utilizatorului
+        checkUserStatus(); // Verifică statusul utilizatorului
       // }, 10 * 60 * 1000); // 10 minute
 
       // Curățăm intervalul la unmount pentru a preveni scurgeri de memorie

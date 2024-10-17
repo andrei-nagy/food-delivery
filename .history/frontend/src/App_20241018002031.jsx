@@ -22,8 +22,7 @@ const App = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [loading, setLoading] = useState(false); // State pentru ecranul de încărcare
   const location = useLocation(); // Pentru a detecta ruta curentă
-  // const [userId, setUserId] = useState(localStorage.getItem("userId") || "");
-  const userId = localStorage.getItem("userId");
+  const [userId, setUserId] = useState(localStorage.getItem("userId") || "");
   const [token, setToken] = useState(localStorage.getItem("token") || "");
   const navigate = useNavigate();
 
@@ -57,14 +56,14 @@ const App = () => {
       });
  
       const { isActive, tokenExpiry } = response.data;
-// alert('userId ' + userId)
+alert('userId ' + userId)
       const now = new Date();
       // Verificăm dacă isActive și tokenExpiry sunt corecte înainte de logout
       if (isActive === false || new Date(tokenExpiry) < now) {
-        // alert('isActive' + isActive);
-        // alert('tokenExpiry' + tokenExpiry);
-        // alert('date' + new Date(tokenExpiry) < now)
-        // alert('INTRAM AICI 1 - Utilizator inactiv sau token expirat');
+        alert('isActive' + isActive);
+        alert('tokenExpiry' + tokenExpiry);
+        alert('date' + new Date(tokenExpiry) < now)
+        alert('INTRAM AICI 1 - Utilizator inactiv sau token expirat');
         logout();
       }
     } catch (error) {

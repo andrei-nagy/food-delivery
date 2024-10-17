@@ -52,22 +52,23 @@ const loginUser = async (req, res) => {
 }
 // login automat pentru un utilizator prestabilit
 const checkUserStatus = async (req, res) => {
-    const userId = req.headers.userId || req.headers.userid;
-
+    const userId = req.headers.userId;
+  console.log('CE TRIMIT AICI??? ' + userId)    
+  console.log(req.headers)
     try {
-        const user = await userModel.findOne({ userId });
-
-        if (user) {
-            console.log(user)
-            return res.status(200).json({
-                isActive: user.isActive,
-                tokenExpiry: user.tokenExpiry
-            });
-        } else {
-            return res.status(404).json({ message: 'User not found' });
-        }
+      const user = await userModel.findOne({ userId });
+  
+      if (user) {
+        console.log(user)
+        return res.status(200).json({
+          isActive: user.isActive,
+          tokenExpiry: user.tokenExpiry
+        });
+      } else {
+        return res.status(404).json({ message: 'User not found' });
+      }
     } catch (error) {
-        return res.status(500).json({ message: 'Error checking user status' });
+      return res.status(500).json({ message: 'Error checking user status' });
     }
 }
 
@@ -98,7 +99,7 @@ const autoLogin = async (req, res) => {
         await user.save();
 
         const token = createToken(user._id);
-
+     
         // Verifică dacă există deja o înregistrare pentru această masă
         let table = await tableModel.findOne({ tableNumber });
 

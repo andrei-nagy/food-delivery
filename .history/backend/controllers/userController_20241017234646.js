@@ -51,27 +51,6 @@ const loginUser = async (req, res) => {
     }
 }
 // login automat pentru un utilizator prestabilit
-const checkUserStatus = async (req, res) => {
-    const userId = req.headers.userId || req.headers.userid;
-
-    try {
-        const user = await userModel.findOne({ userId });
-
-        if (user) {
-            console.log(user)
-            return res.status(200).json({
-                isActive: user.isActive,
-                tokenExpiry: user.tokenExpiry
-            });
-        } else {
-            return res.status(404).json({ message: 'User not found' });
-        }
-    } catch (error) {
-        return res.status(500).json({ message: 'Error checking user status' });
-    }
-}
-
-
 const autoLogin = async (req, res) => {
     const { tableNumber } = req.query;
     const password = "12345678";  // Parolă fixă pentru testare
@@ -98,7 +77,7 @@ const autoLogin = async (req, res) => {
         await user.save();
 
         const token = createToken(user._id);
-
+     
         // Verifică dacă există deja o înregistrare pentru această masă
         let table = await tableModel.findOne({ tableNumber });
 
@@ -113,7 +92,7 @@ const autoLogin = async (req, res) => {
         const userId = user._id;
         await table.save();  // Salvează sau actualizează înregistrarea mesei
 
-        res.json({ success: true, token, userId });
+        res.json({ success: true, token. userId });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: "Error" });
@@ -244,4 +223,4 @@ const registerUser = async (req, res) => {
     }
 }
 
-export { loginUser, registerUser, autoLogin, autoRegister, deactivateExpiredUsers, checkUserStatus };
+export { loginUser, registerUser, autoLogin, autoRegister, deactivateExpiredUsers };

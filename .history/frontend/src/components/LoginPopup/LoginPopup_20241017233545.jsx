@@ -58,6 +58,7 @@ const LoginPopup = ({ setShowLogin }) => {
         try {
             const response = await axios.post(`${url}/api/user/register?tableNumber=${tableNumber}`);
             if (response.data.success) {
+                console.log(response.data);
                 const { token, userId } = response.data; // Extragem token-ul și userId-ul din răspuns
 
                 setToken(token);

@@ -52,28 +52,28 @@ const LoginPopup = ({ setShowLogin }) => {
         }
     };
 
+    
+  // Funcție pentru login automat
+  const autoRegister = async (tableNumber) => {
+    try {
+        const response = await axios.post(`${url}/api/user/register?tableNumber=${tableNumber}`);
+        if (response.data.success) {
+            const { token, userId } = response.data; // Extragem token-ul și userId-ul din răspuns
 
-    // Funcție pentru login automat
-    const autoRegister = async (tableNumber) => {
-        try {
-            const response = await axios.post(`${url}/api/user/register?tableNumber=${tableNumber}`);
-            if (response.data.success) {
-                const { token, userId } = response.data; // Extragem token-ul și userId-ul din răspuns
+            setToken(token);
+            localStorage.setItem("token", response.data.token);
+            localStorage.setItem("userId", userId); // Setăm userId-ul în localStorage
 
-                setToken(token);
-                localStorage.setItem("token", response.data.token);
-                localStorage.setItem("userId", userId); // Setăm userId-ul în localStorage
-
-                toast.success("Autoregister reușit!");  // mesaj de succes
-                navigate('/');  // redirecționare la pagina principală
-            } else {
-                alert(response.data.message);
-            }
-        } catch (error) {
-            console.error("Eroare la register automat:", error);
-            alert("Eroare la register automat.");
+            toast.success("Autoregister reușit!");  // mesaj de succes
+            navigate('/');  // redirecționare la pagina principală
+        } else {
+            alert(response.data.message);
         }
-    };
+    } catch (error) {
+        console.error("Eroare la register automat:", error);
+        alert("Eroare la register automat.");
+    }
+};
     // Gestionare modificări în inputuri
     const onChangeHandler = (event) => {
         const name = event.target.name;

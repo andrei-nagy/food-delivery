@@ -15,24 +15,19 @@ import Loading from './components/Loading/Loading'; // Importăm componenta Load
 import CheckUser from './components/CheckUser/CheckUser';
 import Welcome from './components/Welcome/Welcome';
 import { StoreContext } from './context/StoreContext';
-import axios
-  from 'axios';
+
 const App = () => {
   const { url } = useContext(StoreContext);
   const [showLogin, setShowLogin] = useState(false);
   const [loading, setLoading] = useState(false); // State pentru ecranul de încărcare
   const location = useLocation(); // Pentru a detecta ruta curentă
-  // const [userId, setUserId] = useState(localStorage.getItem("userId") || "");
-  const userId = localStorage.getItem("userId");
   const [token, setToken] = useState(localStorage.getItem("token") || "");
   const navigate = useNavigate();
 
-  // Funcție pentru logout
-  const logout = () => {
+   // Funcție pentru logout
+   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("tableNumber");
-    localStorage.removeItem("userId");
-    setUserId("");
     setToken("");
     navigate("/"); // Redirecționează utilizatorul către pagina principală
     window.location.reload();
@@ -40,60 +35,46 @@ const App = () => {
 
   // Funcție pentru a verifica dacă utilizatorul este activ sau dacă token-ul a expirat
   const checkUserStatus = async () => {
+    console.log('VERIFICARE USER STATUS')
     try {
-
-      // Verificăm doar dacă userId și token există înainte să facem request
-      if (!userId || !token) {
-        console.log('Nu există token sau userId');
-        return;
-      }
-
-
-      const response = await axios.post(`${url}/api/user/check-status`, {}, {
+      const response = await axios.post(`${url}/api/check-status`, {}, {
         headers: {
-          userId: userId
+          token: token
         }
-
       });
- 
       const { isActive, tokenExpiry } = response.data;
-// alert('userId ' + userId)
+
       const now = new Date();
-      // Verificăm dacă isActive și tokenExpiry sunt corecte înainte de logout
-      if (isActive === false || new Date(tokenExpiry) < now) {
-        // alert('isActive' + isActive);
-        // alert('tokenExpiry' + tokenExpiry);
-        // alert('date' + new Date(tokenExpiry) < now)
-        // alert('INTRAM AICI 1 - Utilizator inactiv sau token expirat');
+      if (!isActive || new Date(tokenExpiry) < now) {
+        // Dacă utilizatorul nu mai este activ sau token-ul a expirat, facem logout
         logout();
       }
     } catch (error) {
-      console.log('INTRAM AICI 2')
       console.error("Error checking user status:", error);
-      // logout(); // În caz de eroare, facem logout
+      logout(); // În caz de eroare, facem logout
     }
   };
 
 
-  // Efect pentru a afișa loading screen pe rutele care necesită timp de încărcare
-  useEffect(() => {
+   // Efect pentru a afișa loading screen pe rutele care necesită timp de încărcare
+   useEffect(() => {
     if (location.pathname === '/register') {
       setLoading(true); // Setează loading la true când ajunge pe /register
       setTimeout(() => {
         setLoading(false); // Dezactivează loading după 40 de secunde
-      }, 60000);
+      }, 40000);
     } else {
       setLoading(false); // Dezactivează loading pe alte rute
     }
 
     if (token) {
       // Setăm un interval pentru a verifica la fiecare 10 minute dacă utilizatorul este activ
-      // const interval = setInterval(() => {
-      checkUserStatus(); // Verifică statusul utilizatorului
-      // }, 10 * 60 * 1000); // 10 minute
+      const interval = setInterval(() => {
+        checkUserStatus(); // Verifică statusul utilizatorului
+      }, 10 * 60 * 1000); // 10 minute
 
       // Curățăm intervalul la unmount pentru a preveni scurgeri de memorie
-      // return () => clearInterval(interval);
+      return () => clearInterval(interval);
     }
   }, [location.pathname, token]);
 

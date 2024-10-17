@@ -8,10 +8,9 @@ import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
   const [category, setCategory] = useState("All");
-  const [isValidUser, setIsValidUser] = useState(null); // null pentru că la început nu știm dacă e validat
-  const navigate = useNavigate(); 
-  // const token = localStorage.getItem("token");
-  // const tableNumber = localStorage.getItem("tableNumber");
+  // const [isValidUser, setIsValidUser] = useState(null); // null pentru că la început nu știm dacă e validat
+  // const navigate = useNavigate();
+// 
   // Funcție care va primi rezultatul validării din CheckUser
   // const handleValidation = (isValid) => {
   //   setIsValidUser(isValid);
@@ -19,7 +18,7 @@ const Home = () => {
 
   // Efect pentru a face navigarea după validare
   // useEffect(() => {
-  //   if (isValidUser === false && token && tableNumber) {
+  //   if (isValidUser === false) {
   //     navigate('/welcome'); // Redirecționăm utilizatorul dacă nu este valid
   //   }
   // }, [isValidUser, navigate]);
@@ -29,13 +28,13 @@ const Home = () => {
       {/* <CheckUser url="http://localhost:4000" onValidation={handleValidation} /> */}
 
       {/* Afișează conținutul doar dacă user-ul este validat */}
-      {/* {isValidUser === true  ( */}
+      {/* {isValidUser === true ? ( */}
         <>
           <Header />
           <ExploreMenu category={category} setCategory={setCategory} />
           <FoodDisplay category={category} />
         </>
-      {/* ) : null} */}
+   
     </div>
   );
 };
