@@ -1,0 +1,94 @@
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #FFA500; /* Portocaliu */
+    color: white; /* Text alb pentru contrast */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.add {
+    background-color: rgba(255, 255, 255, 0.1); /* Transparent pentru un efect modern */
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    width: 400px;
+    text-align: center;
+    backdrop-filter: blur(5px);
+    transition: transform 0.3s ease-in-out;
+}
+
+.add:hover {
+    transform: scale(1.02); /* Animație de hover */
+}
+
+h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    animation: fadeIn 1s ease; /* Animație de apariție */
+}
+
+p {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+label {
+    cursor: pointer; /* Schimbă cursorul pentru a indica că este un buton */
+}
+
+input[type="text"],
+input[type="email"],
+input[type="color"],
+input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+    transition: border 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="color"]:focus {
+    border: 2px solid #FF4500; /* Border portocalie pe focus */
+    outline: none; /* Elimină conturul standard */
+}
+
+.add-btn {
+    background-color: #FF4500; /* Portocaliu închis */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.add-btn:hover {
+    background-color: #FF6347; /* Schimbă culoarea la hover */
+}
+
+.add-img-upload img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin-top: 10px;
+    transition: transform 0.3s;
+}
+
+.add-img-upload img:hover {
+    transform: scale(1.05); /* Animație de hover pentru imagine */
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

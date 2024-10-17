@@ -1,0 +1,82 @@
+.home-container {
+    display: flex;               /* Utilizăm flexbox pentru aliniere */
+    justify-content: center;     /* Centrează pe orizontală */
+    align-items: center;         /* Centrează pe verticală */
+    min-height: 100vh;          /* Înălțimea minimă a containerului să fie 100% din viewport */
+    padding: 2rem;              /* Padding în jurul containerului */
+    background-color: #f8f8f8;  /* Fundal deschis pentru contrast (opțional) */
+  }
+  
+  .home-banner-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;      /* Așezăm elementele pe verticală */
+    align-items: center;         /* Centrează elementele pe orizontală */
+    padding-top: 3rem;
+    width: 100%;                 /* Asigură lățimea 100% */
+    max-width: 1200px;          /* Lățimea maximă pentru a nu extinde prea mult pe ecranuri mari */
+  }
+  
+  .home-bannerImage-container {
+    position: absolute;
+    top: -100px;
+    right: -170px;
+    z-index: -2;
+    max-width: 700px;
+  }
+  
+  .home-image-section {
+    max-width: 600px;
+    flex: 1;
+    display: flex;              /* Așezăm imaginea pe centru */
+    justify-content: center;    /* Centrează imaginea */
+    align-items: center;        /* Centrează imaginea pe verticală */
+  }
+  
+  .home-text-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;         /* Centrează textul pe orizontală */
+    text-align: center;          /* Centrează textul */
+  }
+  
+  .primary-heading {
+    font-size: clamp(2rem, 5vw, 4rem);
+    color: #4c4c4c;
+    max-width: 600px;
+  }
+  
+  .primary-text {
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    max-width: 500px;
+    color: #6a6a6a;
+    margin: 1.5rem 0rem;
+  }
+  
+  .secondary-button {
+    padding: 1rem 2.5rem;
+    background-color: #fe9e0d;
+    outline: none;
+    border: none;
+    border-radius: 5rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: white;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .secondary-button svg {
+    margin-left: 0.75rem;
+    font-size: 1.5rem;
+  }
+  
+  .secondary-button:hover {
+    background-color: #e48f0f;
+  }
+  

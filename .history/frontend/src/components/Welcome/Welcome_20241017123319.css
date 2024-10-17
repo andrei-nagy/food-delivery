@@ -1,0 +1,42 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  .landing-title,
+  .landing-about-title,
+  .landing-features-title,
+  .landing-cta-title {
+    margin-bottom: 15px;
+  }
+  
+  .landing-description,
+  .landing-about-description,
+  .landing-feature-description {
+    margin-bottom: 10px;
+  }
+  
+  .landing-header {
+    background: #007bff;
+  }
+  
+  .landing-footer {
+    background: #343a40;
+  }
+  
+  .landing {
+    /* Poți adăuga stiluri suplimentare pentru container */
+  }
+  
+  .landing-main {
+    /* Stiluri pentru main */
+  }
+  
+  .landing-features-list {
+    /* Stiluri pentru lista de funcționalități */
+  }
+  
+  .landing-feature-item {
+    /* Stiluri pentru fiecare element de funcționalitate */
+  }
+  

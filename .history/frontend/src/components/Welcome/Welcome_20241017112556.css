@@ -1,0 +1,45 @@
+.welcome-container {
+    height: 110vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: url('/header_img.png') no-repeat;
+    color: white;
+    text-align: center;
+    border-top-right-radius: 3%;
+    border-bottom-right-radius: 3%;
+}
+
+.welcome-content {
+    max-width: 600px;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.1); /* Un fond transparent */
+    backdrop-filter: blur(5px);
+}
+
+.welcome-content h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+.welcome-content p {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+}
+
+.explore-button {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    color: #FF4500;
+    background-color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.explore-button:hover {
+    background-color: #FF6347;
+    color: white;
+}

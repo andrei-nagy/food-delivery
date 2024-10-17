@@ -1,0 +1,155 @@
+* {
+    padding: 0;
+    margin: 0;
+  }
+  
+  html {
+    background-image: url("https://images.unsplash.com/photo-1577209299418-485f60c0d4de?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=963&q=80");
+    background-size: cover;
+    
+  }
+  
+  h1 {
+    font-family: 'Permanent Marker', cursive;
+    font-size: 72px;
+  }
+  
+  p, small, input {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.2em;
+  }
+  
+  .container {
+    margin: 150px auto;
+    max-width: 1080px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  .column {
+    margin: 10px auto;
+    padding: 10px;
+    flex: 1 1 0px;
+  }
+  
+  
+  .column:first-of-type {
+    flex: 2 2 0px;
+  }
+  
+  @media only screen and (max-width: 420px) {
+    container {
+      margin: 0 auto;
+    }
+    
+    .text-box h1 {
+      font-size: 32px;
+    }
+    
+    .column {
+      width: 100%;
+      flex-direction: column;
+    }
+  }
+  
+  /* text box */
+  .text-box h1 {
+    color: #ddf23e;
+  }
+  
+  .text-box p {
+    color: #fff;
+  }
+  
+  .learn-more {
+    margin: 20px 0;
+  }
+  
+  .play-icon {
+    position: relative;
+    display: inline-block;
+    background-color: #F26363;
+    width: 40px;
+    height: 40px;
+    padding: 10px 10px;
+    border-radius: 100%;
+    margin: 0 20px 0 0;
+    cursor: pointer;
+  }
+  
+  .play-icon p {
+    position: absolute;
+    top: 14px;
+    left: 20px;
+    font-size: 28px;
+  }
+  
+  .play-icon:hover {
+    filter: brightness(75%);
+  }
+  
+  .text {
+    position: relative;
+    /*display: inline-block;*/
+    bottom: 45px;
+    left: 70px;
+  }
+  
+  
+  /* login box */
+  .login-box {
+    flex-grow: 1;
+    padding: 25px 50px 50px 50px;
+  
+  }
+  
+  .form-group:nth-of-type(1) ~ .form-group {
+    margin-top: 25px;
+  }
+  
+  .form-group small {
+    color: #DDF23D;
+  }
+  
+  input, button {
+    font-size: 18px;
+    border: solid 1px;
+    border-radius: 5px;
+    display: block;
+    line-height: 48px;
+  }
+  
+  input {
+    border: none;
+    color: #274001;
+    background-color: #fff;
+    width: calc(100% - 10px);
+    padding-left: 10px;
+  }
+  
+  input::placeholder {
+    color: #274001;
+  }
+  
+  .error {
+    float: left;
+    color: red;
+  }
+  
+  button {
+    border: none;
+    color: #274001;
+    background-color: #DDF23D;
+    width: 100%;
+  }
+  
+  button:nth-of-type(2) {
+    margin: 25px 0 0 0;
+  }
+  
+  button:hover {
+    cursor: pointer;
+    filter: brightness(75%);
+  }
