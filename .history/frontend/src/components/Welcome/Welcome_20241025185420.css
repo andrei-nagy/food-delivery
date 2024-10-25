@@ -1,0 +1,59 @@
+.welcome-container {
+    height: 100vh; /* Am redus puțin înălțimea pentru un aspect mai echilibrat */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: url('/header_img.png') no-repeat center center/cover; /* Acoperă întreaga zonă */
+    color: white;
+    text-align: center;
+    border-radius: 3% 3% 0 0; /* Colțuri rotunjite doar în partea de sus */
+    padding: 20px; /* Padding adăugat pentru o margine mai confortabilă */
+}
+
+.welcome-content {
+    max-width: 600px;
+    padding: 30px; /* Am crescut padding-ul pentru mai mult spațiu interior */
+    border-radius: 15px; /* Colțuri rotunjite mai accentuate */
+    background-color: rgba(255, 255, 255, 0.2); /* Oferă un contrast mai bun */
+    backdrop-filter: blur(10px); /* Blurr mai accentuat pentru un aspect elegant */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* Adaugă o umbră pentru un efect de profunzime */
+}
+
+.welcome-content h3 {
+    font-size: 1.5rem; /* Ușor mai mic pentru un aspect mai elegant */
+    margin-bottom: 20px;
+    font-weight: bold; /* Font mai îngroșat pentru titlu */
+}
+
+.welcome-content p {
+    font-size: 1.2rem; /* Font puțin mai mic pentru un aspect mai plăcut */
+    margin-bottom: 20px; /* Am scurtat distanța dintre paragrafe */
+}
+
+.schedule {
+    font-size: 1.1rem; /* Font pentru programul de lucru */
+    margin: 20px 0; /* Marjă verticală */
+    padding: 15px; /* Padding interior */
+    border: 1px solid #FF6347; /* Contur pentru evidențiere */
+    border-radius: 10px; /* Colțuri rotunjite */
+    background-color: rgba(255, 255, 255, 0.1); /* Fond transparent */
+}
+
+.contact-button {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    color: white;
+    background-color: #FF4500; /* Culoare de fundal pentru buton */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Tranziții mai plăcute */
+}
+
+.contact-button:hover {
+    background-color: #FF6347; /* Culoare de hover */
+    transform: scale(1.05); /* Efect de mărire la hover */
+}
+.welcome-page #footer {
+    display: none; /* Ascunde footer-ul */
+}
