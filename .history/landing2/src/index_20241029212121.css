@@ -1,0 +1,22 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.gradi-theme-text {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 165, 0, 1) 0%,     /* portocaliu intens */
+        rgba(255, 140, 0, 1) 50%,     /* portocaliu mai închis */
+        rgba(255, 110, 0, 1) 100%      /* portocaliu și mai intens */
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+
+.border-2{
+    border: 2px solid #ff7100;
+}
