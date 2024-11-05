@@ -1,0 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&display=swap');
+
+
+
+#qr-container {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Shadow effect */
+}
+
+#qr-container:hover {
+    transform: translateY(-5px); /* Lifting effect on hover */
+}
+
+
+.qr-logo {
+    border-radius: 50%; /* Colțuri rotunjite */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Umbră pentru un efect 3D */
+}
+
+#react-qrcode-logo{
+    border: 1px solid black
+}
+
+.restaurant_name{
+    padding: 25px;
+}

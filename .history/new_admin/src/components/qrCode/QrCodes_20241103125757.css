@@ -1,0 +1,8 @@
+#qr-container {
+    border: 2px solid #4a90e2; /* Border color */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Shadow effect */
+}
+
+#qr-container:hover {
+    transform: translateY(-5px); /* Lifting effect on hover */
+}
