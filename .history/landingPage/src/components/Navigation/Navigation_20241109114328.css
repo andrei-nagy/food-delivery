@@ -1,0 +1,140 @@
+.navigation {
+  padding: 24px 96px;
+  display: flex;
+  justify-content: space-between;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(232, 101, 20, 0.46);
+  position: relative;
+}
+.navigation__logo-section {
+  display: flex;
+  align-items: center;
+  column-gap: 8px;
+}
+
+.navigation__name {
+  font-family: "DM Sans";
+  font-weight: 700;
+  line-height: 140%;
+  font-size: 24px;
+  color: var(--primary-400);
+  margin: 0px;
+}
+
+.navigation__link-section {
+  margin: 0px;
+  padding: 0px;
+  display: flex;
+  align-items: center;
+  column-gap: 56px;
+}
+
+.navigation__link {
+  color: var(--primary-400);
+  text-decoration: none;
+}
+
+.navigation__cta {
+  height: 56px;
+  width: 181px;
+  padding: 0px;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  column-gap: 8px;
+  background: var(--gradient);
+  color: var(--primary-50);
+  cursor: pointer;
+  transition: all 0.1s;
+}
+
+.navigation__cta:hover {
+  scale: 1.01;
+}
+
+.navigation__arrow {
+  height: 21px;
+  width: 21px;
+  /* border: 1px solid var(--primary-50); */
+  border-radius: 8px;
+}
+
+.navigation__logo {
+  width: 100px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .navigation {
+    padding: 16px 40px;
+  }
+  .navigation__link-section {
+    column-gap: 40px;
+  }
+  .navigation__cta {
+    height: 50px;
+    width: 150px;
+  }
+}
+
+@media (max-width: 768px) {
+  .navigation {
+    padding: 16px 20px;
+  }
+  .navigation__link-section {
+    display: none; /* Hide links on tablet and mobile */
+  }
+  .navigation__cta {
+    height: 50px;
+    width: 130px;
+  }
+}
+
+/* Mobile adjustments - Hamburger Menu */
+@media (max-width: 576px) {
+  .navigation {
+    padding: 16px 20px;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .navigation__logo-section {
+    flex: 1;
+    justify-content: space-between;
+  }
+
+  /* Hamburger icon */
+  .hamburger {
+    display: inline-block;
+    cursor: pointer;
+  }
+
+  .hamburger div {
+    width: 25px;
+    height: 3px;
+    background-color: var(--primary-400);
+    margin: 5px 0;
+    transition: 0.4s;
+  }
+
+  /* When menu is open */
+  .menu-open .navigation__link-section {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    width: 100%;
+    background: white;
+    padding: 20px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .menu-open .navigation__link-section .navigation__link {
+    padding: 10px 0;
+    font-size: 1.2rem;
+    text-align: center;
+  }
+}

@@ -1,0 +1,74 @@
+.faq {
+  padding: 96px 20px; /* Ajustare padding pentru ecrane mici */
+}
+
+.faq__heading-section {
+  max-width: 800px;
+  margin: auto;
+  margin-bottom: 72px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px 0px;
+  text-align: center;
+}
+
+.faq__heading {
+  color: var(--primary-100);
+  font-size: 1.8rem; /* Ajustare font pentru ecrane mici */
+}
+
+.faq__description {
+  color: var(--primary-200);
+  font-size: 1rem; /* Font redus pentru ecrane mici */
+  line-height: 1.5;
+  padding: 0 10px; /* Margini pentru text mai ușor de citit */
+}
+
+/* Media Queries pentru Responsive Design */
+@media screen and (min-width: 576px) {
+  .faq {
+    padding: 96px 40px; /* Mai mult spațiu pe ecrane medii */
+  }
+
+  .faq__heading {
+    font-size: 2rem; /* Font mai mare pe ecrane medii */
+  }
+
+  .faq__description {
+    font-size: 1.1rem;
+    padding: 0 20px; /* Ajustare padding */
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .faq {
+    padding: 96px 60px;
+  }
+
+  .faq__heading {
+    font-size: 2.2rem;
+  }
+
+  .faq__description {
+    font-size: 1.2rem;
+  }
+}
+
+@media screen and (min-width: 992px) {
+  .faq {
+    padding: 96px 100px;
+  }
+
+  .faq__heading-section {
+    max-width: 900px;
+  }
+
+  .faq__heading {
+    font-size: 2.5rem;
+  }
+
+  .faq__description {
+    font-size: 1.3rem;
+  }
+}
