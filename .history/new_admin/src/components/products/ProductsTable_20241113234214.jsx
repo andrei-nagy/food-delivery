@@ -21,9 +21,9 @@ const ProductsTable = () => {
         category: "",
         price: "",
         description: "",
-        isBestSeller: false,
-        isNewAdded: false,
-        isVegan: false
+        isBestSeller: false,  
+        isNewAdded: false,    
+        isVegan: false        
     });
     const productsPerPage = 10;
     const { url } = useUrl();
@@ -52,11 +52,11 @@ const ProductsTable = () => {
             if (response.data.success) {
                 setList(response.data.data);  // Setăm lista de categorii
             } else {
-                toast.error(response.data.message, { theme: "dark" });
+                    toast.error(response.data.message, {theme: "dark"});
             }
         } catch (error) {
             console.error("Error fetching categories", error);
-            toast.error(response.data.message, { theme: "dark" });
+                toast.error(response.data.message, {theme: "dark"});
         }
     };
     const handlePriceBlur = (e) => {
@@ -90,16 +90,16 @@ const ProductsTable = () => {
 
             if (response.data.success) {
                 setImage(null);
-                toast.success(response.data.message, { theme: "dark" });
+                toast.success(response.data.message, {theme: "dark"});
                 fetchProducts(); // Reîncarcă produsele după adăugare
                 setIsModalOpen(false); // Închide modalul
                 setUpdatedProduct({ name: "", description: "", price: "", category: "", isBestSeller: "", isNewAdded: "", isVegan: "" }); // Resetează formularul
             } else {
-                toast.error(response.data.message, { theme: "dark" });
+                toast.error(response.data.message, {theme: "dark"});
             }
         } catch (error) {
             console.error("Error adding product", error);
-            toast.error(response.data.message, { theme: "dark" });
+            toast.error(response.data.message, {theme: "dark"});
         }
     }
 
@@ -108,9 +108,9 @@ const ProductsTable = () => {
         await fetchProducts();
 
         if (response.data.success) {
-            toast.success(response.data.message, { theme: "dark" });
+            toast.success(response.data.message, {theme: "dark"});
         } else {
-            toast.error(response.data.message, { theme: "dark" });
+            toast.error(response.data.message, {theme: "dark"});
         }
     };
 
@@ -136,9 +136,6 @@ const ProductsTable = () => {
         formData.append("name", updatedProduct.name);
         formData.append("category", updatedProduct.category);
         formData.append("price", updatedProduct.price);
-        formData.append("isBestSeller", updatedProduct.isBestSeller);
-        formData.append("isNewAdded", updatedProduct.isNewAdded);
-        formData.append("isVegan", updatedProduct.isVegan);
         if (updatedProduct.image) {
             formData.append("image", updatedProduct.image); // Adaugă imaginea la formData
         }
@@ -149,15 +146,15 @@ const ProductsTable = () => {
                 },
             });
             if (response.data.success) {
-                toast.success(response.data.message, { theme: "dark" });
+                toast.success(response.data.message, {theme: "dark"});
                 fetchProducts(); // Reîncarcă produsele după actualizare
                 setIsEditing(false); // Închide formularul de editare
             } else {
-                toast.error(response.data.message, { theme: "dark" });
+                toast.error(response.data.message, {theme: "dark"});
             }
         } catch (error) {
             console.error("Error updating product:", error);
-            toast.error(response.data.message, { theme: "dark" });
+            toast.error(response.data.message, {theme: "dark"});
         }
     };
 
@@ -216,7 +213,7 @@ const ProductsTable = () => {
                 </div>
             </div>
 
-
+           
             <div className='overflow-x-auto'>
                 <table className='min-w-full divide-y divide-gray-700'>
                     <thead>
@@ -287,57 +284,57 @@ const ProductsTable = () => {
                     >
                         <h2 className='text-xl font-semibold text-gray-100 mb-4'>Edit Product</h2>
                         <form onSubmit={handleUpdateProduct}>
-                            <div className="mb-4">
-                                <label className="block text-gray-400">Current Image</label>
-                                {/* Afișează imaginea curentă dacă există */}
-                                {currentProduct.image && (
-                                    <img
-                                        src={`${url}/images/` + currentProduct.image}
-                                        alt="Current category"
-                                        className="mb-2 w-32 h-32 object-cover rounded" // Poți ajusta dimensiunile după preferințe
-                                    />
-                                )}
-                                <label className="block text-gray-400">New Image</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="mt-1 p-2 bg-gray-700 text-white rounded"
-                                    onChange={(e) => setUpdatedProduct({ ...updatedProduct, image: e.target.files[0] })}
+                        <div className="mb-4">
+                            <label className="block text-gray-400">Current Image</label>
+                            {/* Afișează imaginea curentă dacă există */}
+                            {currentProduct.image && (
+                                <img
+                                    src={`${url}/images/` + currentProduct.image}
+                                    alt="Current category"
+                                    className="mb-2 w-32 h-32 object-cover rounded" // Poți ajusta dimensiunile după preferințe
                                 />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-gray-400">Name</label>
-                                <input
-                                    type="text"
-                                    className="mt-1 p-2 bg-gray-700 text-white rounded"
-                                    value={updatedProduct.name}
-                                    onChange={(e) => setUpdatedProduct({ ...updatedProduct, name: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-gray-400">Category</label>
-                                <input
-                                    type="text"
-                                    className="mt-1 p-2 bg-gray-700 text-white rounded"
-                                    value={updatedProduct.category}
-                                    onChange={(e) => setUpdatedProduct({ ...updatedProduct, category: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-gray-400">Price</label>
-                                <input
-                                    type="number"
-                                    className="mt-1 p-2 bg-gray-700 text-white rounded"
-                                    value={updatedProduct.price}
-                                    onChange={(e) => setUpdatedProduct({ ...updatedProduct, price: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Update</button>
-                            <button type="button" onClick={() => setIsEditing(false)} className="bg-red-600 text-white px-4 py-2 rounded ml-2">Cancel</button>
-                        </form>
+                            )}
+                            <label className="block text-gray-400">New Image</label>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className="mt-1 p-2 bg-gray-700 text-white rounded"
+                                onChange={(e) => setUpdatedProduct({ ...updatedProduct, image: e.target.files[0] })}
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-gray-400">Name</label>
+                            <input
+                                type="text"
+                                className="mt-1 p-2 bg-gray-700 text-white rounded"
+                                value={updatedProduct.name}
+                                onChange={(e) => setUpdatedProduct({ ...updatedProduct, name: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-gray-400">Category</label>
+                            <input
+                                type="text"
+                                className="mt-1 p-2 bg-gray-700 text-white rounded"
+                                value={updatedProduct.category}
+                                onChange={(e) => setUpdatedProduct({ ...updatedProduct, category: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-gray-400">Price</label>
+                            <input
+                                type="number"
+                                className="mt-1 p-2 bg-gray-700 text-white rounded"
+                                value={updatedProduct.price}
+                                onChange={(e) => setUpdatedProduct({ ...updatedProduct, price: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Update</button>
+                        <button type="button" onClick={() => setIsEditing(false)} className="bg-red-600 text-white px-4 py-2 rounded ml-2">Cancel</button>
+                    </form>
                     </motion.div>
                 </motion.div>
             )}
@@ -395,13 +392,12 @@ const ProductsTable = () => {
                                             type="number"
                                             name="price"
                                             id="price"
-                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 no-arrows"
+                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                             placeholder="10€"
                                             value={updatedProduct.price}
                                             onChange={(e) => setUpdatedProduct({ ...updatedProduct, price: e.target.value })}
                                             onBlur={handlePriceBlur}
                                             required
-                                            style={{ appearance: 'textfield', MozAppearance: 'textfield', WebkitAppearance: 'none' }}
                                         />
                                     </div>
                                     <div className="col-span-2 sm:col-span-1">
@@ -419,38 +415,6 @@ const ProductsTable = () => {
                                                 </option>
                                             ))}
                                         </select>
-                                    </div>
-                                    <div className="add-booleans flex   space-x-16">
-                                        <div className="flex items-center">
-                                            <input
-                                                type="checkbox"
-                                                name="isBestSeller"
-                                                checked={updatedProduct.isBestSeller}
-                                                onChange={(e) => setUpdatedProduct({ ...updatedProduct, isBestSeller: e.target.checked })}
-                                                className="h-4 w-4 text-blue-600 bg-gray-50 border-gray-300 rounded focus:ring-2 focus:ring-primary-600 dark:bg-gray-700 dark:border-gray-500 dark:focus:ring-primary-500"
-                                            />
-                                            <label className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-200">Best Seller</label>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <input
-                                                type="checkbox"
-                                                name="isNewAdded"
-                                                checked={updatedProduct.isNewAdded}
-                                                onChange={(e) => setUpdatedProduct({ ...updatedProduct, isNewAdded: e.target.checked })}
-                                                className="h-4 w-4 text-blue-600 bg-gray-50 border-gray-300 rounded focus:ring-2 focus:ring-primary-600 dark:bg-gray-700 dark:border-gray-500 dark:focus:ring-primary-500"
-                                            />
-                                            <label className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-200">Newly Added</label>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <input
-                                                type="checkbox"
-                                                name="isVegan"
-                                                checked={updatedProduct.isVegan}
-                                                onChange={(e) => setUpdatedProduct({ ...updatedProduct, isVegan: e.target.checked })}
-                                                className="h-4 w-4 text-blue-600 bg-gray-50 border-gray-300 rounded focus:ring-2 focus:ring-primary-600 dark:bg-gray-700 dark:border-gray-500 dark:focus:ring-primary-500"
-                                            />
-                                            <label className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-200">Vegan</label>
-                                        </div>
                                     </div>
                                     <div className="col-span-2">
                                         <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Product Description</label>

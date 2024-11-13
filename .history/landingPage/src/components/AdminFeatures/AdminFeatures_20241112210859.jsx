@@ -43,7 +43,7 @@ const AdminFeatures = () => {
         <motion.div className="column" custom={0} variants={featureVariants}>
           <div className="card_adminFeatures">
             <div className="icon">
-            <i class="fa-solid fa-list-check"></i>
+              <i className="fa-solid fa-user"></i>
             </div>
             <h3 className='text-reg'>Effortless Restaurant Management</h3>
             <p className='text-reg'>

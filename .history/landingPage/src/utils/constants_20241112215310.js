@@ -112,9 +112,6 @@ const pricingData = [
       "Advanced analytics & sales (in-depth analysis with customizable reporting options)",
       "Unlimited personalized QR codes (branded QR codes for menus etc.)"
     ],
-    additions: [
-      "Updates based on your needs"
-    ],
     CallToAction: "Contact us",
   },
 ];

@@ -10,24 +10,24 @@ const PricingTile = ({
   planPrice,
   planPeriod,
   bullets,
-  additions,  // Adăugăm additionals ca prop
   CallToAction,
   darkMode,
 }) => {
   const dark = darkMode ? "dark" : "";
   const price =
-    planPeriod === "/ monthly" ? planPrice + "€" : planPrice * 12 + "€";
+    planPeriod === "/ monthly" ? "$" + planPrice : "$" + planPrice * 12;
 
-  const scrollToRequestDemo = () => {
-    const element = document.getElementById("requestDemo");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  };
+    const scrollToRequestDemo = () => {
+      const element = document.getElementById("requestDemo");
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
+    };
 
   return (
     <div className={`pricing-tile ${dark}`}>
       <div className="plan-section">
+        
         <p className="text-small price_title plan-section__plan">{plan}</p>
       </div>
       <div className="pricing-section">
@@ -50,21 +50,6 @@ const PricingTile = ({
           );
         })}
       </div>
-
-      {/* Adăugăm secțiunea additionals */}
-      <div className="additionals-section">
-        {additions.map((additional, i) => {
-          return (
-            <div className="pricing-additional" key={i}>
-              <img className="pricing-additional__check" src={check} alt="check" />
-              <p className={`text-reg button_title pricing-additional__text ${dark}`}>
-                {additional}
-              </p>
-            </div>
-          );
-        })}
-      </div>
-
       <button className={`pricing-cta ${dark}`}>
         <span className="text-med button_title pricing-cta__text" onClick={scrollToRequestDemo}>{CallToAction}</span>
         <img

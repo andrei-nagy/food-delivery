@@ -70,11 +70,6 @@ const pricingData = [
       "Account creation system (e.g., an account for the main admin and limited accounts for employees)",
       "Possible Additions: Initial setup tutorial and support (a quick-start setup guide) / Basic inventory tracking (to monitor stock levels for essential ingredients) /Social media integration (ability to share menu items on platforms like Facebook or Instagram)"
     ],
-    additions: [
-      "Initial setup tutorial and support (a quick-start setup guide)",
-      "Basic inventory tracking (to monitor stock levels for essential ingredients)",
-      "Social media integration (ability to share menu items on platforms like Facebook or Instagram)"
-    ],
     CallToAction: "Request demo",
   },
   {
@@ -85,35 +80,28 @@ const pricingData = [
     planPrice: 59.99,
     bullets: [
       "Real-time notifications",
-      "Restaurant customization (more advanced branding options, including themes)",
-      "Add and edit menus (ability to update items and prices) + promo codes system",
+      "Customize your restaurant",
+      "Add & edit your menu",
       "24/7 support system",
-      "Account creation system (e.g., an account for the main admin and limited accounts for employees)",
-      "Analytics & sales overview (detailed sales data and trends)",
-      "Generate analytics PDF",
-      "Online payments by Stripe (integrated online payment options)",
-      "Waiter system (a system for waitstaff to manage orders and table assignments from the Admin Panel)"
-    ],
-    additions: [
-      "Customer feedback collection (simple tool for gathering customer feedback)",
-      "Multi-location support (if the restaurant has more than one location, basic support to manage them separately)"
+        "Create accounts system",
+      "Analytics & Sales Overview",
+      "Generate Analytics PDF",
+      "Online Payments by Stripe",
+      "Waiter System"
     ],
     CallToAction: "Request demo",
   },
   {
     darkMode: false,
-    description: "The Enterprise Plan is designed for large businesses or chains that require high customization and a dedicated manager for business-specific needs.",
     plan: "Enterprise Plan",
-    planIcon: new URL("../assets/pricing/enterprise-plan.svg", import.meta.url).href,
+    planIcon: new URL("../assets/pricing/enterprise-plan.svg", import.meta.url)
+      .href,
     bullets: [
       "Everything in the Team Plan",
-      "Dedicated business manager (personalized support and strategy sessions)",
-      "Advanced menu and account customization (full customization and support for unique menu structures)",
-      "Advanced analytics & sales (in-depth analysis with customizable reporting options)",
-      "Unlimited personalized QR codes (branded QR codes for menus etc.)"
-    ],
-    additions: [
-      "Updates based on your needs"
+      "Dedicated business manager",
+      "Customized menu and accounts",
+      "Advanced analytics & sales",
+      "Create your personalize QR code (unlimited)"
     ],
     CallToAction: "Contact us",
   },

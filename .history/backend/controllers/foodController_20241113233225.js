@@ -23,9 +23,9 @@ const addFood = async (req, res) => {
         price: req.body.price,
         category: req.body.category,
         image: image_filename,
-        isBestSeller: req.body.isBestSeller,
-        isNewAdded: req.body.isNewAdded,
-        isVegan: req.body.isVegan
+        isBestSeller: req.body.isBestSeller || false,   // Inițializează valoarea din req.body sau implicit cu false
+        isNewAdded: req.body.isNewAdded || false,       // Inițializează valoarea din req.body sau implicit cu false
+        isVegan: req.body.isVegan || false              // Inițializează valoarea din req.body sau implicit cu false
     })
 
     try {

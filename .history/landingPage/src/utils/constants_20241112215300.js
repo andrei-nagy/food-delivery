@@ -104,16 +104,14 @@ const pricingData = [
     darkMode: false,
     description: "The Enterprise Plan is designed for large businesses or chains that require high customization and a dedicated manager for business-specific needs.",
     plan: "Enterprise Plan",
-    planIcon: new URL("../assets/pricing/enterprise-plan.svg", import.meta.url).href,
+    planIcon: new URL("../assets/pricing/enterprise-plan.svg", import.meta.url)
+      .href,
     bullets: [
       "Everything in the Team Plan",
       "Dedicated business manager (personalized support and strategy sessions)",
       "Advanced menu and account customization (full customization and support for unique menu structures)",
       "Advanced analytics & sales (in-depth analysis with customizable reporting options)",
       "Unlimited personalized QR codes (branded QR codes for menus etc.)"
-    ],
-    additions: [
-      "Updates based on your needs"
     ],
     CallToAction: "Contact us",
   },

@@ -10,7 +10,7 @@ const PricingTile = ({
   planPrice,
   planPeriod,
   bullets,
-  additions,  // Adăugăm additionals ca prop
+  additionals,  // Adăugăm additionals ca prop
   CallToAction,
   darkMode,
 }) => {
@@ -53,7 +53,7 @@ const PricingTile = ({
 
       {/* Adăugăm secțiunea additionals */}
       <div className="additionals-section">
-        {additions.map((additional, i) => {
+        {additionals.map((additional, i) => {
           return (
             <div className="pricing-additional" key={i}>
               <img className="pricing-additional__check" src={check} alt="check" />

@@ -43,7 +43,7 @@ const AdminFeatures = () => {
         <motion.div className="column" custom={0} variants={featureVariants}>
           <div className="card_adminFeatures">
             <div className="icon">
-            <i class="fa-solid fa-list-check"></i>
+              <i className="fa-solid fa-user"></i>
             </div>
             <h3 className='text-reg'>Effortless Restaurant Management</h3>
             <p className='text-reg'>
@@ -56,7 +56,7 @@ const AdminFeatures = () => {
         <motion.div className="column" custom={1} variants={featureVariants}>
           <div className="card_adminFeatures">
             <div className="icon">
-            <i class="fa-regular fa-envelope"></i>
+              <i className="fa-solid fa-shield-halved"></i>
             </div>
             <h3 className='text-reg'>Real-Time Order Notifications</h3>
             <p className='text-reg'>
@@ -94,7 +94,7 @@ const AdminFeatures = () => {
                  <motion.div className="column" custom={4} variants={featureVariants}>
           <div className="card_adminFeatures">
             <div className="icon">
-            <i class="fa-regular fa-pen-to-square"></i>
+            <i class="fa-solid fa-shield-halved"></i>
             </div>
             <h3 className='text-reg'>Complete Product Control</h3>
             <p className='text-reg'>
@@ -106,7 +106,7 @@ const AdminFeatures = () => {
           <motion.div className="column" custom={5} variants={featureVariants}>
           <div className="card_adminFeatures">
             <div className="icon">
-            <i class="fa-regular fa-chart-bar"></i>
+            <i class="fa-solid fa-chart-line"></i>
             </div>
             <h3 className='text-reg'>Comprehensive Statistics & Reports</h3>
             <p className='text-reg'>Gain deep insights into orders, sales, and product performance, including best-sellers.

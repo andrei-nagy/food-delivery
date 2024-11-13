@@ -19,37 +19,11 @@
     padding: 20px;
 
 }
-.new-badge {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    background-color: #ff9900; /* portocaliu pentru "New" */
-    color: #fff;
-    font-weight: bold;
-    font-size: 0.75rem;
-    padding: 4px 8px;
-    border-radius: 4px;
-    z-index: 10;
-}
-
-.vegan-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background-color: #00cc44; /* verde pentru "Vegan" */
-    color: #fff;
-    font-weight: bold;
-    font-size: 0.75rem;
-    padding: 4px 8px;
-    border-radius: 4px;
-    z-index: 10;
-}
-
 .best-seller-badge {
     position: absolute;
-    bottom: 8px;
+    top: 8px;
     left: 8px;
-    background-color: #ffcc00; /* galben pentru "Best Seller" */
+    background-color: #ffcc00;
     color: #fff;
     font-weight: bold;
     font-size: 0.75rem;

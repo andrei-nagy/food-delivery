@@ -24,59 +24,47 @@ const FoodItem = ({ id, name, price, description, image, isBestSeller, isNewAdde
     const handleIncreaseQuantity = () => {
         setSelectedQuantity((prevQuantity) => prevQuantity + 1);
     };
-
+    
     const handleDecreaseQuantity = () => {
         setSelectedQuantity((prevQuantity) => Math.max(prevQuantity - 1, 1));
     };
-
+    
 
     const handleAddToOrder = () => {
-        addToCart(selectedFood.id, selectedQuantity, specialInstructions);
+        addToCart(selectedFood.id, selectedQuantity, specialInstructions );
         closeFoodModal();
     };
 
-
+    
     return (
         <>
             <div className='food-item' onClick={openFoodModal}>
-                <div className="food-item-img-container">
-                    {/* Etichetă "New" pentru isNewAdded în colțul stânga-sus */}
-                    {isNewAdded && (
-                        <span className="new-badge">New</span>
-                    )}
-
-                    {/* Etichetă "Vegan" pentru isVegan în colțul dreapta-sus */}
-                    {isVegan && (
-                        <span className="vegan-badge">Vegan</span>
-                    )}
-
-                    {/* Etichetă "Best Seller" pentru isBestSeller în colțul stânga-jos */}
-                    {isBestSeller && (
-                        <span className="best-seller-badge">Best Seller</span>
-                    )}
-
-                    <img className='food-item-img' src={url + "/images/" + image} alt={name} />
-
-                    {cartItems && cartItems[id] !== undefined
-                        ? (
-                            <div className='food-item-counter'>
-                                <img onClick={(e) => { e.stopPropagation(); removeFromCart(id); }} src={assets.remove_icon_red} alt="Remove" />
-                                <p>{cartItems[id]}</p>
-                                <img onClick={(e) => { e.stopPropagation(); addToCart(id, 1); }} src={assets.add_icon_green} alt="Add" />
-                            </div>
-                        ) : (
-                            <img className='add' onClick={(e) => { e.stopPropagation(); addToCart(id, 1); }} src={assets.add_icon_white} alt="Add" />
-                        )}
+    <div className="food-item-img-container">
+        {/* Etichetă "Best Seller" dacă isBestSeller este true */}
+        {isBestSeller && (
+            <span className="best-seller-badge">Best Seller</span>
+        )}
+        <img className='food-item-img' src={url + "/images/" + image} alt={name} />
+        
+        {cartItems && cartItems[id] !== undefined
+            ? (
+                <div className='food-item-counter'>
+                    <img onClick={(e) => { e.stopPropagation(); removeFromCart(id); }} src={assets.remove_icon_red} alt="Remove" />
+                    <p>{cartItems[id]}</p>
+                    <img onClick={(e) => { e.stopPropagation(); addToCart(id, 1); }} src={assets.add_icon_green} alt="Add" />
                 </div>
-                <div className="food-item-info">
-                    <div className="food-item-name-rating">
-                        <p>{name}</p>
-                        <p className="food-item-price">{price} €</p>
-                    </div>
-                    <p className="food-item-desc">{description}</p>
-                </div>
-            </div>
-
+            ) : (
+                <img className='add' onClick={(e) => { e.stopPropagation(); addToCart(id, 1); }} src={assets.add_icon_white} alt="Add" />
+            )}
+    </div>
+    <div className="food-item-info">
+        <div className="food-item-name-rating">
+            <p>{name}</p>
+            <p className="food-item-price">{price} €</p>
+        </div>
+        <p className="food-item-desc">{description}</p>
+    </div>
+</div>
 
             {isModalOpen && (
                 <div className="modal-overlay quick-food-modal">
@@ -99,7 +87,7 @@ const FoodItem = ({ id, name, price, description, image, isBestSeller, isNewAdde
                             value={specialInstructions}
                             onChange={(e) => setSpecialInstructions(e.target.value)}
                         />
-                        <button className="close" onClick={() => { handleAddToOrder() }}>Add to Order</button>
+                        <button className="close" onClick={() => {handleAddToOrder()}}>Add to Order</button>
                     </div>
                 </div>
             )}

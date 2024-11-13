@@ -98,7 +98,7 @@ const AddProductsPage = () => {
             transition={{ delay: 0.2 }}
         >
             <div className='flex justify-between items-center mb-6'>
-                <h2 className='text-xl font-semibold text-gray-100'>Add a product</h2>
+                <h2 className='text-xl font-semibold text-gray-100'>Add a product!</h2>
             </div>
            
             <div className='overflow-x-auto'>
