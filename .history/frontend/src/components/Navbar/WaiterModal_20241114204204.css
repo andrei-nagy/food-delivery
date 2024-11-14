@@ -1,0 +1,323 @@
+/* Stiluri pentru overlay-ul modalului */
+.modal-overlay-waiter {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  /* Fundal transparent negru */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.5s;
+  padding: 10px;
+}
+
+/* Stiluri pentru conținutul modalului */
+.modal-content-waiter {
+  background-color: #fff;
+  /* Fundal alb pentru modal */
+  padding: 15px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  z-index: 1001;
+  position: relative;
+  max-height: 80vh;
+  /* Înălțimea maximă a modalului */
+  overflow-y: hidden;
+  /* Ascunde overflow-ul pentru a controla scroll-ul doar pe lista de produse */
+  height: 60vh;
+}
+
+/* Butonul de închidere */
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 10px 15px !important;
+}
+
+/* Stiluri pentru itemii din coș */
+.cart-total {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.remove-order-button {
+  width: 20px !important;
+  cursor: pointer;
+  margin: auto;
+}
+
+/* Cart items container - lista derulantă */
+.cart-items {
+  max-height: 50vh;
+  /* Înălțime maximă pentru lista de produse */
+  overflow-y: auto;
+  /* Activează scroll-ul vertical */
+  /* padding-right: 10px; Spațiu pentru scroll */
+  margin-top: 20px;
+  margin-bottom: 20px;
+  /* Spațiu pentru secțiunea total */
+}
+
+.cart-items::-webkit-scrollbar {
+  width: 6px;
+  display: none;
+}
+
+.cart-items::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 5px;
+}
+
+
+.modal-cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #eee;
+}
+
+/* Stiluri pentru titlu și cantitate */
+.cart-items-title p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+
+
+
+/* Imaginea produsului */
+.modal-cart-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+/* Stiluri pentru detalii produs */
+.cart-items-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+/* Prețul fiecărui produs */
+.modal-cart-item p:last-child {
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+}
+
+/* Un stil simplu pentru linia de separare între produse */
+hr {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 10px 0;
+}
+
+/* Responsivitate pentru mobil */
+@media (max-width: 600px) {
+  .modal-content {
+    max-width: 90%;
+  }
+
+  .modal-cart-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .modal-cart-image {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 10px;
+  }
+
+  .cart-items-title p {
+    font-size: 14px;
+  }
+
+  .modal-cart-item p:last-child {
+    font-size: 14px;
+  }
+}
+
+
+
+/* .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  } */
+
+/* .modal-content {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    width: 400px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+  } */
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.waiter-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Container pentru butoanele de acțiune */
+.action-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  /* Două coloane */
+  gap: 15px;
+  margin-bottom: 40px;
+  margin-top: 30px;
+}
+
+/* Stiluri pentru fiecare buton de acțiune */
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100px;
+  /* Dimensiune pătrată */
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #fff;
+  transition: background-color 0.3s ease;
+}
+
+/* Adaugă iconiță în buton */
+.action-btn .icon {
+  font-size: 30px;
+  margin-bottom: 5px;
+}
+
+/* Culori pentru fiecare buton */
+.call-waiter {
+  background-color: #6c63ff;
+  border: 2px solid tomato !important;
+  border-radius: 10px !important
+  /* Mov */
+}
+
+.call-waiter:hover {
+  background-color: #5848e3;
+  /* Mov închis */
+}
+
+.pay-bill {
+  background-color: #ff6b6b;
+  /* Roșu */
+}
+
+.pay-bill:hover {
+  background-color: #e55757;
+  /* Roșu închis */
+}
+
+.need-help {
+  background-color: #28a745;
+  /* Verde */
+}
+
+.need-help:hover {
+  background-color: #218838;
+  /* Verde închis */
+}
+
+/* Stiluri pentru Logout */
+.submit-btn {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #343a40;
+  color: #fff;
+  margin-top: 15px;
+  transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+  background-color: #23272b;
+}
+
+
+.action-btn:hover {
+  background-color: #ff6b6b;
+  color: #fff;
+}
+
+.table-number-field {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.table-number-field label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.table-number-field input {
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #28a745;
+  color: #fff;
+  transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+  background-color: #218838;
+}

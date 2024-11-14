@@ -1,0 +1,117 @@
+/* Stiluri pentru overlay-ul modalului */
+.modal-overlay-test {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;  /* Lățime completă a viewport-ului */
+    height: 100vh; /* Înălțime completă a viewport-ului */
+    background-color: rgba(0, 0, 0, 0.5); /* Fundal transparent negru */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    margin: 0;
+    padding: 0;
+    animation: fadeIn 0.5s;
+}
+
+  
+.modal-content-test {
+    width: 100vw; /* Ocupă întreaga lățime a viewport-ului */
+    height: 100vh; /* Ocupă întreaga înălțime a viewport-ului */
+    max-width: 100vw; /* Anulează restricția de lățime */
+    max-height: 100vh; /* Anulează restricția de înălțime */
+    margin: 0;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 0; /* Elimină colțurile rotunjite */
+    box-shadow: none; /* Elimină umbrele */
+    position: relative;
+    overflow-y: auto; /* Activează scroll-ul vertical */
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.order-date {
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+    margin-top: 4px;
+    margin-bottom: 16px;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 1.5rem;
+    color: #888;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.order-items {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.order-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+.order-details {
+    flex: 1;
+}
+
+.order-name {
+    font-weight: bold;
+    font-size: 1rem;
+    color: #333;
+}
+
+.order-quantity, .order-status, .order-price {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.order-price {
+    font-weight: bold;
+}
+
+.checkout-button {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1rem;
+    transition: background 0.3s ease;
+    margin-top: 15px;
+}
+
+.checkout-button:hover {
+    background: #0056b3;
+}
