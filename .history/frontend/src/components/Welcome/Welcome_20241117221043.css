@@ -1,0 +1,66 @@
+.welcome-container {
+    height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: url('/header_img.png') no-repeat center center/cover; 
+    color: white;
+    text-align: center;
+    border-radius: 10px;
+    padding: 20px; 
+}
+
+.welcome-content {
+    max-width: 600px;
+    padding: 30px;
+    border-radius: 15px; 
+    background-color: rgba(255, 255, 255, 0.2); 
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.welcome-content h3 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    font-weight: bold; 
+}
+
+.welcome-content p {
+    font-size: 1.2rem; 
+    margin-bottom: 20px; 
+}
+
+.schedule {
+    font-size: 1.1rem; 
+    margin: 20px 0; 
+    padding: 15px; 
+    border: 1px solid #FF6347; 
+    border-radius: 10px; 
+    background-color: rgba(255, 255, 255, 0.1); 
+}
+
+.contact-button {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    color: white;
+    background-color: #FF4500; 
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease; 
+}
+
+.contact-button:hover {
+    background-color: #FF6347; 
+    transform: scale(1.05); 
+}
+.welcome-page #footer {
+    display: none; 
+}
+
+
+.welcome-logo {
+    max-width: 150px; 
+    margin-bottom: 20px; 
+    border-radius: 10px;
+}
