@@ -31,7 +31,7 @@ const ThankYou = () => {
 
     if (isReloadNeeded) {
       localStorage.removeItem("isReloadNeeded"); // Ștergem flag-ul pentru a preveni un alt reload
-      window.location.reload();
+      // window.location.reload();
     }
     // Verificăm dacă există deja un rating pentru această comandă
     const fetchRating = async () => {

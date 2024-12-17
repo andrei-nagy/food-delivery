@@ -139,31 +139,31 @@
   align-items: center;
   gap: 10px;
 }
+
 .quantity-button {
-  background-color: transparent !important; /* Fără fundal */
-  color: #333 !important; /* Culoare neutra pentru text */
-  border: 1px solid #ccc !important; /* Linie subtilă, gri deschis */
-  padding: 4px 0 !important; /* Ajustare padding */
-  font-size: 16px !important; /* Ușor mai mic */
-  border-radius: 50% !important; /* Face butonul rotund */
-  cursor: pointer !important; /* Cursor pointer la hover */
-  transition: all 0.2s ease !important; /* Efect de tranziție fluid */
-  width: 30px !important; /* Dimensiune pătrată */
-  height: 30px !important; /* Pentru simetrie */
-  text-align: center !important; /* Aliniere text */
-  line-height: 20px !important; /* Aliniere verticală */
+  background-color: transparent !important;
+  color: black !important;
+  border: 1px solid #0056b3;
+  padding: 2px 0px !important;
+  font-size: 18px;
+  border-radius: 15px !important;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  width: 25px !important;
+  border: 1px solid black !important;
+
 }
 
 .quantity-button:hover {
-  background-color: #f8f8f8; /* Fundal gri deschis la hover */
-  border-color: #000; /* Margine neagră la hover */
-  transform: scale(1.05); /* Ușoară mărire la hover */
+  background-color: #0056b3;
+  transform: scale(1.1);
 }
 
-.quantity-button:focus {
-  outline: none; /* Elimină outline-ul default */
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.2); /* Adaugă un mic shadow la focus */
+.quantity-button:active {
+  background-color: #004085;
+  /* Schimbă culoarea la apăsare */
 }
+
 .quantity-button:disabled {
   background-color: #c6c6c6;
   /* Culoare gri când butonul este dezactivat */

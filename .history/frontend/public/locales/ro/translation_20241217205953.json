@@ -3,7 +3,6 @@
   "menu": "Meniu",
   "no_items": "Nu există produse adăugate",
   "view_menu": "Vezi meniul",
-  "view_our_menu": "Vezi meniul",
   "view_order": "Comandă",
   "pay": "Plătește",
   "actions": "Acțiuni",
@@ -25,9 +24,5 @@
   "menu_navbar": "Meniu",
   "home_navbar": "Acasă",
   "contact_navbar": "Contactează-ne",
-  "thank_you_title": "Mulțumim!",
-  "order_placed": "Comanda dumneavoastră a fost plasată cu succes.",
-  "order_placed_description_first": "Pregătim comanda dumneavoastră și aceasta va fi adusă la masă în curând.",
-  "order_placed_description_2": "Dacă aveți întrebări sau aveți nevoie de asistență suplimentară, nu ezitați să ne contactați.",
-  "rate_out_application": "Evaluează aplicația noastră:"
+  "thank_you_title": "Mulțumim!"
 }

@@ -99,7 +99,7 @@ const ThankYou = () => {
 
       {/* Butoane pentru navigare */}
       <div className="thank-you-buttons">
-        <button onClick={() => navigate('/')}>{t('view_our_menu')}</button>
+        <button onClick={() => navigate('/')}>Go back to view menu</button>
         {/* <button onClick={() => navigate('/myorders')}>Track my order status</button> */}
       </div>
     </div>

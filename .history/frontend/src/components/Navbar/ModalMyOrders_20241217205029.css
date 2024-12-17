@@ -56,9 +56,10 @@
     margin-bottom: 15px;
 }
 .order-date p{
- 
+    background: #d7d7d7;
+    border-radius: 4px;
     color: black;
-  
+    border: 2px solid #d7d7d7;
     padding: 5px;
 }
 .close-button {

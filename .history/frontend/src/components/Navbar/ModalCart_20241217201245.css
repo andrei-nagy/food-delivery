@@ -140,18 +140,18 @@
   gap: 10px;
 }
 .quantity-button {
-  background-color: transparent !important; /* Fără fundal */
-  color: #333 !important; /* Culoare neutra pentru text */
-  border: 1px solid #ccc !important; /* Linie subtilă, gri deschis */
-  padding: 4px 0 !important; /* Ajustare padding */
-  font-size: 16px !important; /* Ușor mai mic */
-  border-radius: 50% !important; /* Face butonul rotund */
-  cursor: pointer !important; /* Cursor pointer la hover */
-  transition: all 0.2s ease !important; /* Efect de tranziție fluid */
-  width: 30px !important; /* Dimensiune pătrată */
-  height: 30px !important; /* Pentru simetrie */
-  text-align: center !important; /* Aliniere text */
-  line-height: 20px !important; /* Aliniere verticală */
+  background-color: transparent; /* Fără fundal */
+  color: #333; /* Culoare neutra pentru text */
+  border: 1px solid #ccc; /* Linie subtilă, gri deschis */
+  padding: 4px 0; /* Ajustare padding */
+  font-size: 16px; /* Ușor mai mic */
+  border-radius: 50%; /* Face butonul rotund */
+  cursor: pointer; /* Cursor pointer la hover */
+  transition: all 0.2s ease; /* Efect de tranziție fluid */
+  width: 30px; /* Dimensiune pătrată */
+  height: 30px; /* Pentru simetrie */
+  text-align: center; /* Aliniere text */
+  line-height: 20px; /* Aliniere verticală */
 }
 
 .quantity-button:hover {

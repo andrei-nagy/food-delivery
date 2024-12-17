@@ -8,8 +8,8 @@ import { useTranslation } from 'react-i18next';
 
 const ThankYou = () => {
 
-
-  const { url } = useContext(StoreContext);
+  
+  const {url} = useContext(StoreContext);
   const { t, i18n } = useTranslation();
 
   const changeLanguage = (lng) => {
@@ -26,13 +26,13 @@ const ThankYou = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    // Verificăm dacă reload-ul este necesar
-    const isReloadNeeded = localStorage.getItem("isReloadNeeded");
+        // Verificăm dacă reload-ul este necesar
+        const isReloadNeeded = localStorage.getItem("isReloadNeeded");
 
-    if (isReloadNeeded) {
-      localStorage.removeItem("isReloadNeeded"); // Ștergem flag-ul pentru a preveni un alt reload
-      window.location.reload();
-    }
+        if (isReloadNeeded) {
+            localStorage.removeItem("isReloadNeeded"); // Ștergem flag-ul pentru a preveni un alt reload
+            window.location.reload();
+        }
     // Verificăm dacă există deja un rating pentru această comandă
     const fetchRating = async () => {
       try {
@@ -68,25 +68,24 @@ const ThankYou = () => {
   return (
     <div className="thank-you-container">
       {/* <h1>🎉 Thank you! 🎉</h1><br /> */}
-      <h1>{t('thank_you_title')}</h1><br />
-      <p>{t('order_placed')}</p><br />
+      <h1> Thank you! </h1><br />
+      <p>Your order has been placed successfully.</p><br />
       <p>
-        {t('order_placed_description_first')}
-      </p><br/>
-      <p>
-        {t('order_placed_description_2')}
+        We are preparing your delicious meal, and it will be served at <strong>table {tableNo}</strong> shortly.
       </p>
-      <br />
+      <p>
+        If you have any questions or need further assistance, feel free to let us know. 
+      </p><br />
       <p>Bon appétit! 🍽️</p><br />
 
       {/* Secțiunea de evaluare */}
       <div className="rate-application">
-        <p><strong>{t('rate_out_application')}</strong></p><br />
+        <p><strong>Rate our application:</strong></p><br />
         <div className="star-rating">
           {[1, 2, 3, 4, 5].map((star) => (
-            <span
-              key={star}
-              className={rating >= star ? "star filled" : "star"}
+            <span 
+              key={star} 
+              className={rating >= star ? "star filled" : "star"} 
               onClick={() => handleRating(star)}
               style={{ cursor: rating > 0 ? "default" : "pointer" }} // Blochează ratingul dacă există deja
             >
@@ -99,7 +98,7 @@ const ThankYou = () => {
 
       {/* Butoane pentru navigare */}
       <div className="thank-you-buttons">
-        <button onClick={() => navigate('/')}>{t('view_our_menu')}</button>
+        <button onClick={() => navigate('/')}>Go back to view menu</button> 
         {/* <button onClick={() => navigate('/myorders')}>Track my order status</button> */}
       </div>
     </div>

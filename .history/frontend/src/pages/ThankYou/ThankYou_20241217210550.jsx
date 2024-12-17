@@ -71,12 +71,11 @@ const ThankYou = () => {
       <h1>{t('thank_you_title')}</h1><br />
       <p>{t('order_placed')}</p><br />
       <p>
-        {t('order_placed_description_first')}
-      </p><br/>
+        {t('order_placed_description_1')}
+      </p>
       <p>
         {t('order_placed_description_2')}
-      </p>
-      <br />
+      </p><br />
       <p>Bon appétit! 🍽️</p><br />
 
       {/* Secțiunea de evaluare */}
@@ -99,7 +98,7 @@ const ThankYou = () => {
 
       {/* Butoane pentru navigare */}
       <div className="thank-you-buttons">
-        <button onClick={() => navigate('/')}>{t('view_our_menu')}</button>
+        <button onClick={() => navigate('/')}>Go back to view menu</button>
         {/* <button onClick={() => navigate('/myorders')}>Track my order status</button> */}
       </div>
     </div>

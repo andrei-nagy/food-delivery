@@ -56,9 +56,9 @@
     margin-bottom: 15px;
 }
 .order-date p{
- 
+    border-radius: 8px;
     color: black;
-  
+    border: 2px solid #d7d7d7;
     padding: 5px;
 }
 .close-button {

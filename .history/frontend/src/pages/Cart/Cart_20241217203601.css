@@ -118,7 +118,7 @@
 
 .special-instructions{
     margin-bottom: 15px;
-    margin-top: 50px;
+    margin-top: 80px;
 }
 
 
@@ -126,11 +126,30 @@
     margin-top: 20px;
     margin-bottom: 30px;
 }
-
-.order-summary{
-    text-align: center;
-    margin-bottom: 50px;
-}
+/* Stilizare pentru banner */
+.order-summary {
+    background-color: #f8f9fa; /* Fundal deschis */
+    color: #333; /* Culoare text */
+    padding: 12px 20px; /* Spațiere interioară */
+    border-radius: 8px; /* Colțuri rotunjite */
+    text-align: center; /* Aliniere text */
+    font-size: 18px; /* Dimensiune text */
+    font-weight: 600; /* Grosime font */
+    margin: 20px 0; /* Spațiere exterioară */
+    border: 1px solid #ddd; /* Bordură subtilă */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Umbra subtilă */
+    transition: all 0.3s ease; /* Efect tranziție */
+    cursor: pointer; /* Cursor pointer la hover */
+  }
+  
+  /* Efect hover */
+  .order-summary:hover {
+    background-color: #e6f0ff; /* Fundal ușor albastru */
+    color: #007bff; /* Culoare text schimbată */
+    border-color: #007bff; /* Bordură evidențiată */
+    transform: translateY(-2px); /* Ușor "ridicat" */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Umbră mai pronunțată */
+  }
 /* Stilizarea containerului general */
 .payment-method-container {
     margin: 20px 0;

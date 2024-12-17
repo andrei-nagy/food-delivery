@@ -118,18 +118,13 @@
 
 .special-instructions{
     margin-bottom: 15px;
-    margin-top: 50px;
+    margin-top: 80px;
 }
 
 
 .payment-method-title{
     margin-top: 20px;
     margin-bottom: 30px;
-}
-
-.order-summary{
-    text-align: center;
-    margin-bottom: 50px;
 }
 /* Stilizarea containerului general */
 .payment-method-container {
@@ -171,21 +166,21 @@
   
   /* Efecte hover și selectat */
   .label-payment-method:hover {
-    /* background-color: #f0f8ff; */
-    border-color: tomato;
+    background-color: #f0f8ff;
+    border-color: #007bff;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   
   input[type="radio"]:checked + label {
     border-color: tomato;
-    /* background-color: #e6f0ff; */
+    background-color: #e6f0ff;
   }
   
   /* Stare activă pentru eticheta selectată */
   .label-payment-method:has(input[type="radio"]:checked) {
     border-color: tomato;
-    /* background-color: #e6f0ff; */
-    /* box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); */
+    background-color: #e6f0ff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
   }
 
   

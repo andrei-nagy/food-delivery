@@ -3,7 +3,6 @@
   "menu": "Menu",
   "no_items": "No items added",
   "view_menu": "View Menu",
-  "view_our_menu": "View our menu",
   "view_order": "Order",
   "pay": "Pay",
   "actions": "Actions",
@@ -27,7 +26,7 @@
   "contact_navbar": "Contact us",
   "thank_you_title": "Thank you!",
   "order_placed": "Your order has been placed successfully.",
-  "order_placed_description_first": "We are preparing your delicious meal, and it will be served at your table shortly.",
+  "order_placed_description_1": "We are preparing your delicious meal, and it will be served at your table shortly.",
   "order_placed_description_2": "If you have any questions or need further assistance, feel free to let us know.",
   "rate_out_application": "Rate our application:"
 }

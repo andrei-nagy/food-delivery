@@ -110,7 +110,7 @@ const Cart = () => {
         });
         // Setăm flag-ul pentru reload
         localStorage.setItem("isReloadNeeded", "true");
-        // toast.success("Order placed successfully!");
+        toast.success("Order placed successfully!");
 
       } else {
         alert("Error placing order.");
@@ -131,6 +131,7 @@ const Cart = () => {
           <p>Items</p>
           <p>Title</p>
           <p>Price</p>
+          {/* <p>Quantity</p> */}
           <p>Total</p>
           <p>Remove</p>
         </div>
@@ -145,6 +146,7 @@ const Cart = () => {
                   <img src={url + "/images/" + item.image} alt="" />
                   <p>{item.name}</p>
                   <p>{item.price} €</p>
+                  {/* <p>{cartItems[item._id]}</p> */}
                   <p>{item.price * cartItems[item._id]} €</p>
                   <p onClick={() => removeFromCart(item._id)} className='cross'>x</p>
                 </div>

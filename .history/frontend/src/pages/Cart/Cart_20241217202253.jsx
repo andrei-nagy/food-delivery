@@ -63,74 +63,74 @@ const Cart = () => {
 
     const totalAmount = getTotalCartAmount() - discount; // Totalul cu discount aplicat
 
-
-    let orderData = {
-      tableNo: tableNumber,
-      userData: data,
-      items: orderItems,
-      amount: totalAmount,
-      specialInstructions: specialInstructions
-    };
-
-    // Verificăm metoda de plată selectată
-    if (paymentMethod === 'creditCard') {
-
-      // Plată online prin Stripe
-      let response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
-      console.log({
-        url: url,
-        orderData: orderData,
-        response: response
-      })
-
-      if (response.data.success) {
-        const { session_url } = response.data;
-        window.location.replace(session_url);
-      } else {
-        alert("Error processing payment.");
-      }
-    } else if (paymentMethod === 'cashPOS') {
-
-      // Plasare comanda fără Stripe (pentru Cash/POS)
-      let response = await axios.post(url + "/api/order/place-cash", orderData, { headers: { token } });
-      console.log({
-        url: url,
-        orderData: orderData,
-        response: response
-      })
-      if (response.data.success) {
-        const { orderId, session_url } = response.data;
-
-        // toast.success("Order placed successfully!");
-        navigate("/thank-you", {
-          state: {
-            tableNo: orderData.tableNo,
-            orderId: orderId // Trimitem orderId în state
-          }
-        });
-        // Setăm flag-ul pentru reload
-        localStorage.setItem("isReloadNeeded", "true");
-        // toast.success("Order placed successfully!");
-
-      } else {
-        alert("Error placing order.");
-      }
-    } else {
-      alert("Please select a payment method.");
-    }
+  
+  let orderData = {
+    tableNo: tableNumber,
+    userData: data,
+    items: orderItems,
+    amount: totalAmount,
+    specialInstructions: specialInstructions
   };
+
+  // Verificăm metoda de plată selectată
+  if (paymentMethod === 'creditCard') {
+
+    // Plată online prin Stripe
+    let response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
+    console.log({
+      url: url,
+      orderData: orderData,
+      response: response
+    })
+
+    if (response.data.success) {
+      const { session_url } = response.data;
+      window.location.replace(session_url);
+    } else {
+      alert("Error processing payment.");
+    }
+  } else if (paymentMethod === 'cashPOS') {
+
+    // Plasare comanda fără Stripe (pentru Cash/POS)
+    let response = await axios.post(url + "/api/order/place-cash", orderData, { headers: { token } });
+    console.log({
+      url: url,
+      orderData: orderData,
+      response: response
+    })
+    if (response.data.success) {
+      const { orderId, session_url } = response.data;
+
+      // toast.success("Order placed successfully!");
+      navigate("/thank-you", {
+        state: {
+          tableNo: orderData.tableNo,
+          orderId: orderId // Trimitem orderId în state
+        }
+      });
+      // Setăm flag-ul pentru reload
+      localStorage.setItem("isReloadNeeded", "true");
+      toast.success("Order placed successfully!");
+
+    } else {
+      alert("Error placing order.");
+    }
+  } else {
+    alert("Please select a payment method.");
+  }
+};
   const navigate = useNavigate();
 
-
+  
   return (
     <div className='cart'>
-      <h2 className='order-summary'>Your order summary</h2>
       <div className="cart-items">
         <div className="cart-items-title-cart">
           <p>Qty</p>
           <p>Items</p>
           <p>Title</p>
           <p>Price</p>
+          {/* <p>Quantity</p> */}
           <p>Total</p>
           <p>Remove</p>
         </div>
@@ -145,31 +145,32 @@ const Cart = () => {
                   <img src={url + "/images/" + item.image} alt="" />
                   <p>{item.name}</p>
                   <p>{item.price} €</p>
+                  {/* <p>{cartItems[item._id]}</p> */}
                   <p>{item.price * cartItems[item._id]} €</p>
                   <p onClick={() => removeFromCart(item._id)} className='cross'>x</p>
                 </div>
                 <hr />
               </div>
 
-
+              
             );
           }
           return null;
         })}
       </div>
-
-      {/* Textarea pentru instrucțiuni speciale */}
-      <div className="special-instructions">
-
-        <h2 className='special-instructions'>Special instructions</h2>
-        <textarea
-          value={specialInstructions}
-          onChange={(e) => setSpecialInstructions(e.target.value)}
-          placeholder="Enter any special instructions about your order"
-          rows={4}
-        />
-      </div>
-
+   
+          {/* Textarea pentru instrucțiuni speciale */}
+          <div className="special-instructions">
+        
+            <h2 className='special-instructions'>Special instructions</h2>
+            <textarea
+              value={specialInstructions}
+              onChange={(e) => setSpecialInstructions(e.target.value)}
+              placeholder="Enter any special instructions about your order"
+              rows={4}
+            />
+          </div>
+        
       <div className="cart-bottom">
         <div className="cart-total">
           <h2>Cart Total</h2>
@@ -190,22 +191,22 @@ const Cart = () => {
             </div>
           </div>
           <div>
-            <h3 className='payment-method-title'>Select your payment method:</h3>
-            <label className='label-payment-method'>
-              <input className='payment-method' type="radio" name="paymentMethod" value="creditCard" onChange={handlePaymentMethodChange} />
-              Pay online by credit card
-            </label>
-            <label className='label-payment-method'>
-              <input className='payment-method' type="radio" name="paymentMethod" value="cashPOS" onChange={handlePaymentMethodChange} />
-              Pay cash / POS
-            </label>
-          </div>
-          <form onSubmit={placeOrder} className="place-order">
-            {/* <button onClick={() => navigate('/order', { state: { discount, promoCode, specialInstructions } })}>PROCEED TO CHECKOUT</button> */}
-            <button type='submit'>
+              <h3>Select your payment method:</h3>
+              <label className='label-payment-method'>
+                <input className='payment-method' type="radio" name="paymentMethod" value="creditCard" onChange={handlePaymentMethodChange} />
+                Pay online by credit card
+              </label>
+              <label className='label-payment-method'>
+                <input className='payment-method' type="radio" name="paymentMethod" value="cashPOS" onChange={handlePaymentMethodChange} />
+                Pay cash / POS
+              </label>
+            </div>
+            <form onSubmit={placeOrder} className="place-order">
+          {/* <button onClick={() => navigate('/order', { state: { discount, promoCode, specialInstructions } })}>PROCEED TO CHECKOUT</button> */}
+          <button type='submit'>
               {paymentMethod === 'creditCard' ? 'PROCEED TO PAYMENT' : 'PLACE ORDER'}
             </button>
-          </form>
+            </form>
         </div>
 
         <div className="cart-promocode">
@@ -222,9 +223,9 @@ const Cart = () => {
             </div>
           </div>
 
-
+      
         </div>
-
+        
       </div>
     </div>
   );

@@ -11,7 +11,7 @@
 }
 .cart-items-title-cart {
     display: grid;
-    grid-template-columns: 1fr 1.5fr 1.5fr 1fr 1fr 0.5fr ;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 0.5fr ;
     align-items: center;
     color: grey;
     font-size: max(1vw, 12px);
@@ -33,11 +33,10 @@
 
 .cart-items-item .cross{
     cursor: pointer;
-    color: tomato;
 }
 
 .cart-bottom{
-    margin-top: 30px;
+    margin-top: 80px;
     display: flex;
     justify-content: space-between;
     gap: max(12vw, 20px)
@@ -118,79 +117,8 @@
 
 .special-instructions{
     margin-bottom: 15px;
-    margin-top: 50px;
+    margin-top: 80px;
 }
-
-
-.payment-method-title{
-    margin-top: 20px;
-    margin-bottom: 30px;
-}
-
-.order-summary{
-    text-align: center;
-    margin-bottom: 50px;
-}
-/* Stilizarea containerului general */
-.payment-method-container {
-    margin: 20px 0;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Stilizarea titlului */
-  .payment-method-container h3 {
-    font-size: 20px;
-    margin-bottom: 15px;
-    color: #333;
-    font-weight: 600;
-  }
-  
-  /* Stilizarea fiecărei etichete de plată */
-  .label-payment-method {
-    display: flex;
-    align-items: center;
-    padding: 10px 15px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background-color: #fff;
-    transition: all 0.3s ease;
-    cursor: pointer;
-  }
-  
-  /* Stilizarea radio button-urilor */
-  .payment-method {
-    margin-right: 10px;
-    transform: scale(1.2);
-    accent-color: #007bff; /* Schimbă culoarea radio la selectare */
-  }
-  
-  /* Efecte hover și selectat */
-  .label-payment-method:hover {
-    /* background-color: #f0f8ff; */
-    border-color: tomato;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  input[type="radio"]:checked + label {
-    border-color: tomato;
-    /* background-color: #e6f0ff; */
-  }
-  
-  /* Stare activă pentru eticheta selectată */
-  .label-payment-method:has(input[type="radio"]:checked) {
-    border-color: tomato;
-    /* background-color: #e6f0ff; */
-    /* box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); */
-  }
-
-  
-
-
 @media (max-width: 750px) {
     .cart-bottom{
         flex-direction: column-reverse;
