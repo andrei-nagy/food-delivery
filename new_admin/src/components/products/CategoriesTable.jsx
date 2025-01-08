@@ -20,7 +20,7 @@ const CategoriesTable = () => {
         isActive: "",
         image: null,
     });
-    const categoriesPerPage = 10; // Numărul de produse pe pagină
+    const categoriesPerPage = 10;
     const { url } = useUrl();
 
     const fetchCategories = async () => {
@@ -50,24 +50,24 @@ const CategoriesTable = () => {
         formData.append("menu_name", updatedCategory.menu_name);
         formData.append("description", updatedCategory.description);
         formData.append("image", image);
-        formData.append("isActive", updatedCategory.isActive); // Adăugăm isActive la formData
+        formData.append("isActive", updatedCategory.isActive);
 
         try {
             const response = await axios.post(`${url}/api/categories/addcategory`, formData);
-
             if (response.data.success) {
 
                 setImage(null);
-                toast.success(response.data.message, {theme: "dark"});
+                toast.success(response.data.message, { theme: "dark" });
                 fetchCategories(); // Reîncarcă produsele după adăugare
                 setIsModalOpen(false); // Închide modalul
                 setUpdatedCategory({ name: "", description: "", price: "", category: "" }); // Resetează formularul
             } else {
-                toast.error(response.data.message, {theme: "dark"});
+
+                toast.error(response.data.message, { theme: "dark" });
             }
         } catch (error) {
             console.error("Error adding product", error);
-            toast.error("Error adding product", {theme: "dark"});
+            toast.error("Error adding product", { theme: "dark" });
         }
     }
 
@@ -76,9 +76,9 @@ const CategoriesTable = () => {
         await fetchCategories();
 
         if (response.data.success) {
-            toast.success(response.data.message, {theme: "dark"})
+            toast.success(response.data.message, { theme: "dark" })
         } else {
-            toast.error(response.data.message, {theme: "dark"})
+            toast.error(response.data.message, { theme: "dark" })
         }
     }
 
@@ -111,15 +111,15 @@ const CategoriesTable = () => {
                 },
             });
             if (response.data.success) {
-                toast.success(response.data.message, {theme: "dark"});
+                toast.success(response.data.message, { theme: "dark" });
                 fetchCategories(); // Reîncarcă produsele după actualizare
                 setIsEditing(false); // Închide formularul de editare
             } else {
-                toast.error(response.data.message, {theme: "dark"});
+                toast.error(response.data.message, { theme: "dark" });
             }
         } catch (error) {
             console.error("Error updating category:", error);
-            toast.error("Error updating category.", {theme: "dark"});
+            toast.error("Error updating category.", { theme: "dark" });
         }
     };
 
@@ -172,7 +172,7 @@ const CategoriesTable = () => {
                 </div>
             </div>
 
-          
+
             <div className='overflow-x-auto'>
                 <table className='min-w-full divide-y divide-gray-700'>
                     <thead>
@@ -201,10 +201,10 @@ const CategoriesTable = () => {
                                 </td>
                                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>{category.description}</td>
                                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>
-                                {category.isActive ? (
-                                        <span className="text-green-500">Active</span> // If payment is true, show green text
+                                    {category.isActive ? (
+                                        <span className="text-green-500">Active</span>
                                     ) : (
-                                        <span className="text-red-500">Inactive</span> // If payment is false, show red text
+                                        <span className="text-red-500">Inactive</span>
                                     )}
                                 </td>
                                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>
@@ -251,61 +251,61 @@ const CategoriesTable = () => {
                         <h2 className='text-xl font-semibold text-gray-100 mb-4'>Edit Category</h2>
 
                         <form onSubmit={handleUpdateCategory}>
-                        <div className="mb-4">
-                            <label className="block text-gray-400">Current Image</label>
-                            {/* Afișează imaginea curentă dacă există */}
-                            {currentCategory.image && (
-                                <img
-                                    src={`${url}/images/` + currentCategory.image}
-                                    alt="Current category"
-                                    className="mb-2 w-32 h-32 object-cover rounded" // Poți ajusta dimensiunile după preferințe
+                            <div className="mb-4">
+                                <label className="block text-gray-400">Current Image</label>
+                                {/* Afișează imaginea curentă dacă există */}
+                                {currentCategory.image && (
+                                    <img
+                                        src={`${url}/images/` + currentCategory.image}
+                                        alt="Current category"
+                                        className="mb-2 w-32 h-32 object-cover rounded" // Poți ajusta dimensiunile după preferințe
+                                    />
+                                )}
+                                <label className="block text-gray-400">New Image</label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="mt-1 p-2 bg-gray-700 text-white rounded"
+                                    onChange={(e) => setUpdatedCategory({ ...updatedCategory, image: e.target.files[0] })}
                                 />
-                            )}
-                            <label className="block text-gray-400">New Image</label>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                className="mt-1 p-2 bg-gray-700 text-white rounded"
-                                onChange={(e) => setUpdatedCategory({ ...updatedCategory, image: e.target.files[0] })}
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-gray-400">Name</label>
-                            <input
-                                type="text"
-                                className="mt-1 p-2 bg-gray-700 text-white rounded"
-                                value={updatedCategory.menu_name}
-                                onChange={(e) => setUpdatedCategory({ ...updatedCategory, menu_name: e.target.value })}
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-gray-400">Description</label>
-                            <input
-                                type="text"
-                                className="mt-1 p-2 bg-gray-700 text-white rounded"
-                                value={updatedCategory.description}
-                                onChange={(e) => setUpdatedCategory({ ...updatedCategory, description: e.target.value })}
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-gray-400">Category Status</label>
-                            <select
-                                className="mt-1 p-2 bg-gray-700 text-white rounded"
-                                value={updatedCategory.isActive}
-                                onChange={(e) => setUpdatedCategory({ ...updatedCategory, isActive: e.target.value === "true" })} // Transformăm valoarea selectată în boolean
-                                required
-                            >
-                                <option value={true}>Active</option>
-                                <option value={false}>Inactive</option>
-                            </select>
-                        </div>
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-400">Name</label>
+                                <input
+                                    type="text"
+                                    className="mt-1 p-2 bg-gray-700 text-white rounded"
+                                    value={updatedCategory.menu_name}
+                                    onChange={(e) => setUpdatedCategory({ ...updatedCategory, menu_name: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-400">Description</label>
+                                <input
+                                    type="text"
+                                    className="mt-1 p-2 bg-gray-700 text-white rounded"
+                                    value={updatedCategory.description}
+                                    onChange={(e) => setUpdatedCategory({ ...updatedCategory, description: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="block text-gray-400">Category Status</label>
+                                <select
+                                    className="mt-1 p-2 bg-gray-700 text-white rounded"
+                                    value={updatedCategory.isActive}
+                                    onChange={(e) => setUpdatedCategory({ ...updatedCategory, isActive: e.target.value === "true" })} // Transformăm valoarea selectată în boolean
+                                    required
+                                >
+                                    <option value={true}>Active</option>
+                                    <option value={false}>Inactive</option>
+                                </select>
+                            </div>
 
-                        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Update</button>
-                        <button type="button" onClick={() => setIsEditing(false)} className="bg-red-600 text-white px-4 py-2 rounded ml-2">Cancel</button>
-                    </form>
-                        </motion.div>
+                            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Update</button>
+                            <button type="button" onClick={() => setIsEditing(false)} className="bg-red-600 text-white px-4 py-2 rounded ml-2">Cancel</button>
+                        </form>
+                    </motion.div>
                 </motion.div>
             )}
             {isModalOpen && (
@@ -376,16 +376,17 @@ const CategoriesTable = () => {
                                             className='border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-black bg-white'
                                             required
                                         >
+                                            <option value="" disabled>Select status</option> {/* Opțiune goală care poate fi selectată */}
                                             <option value={true}>Active</option>
                                             <option value={false}>Inactive</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div className='flex justify-center mt-4'>
-                                <button type="submit" className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                    <svg className="me-1 -ms-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd"></path></svg>
-                                    Add new category
-                                </button>
+                                    <button type="submit" className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                        <svg className="me-1 -ms-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd"></path></svg>
+                                        Add new category
+                                    </button>
                                 </div>
                             </form>
                         </div>

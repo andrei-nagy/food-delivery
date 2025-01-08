@@ -3,7 +3,7 @@ import './FoodItem.css';
 import { assets } from '../../assets/assets';
 import { StoreContext } from '../../context/StoreContext';
 
-const FoodItem = ({ id, name, price, description, image, isBestSeller, isNewAdded, isVegan }) => {
+const FoodItem = ({ id, name, price, description, image, isBestSeller, isNewAdded, isVegan, category }) => {
     const { cartItems, addToCart, removeFromCart, url } = useContext(StoreContext);
     const [selectedFood, setSelectedFood] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);

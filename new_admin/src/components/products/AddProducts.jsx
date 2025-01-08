@@ -125,6 +125,7 @@ const AddProductsPage = () => {
                             type="text"
                             name="name"
                             placeholder='Product name'
+                            maxLength="100"
                             className='border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-black bg-white'
                             required
                         />
@@ -138,6 +139,7 @@ const AddProductsPage = () => {
                             name="description"
                             rows="4"
                             placeholder='Write your description'
+                            maxLength="500"
                             className='border border-gray-300 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-black bg-white'
                             required
                         ></textarea>

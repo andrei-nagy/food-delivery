@@ -23,9 +23,9 @@ const addFood = async (req, res) => {
         price: req.body.price,
         category: req.body.category,
         image: image_filename,
-        isBestSeller: req.body.isBestSeller,
-        isNewAdded: req.body.isNewAdded,
-        isVegan: req.body.isVegan
+        isBestSeller: req.body.isBestSeller === null ? false : req.body.isBestSeller,
+        isNewAdded: req.body.isNewAdded === null ? false : req.body.isNewAdded,
+        isVegan: req.body.isVegan === null ? false : req.body.isVegan
     })
 
     try {

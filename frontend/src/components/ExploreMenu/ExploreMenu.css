@@ -1,3 +1,7 @@
+.progress-bar {
+    display: none;
+}
+
 .explore-menu{
     display: flex;
     flex-direction: column;
@@ -21,7 +25,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 20px;
+    gap: 35px;
     text-align: center;
     margin: 20px 0px;
     overflow-x: scroll;
@@ -42,7 +46,7 @@
     max-width: 100px;
     max-height: 100px;
     transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out, border 0.1s ease-in-out;
-
+    object-fit: cover;
 }
 
 .explore-menu-list-item p{
@@ -76,6 +80,12 @@
 
 /* Media query pentru efecte de tranziție pe ecrane mici */
 @media (max-width: 768px) {
+    .progress-bar {
+        display: block;
+    }
+    .navigation-arrow {
+        display: flex; /* Vizibil pe ecrane mici */
+    }
     .explore-menu-list{
         padding-top: 5px;
         padding-left: 5px;
@@ -88,6 +98,7 @@
         cursor: pointer;
         border-radius: 50%;
         transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out, border 0.1s ease-in-out;
+       
     }
 
     /* Efectul de hover */
@@ -103,3 +114,66 @@
         border: 3px solid tomato; /* Border color pentru a evidenția imaginea activă */
     }
 }
+
+
+.explore-menu-container {
+    position: relative;
+}
+
+.navigation-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: background-color 0.3s;
+    display: none; /* Ascuns în mod implicit */
+}
+
+.navigation-arrow.left {
+    left: 10px;
+}
+
+.navigation-arrow.right {
+    right: 10px;
+}
+
+.navigation-arrow:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+ 
+.progress-bar {
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    position: relative;
+    margin-top: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: tomato;
+    width: 0; /* Lățimea va fi setată dinamic */
+    transition: width 0.3s ease;
+}
+.progress-bar::before {
+    content: '';
+    height: 100%;
+    background: tomato;
+    position: absolute;
+    width: 0;
+    transition: width 0.3s ease;
+}
+
+/* Script pentru actualizarea lățimii progresului pe derulare */
