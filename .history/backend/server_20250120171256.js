@@ -28,7 +28,7 @@ connectDB();
 
 //Function for delete old users at every 10 minutes
 // Programare a funcției să ruleze la fiecare 10 minute
-cron.schedule('*/1 * * * *', async () => {
+cron.schedule('*/10 * * * *', async () => {
     console.log('Verificare utilizatori cu token-uri expirate...');
     await deactivateExpiredUsers();
 });
@@ -50,7 +50,8 @@ app.get("/", (req, res) => {
     res.send("API Working")
 })
 
-app.listen(port, () => {
-    console.log(`Server Started on http://localhost:${port}`)
-})
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server Started on http://0.0.0.0:${port}`)
+});
+
 
