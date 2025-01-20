@@ -47,7 +47,7 @@ const AdminCustomizationPage = ({ url }) => {
         setErrorMessage('');
 
         try {
-            await axios.post(`https://demo.orderly-app.com/admin/personalization/add`, customizationData); // Folosește ruta de adăugare
+            await axios.post(`https://api.orderly-app.com/admin/personalization/add`, customizationData); // Folosește ruta de adăugare
             setSuccessMessage('Customization added successfully.');
         } catch (error) {
             console.error('Error adding customization:', error);

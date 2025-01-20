@@ -14,4 +14,4 @@ export const assets ={
     parcel_icon
 }
 
-export const url = 'https://demo.orderly-app.com'
+export const url = 'https://api.orderly-app.com'
