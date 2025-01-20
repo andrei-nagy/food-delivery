@@ -50,7 +50,7 @@ const DailySalesTrend = () => {
         { name: "Sun", sales: 0, orders: 0, avgOrderAmount: 0 },
     ]);
 
-    const url = 'https://admin.orderly-app.com'; // Your API endpoint
+    const url = 'https://api.orderly-app.com'; // Your API endpoint
 
     // Function to fetch and process sales data
     const fetchSalesData = async () => {

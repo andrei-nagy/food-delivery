@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 const SalesOverviewChart = () => {
     const [salesData, setSalesData] = useState([]);
-    const url = 'https://admin.orderly-app.com';
+    const url = 'https://api.orderly-app.com';
     useEffect(() => {
         const fetchSalesData = async () => {
             try {

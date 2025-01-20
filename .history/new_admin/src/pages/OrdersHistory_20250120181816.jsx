@@ -10,7 +10,7 @@ import OrdersHistoryTable from "../components/orders/OrdersHistory";
 
 const OrdersHistoryPage = () => {
     const [orders, setOrders] = useState([]); // State to store orders
-    const url = "https://admin.orderly-app.com"; // URL-ul API-ului
+    const url = "https://api.orderly-app.com"; // URL-ul API-ului
 
     // Funcția pentru a prelua comenzile din API
     const fetchOrders = async () => {

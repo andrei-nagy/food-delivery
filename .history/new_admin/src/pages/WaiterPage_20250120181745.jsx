@@ -18,7 +18,7 @@ const WaiterPage = () => {
     
     });
 
-    const url = 'https://admin.orderly-app.com';
+    const url = 'https://api.orderly-app.com';
 
     const fetchList = async () => {
         try {

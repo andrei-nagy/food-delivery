@@ -7,7 +7,7 @@ const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#0088FE"];
 
 const WaiterActionsChart = () => {
     const [userDemographicsData, setUserDemographicsData] = useState([]); // State pentru datele demografice
-    const url = 'https://admin.orderly-app.com'; // URL-ul API-ului tău
+    const url = 'https://api.orderly-app.com'; // URL-ul API-ului tău
 
     const fetchWaiterActionsData = async () => {
         try {

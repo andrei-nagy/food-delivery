@@ -8,7 +8,7 @@ const COLORS = ["#6366F1", "#8B5CF6", "#EC4899", "#10B981", "#F59E0B"];
 const PaymentsMethodChart
  = () => {
     const [paymentData, setPaymentData] = useState([]);
-    const url = 'https://admin.orderly-app.com'; // Your API base URL
+    const url = 'https://api.orderly-app.com'; // Your API base URL
 
     useEffect(() => {
         const fetchOrderData = async () => {

@@ -13,7 +13,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [userRole, setUserRole] = useState("");
   const [securityToken, setSecurityToken] = useState(""); // Adăugat pentru security token
-  const url = "https://admin.orderly-app.com"; // Adresa API
+  const url = "https://api.orderly-app.com"; // Adresa API
   const navigate = useNavigate(); // Hook pentru navigare
   const [notification, setNotification] = useState(""); // State pentru notificări
 

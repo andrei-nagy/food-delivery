@@ -11,7 +11,7 @@ const CategoryDistributionChart = () => {
 	useEffect(() => {
 		const fetchOrderData = async () => {
 			try {
-				const response = await axios.get("https://admin.orderly-app.com/api/order/list");
+				const response = await axios.get("https://api.orderly-app.com/api/order/list");
 				if (response.data.success) {
 					const orders = response.data.data.filter(order => order.status === 'Delivered');
 

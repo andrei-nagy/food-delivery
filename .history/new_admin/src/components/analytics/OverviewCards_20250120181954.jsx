@@ -8,7 +8,7 @@ const OverviewCards = () => {
 	const [ordersCount, setOrdersCount] = useState(null);
 	const [ordersRevenue, setOrdersRevenue] = useState(null);
 
-	const url = 'https://admin.orderly-app.com'; // URL-ul API-ului tău
+	const url = 'https://api.orderly-app.com'; // URL-ul API-ului tău
 
 	useEffect(() => {
 		// Funcția pentru a prelua numărul total de utilizatori

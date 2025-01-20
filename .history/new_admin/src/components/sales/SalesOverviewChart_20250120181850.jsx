@@ -67,7 +67,7 @@ const customTooltip = ({ active, payload }) => {
 const SalesSectionOverviewChart = () => {
 	const [salesData, setSalesData] = useState([]); // State for sales data
 	const [selectedTimeRange, setSelectedTimeRange] = useState("This Month");
-	const url = 'https://admin.orderly-app.com'; // Your API base URL
+	const url = 'https://api.orderly-app.com'; // Your API base URL
 
 	// Function to filter sales data by the selected time range
 	const filterSalesDataByRange = (orders, range) => {

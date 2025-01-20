@@ -12,7 +12,7 @@ import MostPopularProductChart from "../components/overview/MostPopularProduct";
 
 const ProductsPage = () => {
     const [totalProducts, setTotalProducts] = useState(0); // Starea pentru totalProducts
-	const url = "https://admin.orderly-app.com0";
+	const url = "https://api.orderly-app.com0";
 
     useEffect(() => {
         const fetchProducts = async () => {

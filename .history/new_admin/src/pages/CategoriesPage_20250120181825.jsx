@@ -13,7 +13,7 @@ import CategoriesTable from "../components/products/CategoriesTable";
 
 const CategoriesPage = () => {
     const [totalProducts, setTotalProducts] = useState(0); // Starea pentru totalProducts
-	const url = "https://admin.orderly-app.com";
+	const url = "https://api.orderly-app.com";
 
     useEffect(() => {
         const fetchProducts = async () => {

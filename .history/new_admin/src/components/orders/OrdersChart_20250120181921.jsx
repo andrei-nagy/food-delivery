@@ -10,7 +10,7 @@ const OrdersActivityHeatmap = () => {
     const [dateRange, setDateRange] = useState(""); // For displaying the date range
     const [startDate, setStartDate] = useState(null); // State for start date
     const [endDate, setEndDate] = useState(null); // State for end date
-    const url = 'https://admin.orderly-app.com';
+    const url = 'https://api.orderly-app.com';
 
     // Initialize data for the current week
     useEffect(() => {

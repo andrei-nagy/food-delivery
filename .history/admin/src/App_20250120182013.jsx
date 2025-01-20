@@ -21,7 +21,7 @@ const App = () => {
     const [hasCustomization, setHasCustomization] = useState(false);  // Noua stare pentru personalizare
     const navigate = useNavigate();
     const location = useLocation(); 
-    const url = "https://admin.orderly-app.com";
+    const url = "https://api.orderly-app.com";
 
     useEffect(() => {
         const token = localStorage.getItem('authToken');

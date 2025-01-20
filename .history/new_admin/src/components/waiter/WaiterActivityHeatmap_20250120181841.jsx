@@ -10,7 +10,7 @@ const WaiterActivityHeatmap = () => {
     const [dateRange, setDateRange] = useState(""); // For displaying the date range
     const [startDate, setStartDate] = useState(null); // State for the start date
     const [endDate, setEndDate] = useState(null); // State for the end date
-    const url = 'https://admin.orderly-app.com';
+    const url = 'https://api.orderly-app.com';
 
     // Initialize dates to the current week
      // Initialize data for the current week
