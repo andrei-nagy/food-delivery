@@ -16,7 +16,7 @@ const placeOrder = async (req, res) => {
     // if (currentUrl.includes(wordToCheck)) {
     //     const frontend_url = "https://localhost:5173";
     // } else {
-    const frontend_url = "https://food-delivery-frontend-vruc.onrender.com";
+    const frontend_url = "https://demo.orderly-app.com";
     // }
 
 
@@ -94,7 +94,7 @@ const payOrder = async (req, res) => {
     // if (currentUrl.includes(wordToCheck)) {
     //     const frontend_url = "https://localhost:5173";
     // } else {
-    const frontend_url = "https://food-delivery-frontend-vruc.onrender.com";
+    const frontend_url = "https://demo.orderly-app.com";
     // }
 
 

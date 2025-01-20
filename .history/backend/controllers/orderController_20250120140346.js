@@ -16,11 +16,11 @@ const placeOrder = async (req, res) => {
     // if (currentUrl.includes(wordToCheck)) {
     //     const frontend_url = "https://localhost:5173";
     // } else {
-        const frontend_url = "https://food-delivery-frontend-vruc.onrender.com";
+    const frontend_url = "https://demo.orderly-app.com";
     // }
 
-    
-   
+
+
 
     try {
         let counter = await OrderCounter.findOne();
@@ -48,9 +48,9 @@ const placeOrder = async (req, res) => {
         })
 
         await newOrder.save();
-         // Actualizăm contorul pentru următoarea comandă
-    counter.counter += 1;
-    await counter.save();
+        // Actualizăm contorul pentru următoarea comandă
+        counter.counter += 1;
+        await counter.save();
 
         await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} })
 
@@ -60,7 +60,7 @@ const placeOrder = async (req, res) => {
                 product_data: {
                     name: 'Total Amount'
                 },
-                unit_amount: req.body.amount * 100 * 4.5 
+                unit_amount: req.body.amount * 100 * 4.5
             },
             quantity: 1
         }))
@@ -94,51 +94,31 @@ const payOrder = async (req, res) => {
     // if (currentUrl.includes(wordToCheck)) {
     //     const frontend_url = "https://localhost:5173";
     // } else {
-        const frontend_url = "https://food-delivery-frontend-vruc.onrender.com";
+    const frontend_url = "https://demo.orderly-app.com";
     // }
 
-    
-   
+
+
 
     try {
-        // let counter = await OrderCounter.findOne();
 
-        // Dacă nu există un document pentru contor, îl creăm
-        // if (!counter) {
-        //     counter = new OrderCounter({ counter: 1 });
-        //     await counter.save();
-        // }
+        const { orders, amount } = req.body; // Primește lista de comenzi și suma totală
 
-        // Incrementează contorul și setează orderNumber pentru comanda curentă
-        // const orderNumber = counter.counter;
-
-
-        // const newOrder = new orderModel({
-        //     userId: req.body.userId,
-        //     items: req.body.items,
-        //     amount: req.body.amount,
-        //     tableNo: req.body.tableNo,
-        //     userData: req.body.userData,
-        //     orderNumber: orderNumber,
-        //     paymentMethod: 'Online card',
-        //     specialInstructions: req.body.specialInstructions
-
-        // })
-
-        // await newOrder.save();
-         // Actualizăm contorul pentru următoarea comandă
-    // counter.counter += 1;
-    // await counter.save();
-
+        if (!orders || orders.length === 0) {
+            return res.status(400).json({ success: false, message: "No orders provided." });
+        }
         await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} })
+
+
 
         const line_items = req.body.items.map((item) => ({
             price_data: {
                 currency: "ron",
                 product_data: {
-                    name: 'Total Amount'
+                    name: `Total for orders: ${orders.join(", ")}`,
+
                 },
-                unit_amount: req.body.amount * 100 * 4.5 
+                unit_amount: req.body.amount * 100 * 4.5
             },
             quantity: 1
         }))
@@ -146,11 +126,16 @@ const payOrder = async (req, res) => {
         const session = await stripe.checkout.sessions.create({
             line_items: line_items,
             mode: "payment",
-            success_url: `${frontend_url}/verify?success=true&orderId=${newOrder._id}`,
-            cancel_url: `${frontend_url}/verify?success=false&orderId=${newOrder._id}`,
+            success_url: `${frontend_url}/verify?success=true&orderIds=${orders.join(",")}`,
+            cancel_url: `${frontend_url}/verify?success=false`,
         })
 
-
+        // Dacă plata are succes, actualizăm fiecare orderId
+  
+            for (const orderId of orders) {
+                await orderModel.findByIdAndUpdate(orderId, { payment: true, status: "Delivered" });
+            }
+        
         res.json({
             success: true,
             session_url: session.url
@@ -302,4 +287,4 @@ const updatePaymentStatus = async (req, res) => {
 };
 
 
-export { placeOrderCash, placeOrder, verifyOrder, userOrders, listOrders, updateStatus,updateOrderRating,getOrderRating, updatePaymentStatus, payOrder }
+export { placeOrderCash, placeOrder, verifyOrder, userOrders, listOrders, updateStatus, updateOrderRating, getOrderRating, updatePaymentStatus, payOrder }

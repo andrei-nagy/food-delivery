@@ -11,7 +11,7 @@ const StoreContextProvider = (props) => {
  const currentHost = window.location.hostname;
  const url = currentHost === "localhost" || currentHost === "127.0.0.1" ? 
      "http://localhost:4000" : 
-     "https://food-delivery-5mm6.onrender.com";
+     "https://demo.orderly-app.com";
 
     // const url = "https://food-delivery-5mm6.onrender.com";
     const [token, setToken] = useState("");
