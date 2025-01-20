@@ -12,7 +12,7 @@ import MostPopularProductChart from "../components/overview/MostPopularProduct";
 
 const OrdersPage = () => {
     const [orders, setOrders] = useState([]); // State to store orders
-    const url = "https://api.orderly-app.com0"; // URL-ul API-ului
+    const url = "https://api.orderly-app.com"; // URL-ul API-ului
 
     // Funcția pentru a prelua comenzile din API
     const fetchOrders = async () => {
