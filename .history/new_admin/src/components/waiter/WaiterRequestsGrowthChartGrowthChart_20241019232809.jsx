@@ -5,7 +5,7 @@ import axios from "axios"; // Nu uita să adaugi axios
 
 const WaiterRequestsGrowthChart = () => {
     const [userGrowthData, setUserGrowthData] = useState([]); // State pentru a stoca datele utilizatorilor
-    const url = 'https://admin.orderly-app.com'; // URL-ul API-ului tău
+    const url = 'http://localhost:4000'; // URL-ul API-ului tău
 
     const fetchUserGrowthData = async () => {
         try {

@@ -3,16 +3,14 @@ import { CheckCircle, Clock, DollarSign, ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
 
 import Header from "../components/common/Header";
-import StatCard from "../components/common/StatCard";
 import OrdersActivityHeatmap from "../components/orders/OrdersChart";
-import OrderDistribution from "../components/orders/OrderDistribution";
-import OrdersTable from "../components/orders/OrdersTable";
 import axios from "axios"; // Import axios to fetch orders
 import MostPopularProductChart from "../components/overview/MostPopularProduct";
+import OrdersHistoryTable from "../components/orders/OrdersHistory";
 
-const OrdersPage = () => {
+const OrdersHistoryPage = () => {
     const [orders, setOrders] = useState([]); // State to store orders
-    const url = "https://admin.orderly-app.com0"; // URL-ul API-ului
+    const url = "https://admin.orderly-app.comlocalhost:4000"; // URL-ul API-ului
 
     // Funcția pentru a prelua comenzile din API
     const fetchOrders = async () => {
@@ -43,7 +41,7 @@ const OrdersPage = () => {
 
     return (
         <div className='flex-1 relative z-10 overflow-auto'>
-            <Header title={"Orders"} />
+            <Header title={"Orders History"} />
 
             <main className='max-w-7xl mx-auto py-6 px-4 lg:px-8'>
                 <motion.div
@@ -52,7 +50,7 @@ const OrdersPage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1 }}
                 >
-                    <StatCard name='Total Orders' icon={ShoppingBag} value={totalOrders.toString()} color='#6366F1' />
+                    {/* <StatCard name='Total Orders' icon={ShoppingBag} value={totalOrders.toString()} color='#6366F1' />
                     <StatCard name='Pending Orders' icon={Clock} value={pendingOrders.toString()} color='#F59E0B' />
                     <StatCard
                         name='Completed Orders'
@@ -60,9 +58,9 @@ const OrdersPage = () => {
                         value={completedOrders.toString()}
                         color='#10B981'
                     />
-                    <StatCard name='Total Revenue' icon={DollarSign} value={`$${totalRevenue}`} color='#EF4444' />
+                    <StatCard name='Total Revenue' icon={DollarSign} value={`$${totalRevenue}`} color='#EF4444' /> */}
                 </motion.div>
-                <OrdersTable orders={orders} /> {/* Pass orders as a prop if needed */}
+                <OrdersHistoryTable orders={orders} /> {/* Pass orders as a prop if needed */}
                 <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8'>
                     <OrdersActivityHeatmap />
                     <MostPopularProductChart />
@@ -72,4 +70,4 @@ const OrdersPage = () => {
     );
 };
 
-export default OrdersPage;
+export default OrdersHistoryPage;

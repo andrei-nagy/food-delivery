@@ -8,9 +8,9 @@ import StatCard from "../components/common/StatCard";
 import WaiterRequestsGrowthChart from "../components/waiter/WaiterRequestsGrowthChartGrowthChart";
 import WaiterActivityHeatmap from "../components/waiter/WaiterActivityHeatmap";
 import WaiterActionsChart from "../components/waiter/WaiterActionsChart";
-import AccountsTable from "../components/accounts/Accounts";
+import WaiterTable from "../components/waiter/WaiterTable";
 
-const AccountsPage = () => {
+const WaiterPage = () => {
     const [userStats, setUserStats] = useState({
         totalUsers: 0,
         newUsersToday: 0,
@@ -18,27 +18,32 @@ const AccountsPage = () => {
     
     });
 
-    const url = 'https://admin.orderly-app.com';
+    const url = 'https://admin.orderly-app.com/localhost:4000';
 
     const fetchList = async () => {
         try {
-            const response = await axios.get(`${url}/admin/admins`);
+            const response = await axios.get(`${url}/api/waiterorders/listwaiterrequests`);
 
             if (response.data.success) {
                 const newList = response.data.data;
-                
+
                 // Calculăm statisticile
                 const totalUsers = newList.length; // Total cereri
-                const adminAccounts = newList.filter(item => item.userRole === 'Admin').length;
-                const waiterAccounts = newList.filter(item => item.userRole === 'Waiter').length;
+                const newUsersToday = newList.filter(item => {
+                    const createdDate = new Date(item.createdOn);
+                    const today = new Date();
+                    return createdDate.getDate() === today.getDate() &&
+                           createdDate.getMonth() === today.getMonth() &&
+                           createdDate.getFullYear() === today.getFullYear();
+                }).length; // Cereri de astăzi
 
                 const activeUsers = newList.filter(item => item.status === 'Completed').length; // Cereri completate
 
                 // Setăm statisticile
                 setUserStats({
                     totalUsers,
-                    adminAccounts,
-                    waiterAccounts,
+                    newUsersToday,
+                    activeUsers,
                     churnRate: "2.4%", // Păstrăm valoarea existentă pentru churn rate
                 });
             } else {
@@ -60,7 +65,7 @@ const AccountsPage = () => {
 
     return (
         <div className='flex-1 overflow-auto relative z-10'>
-            <Header title='Admin Panel Accounts' />
+            <Header title='Waiter Requests Overview' />
 
             <main className='max-w-7xl mx-auto py-6 px-4 lg:px-8'>
                 {/* STATS */}
@@ -71,35 +76,37 @@ const AccountsPage = () => {
                     transition={{ duration: 1 }}
                 >
                     <StatCard
-                        name='Total Accounts'
+                        name='Total Requests'
                         icon={UsersIcon}
-                        value={userStats.totalUsers}
+                        value={userStats.totalUsers.toLocaleString()}
                         color='#6366F1'
                     />
                     <StatCard 
-                        name='Admin Accounts' 
+                        name='New Requests Today' 
                         icon={UserPlus} 
-                        value={userStats.adminAccounts} 
+                        value={userStats.newUsersToday} 
                         color='#10B981' 
                     />
                     <StatCard
-                        name='Waiter Accounts'
+                        name='Completed Requests'
                         icon={UserCheck}
-                        value={userStats.waiterAccounts}
+                        value={userStats.activeUsers.toLocaleString()}
                         color='#F59E0B'
                     />
             
                 </motion.div>
 
-                <AccountsTable />
+                <WaiterTable />
 
                 {/* USER CHARTS */}
                 <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8'>
-                 
+                    <WaiterRequestsGrowthChart />
+                    <WaiterActivityHeatmap />
+                    <WaiterActionsChart />
                 </div>
             </main>
         </div>
     );
 };
 
-export default AccountsPage;
+export default WaiterPage;
