@@ -50,7 +50,7 @@ const addCustomization = async (req, res) => {
 
 // Actualizează personalizarea unui restaurant
 const updateCustomization = async (req, res) => {
-    const { id, restaurantName, primaryColor, secondaryColor, slogan, contactEmail, contactPhone, deleteAccountHours, securityToken, openHour, closeHour } = req.body;
+    const { id, restaurantName, primaryColor, secondaryColor, slogan, contactEmail, contactPhone, deleteAccountHours, securityToken/*, openHour, closeHour*/ } = req.body;
     const image = req.file ? req.file.filename : null;
     const openingHours = JSON.parse(req.body.openingHours);
 
@@ -68,8 +68,8 @@ const updateCustomization = async (req, res) => {
                 updatedAt: Date.now(),
                 deleteAccountHours,
                 securityToken,
-                openHour,
-                closeHour,
+                // openHour,
+                // closeHour,
                 openingHours
 
             },

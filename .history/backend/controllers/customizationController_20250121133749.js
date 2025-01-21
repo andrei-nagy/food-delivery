@@ -6,26 +6,32 @@ import mongoose from "mongoose";
 
 const addCustomization = async (req, res) => {
     // let image_filename = `${req.file.image}`
-    const { restaurantName, primaryColor, secondaryColor, slogan, contactEmail, contactPhone } = req.body;
+    const { restaurantName, primaryColor, secondaryColor, slogan, contactEmail, contactPhone, deleteAccountHours, securityToken, openHour, closeHour } = req.body;
     const image = req.file ? req.file.filename : null; // Obține numele fișierului din req.file
+    const openingHours = JSON.parse(req.body.openingHours);
 
-       // Verifică dacă restaurantId este valid
+    // Verifică dacă restaurantId este valid
     // if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
     //     return res.status(400).json({ success: false, message: 'Invalid restaurantId format.' });
     // }
     // console.log('Restaurant ID:', restaurantId);
-         // Cream o nouă personalizare
-        const newCustomization = new customizationModel({
-            // restaurantId: new mongoose.Types.ObjectId(),
-            restaurantName,
-            image,
-            primaryColor,
-            secondaryColor,
-            slogan,
-            contactEmail,
-            contactPhone,
-            updatedAt: Date.now(),
-        });
+    // Cream o nouă personalizare
+    const newCustomization = new customizationModel({
+        // restaurantId: new mongoose.Types.ObjectId(),
+        restaurantName,
+        image,
+        primaryColor,
+        secondaryColor,
+        slogan,
+        contactEmail,
+        contactPhone,
+        updatedAt: Date.now(),
+        deleteAccountHours,
+        securityToken,
+        openHour,
+        closeHour,
+        openingHours
+    });
     try {
         await newCustomization.save();
         res.json({
@@ -44,8 +50,9 @@ const addCustomization = async (req, res) => {
 
 // Actualizează personalizarea unui restaurant
 const updateCustomization = async (req, res) => {
-    const { id, restaurantName, primaryColor, secondaryColor, slogan, contactEmail, contactPhone } = req.body;
+    const { id, restaurantName, primaryColor, secondaryColor, slogan, contactEmail, contactPhone, deleteAccountHours, securityToken/*, openHour, closeHour*/ } = req.body;
     const image = req.file ? req.file.filename : null;
+    const openingHours = JSON.parse(req.body.openingHours);
 
     try {
         // Folosește findOneAndUpdate pentru a actualiza documentul existent
@@ -59,6 +66,12 @@ const updateCustomization = async (req, res) => {
                 contactEmail,
                 contactPhone,
                 updatedAt: Date.now(),
+                deleteAccountHours,
+                securityToken,
+                // openHour,
+                // closeHour,
+                openingHours
+
             },
             { new: true, upsert: true } // new: true returnează documentul actualizat, upsert: true creează un document dacă nu există
         );
@@ -100,4 +113,4 @@ const getCustomization = async (req, res) => {
     }
 };
 
-export {addCustomization, updateCustomization, getCustomization };
+export { addCustomization, updateCustomization, getCustomization };

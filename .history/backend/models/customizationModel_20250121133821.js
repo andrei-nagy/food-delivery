@@ -1,18 +1,18 @@
 import mongoose from "mongoose";
 
 const customizationSchema = new mongoose.Schema({
-    restaurantId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Restaurant', // Referință către un model de restaurant
-        required: false,
-        default: () => new mongoose.Types.ObjectId(), // Generăm un ObjectId implicit
-    },
+    // restaurantId: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'Restaurant', // Referință către un model de restaurant
+    //     required: false,
+    //     default: () => new mongoose.Types.ObjectId(), // Generăm un ObjectId implicit
+    // },
     restaurantName: {
         type: String,
         required: true,
         trim: true
     },
-    image: {type:String, required: true},
+    image: {type:String, required: false},
     primaryColor: {
         type: String,
         required: false, // Poți salva codul culorii primare
@@ -38,6 +38,28 @@ const customizationSchema = new mongoose.Schema({
     updatedAt: {
         type: Date,
         default: Date.now
+    },
+    deleteAccountHours: {
+        type: String,
+        default: '2',
+        required: true
+    }
+    ,
+    securityToken: {
+        type: String,
+        required: true
+    }
+    ,
+    openHour: {
+        type: String
+    }
+    ,
+    closeHour: {
+        type: String
+    }
+    ,
+    openingHours: {
+        type: Object, default: {}
     }
 });
 

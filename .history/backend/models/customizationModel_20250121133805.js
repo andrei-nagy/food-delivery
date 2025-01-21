@@ -49,7 +49,7 @@ const customizationSchema = new mongoose.Schema({
         type: String,
         required: true
     }
-    ,
+   /* ,
     openHour: {
         type: String,
         required: true
@@ -58,6 +58,10 @@ const customizationSchema = new mongoose.Schema({
     closeHour: {
         type: String,
         required: true
+    }
+    , */
+    openingHours: {
+        type: Object, default: {}
     }
 });
 
