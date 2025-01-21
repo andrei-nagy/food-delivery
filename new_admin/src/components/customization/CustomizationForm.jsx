@@ -153,7 +153,11 @@ const CustomizationPage = () => {
             const response = isExistingCustomization
                 ? await axios.put(`${url}/admin/personalization/update`, formData)
                 : await axios.post(`${url}/admin/personalization/add`, formData);
-
+            console.log(response)
+            toast.error(response)
+            alert(response);
+            alert(formData)
+            console.log(formData);
             if (response.data.success) {
                 setData({
                     image: '',

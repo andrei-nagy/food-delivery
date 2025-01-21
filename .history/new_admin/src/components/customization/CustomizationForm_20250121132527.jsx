@@ -58,6 +58,7 @@ const CustomizationPage = () => {
         try {
             const response = await axios.get(`${url}/admin/personalization/get`);
             if (response.data.success && response.data.data) {
+                console.log(response.data.data)
                 const customizationData = response.data.data;
                 setData(customizationData);
                 setIsExistingCustomization(true);
@@ -66,6 +67,26 @@ const CustomizationPage = () => {
                 if (customizationData.image) {
                     setImage(customizationData.image);
                 }
+                   // Verifică dacă există date pentru openingHours și actualizează schedule
+            if (customizationData.openingHours) {
+                // const parsedOpeningHours = JSON.parse(customizationData.openingHours);
+
+                setSchedule((prevSchedule) => ({
+                    ...prevSchedule,
+                    weekdays: {
+                        open: customizationData.openingHours.weekdays?.open || "",
+                        close: customizationData.openingHours.weekdays?.close || "",
+                    },
+                    saturday: {
+                        open: customizationData.openingHours.saturday?.open || "",
+                        close: customizationData.openingHours.saturday?.close || "",
+                    },
+                    sunday: {
+                        open: customizationData.openingHours.sunday?.open || "",
+                        close: customizationData.openingHours.sunday?.close || "",
+                    }
+                }));
+            }
             } else {
                 setIsExistingCustomization(false);
             }
@@ -132,7 +153,11 @@ const CustomizationPage = () => {
             const response = isExistingCustomization
                 ? await axios.put(`${url}/admin/personalization/update`, formData)
                 : await axios.post(`${url}/admin/personalization/add`, formData);
-
+            console.log(response)
+            toast.error(response)
+            alert(response);
+            alert(formData)
+            console.log(formData);
             if (response.data.success) {
                 setData({
                     image: '',
@@ -268,149 +293,6 @@ const CustomizationPage = () => {
                     </div>
 
 
-                    <div className='flex justify-between items-center mb-6 mt-6'>
-                        <h2 className='text-xl font-semibold text-gray-100'>Opening hours</h2>
-                    </div>
-                    <div className="grid md:grid-cols-2 md:gap-6">
-
-                    <div className="space-y-6">
-        {/* Luni - Vineri */}
-        <div className="flex items-center space-x-4">
-            <div className="flex-1 relative">
-                <label htmlFor="openHourWeekdays" className="block text-sm text-gray-600 dark:text-gray-200">
-                    Monday - Friday: Start Time (24h format)
-                </label>
-                <input
-                    type="time"
-                    name="open"
-                    value={schedule.weekdays.open}
-                    onChange={(e) => handleTimeChange(e, "weekdays")}
-                    className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    required
-                    step="600"
-                />
-                <button
-                    type="button"
-                    onClick={() => handleClearTime("weekdays", "open")}
-                    className="absolute right-2 top-8 text-gray-500 hover:text-gray-800 dark:hover:text-white"
-                >
-                    &#x2715;
-                </button>
-            </div>
-            <div className="flex-1 relative">
-                <label htmlFor="closeHourWeekdays" className="block text-sm text-gray-600 dark:text-gray-200">
-                    Monday - Friday: End Time (24h format)
-                </label>
-                <input
-                    type="time"
-                    name="close"
-                    value={schedule.weekdays.close}
-                    onChange={(e) => handleTimeChange(e, "weekdays")}
-                    className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    required
-                    step="600"
-                />
-                <button
-                    type="button"
-                    onClick={() => handleClearTime("weekdays", "close")}
-                    className="absolute right-2 top-8 text-gray-500 hover:text-gray-800 dark:hover:text-white"
-                >
-                    &#x2715;
-                </button>
-            </div>
-        </div>
-
-        {/* Sâmbătă */}
-        <div className="flex items-center space-x-4">
-            <div className="flex-1 relative">
-                <label htmlFor="openHourSaturday" className="block text-sm text-gray-600 dark:text-gray-200">
-                    Saturday: Start Time (24h format)
-                </label>
-                <input
-                    type="time"
-                    name="open"
-                    value={schedule.saturday.open}
-                    onChange={(e) => handleTimeChange(e, "saturday")}
-                    className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    step="600"
-                />
-                <button
-                    type="button"
-                    onClick={() => handleClearTime("saturday", "open")}
-                    className="absolute right-2 top-8 text-gray-500 hover:text-gray-800 dark:hover:text-white"
-                >
-                    &#x2715;
-                </button>
-            </div>
-            <div className="flex-1 relative">
-                <label htmlFor="closeHourSaturday" className="block text-sm text-gray-600 dark:text-gray-200">
-                    Saturday: End Time (24h format)
-                </label>
-                <input
-                    type="time"
-                    name="close"
-                    value={schedule.saturday.close}
-                    onChange={(e) => handleTimeChange(e, "saturday")}
-                    className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    step="600"
-                />
-                <button
-                    type="button"
-                    onClick={() => handleClearTime("saturday", "close")}
-                    className="absolute right-2 top-8 text-gray-500 hover:text-gray-800 dark:hover:text-white"
-                >
-                    &#x2715;
-                </button>
-            </div>
-        </div>
-
-        {/* Duminică */}
-        <div className="flex items-center space-x-4">
-            <div className="flex-1 relative">
-                <label htmlFor="openHourSunday" className="block text-sm text-gray-600 dark:text-gray-200">
-                    Sunday: Start Time (24h format)
-                </label>
-                <input
-                    type="time"
-                    name="open"
-                    value={schedule.sunday.open}
-                    onChange={(e) => handleTimeChange(e, "sunday")}
-                    className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    step="600"
-                />
-                <button
-                    type="button"
-                    onClick={() => handleClearTime("sunday", "open")}
-                    className="absolute right-2 top-8 text-gray-500 hover:text-gray-800 dark:hover:text-white"
-                >
-                    &#x2715;
-                </button>
-            </div>
-            <div className="flex-1 relative">
-                <label htmlFor="closeHourSunday" className="block text-sm text-gray-600 dark:text-gray-200">
-                    Sunday: End Time (24h format)
-                </label>
-                <input
-                    type="time"
-                    name="close"
-                    value={schedule.sunday.close}
-                    onChange={(e) => handleTimeChange(e, "sunday")}
-                    className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                    step="600"
-                />
-                <button
-                    type="button"
-                    onClick={() => handleClearTime("sunday", "close")}
-                    className="absolute right-2 top-8 text-gray-500 hover:text-gray-800 dark:hover:text-white"
-                >
-                    &#x2715;
-                </button>
-            </div>
-        </div>
-    </div>
-
-                    </div>
-
                     <div className="relative z-0 w-full mb-5 group">
                         <input
                             type="text"
@@ -421,7 +303,151 @@ const CustomizationPage = () => {
                             className="block py-2.5 px-0 w-full text-sm text-white bg-transparent border-0 border-b-2 border-gray-700 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
                         <label htmlFor="slogan" className="peer-focus:font-medium absolute text-sm text-gray-400 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Slogan</label>
                     </div>
-                    <button type="submit" className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    <div className='flex justify-between items-center mb-6 mt-6'>
+                        <h2 className='text-xl font-semibold text-gray-100'>Opening hours</h2>
+                    </div>
+                    <div className="grid md:grid-cols-1 md:gap-6">
+
+                        <div className="space-y-6">
+                            {/* Luni - Vineri */}
+                            <div className="flex items-center space-x-4">
+                                <div className="flex-1 relative">
+                                    <label htmlFor="openHourWeekdays" className="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
+                                        Monday - Friday: Start Time (24h format)
+                                    </label>
+                                    <input
+                                        type="time"
+                                        name="open"
+                                        value={schedule.weekdays.open}
+                                        onChange={(e) => handleTimeChange(e, "weekdays")}
+                                        className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                        required
+                                        step="600"
+                                    />
+                                    {/* <button
+                                        type="button"
+                                        onClick={() => handleClearTime("weekdays", "open")}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition duration-200 ease-in-out"
+                                    >
+                                        &#x2715;
+                                    </button> */}
+                                </div>
+
+                                <div className="flex-1 relative">
+                                    <label htmlFor="closeHourWeekdays" className="block text-sm text-gray-600 dark:text-gray-200">
+                                        Monday - Friday: End Time (24h format)
+                                    </label>
+                                    <input
+                                        type="time"
+                                        name="close"
+                                        value={schedule.weekdays.close}
+                                        onChange={(e) => handleTimeChange(e, "weekdays")}
+                                        className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                        required
+                                        step="600"
+                                    />
+                                    {/* <button
+                                        type="button"
+                                        onClick={() => handleClearTime("weekdays", "close")}
+                                        className="absolute right-2 top-8 text-gray-500 hover:text-gray-800 dark:hover:text-white"
+                                    >
+                                        &#x2715;
+                                    </button> */}
+                                </div>
+                            </div>
+
+                            {/* Sâmbătă */}
+                            <div className="flex items-center space-x-4">
+                                <div className="flex-1 relative">
+                                    <label htmlFor="openHourSaturday" className="block text-sm text-gray-600 dark:text-gray-200">
+                                        Saturday: Start Time (24h format)
+                                    </label>
+                                    <input
+                                        type="time"
+                                        name="open"
+                                        value={schedule.saturday.open}
+                                        onChange={(e) => handleTimeChange(e, "saturday")}
+                                        className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                        step="600"
+                                    />
+                                    {/* <button
+                                        type="button"
+                                        onClick={() => handleClearTime("saturday", "open")}
+                                        className="absolute right-2 top-8 text-gray-500 hover:text-gray-800 dark:hover:text-white"
+                                    >
+                                        &#x2715;
+                                    </button> */}
+                                </div>
+                                <div className="flex-1 relative">
+                                    <label htmlFor="closeHourSaturday" className="block text-sm text-gray-600 dark:text-gray-200">
+                                        Saturday: End Time (24h format)
+                                    </label>
+                                    <input
+                                        type="time"
+                                        name="close"
+                                        value={schedule.saturday.close}
+                                        onChange={(e) => handleTimeChange(e, "saturday")}
+                                        className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                        step="600"
+                                    />
+                                    {/* <button
+                                        type="button"
+                                        onClick={() => handleClearTime("saturday", "close")}
+                                        className="absolute right-2 top-8 text-gray-500 hover:text-gray-800 dark:hover:text-white"
+                                    >
+                                        &#x2715;
+                                    </button> */}
+                                </div>
+                            </div>
+
+                            {/* Duminică */}
+                            <div className="flex items-center space-x-4">
+                                <div className="flex-1 relative">
+                                    <label htmlFor="openHourSunday" className="block text-sm text-gray-600 dark:text-gray-200">
+                                        Sunday: Start Time (24h format)
+                                    </label>
+                                    <input
+                                        type="time"
+                                        name="open"
+                                        value={schedule.sunday.open}
+                                        onChange={(e) => handleTimeChange(e, "sunday")}
+                                        className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                        step="600"
+                                    />
+                                    {/* <button
+                                        type="button"
+                                        onClick={() => handleClearTime("sunday", "open")}
+                                        className="absolute right-2 top-8 text-gray-500 hover:text-gray-800 dark:hover:text-white"
+                                    >
+                                        &#x2715;
+                                    </button> */}
+                                </div>
+                                <div className="flex-1 relative">
+                                    <label htmlFor="closeHourSunday" className="block text-sm text-gray-600 dark:text-gray-200">
+                                        Sunday: End Time (24h format)
+                                    </label>
+                                    <input
+                                        type="time"
+                                        name="close"
+                                        value={schedule.sunday.close}
+                                        onChange={(e) => handleTimeChange(e, "sunday")}
+                                        className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                        step="600"
+                                    />
+                                    {/* <button
+                                        type="button"
+                                        onClick={() => handleClearTime("sunday", "close")}
+                                        className="absolute right-2 top-8 text-gray-500 hover:text-gray-800 dark:hover:text-white"
+                                    >
+                                        &#x2715;
+                                    </button> */}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <button type="submit" className="mt-10 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                         {isExistingCustomization ? 'Update Customization' : 'Add Customization'}
                     </button>
                 </form>

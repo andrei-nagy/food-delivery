@@ -17,11 +17,7 @@ const CustomizationPage = () => {
         contactEmail: '',
         contactPhone: '',
         securityToken: '',
-        openingHours: {
-            weekdays: { open: '', close: '' },
-            saturday: { open: '', close: '' },
-            sunday: { open: '', close: '' },
-        },
+        openingHours: '',
         deleteAccountHours: ''
     });
 
@@ -62,6 +58,7 @@ const CustomizationPage = () => {
         try {
             const response = await axios.get(`${url}/admin/personalization/get`);
             if (response.data.success && response.data.data) {
+                console.log(response.data.data)
                 const customizationData = response.data.data;
                 setData(customizationData);
                 setIsExistingCustomization(true);
@@ -70,6 +67,26 @@ const CustomizationPage = () => {
                 if (customizationData.image) {
                     setImage(customizationData.image);
                 }
+                   // Verifică dacă există date pentru openingHours și actualizează schedule
+            if (customizationData.openingHours) {
+                // const parsedOpeningHours = JSON.parse(customizationData.openingHours);
+
+                setSchedule((prevSchedule) => ({
+                    ...prevSchedule,
+                    weekdays: {
+                        open: customizationData.openingHours.weekdays?.open || "",
+                        close: customizationData.openingHours.weekdays?.close || "",
+                    },
+                    saturday: {
+                        open: customizationData.openingHours.saturday?.open || "",
+                        close: customizationData.openingHours.saturday?.close || "",
+                    },
+                    sunday: {
+                        open: customizationData.openingHours.sunday?.open || "",
+                        close: customizationData.openingHours.sunday?.close || "",
+                    }
+                }));
+            }
             } else {
                 setIsExistingCustomization(false);
             }
@@ -96,7 +113,6 @@ const CustomizationPage = () => {
             }
         }));
     };
-    
     const onImageChangeHandler = (event) => {
         const selectedFile = event.target.files[0];
         if (selectedFile && selectedFile.type.startsWith('image/')) {
@@ -137,7 +153,8 @@ const CustomizationPage = () => {
             const response = isExistingCustomization
                 ? await axios.put(`${url}/admin/personalization/update`, formData)
                 : await axios.post(`${url}/admin/personalization/add`, formData);
-
+            console.log(response)
+            toast.error(response)
             if (response.data.success) {
                 setData({
                     image: '',
@@ -298,7 +315,7 @@ const CustomizationPage = () => {
                                     <input
                                         type="time"
                                         name="open"
-                                        value={data.openingHours?.weekdays?.open || ""}
+                                        value={schedule.weekdays.open}
                                         onChange={(e) => handleTimeChange(e, "weekdays")}
                                         className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                         required
@@ -307,7 +324,7 @@ const CustomizationPage = () => {
                                     {/* <button
                                         type="button"
                                         onClick={() => handleClearTime("weekdays", "open")}
-                                        className="absolute right-3 top-65 transform -translate-y-1/2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition duration-200 ease-in-out"
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition duration-200 ease-in-out"
                                     >
                                         &#x2715;
                                     </button> */}
@@ -320,7 +337,7 @@ const CustomizationPage = () => {
                                     <input
                                         type="time"
                                         name="close"
-                                        value={data.openingHours?.weekdays?.close  || ""}
+                                        value={schedule.weekdays.close}
                                         onChange={(e) => handleTimeChange(e, "weekdays")}
                                         className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                         required
@@ -329,7 +346,7 @@ const CustomizationPage = () => {
                                     {/* <button
                                         type="button"
                                         onClick={() => handleClearTime("weekdays", "close")}
-                                        className="absolute right-3 top-65 transform -translate-y-1/2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition duration-200 ease-in-out"
+                                        className="absolute right-2 top-8 text-gray-500 hover:text-gray-800 dark:hover:text-white"
                                     >
                                         &#x2715;
                                     </button> */}
@@ -345,7 +362,7 @@ const CustomizationPage = () => {
                                     <input
                                         type="time"
                                         name="open"
-                                        value={data.openingHours?.weekdays?.open  || ""}
+                                        value={schedule.saturday.open}
                                         onChange={(e) => handleTimeChange(e, "saturday")}
                                         className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                         step="600"
@@ -353,7 +370,7 @@ const CustomizationPage = () => {
                                     {/* <button
                                         type="button"
                                         onClick={() => handleClearTime("saturday", "open")}
-                                        className="absolute right-3 top-65 transform -translate-y-1/2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition duration-200 ease-in-out"
+                                        className="absolute right-2 top-8 text-gray-500 hover:text-gray-800 dark:hover:text-white"
                                     >
                                         &#x2715;
                                     </button> */}
@@ -365,7 +382,7 @@ const CustomizationPage = () => {
                                     <input
                                         type="time"
                                         name="close"
-                                        value={data.openingHours?.weekdays?.close  || ""}
+                                        value={schedule.saturday.close}
                                         onChange={(e) => handleTimeChange(e, "saturday")}
                                         className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                         step="600"
@@ -389,7 +406,7 @@ const CustomizationPage = () => {
                                     <input
                                         type="time"
                                         name="open"
-                                        value={data.openingHours?.weekdays?.open  || ""}
+                                        value={schedule.sunday.open}
                                         onChange={(e) => handleTimeChange(e, "sunday")}
                                         className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                         step="600"
@@ -409,7 +426,7 @@ const CustomizationPage = () => {
                                     <input
                                         type="time"
                                         name="close"
-                                        value={data.openingHours?.weekdays?.close  || ""}
+                                        value={schedule.sunday.close}
                                         onChange={(e) => handleTimeChange(e, "sunday")}
                                         className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                         step="600"
