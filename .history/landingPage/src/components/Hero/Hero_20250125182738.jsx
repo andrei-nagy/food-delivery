@@ -4,7 +4,7 @@ import "./Hero.css";
 import arrow from "../../assets/arrow.svg";
 import abstractShapes from "../../assets/abstract-shapes.png";
 import phoneMockup from "../../assets/iphone_portrait1.png";
-import mockup from "../../assets/mockup.png";
+import mockup from "../../assets/mockup_view1.png";
 
 const Hero = () => {
   return (
@@ -22,10 +22,10 @@ const Hero = () => {
           <span className="hero__heading-gradient">powerful management</span>
           insights
         </h1>
-        <p className="text-reg hero__subheading font-weight-600">
-          Elevate customer experience and optimize management with Orderly
+        <p className="text-reg hero__subheading font-weight-500 second-text-subtitle">
+          Elevate customer experience and optimize management with   <span className="hero__heading-gradient">Orderly</span>
         </p>
-        <div className="hero__input-container">
+        {/* <div className="hero__input-container">
           <input
             className="hero__input"
             type="email"
@@ -35,7 +35,7 @@ const Hero = () => {
             Sign up
             <img className="hero__arrow" src={arrow} alt="arrow" />
           </button>
-        </div>
+        </div> */}
       </motion.div>
 
       <div className="hero__column">

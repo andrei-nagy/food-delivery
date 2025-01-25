@@ -1,36 +1,36 @@
 import React from "react";
 import { motion } from "framer-motion";
 import "./HowItWorks.css";
-import mockup from "../../assets/mockup.png"; // Exemplu de imagine
-import thank_you from "../../assets/thank_you.png";
-import place_order from "../../assets/place_order.png";
-import call_action from "../../assets/call_action.png";
-import explore_menu from "../../assets/explore_menu.png";
+import mockup from "../../assets/mobile_view1.png"; // Exemplu de imagine
+import thank_you from "../../assets/mobile_view5.png";
+import place_order from "../../assets/mobile_view3.png";
+import call_action from "../../assets/mobile_view6.png";
+import explore_menu from "../../assets/mobile_view2.png";
 
 const roadmapSteps = [
     {
-        title: "Scan QR Code",
+        title: "1. Scan QR Code",
         description: "Start by scanning the QR code at the table.",
         image: mockup,
     },
     {
-        title: "Explore Menu",
+        title: "2. Explore Menu",
         description: "Browse the menu with images and detailed descriptions.",
         image: explore_menu,
     },
     {
-        title: "Place Order",
+        title: "3. Place Order",
         description: "Choose your favorite dishes and place an order.",
         image: place_order,
     },
     {
-        title: "Enjoy Your Meal",
-        description: "Sit back, relax, and enjoy your meal as it’s prepared.",
+        title: "4. Tap to pay.",
+        description: "Relax, enjoy your meal, and pay whenever you're ready. And remember, a tip goes a long way!",
         image: thank_you,
     },
     {
-        title: "Call an action",
-        description: "Sit back, relax, and enjoy your meal as it’s prepared.",
+        title: "5. Take an action",
+        description: "Do you need a waiter or just want to pay? You can do all that quickly through the Actions menu.",
         image: call_action,
     }
 ];

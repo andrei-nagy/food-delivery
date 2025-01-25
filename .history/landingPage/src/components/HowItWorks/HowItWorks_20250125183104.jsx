@@ -1,29 +1,38 @@
 import React from "react";
 import { motion } from "framer-motion";
 import "./HowItWorks.css";
-import mockup from "../../assets/mockup.png"; // Exemplu de imagine
+import mockup from "../../assets/mobile_view1.png"; // Exemplu de imagine
+import thank_you from "../../assets/mobile_view5.png";
+import place_order from "../../assets/mobile_view3.png";
+import call_action from "../../assets/mobile_view6.png";
+import explore_menu from "../../assets/mobile_view2.png";
 
 const roadmapSteps = [
     {
-        title: "Scan QR Code",
+        title: "1. Scan QR Code",
         description: "Start by scanning the QR code at the table.",
         image: mockup,
     },
     {
-        title: "Explore Menu",
+        title: "2. Explore Menu",
         description: "Browse the menu with images and detailed descriptions.",
-        image: mockup,
+        image: explore_menu,
     },
     {
-        title: "Place Order",
+        title: "3. Place Order",
         description: "Choose your favorite dishes and place an order.",
-        image: mockup,
+        image: place_order,
     },
     {
-        title: "Enjoy Your Meal",
-        description: "Sit back, relax, and enjoy your meal as it’s prepared.",
-        image: mockup,
+        title: "4. Tap to pay.",
+        description: "Sit back, relax, and pay your meal whenever you want. Don't forget to leave a tips.",
+        image: thank_you,
     },
+    {
+        title: "5. Take an action",
+        description: "Do you need a waiter or just want to pay? You can do all that quickly through the Actions menu.",
+        image: call_action,
+    }
 ];
 
 const HowItWorks = () => {
@@ -61,11 +70,11 @@ const HowItWorks = () => {
         <motion.section
             className="roadmap"
             initial="hidden"
-            animate="visible"
+            whileInView="visible"  // Apare când secțiunea intră în vizibilitate
+            viewport={{ once: true }} // Animația se va declanșa doar o dată
             variants={sectionVariants}
             id="howitworks"
         >
-
             <div className="roadmap__heading-container">
                 <h2 className="h2 roadmap__heading">
                     Your Journey with{" "}
@@ -79,21 +88,29 @@ const HowItWorks = () => {
             <div className="roadmap__steps-container">
                 {roadmapSteps.map((step, i) => (
                     <React.Fragment key={i}>
+                        {/* Step Component */}
                         <motion.div
                             className="roadmap__step"
                             custom={i}
                             variants={stepVariants}
+                            initial="hidden"
+                            whileInView="visible"
+                            viewport={{ once: true, amount: 0.5 }} // începe când 50% din element este vizibil
                         >
                             <p className="text-large roadmap__step-title">{step.title}</p>
                             <img className="roadmap__step-image" src={step.image} alt={step.title} />
-                            <p className="text-reg roadmap__step-description">{step.description}</p>
+                            <p className="text-reg roadmap__step-description font-weight-600">{step.description}</p>
                         </motion.div>
 
+                        {/* Arrow between steps */}
                         {i < roadmapSteps.length - 1 && (
                             <motion.div
                                 className="roadmap__arrow"
-                                custom={i}
+                                custom={i} // aplică indexul pentru a seta întârzierea fiecărei săgeți
                                 variants={arrowVariants}
+                                initial="hidden"
+                                whileInView="visible"
+                                viewport={{ once: true, amount: 0.5 }}
                             >
                                 <svg
                                     width="24"

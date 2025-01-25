@@ -4,7 +4,7 @@ import "./Hero.css";
 import arrow from "../../assets/arrow.svg";
 import abstractShapes from "../../assets/abstract-shapes.png";
 import phoneMockup from "../../assets/iphone_portrait1.png";
-import mockup from "../../assets/mockup.png";
+import mockup from "../../assets/mobile_view1.png";
 
 const Hero = () => {
   return (
