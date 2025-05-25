@@ -1,0 +1,45 @@
+.category-menu {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    max-width: 100%;
+    padding-bottom: 8px; /* spațiu pentru scrollbar */
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: #ccc transparent;
+  }
+  
+  /* Ascunde scrollbar în Chrome, Safari, Opera, dar lasă scrollabil */
+  .category-menu::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  .category-menu::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .category-menu::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 3px;
+  }
+  
+  /* Linkuri */
+  .category-menu a {
+    white-space: nowrap; /* să nu se rupă pe mai multe linii */
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 5px;
+    flex-shrink: 0; /* să nu se micșoreze mai mult de atât */
+    transition: background-color 0.3s;
+  }
+  
+  .category-menu a:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .category-menu a.active {
+    font-weight: 700;
+    border-bottom: 2px solid #000;
+  }
+  

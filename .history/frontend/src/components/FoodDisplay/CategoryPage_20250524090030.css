@@ -1,0 +1,111 @@
+.category-menu {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    max-width: 100%;
+    padding-bottom: 8px;
+    -ms-overflow-style: none;  /* IE și Edge */
+    scrollbar-width: none;     /* Firefox */
+    scroll-behavior: smooth;
+  }
+  
+  .category-menu::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+  
+  /* Linkuri */
+  .category-menu a {
+    white-space: nowrap;
+    text-decoration: none;
+    color: #333;
+    font-weight: 400; /* default: 400 pentru toate */
+    padding: 5px 10px;
+    border-radius: 5px;
+    flex-shrink: 0;
+    transition: background-color 0.3s, font-weight 0.3s;
+    
+  }
+  
+  .food-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .category-menu a.active {
+    font-weight: 700; /* doar activul este bold */
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.modal-close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #333;
+}
+
+.quantity-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.quantity-selector button {
+    background-color: #eee;
+    border: none;
+    padding: 5px 10px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+textarea {
+    width: 100%;
+    min-height: 60px;
+    resize: vertical;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.add-to-order-button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.add-to-order-button:hover {
+    background-color: #218838;
+}

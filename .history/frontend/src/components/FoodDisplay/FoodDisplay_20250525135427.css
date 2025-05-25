@@ -1,0 +1,140 @@
+.food-display {
+    margin-top: 30px;
+    animation: fadeIn 3s;
+}
+
+.food-display h2 {
+    font-size: max(2vw, 24px);
+    font-weight: 600;
+}
+
+.food-display-list {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 20px;
+    padding-bottom: 10px;
+    scroll-behavior: smooth;
+
+    /* Ascunde scrollbarul - cross-browser */
+    scrollbar-width: none;           /* Firefox */
+    -ms-overflow-style: none;        /* IE & Edge */
+}
+
+.food-display-list::-webkit-scrollbar {
+    display: none;                   /* Chrome, Safari, Opera */
+}
+
+.food-display-list::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+    display: none;
+}
+
+.food-display-list::-webkit-scrollbar-track {
+    background-color: transparent;
+    display: none;
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 5px;
+    margin-top: 20px;
+    margin-bottom: 5px;
+}
+.category-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+.view-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #000;
+    font-weight: 400;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.view-more:hover {
+    color: #333;
+}
+
+.arrow-icon {
+    transition: transform 0.3s ease;
+    font-size: 13px;
+    position: relative;
+    top: 1px;
+}
+
+.view-more:hover .arrow-icon {
+    transform: translateX(4px); /* deplasare spre dreapta la hover */
+}
+.arrow-icon.auto-bounce {
+    animation: bounceRight 2.5s ease-in-out infinite;
+}
+
+@keyframes bounceRight {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(5px);
+    }
+}
+
+.best-sellers-section {
+    margin-top: 40px;
+    /* background: #fff8ec; */
+    padding: 20px;
+    border-radius: 16px;
+    /* box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08); */
+    animation: fadeIn 2s;
+}
+
+.best-sellers-slider {
+    overflow: visible !important;
+    padding: 10px 0;
+  }
+  
+  .best-sellers-slider .slick-list {
+    overflow: visible !important;
+  }
+.best-seller-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-radius: 12px;
+    /* background-color: #fff3d4; */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin: 0 8px;
+}
+
+/* .best-seller-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+} */
+
+/* 
+.food-display h3 {
+    font-size: 1.6rem;
+    margin-top: 40px;
+    margin-bottom: 15px;
+    color: #333;
+    text-align: center;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 10px 0;
+    border-bottom: 3px solid #6c757d;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #f7f7f7;
+    border-radius: 15px;
+    border: 2px solid #e2e2e2;
+} */

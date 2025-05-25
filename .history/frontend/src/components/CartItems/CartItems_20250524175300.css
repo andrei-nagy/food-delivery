@@ -1,0 +1,32 @@
+.cart-item-wrapper {
+    transition: height 0.3s ease, margin 0.3s ease, padding 0.3s ease;
+    overflow: hidden;
+  }
+  .cart-swipe-background {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #ff4d4f;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: 20px;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.1s ease-out;
+    z-index: 0;
+  }
+  
+  .cart-total-order {
+    position: relative;
+    background: white;
+    transition: transform 0.2s ease-out;
+    will-change: transform;
+    z-index: 1;
+  }
+  
