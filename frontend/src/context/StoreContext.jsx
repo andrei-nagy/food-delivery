@@ -5,11 +5,19 @@ export const StoreContext = createContext(null);
 const StoreContextProvider = (props) => {
 
     const [cartItems, setCartItems] = useState({});
+<<<<<<< HEAD
     // Determine the base URL based on the environment
     const currentHost = window.location.hostname;
     const url = currentHost === "localhost" || currentHost === "127.0.0.1" ? 
         "http://localhost:4000" : 
         "https://api.orderly-app.com";
+=======
+ // Determine the base URL based on the environment
+ const currentHost = window.location.hostname;
+ const url = currentHost === "localhost" || currentHost === "127.0.0.1" ? 
+     "http://localhost:4000" : 
+     "https://api.orderly-app.com";
+>>>>>>> 7101929d92fe8f6f8a143b0509640e9c72b62912
 
     const [token, setToken] = useState("");
     const [food_list, setFoodList] = useState([]);

@@ -46,7 +46,7 @@ const AdminCustomizationPage = ({ url }) => {
         setErrorMessage('');
 
         try {
-            await axios.post(`https://food-delivery-5mm6.onrender.com/api/admin/personalization/add`, customizationData); // Folosește ruta de adăugare
+            await axios.post(`https://api.orderly-app.com/api/admin/personalization/add`, customizationData); // Folosește ruta de adăugare
             setSuccessMessage('Customization added successfully.');
         } catch (error) {
             console.error('Error adding customization:', error);
