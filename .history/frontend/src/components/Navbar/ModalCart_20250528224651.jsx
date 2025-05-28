@@ -34,14 +34,12 @@ const ModalCart = ({ show, onClose, cartItems, food_list, checkoutHandler }) => 
     handleSwipe.currentX = e.touches[0].clientX;
   };
 
-  const handleTouchEnd = (itemId, e) => {
-  const deltaX = handleSwipe.startX - handleSwipe.currentX;
-  const elementWidth = e.target.offsetWidth;  // sau alt mod de a ajunge la container
-
-  if (deltaX > elementWidth * 0.5) {  // 50% din lățimea elementului
-    removeFromCart(itemId);
-  }
-};
+  const handleTouchEnd = (itemId) => {
+    const deltaX = handleSwipe.startX - handleSwipe.currentX;
+    if (deltaX > handleSwipe.threshold) {
+      removeFromCart(itemId); // swipe stânga => ștergere
+    }
+  };
 
   const fetchOrders = async () => {
     try {
