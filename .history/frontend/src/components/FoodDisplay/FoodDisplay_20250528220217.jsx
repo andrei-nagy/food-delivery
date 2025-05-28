@@ -71,8 +71,7 @@ const FoodDisplay = ({ category }) => {
                         {bestSellers.map((item, index) => (
                             <div key={index} className="best-seller-item">
                                 <FoodItem
-                                    key={item._id}
-                                    id={item._id}
+                     
                                     {...item}
                                     openModal={(food) => {
                                         setSelectedFood(food);
@@ -99,8 +98,7 @@ const FoodDisplay = ({ category }) => {
                                 <div className="food-display-list">
                                     {groupedFood[cat].map((item, index) => (
                                         <FoodItem
-                                            key={item._id}
-                                    id={item._id}
+                                            key={index}
                                             {...item}
                                             openModal={(food) => {
                                                 setSelectedFood(food);
