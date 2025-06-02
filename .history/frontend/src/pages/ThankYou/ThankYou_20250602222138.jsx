@@ -6,7 +6,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios'; // Import axios pentru a face cereri HTTP
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 
 const ThankYou = () => {
 
@@ -68,51 +67,49 @@ const ThankYou = () => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.4 }}
-    >
-      <div className="thank-you-container">
-        {/* <h1>🎉 Thank you! 🎉</h1><br /> */}
-        <h1>{t('thank_you_title')}</h1><br />
-        <p>{t('order_placed')}</p><br />
-        <p>
-          {t('order_placed_description_first')}
-        </p><br />
-        <p>
-          {t('order_placed_description_2')}
-        </p>
-        <br />
-        <p>Bon appétit! 🍽️</p><br />
+       <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.4 }}
+                >
+    <div className="thank-you-container">
+      {/* <h1>🎉 Thank you! 🎉</h1><br /> */}
+      <h1>{t('thank_you_title')}</h1><br />
+      <p>{t('order_placed')}</p><br />
+      <p>
+        {t('order_placed_description_first')}
+      </p><br/>
+      <p>
+        {t('order_placed_description_2')}
+      </p>
+      <br />
+      <p>Bon appétit! 🍽️</p><br />
 
-        {/* Secțiunea de evaluare */}
-        <div className="rate-application">
-          <p><strong>{t('rate_out_application')}</strong></p><br />
-          <div className="star-rating">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <span
-                key={star}
-                className={rating >= star ? "star filled" : "star"}
-                onClick={() => handleRating(star)}
-                style={{ cursor: rating > 0 ? "default" : "pointer" }} // Blochează ratingul dacă există deja
-              >
-                ★
-              </span>
-            ))}
-          </div>
-          {rating > 0 && <p>You have already rated this order: {rating} stars</p>}
-        </div><br />
-
-        {/* Butoane pentru navigare */}
-        <div className="thank-you-buttons">
-          <Link to={`/category/All`} >
-            <button>{t('view_our_menu')}</button>
-          </Link>
-          {/* <button onClick={() => navigate('/myorders')}>Track my order status</button> */}
+      {/* Secțiunea de evaluare */}
+      <div className="rate-application">
+        <p><strong>{t('rate_out_application')}</strong></p><br />
+        <div className="star-rating">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <span
+              key={star}
+              className={rating >= star ? "star filled" : "star"}
+              onClick={() => handleRating(star)}
+              style={{ cursor: rating > 0 ? "default" : "pointer" }} // Blochează ratingul dacă există deja
+            >
+              ★
+            </span>
+          ))}
         </div>
+        {rating > 0 && <p>You have already rated this order: {rating} stars</p>}
+      </div><br />
+
+      {/* Butoane pentru navigare */}
+      <div className="thank-you-buttons">
+        <button onClick={() => navigate('/')}>{t('view_our_menu')}</button>
+        {/* <button onClick={() => navigate('/myorders')}>Track my order status</button> */}
       </div>
+    </div>
     </motion.div>
   );
 };

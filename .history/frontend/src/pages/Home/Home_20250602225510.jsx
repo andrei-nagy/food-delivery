@@ -1,22 +1,23 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Home.css';
 import Header from '../../components/Header/Header';
 import ExploreMenu from '../../components/ExploreMenu/ExploreMenu';
 import FoodDisplay from '../../components/FoodDisplay/FoodDisplay';
-import Loader from '../../components/Loader/Loader';
+import Loader from '../../components/Loader/Loader'; // 👈 import nou
 import { motion } from 'framer-motion';
-import { StoreContext } from '../../context/StoreContext';
 
 const Home = () => {
   const [category, setCategory] = useState("All");
   const [isLoading, setIsLoading] = useState(true);
-  const { foodCategory_list } = useContext(StoreContext);
 
+  // Simulăm un "load"
   useEffect(() => {
-    if (foodCategory_list.length > 0) {
-      setIsLoading(false);
-    }
-  }, [foodCategory_list]);
+    const timer = setTimeout(() => {
+      setIsLoading(false); // după 1 sec, loaderul dispare
+    }, 2000); // poți ajusta la cât simți că e nevoie
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <motion.div

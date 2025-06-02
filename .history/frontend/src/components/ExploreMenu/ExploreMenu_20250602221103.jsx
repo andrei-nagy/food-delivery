@@ -3,7 +3,6 @@ import './ExploreMenu.css';
 import { StoreContext } from '../../context/StoreContext';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 
 const ExploreMenu = ({ category, setCategory }) => {
     const { foodCategory_list, url } = useContext(StoreContext);
@@ -26,27 +25,21 @@ const ExploreMenu = ({ category, setCategory }) => {
         }
     };
 
-    // useEffect(() => {
-        // const updateProgressBar = () => {
-        //     const { scrollLeft, scrollWidth, clientWidth } = menuListRef.current;
-        //     const scrollableWidth = scrollWidth - clientWidth;
-        //     const progressPercentage = (scrollLeft / scrollableWidth) * 100;
-        //     setProgress(progressPercentage);
-        // };
+    useEffect(() => {
+        const updateProgressBar = () => {
+            const { scrollLeft, scrollWidth, clientWidth } = menuListRef.current;
+            const scrollableWidth = scrollWidth - clientWidth;
+            const progressPercentage = (scrollLeft / scrollableWidth) * 100;
+            setProgress(progressPercentage);
+        };
 
-        // const menuList = menuListRef.current;
-        // menuList.addEventListener('scroll', updateProgressBar);
+        const menuList = menuListRef.current;
+        menuList.addEventListener('scroll', updateProgressBar);
 
-        // return () => menuList.removeEventListener('scroll', updateProgressBar);
-    // }, []);
+        return () => menuList.removeEventListener('scroll', updateProgressBar);
+    }, []);
 
     return (
-          <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.4 }}
-                >
         <div className='explore-menu' id='explore-menu'>
             <h2>{t('explore_menu')}</h2>
             <p className='explore-menu-text'>
@@ -56,30 +49,31 @@ const ExploreMenu = ({ category, setCategory }) => {
                 <button className="navigation-arrow left" onClick={() => scrollMenu('left')}>{'<'}</button>
                 <div className="explore-menu-list" ref={menuListRef}>
                     {activeCategories.map((item, index) => (
-                        <Link
-                            to={`/category/${encodeURIComponent(item.menu_name)}`}
-                            key={index}
-                            className='explore-menu-list-item'
-                            onClick={() => setCategory(prev => prev === item.menu_name ? "All" : item.menu_name)}
-                        >
-                            <img
-                                className={category === item.menu_name ? "active" : ""}
-                                src={`${url}/images/${item.image}`}
-                                alt={item.menu_name}
-                            />
-                            <p className={category === item.menu_name ? "active" : ""}>{item.menu_name}</p>
-                         
-                        </Link>
+                       <Link
+  to={`/category/${encodeURIComponent(item.menu_name)}`}
+  key={index}
+  className='explore-menu-list-item'
+  onClick={() => setCategory(prev => prev === item.menu_name ? "All" : item.menu_name)}
+>
+  <img
+    className={category === item.menu_name ? "active" : ""}
+    src={`${url}/images/${item.image}`}
+    alt={item.menu_name}
+  />
+  <p className={category === item.menu_name ? "active" : ""}>{item.menu_name}</p>
+  <span className="view-more">
+    View more <FaArrowRight className="arrow-icon auto-bounce" />
+  </span>
+</Link>
                     ))}
                 </div>
                 <button className="navigation-arrow right" onClick={() => scrollMenu('right')}>{'>'}</button>
             </div>
-            {/* <div className="progress-bar">
+            <div className="progress-bar">
                 <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
-            </div> */}
-           
+            </div>
+            {/* <hr /> */}
         </div>
-        </motion.div>
     );
 }
 

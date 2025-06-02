@@ -35,20 +35,20 @@
     background-color: transparent;
     display: none;
 }
+.category-subtitle {
+  font-size: 0.75rem; /* sau 12px */
+  color: #777; /* gri subtil */
+  margin-top: 2px;
+  margin-bottom: 6px;
+}
 .category-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start; /* schimbat din center */
+    align-items: center;
     padding: 10px 5px;
     margin-top: 20px;
     margin-bottom: 5px;
 }
-
-.category-header-left {
-    display: flex;
-    flex-direction: column;
-}
-
 .category-title {
     font-size: 1.4rem;
     font-weight: 600;
@@ -56,17 +56,10 @@
     text-transform: uppercase;
     letter-spacing: 2px;
 }
-
-.category-subtitle {
-    font-size: 0.75rem;
-    color: #666;
-    margin-top: 3px;
-}
-
 .view-more {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
     color: #000;
     font-weight: 400;
     text-decoration: none;

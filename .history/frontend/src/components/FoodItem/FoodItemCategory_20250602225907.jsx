@@ -65,7 +65,7 @@ const FoodItemCategory = ({ id, name, price, description, image, isBestSeller, i
     };
 
     const nutritionDummyText = `
-Ingrediente: Apă, făină de grâu, ulei vegetal, sare, zahăr, conservanți (E202).
+Ingrediente: Apă, făină de grâu, ulei vegetal, sare, zahăr, conservanți (E20222222).
 Calorii: 250 kcal per porție.
 Grăsimi: 10g (din care saturate 2g).
 Carbohidrați: 30g (din care zaharuri 5g).

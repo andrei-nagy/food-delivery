@@ -3,7 +3,6 @@ import './ExploreMenu.css';
 import { StoreContext } from '../../context/StoreContext';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 
 const ExploreMenu = ({ category, setCategory }) => {
     const { foodCategory_list, url } = useContext(StoreContext);
@@ -26,27 +25,21 @@ const ExploreMenu = ({ category, setCategory }) => {
         }
     };
 
-    // useEffect(() => {
-        // const updateProgressBar = () => {
-        //     const { scrollLeft, scrollWidth, clientWidth } = menuListRef.current;
-        //     const scrollableWidth = scrollWidth - clientWidth;
-        //     const progressPercentage = (scrollLeft / scrollableWidth) * 100;
-        //     setProgress(progressPercentage);
-        // };
+    useEffect(() => {
+        const updateProgressBar = () => {
+            const { scrollLeft, scrollWidth, clientWidth } = menuListRef.current;
+            const scrollableWidth = scrollWidth - clientWidth;
+            const progressPercentage = (scrollLeft / scrollableWidth) * 100;
+            setProgress(progressPercentage);
+        };
 
-        // const menuList = menuListRef.current;
-        // menuList.addEventListener('scroll', updateProgressBar);
+        const menuList = menuListRef.current;
+        menuList.addEventListener('scroll', updateProgressBar);
 
-        // return () => menuList.removeEventListener('scroll', updateProgressBar);
-    // }, []);
+        return () => menuList.removeEventListener('scroll', updateProgressBar);
+    }, []);
 
     return (
-          <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.4 }}
-                >
         <div className='explore-menu' id='explore-menu'>
             <h2>{t('explore_menu')}</h2>
             <p className='explore-menu-text'>
@@ -74,12 +67,11 @@ const ExploreMenu = ({ category, setCategory }) => {
                 </div>
                 <button className="navigation-arrow right" onClick={() => scrollMenu('right')}>{'>'}</button>
             </div>
-            {/* <div className="progress-bar">
+            <div className="progress-bar">
                 <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
-            </div> */}
-           
+            </div>
+            {/* <hr /> */}
         </div>
-        </motion.div>
     );
 }
 

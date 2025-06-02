@@ -71,7 +71,7 @@ const FoodDisplay = ({ category }) => {
                         <div className="category-header">
                             <div className="category-header-left">
                                 <span className="category-title">Best Sellers</span>
-                                <small className="category-subtitle">Must-try favorites 🔥</small>
+                                <small className="category-subtitle">Most popular among customers</small>
                             </div>
 
                             <Link to={`/category/All`} className="view-more">

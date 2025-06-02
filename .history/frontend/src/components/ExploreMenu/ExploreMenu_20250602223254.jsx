@@ -26,19 +26,19 @@ const ExploreMenu = ({ category, setCategory }) => {
         }
     };
 
-    // useEffect(() => {
-        // const updateProgressBar = () => {
-        //     const { scrollLeft, scrollWidth, clientWidth } = menuListRef.current;
-        //     const scrollableWidth = scrollWidth - clientWidth;
-        //     const progressPercentage = (scrollLeft / scrollableWidth) * 100;
-        //     setProgress(progressPercentage);
-        // };
+    useEffect(() => {
+        const updateProgressBar = () => {
+            const { scrollLeft, scrollWidth, clientWidth } = menuListRef.current;
+            const scrollableWidth = scrollWidth - clientWidth;
+            const progressPercentage = (scrollLeft / scrollableWidth) * 100;
+            setProgress(progressPercentage);
+        };
 
-        // const menuList = menuListRef.current;
-        // menuList.addEventListener('scroll', updateProgressBar);
+        const menuList = menuListRef.current;
+        menuList.addEventListener('scroll', updateProgressBar);
 
-        // return () => menuList.removeEventListener('scroll', updateProgressBar);
-    // }, []);
+        return () => menuList.removeEventListener('scroll', updateProgressBar);
+    }, []);
 
     return (
           <motion.div

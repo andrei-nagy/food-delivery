@@ -26,19 +26,19 @@ const ExploreMenu = ({ category, setCategory }) => {
         }
     };
 
-    // useEffect(() => {
-        // const updateProgressBar = () => {
-        //     const { scrollLeft, scrollWidth, clientWidth } = menuListRef.current;
-        //     const scrollableWidth = scrollWidth - clientWidth;
-        //     const progressPercentage = (scrollLeft / scrollableWidth) * 100;
-        //     setProgress(progressPercentage);
-        // };
+    useEffect(() => {
+        const updateProgressBar = () => {
+            const { scrollLeft, scrollWidth, clientWidth } = menuListRef.current;
+            const scrollableWidth = scrollWidth - clientWidth;
+            const progressPercentage = (scrollLeft / scrollableWidth) * 100;
+            setProgress(progressPercentage);
+        };
 
-        // const menuList = menuListRef.current;
-        // menuList.addEventListener('scroll', updateProgressBar);
+        const menuList = menuListRef.current;
+        menuList.addEventListener('scroll', updateProgressBar);
 
-        // return () => menuList.removeEventListener('scroll', updateProgressBar);
-    // }, []);
+        return () => menuList.removeEventListener('scroll', updateProgressBar);
+    }, []);
 
     return (
           <motion.div
@@ -74,9 +74,9 @@ const ExploreMenu = ({ category, setCategory }) => {
                 </div>
                 <button className="navigation-arrow right" onClick={() => scrollMenu('right')}>{'>'}</button>
             </div>
-            {/* <div className="progress-bar">
+            <div className="progress-bar">
                 <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
-            </div> */}
+            </div>
            
         </div>
         </motion.div>
