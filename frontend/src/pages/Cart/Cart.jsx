@@ -64,6 +64,7 @@ const Cart = () => {
   };
 
   const placeOrder = async (event) => {
+    console.log("Token:", token)
     event.preventDefault();
 
     if (!paymentMethod) {
