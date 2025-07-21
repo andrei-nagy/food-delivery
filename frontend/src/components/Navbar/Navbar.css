@@ -84,7 +84,7 @@
   align-items: center;
   padding: 5px 8px;
   background-color: transparent;
-  border: 1px solid #e2e2e2;
+  /* border: 1px solid #e2e2e2; */
   font-size: 14px;
   border-radius: 5px;
 }
@@ -96,7 +96,7 @@
 
 .language-selected .flag {
   width: 20px;
-  height: 15px;
+  height: 20px;
   margin-right: 5px;
 }
 .language-selected img {
@@ -114,7 +114,20 @@ object-fit: cover;
   flex-direction: column;
   padding: 5px 0;
 }
+.arrow_down_language {
+  width: 12px;
+  margin: 5px;
+  transition: transform 0.3s ease;
+}
 
+.arrow_down_language.rotated {
+  transform: rotate(180deg);
+}
+
+/* pentru dropdown - e deja bine, dar poți adăuga efect mai lin (dacă nu foloseai framer-motion) */
+.dropdown-options {
+  overflow: hidden;
+}
 .dropdown-option {
   display: flex;
   align-items: center;
@@ -129,7 +142,7 @@ object-fit: cover;
 
 .dropdown-option .flag {
   width: 20px;
-  height: 15px;
+  height: 20px;
   margin-right: 5px;
   object-fit: cover;
 }
@@ -271,7 +284,7 @@ object-fit: cover;
     align-items: center;
     padding: 3px 4px;
     background-color: transparent;
-    border: 1px solid #e2e2e2;
+    /* border: 1px solid #e2e2e2; */
     font-size: 14px;
     border-radius: 5px;
   }

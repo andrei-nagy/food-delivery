@@ -14,7 +14,7 @@ i18n
     backend: {
       loadPath: '/locales/{{lng}}/translation.json', // Calea către fișierele JSON
     },
-    debug: true, // Activează debug-ul pentru dezvoltare
+    debug: false, // Activează debug-ul pentru dezvoltare
   });
 
 export default i18n;

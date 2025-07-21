@@ -15,7 +15,3 @@ export const assets ={
 }
 
 export const url = 'https://api.orderly-app.com'
-<<<<<<< HEAD
-
-=======
->>>>>>> 7101929d92fe8f6f8a143b0509640e9c72b62912

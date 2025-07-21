@@ -83,7 +83,6 @@ const CartItem = ({
       ref={itemRef}
       style={{ position: 'relative', overflow: 'hidden' }}
     >
-      {/* Fundalul roșu - doar pentru itemul curent, poziționat absolut */}
       <div
         className="cart-swipe-background"
         style={{
@@ -110,7 +109,6 @@ const CartItem = ({
         Removed
       </div>
 
-      {/* Conținutul item-ului, care se mută la swipe */}
       <div
         className="cart-total-order"
         style={{

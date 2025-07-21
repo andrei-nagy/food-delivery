@@ -50,7 +50,7 @@ const StoreContextProvider = (props) => {
             ...prev,
             [itemId]: newQuantity,
         }));
-    console.log("Adding to cart:", itemId, "Quantity:", newQuantity);
+    // console.log("Adding to cart:", itemId, "Quantity:", newQuantity);
 
         if (token) {
             try {
@@ -203,9 +203,9 @@ const StoreContextProvider = (props) => {
             if (savedCart) {
                 try {
                     setCartItems(JSON.parse(savedCart));
-                    console.log("Loaded cart from localStorage");
+                    // console.log("Loaded cart from localStorage");
                 } catch {
-                    console.warn("Failed to parse cart from localStorage");
+                    // console.warn("Failed to parse cart from localStorage");
                 }
             }
         }

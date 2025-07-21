@@ -1,23 +1,24 @@
-import React, { useState, useEffect, useContext } from 'react';
-import Navbar from './components/Navbar/Navbar';
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import Home from './pages/Home/Home';
-import Cart from './pages/Cart/Cart';
-import PlaceOrder from './pages/PlaceOrder/PlaceOrder';
-import LoginPopup from './components/LoginPopup/LoginPopup';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import Verify from './pages/Verify/Verify';
-import MyOrders from './pages/MyOrders/MyOrders';
-import ThankYou from './pages/ThankYou/ThankYou';
-import Loading from './components/Loading/Loading';
-import CheckUser from './components/CheckUser/CheckUser';
-import Welcome from './components/Welcome/Welcome';
-import { StoreContext } from './context/StoreContext';
-import axios from 'axios';
-import './i18n'; // Asigură-te că i18n este inițializat înainte de aplicație
-import CategoryPage from './components/FoodDisplay/CategoryPage';
-import { AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useContext } from "react";
+import Navbar from "./components/Navbar/Navbar";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import Home from "./pages/Home/Home";
+import Cart from "./pages/Cart/Cart";
+import PlaceOrder from "./pages/PlaceOrder/PlaceOrder";
+import LoginPopup from "./components/LoginPopup/LoginPopup";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Verify from "./pages/Verify/Verify";
+import MyOrders from "./pages/MyOrders/MyOrders";
+import ThankYou from "./pages/ThankYou/ThankYou";
+import Loading from "./components/Loading/Loading";
+import CheckUser from "./components/CheckUser/CheckUser";
+import Welcome from "./components/Welcome/Welcome";
+import { StoreContext } from "./context/StoreContext";
+import axios from "axios";
+import "./i18n"; // Asigură-te că i18n este inițializat înainte de aplicație
+import CategoryPage from "./components/FoodDisplay/CategoryPage";
+import { AnimatePresence } from "framer-motion";
+import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
 
 const App = () => {
   const { url } = useContext(StoreContext);
@@ -25,7 +26,7 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const isWelcomePage = location.pathname === '/welcome';
+  const isWelcomePage = location.pathname === "/welcome";
 
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
@@ -43,62 +44,67 @@ const App = () => {
   // Funcție pentru a verifica dacă utilizatorul este activ
   const checkUserStatus = async () => {
     if (!userId || !token) {
-        console.log("Lipsesc token sau userId. Nu verificăm starea utilizatorului.");
-        return; // Nu continuăm dacă token sau userId nu există
+      console.log(
+        "Lipsesc token sau userId. Nu verificăm starea utilizatorului."
+      );
+      return; // Nu continuăm dacă token sau userId nu există
     }
 
     try {
-        // Facem request pentru a verifica starea utilizatorului
-        const response = await axios.post(`${url}/api/user/check-status`, {}, {
-            headers: { userId },
-        });
-
-        const { isActive, tokenExpiry } = response.data;
-
-
-        // Verificăm dacă utilizatorul este inactiv sau dacă token-ul a expirat
-        const now = new Date();
-        if (isActive === false || new Date(tokenExpiry) < now) {
-          // console.log({
-          //   active: isActive === false,
-          //   isActive: isActive,
-          //   tokenExpiry: new Date(tokenExpiry) < now,
-          //   now: now,
-          //   expiry: new Date(tokenExpiry)
-          // })
-            logout();
+      // Facem request pentru a verifica starea utilizatorului
+      const response = await axios.post(
+        `${url}/api/user/check-status`,
+        {},
+        {
+          headers: { userId },
         }
-    } catch (error) {
-        console.error("Eroare la verificarea stării utilizatorului:", error.response?.data || error.message);
-    }
-};
+      );
 
+      const { isActive, tokenExpiry } = response.data;
+
+      // Verificăm dacă utilizatorul este inactiv sau dacă token-ul a expirat
+      const now = new Date();
+      if (isActive === false || new Date(tokenExpiry) < now) {
+        // console.log({
+        //   active: isActive === false,
+        //   isActive: isActive,
+        //   tokenExpiry: new Date(tokenExpiry) < now,
+        //   now: now,
+        //   expiry: new Date(tokenExpiry)
+        // })
+        logout();
+      }
+    } catch (error) {
+      console.error(
+        "Eroare la verificarea stării utilizatorului:",
+        error.response?.data || error.message
+      );
+    }
+  };
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const table = searchParams.get('table');
-    if (location.pathname === '/register' && table) {
+    const table = searchParams.get("table");
+    if (location.pathname === "/register" && table) {
       setLoading(true);
       const timer = setTimeout(() => {
         setLoading(false);
       }, 60000); // 60 de secunde
       if (!tableNumber) {
-        localStorage.setItem('tableNumber', table);
+        localStorage.setItem("tableNumber", table);
       }
       // Curățăm timer-ul la demontarea componentei
       return () => clearTimeout(timer);
-
-     
     } else {
       setLoading(false);
 
       // if (!token || !userId || !tableNumber) {
-        checkUserStatus();
-        // console.log({
-        //   toke: token,
-        //   user: userId,
-        //   table: tableNumber
-        // })
+      checkUserStatus();
+      // console.log({
+      //   toke: token,
+      //   user: userId,
+      //   table: tableNumber
+      // })
       // }
     }
 
@@ -142,9 +148,14 @@ const App = () => {
     // } else {
     //   setLoading(false);
     // }
-  }, [token, userId, tableNumber, location.pathname, location.search, navigate]);
-
-
+  }, [
+    token,
+    userId,
+    tableNumber,
+    location.pathname,
+    location.search,
+    navigate,
+  ]);
 
   return (
     <>
@@ -154,29 +165,31 @@ const App = () => {
           {showLogin ? <LoginPopup setShowLogin={setShowLogin} /> : null}
           <div className="app">
             <ToastContainer />
+            <ScrollToTop />
             <Navbar setShowLogin={setShowLogin} isWelcomePage={isWelcomePage} />
-              <AnimatePresence mode="wait">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/order" element={<PlaceOrder />} />
-              <Route path="/verify" element={<Verify />} />
-              <Route path="/myorders" element={<MyOrders />} />
-              <Route path="/login" element={<LoginPopup />} />
-              <Route path="/register" element={<LoginPopup />} />
-              <Route path="/thank-you" element={<ThankYou />} />
-              <Route path="/validate" element={<CheckUser />} />
-              <Route path="/welcome" element={<Welcome />} />
-              <Route path="/category/:categoryName" element={<CategoryPage />} />
-
-            </Routes>
+            <AnimatePresence mode="wait">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/order" element={<PlaceOrder />} />
+                <Route path="/verify" element={<Verify />} />
+                <Route path="/myorders" element={<MyOrders />} />
+                <Route path="/login" element={<LoginPopup />} />
+                <Route path="/register" element={<LoginPopup />} />
+                <Route path="/thank-you" element={<ThankYou />} />
+                <Route path="/validate" element={<CheckUser />} />
+                <Route path="/welcome" element={<Welcome />} />
+                <Route
+                  path="/category/:categoryName"
+                  element={<CategoryPage />}
+                />
+              </Routes>
             </AnimatePresence>
           </div>
         </>
       )}
     </>
   );
-
 };
 
 export default App;

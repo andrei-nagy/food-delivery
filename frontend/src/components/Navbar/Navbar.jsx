@@ -8,6 +8,7 @@ import WaiterModalCart from './WaiterModal';
 import ModalMyOrders from './ModalMyOrders';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from "framer-motion";
 
 
 const Navbar = ({ setShowLogin }) => {
@@ -53,10 +54,10 @@ const Navbar = ({ setShowLogin }) => {
         setTotalProducts(total); // Stocăm totalul în starea totalProducts
       } else {
         // Logăm structura invalidă
-        console.error("Invalid data structure:", response.data);
+        // console.error("Invalid data structure:", response.data);
       }
     } catch (error) {
-      console.error("Error fetching orders", error);
+      // console.error("Error fetching orders", error);
     }
   };
 
@@ -167,41 +168,63 @@ const Navbar = ({ setShowLogin }) => {
             </ul>
           </div>
         }
-        <div className="language-switcher">
+       <div className="language-switcher">
+  <div className="language-dropdown" onClick={toggleDropdown}>
+    <span className="language-selected">
+      {i18n.language === "ro" ? (
+        <>
+          <img src={assets.roFlag} alt="RO" className="flag" />
+          RO
+        </>
+      ) : (
+        <>
+          <img src={assets.usaFlag} alt="EN" className="flag" />
+          EN
+        </>
+      )}
 
-          <div className="language-dropdown" onClick={toggleDropdown}>
-            <span className="language-selected">
+      <img
+        className={`arrow_down_language ${isDropdownOpen ? "rotated" : ""}`}
+        src={assets.arrow_down}
+        alt="arrow"
+      />
+    </span>
 
-
-              {i18n.language === 'ro' ? (
-                <>
-                  <img src={assets.roFlag} alt="RO" className="flag" />
-                  RO
-                </>
-              ) : (
-                <>
-                  <img src={assets.usaFlag} alt="EN" className="flag" />
-                  EN
-                </>
-              )}
-              <img className='arrow_down_language' src={assets.arrow_down}></img>
-            </span>
-
-            {/* Dropdown-ul cu opțiuni */}
-            {isDropdownOpen && (
-              <div className="dropdown-options">
-                <div className="dropdown-option" onClick={() => { changeLanguage('ro'); toggleDropdown(); }}>
-                  <img src={assets.roFlag} alt="RO" className="flag" />
-                  RO
-                </div>
-                <div className="dropdown-option" onClick={() => { changeLanguage('en'); toggleDropdown(); }}>
-                  <img src={assets.usaFlag} alt="EN" className="flag" />
-                  EN
-                </div>
-              </div>
-            )}
+    {/* Animated dropdown */}
+    <AnimatePresence>
+      {isDropdownOpen && (
+        <motion.div
+          className="dropdown-options"
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -5 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div
+            className="dropdown-option"
+            onClick={() => {
+              changeLanguage("ro");
+              toggleDropdown();
+            }}
+          >
+            <img src={assets.roFlag} alt="RO" className="flag" />
+            RO
           </div>
-        </div>
+          <div
+            className="dropdown-option"
+            onClick={() => {
+              changeLanguage("en");
+              toggleDropdown();
+            }}
+          >
+            <img src={assets.usaFlag} alt="EN" className="flag" />
+            EN
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </div>
+</div>
       </div>
       {!isWelcomePage && (
 

@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 
 const CategoryPage = () => {
     const { categoryName } = useParams();
-    const { food_list, addToCart } = useContext(StoreContext);
+    const { food_list, addToCart,getTotalCartAmount,cartItems } = useContext(StoreContext);
     const navigate = useNavigate();
     const activeCategoryRef = useRef(null);
     const menuContainerRef = useRef(null);
@@ -19,6 +19,12 @@ const CategoryPage = () => {
     const [specialInstructions, setSpecialInstructions] = useState("");
     const [selectedQuantity, setSelectedQuantity] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
+    const [shouldRender, setShouldRender] = useState(false);
+const [isVisible, setIsVisible] = useState(false);
+const [lastScrollY, setLastScrollY] = useState(window.scrollY);
+const [lastCartChange, setLastCartChange] = useState(Date.now());
+
+  const cartItemCount = Object.values(cartItems).reduce((a, b) => a + b, 0);
 
     const openModal = (food) => {
         setSelectedFood(food);
@@ -33,6 +39,51 @@ const CategoryPage = () => {
     };
 
 
+useEffect(() => {
+  if (cartItemCount > 0) {
+    setShouldRender(true);
+    setIsVisible(true);
+    setLastCartChange(Date.now());
+
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+    }, 4000); // dispare după 4 secunde
+
+    return () => clearTimeout(timer);
+  } else {
+    setShouldRender(false);
+  }
+}, [cartItemCount]);
+useEffect(() => {
+  const handleScroll = () => {
+    const currentScrollY = window.scrollY;
+
+    if (currentScrollY < lastScrollY) {
+      // Scroll UP → arată butonul
+      if (cartItemCount > 0) {
+        setIsVisible(true);
+      }
+    } else if (currentScrollY > lastScrollY) {
+      // Scroll DOWN → ascunde butonul
+      setIsVisible(false);
+    }
+
+    setLastScrollY(currentScrollY);
+  };
+
+  window.addEventListener("scroll", handleScroll);
+  return () => window.removeEventListener("scroll", handleScroll);
+}, [lastScrollY, cartItemCount]);
+
+useEffect(() => {
+  if (cartItemCount > 0 && !isModalOpen) {
+    setShouldRender(true);
+    setTimeout(() => setIsVisible(true), 10); 
+  } else {
+    setIsVisible(false);
+    setTimeout(() => setShouldRender(false), 200); 
+  }
+}, [cartItemCount, isModalOpen]);
     useEffect(() => {
         const uniqueCategories = ['All', ...new Set(food_list.map(item => item.category))];
         setCategories(uniqueCategories);
@@ -146,6 +197,24 @@ const CategoryPage = () => {
 
 
             </div>
+            {shouldRender && (
+  <div
+    className={`floating-checkout-home ${isVisible ? "visible" : ""}`}
+    onClick={() => {
+      navigate("/cart");
+      window.scrollTo(0, 0);
+    }}
+  >
+    <div className="floating-checkout-left column">
+      <span className="floating-checkout-count">{cartItemCount}</span>
+      <span className="floating-checkout-cta">View Order</span>
+      <span className="floating-checkout-total">
+        {getTotalCartAmount().toFixed(2)} €
+      </span>
+    </div>
+  </div>
+)}
+
         </motion.div>
     );
 };

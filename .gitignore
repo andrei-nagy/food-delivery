@@ -33,5 +33,5 @@ build/
 .history/**
 
 # Uploads / temp
-uploads/
+
 tmp/
