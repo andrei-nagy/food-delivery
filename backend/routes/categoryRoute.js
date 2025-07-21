@@ -16,19 +16,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 
 
-categoryRouter.post(
-  "/addcategory",
-  (req, res, next) => {
-    upload.single("image")(req, res, function(err) {
-      if (err) {
-        console.error("Multer error:", err);
-        return res.status(500).json({ success: false, message: "Upload failed", error: err.message });
-      }
-      next();
-    });
-  },
-  addCategory
-);
+categoryRouter.post("/addcategory", upload.single("image"), addCategory)
 categoryRouter.get('/listcategory', listFoodCategory);
 categoryRouter.post('/removecategory', removeFoodCategory)
 categoryRouter.post("/update", upload.single("image"), updateCategory);

@@ -43,33 +43,54 @@ const CategoriesTable = () => {
     //     setData(data => ({ ...data, [name]: value }));
     // };
 
-    const handleAddCategory = async (event) => {
-        event.preventDefault();
+   const handleAddCategory = async (event) => {
+    event.preventDefault();
 
-        const formData = new FormData();
-        formData.append("menu_name", updatedCategory.menu_name);
-        formData.append("description", updatedCategory.description);
+    console.log("🌟 handleAddCategory called");
+    console.log("Current updatedCategory:", updatedCategory);
+    console.log("Selected image:", image);
+
+    const formData = new FormData();
+    formData.append("menu_name", updatedCategory.menu_name);
+    formData.append("description", updatedCategory.description);
+    formData.append("isActive", updatedCategory.isActive);
+    if (image) {
         formData.append("image", image);
-        formData.append("isActive", updatedCategory.isActive);
-
-        try {
-            const response = await axios.post(`${url}/api/categories/addcategory`, formData);
-            if (response.data.success) {
-
-                setImage(null);
-                toast.success(response.data.message, { theme: "dark" });
-                fetchCategories(); // Reîncarcă produsele după adăugare
-                setIsModalOpen(false); // Închide modalul
-                setUpdatedCategory({ name: "", description: "", price: "", category: "" }); // Resetează formularul
-            } else {
-
-                toast.error(response.data.message, { theme: "dark" });
-            }
-        } catch (error) {
-            console.error("Error adding product", error);
-            toast.error("Error adding product", { theme: "dark" });
-        }
     }
+
+    // Log FormData keys and values for debugging
+    for (const pair of formData.entries()) {
+        console.log(`${pair[0]}:`, pair[1]);
+    }
+
+    try {
+        const response = await axios.post(`${url}/api/categories/addcategory`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        console.log("Response from addcategory:", response.data);
+
+        if (response.data.success) {
+            setImage(null);
+            toast.success(response.data.message, { theme: "dark" });
+            fetchCategories();
+            setIsModalOpen(false);
+            setUpdatedCategory({ menu_name: "", description: "", isActive: "", image: null });
+        } else {
+            toast.error(response.data.message, { theme: "dark" });
+        }
+    } catch (error) {
+        console.error("Error adding product:", error);
+        if (error.response) {
+            console.error("Response data:", error.response.data);
+            console.error("Response status:", error.response.status);
+            console.error("Response headers:", error.response.headers);
+        }
+        toast.error("Error adding product", { theme: "dark" });
+    }
+};
+
 
     const removeFoodCategory = async (categoryId) => {
         const response = await axios.post(`${url}/api/categories/removecategory`, { id: categoryId })

@@ -120,6 +120,8 @@ const Cart = () => {
         });
         localStorage.setItem("isReloadNeeded", "true");
       } else {
+          console.log('Response from place-cash:', response.data);
+
         alert("Error placing order.");
       }
     }
