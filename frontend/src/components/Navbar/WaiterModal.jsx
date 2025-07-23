@@ -83,6 +83,10 @@ const WaiterModalCart = ({ show, onClose }) => {
             <span className="icon">&#x2753;</span> {/* Iconă de ajutor */}
             {t('need_help')}
           </button>
+          <button type="button" className="action-btn need-help" onClick={() => handleActionClick('Live chat')}>
+            <span className="icon">&#x2753;</span> {/* Iconă de ajutor */}
+            {t('need_help')}
+          </button>
           {token ?  <button type="button" className="action-btn need-help" onClick={logout}>
           <span className="icon">&#x1F6AA;</span> {/* Iconă de ajutor */}
             {t('logout')}
