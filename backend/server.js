@@ -18,7 +18,7 @@ import validateAuthRouter from "./routes/validateAuthRoute.js"
 const app = express()
 const port = process.env.PORT || 4000
 
-const allowedOrigins = ['https://demo.orderly-app.com', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176', 'http://localhost:5177ß'];
+const allowedOrigins = ['https://demo.orderly-app.com','https://admin.orderly-app.com', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176', 'http://localhost:5177'];
 
 // middleware
 app.use(express.json())
