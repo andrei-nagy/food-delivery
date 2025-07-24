@@ -1,70 +1,80 @@
+// server.js
 import express from "express"
 import cors from "cors"
 import { connectDB } from "./config/db.js"
 import foodRouter from "./routes/foodRoute.js"
 import userRouter from "./routes/userRoute.js"
 import cartRouter from "./routes/cartRoute.js"
-import "dotenv/config"
 import orderRouter from "./routes/orderRoute.js"
 import categoryRouter from "./routes/categoryRoute.js"
 import waiterRouter from "./routes/waiterRoute.js"
-import cron from 'node-cron'
-import { deactivateExpiredUsers } from "./controllers/userController.js"
 import adminRouter from "./routes/adminRoute.js"
 import customizationRoute from "./routes/customizationRoute.js"
 import validateAuthRouter from "./routes/validateAuthRoute.js"
+import { deactivateExpiredUsers } from "./controllers/userController.js"
+import cron from "node-cron"
+import "dotenv/config"
 
-//app config
 const app = express()
 const port = process.env.PORT || 4000
 
-const allowedOrigins = ['https://demo.orderly-app.com','https://admin.orderly-app.com', 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176', 'http://localhost:5177'];
+const allowedOrigins = [
+  'https://demo.orderly-app.com',
+  'https://admin.orderly-app.com',
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://localhost:5175',
+  'http://localhost:5176',
+  'http://localhost:5177'
+]
 
-// middleware
+// Middleware
 app.use(express.json())
 
 app.use(cors({
-  origin: function(origin, callback){
-    // permit cererile fara origin (ex: curl)
-    if(!origin) return callback(null, true)
-    if(allowedOrigins.indexOf(origin) === -1){
-      const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true)
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = `CORS policy does not allow access from: ${origin}`
       return callback(new Error(msg), false)
     }
     return callback(null, true)
   },
-  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }))
 
-// raspunde la OPTIONS preflight
 app.options('*', cors())
 
-//db connection
+// DB Connection
 connectDB()
 
-//Function for delete old users at every 10 minutes
+// Cron Job: dezactivează utilizatorii inactivi la fiecare 10 minute
 cron.schedule('*/10 * * * *', async () => {
-    console.log('Verificare utilizatori cu token-uri expirate...')
-    await deactivateExpiredUsers()
+  console.log('Verificare utilizatori cu token-uri expirate...')
+  await deactivateExpiredUsers()
 })
 
-//api endpoints
+// API Endpoints
 app.use("/api/food", foodRouter)
-app.use("/images", express.static('uploads'))
 app.use("/api/user", userRouter)
 app.use("/api/cart", cartRouter)
 app.use("/api/order", orderRouter)
 app.use("/api/categories", categoryRouter)
 app.use("/api/waiterorders", waiterRouter)
-app.use('/admin', adminRouter)
-app.use('/admin/personalization', customizationRoute)
-app.use('/api', validateAuthRouter)
+app.use("/admin", adminRouter)
+app.use("/admin/personalization", customizationRoute)
+app.use("/api", validateAuthRouter)
 
+// Static files (ex: imagini produse)
+app.use("/images", express.static("uploads"))
+
+// Health check
 app.get("/", (req, res) => {
-    res.send("API Working")
+  res.send("API Working")
 })
 
+// Start server
 app.listen(port, '0.0.0.0', () => {
-    console.log(`Server Started on http://0.0.0.0:${port}`)
+  console.log(`Server started on http://0.0.0.0:${port}`)
 })
