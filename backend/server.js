@@ -13,7 +13,9 @@ import customizationRoute from "./routes/customizationRoute.js"
 import validateAuthRouter from "./routes/validateAuthRoute.js"
 import { deactivateExpiredUsers } from "./controllers/userController.js"
 import cron from "node-cron"
-import "dotenv/config"
+import dotenv from "dotenv"
+
+dotenv.config() // Load .env before anything else
 
 const app = express()
 const port = process.env.PORT || 4000
@@ -31,27 +33,29 @@ const allowedOrigins = [
 // Middleware
 app.use(express.json())
 
-app.use(cors({
+// CORS Config
+const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin) return callback(null, true)
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = `CORS policy does not allow access from: ${origin}`
-      return callback(new Error(msg), false)
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true)
+    } else {
+      console.log(`❌ CORS blocked request from: ${origin}`)
+      return callback(new Error('Not allowed by CORS'), false)
     }
-    return callback(null, true)
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
-}))
+}
 
-app.options('*', cors())
+app.use(cors(corsOptions))
+app.options('*', cors(corsOptions)) // Also applies to preflight requests
 
 // DB Connection
 connectDB()
 
-// Cron Job: dezactivează utilizatorii inactivi la fiecare 10 minute
+// Cron Job
 cron.schedule('*/10 * * * *', async () => {
-  console.log('Verificare utilizatori cu token-uri expirate...')
+  console.log('🕓 Verificare utilizatori cu token-uri expirate...')
   await deactivateExpiredUsers()
 })
 
@@ -66,15 +70,15 @@ app.use("/admin", adminRouter)
 app.use("/admin/personalization", customizationRoute)
 app.use("/api", validateAuthRouter)
 
-// Static files (ex: imagini produse)
+// Static files
 app.use("/images", express.static("uploads"))
 
-// Health check
+// Health Check
 app.get("/", (req, res) => {
   res.send("API Working")
 })
 
-// Start server
+// Start Server
 app.listen(port, '0.0.0.0', () => {
-  console.log(`Server started on http://0.0.0.0:${port}`)
+  console.log(`🚀 Server started on http://0.0.0.0:${port}`)
 })
