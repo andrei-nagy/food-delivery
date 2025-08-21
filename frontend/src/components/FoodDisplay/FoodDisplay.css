@@ -118,11 +118,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px;
+    /* padding: 10px; */
     border-radius: 12px;
     /* background-color: #fff3d4; */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    margin: 0 8px;
+    /* margin: 0 8px; */
 }
 
 /* .best-seller-item:hover {
@@ -153,16 +153,16 @@
   opacity: 0;
   transition: transform 0.4s ease, opacity 0.4s ease;
   position: fixed;
-  bottom: 9.5vh;
+  bottom: 10vh;
   left: 50%;
-  width: 85vw;
-  background-color: tomato;
+  width: 90%;
+  background-color: #e86514;
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 15px;
-  border-radius: 12px;
+  border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   /* z-index: 1001; */
   font-size: 1rem;
@@ -198,4 +198,12 @@
 .floating-checkout-cta {
   font-weight: 500;
   font-size: 1rem;
+}
+.best-sellers-slider .slick-slide {
+  padding: 0 10px; /* spațiu de 10px stânga/dreapta */
+  box-sizing: border-box;
+}
+
+.best-sellers-slider .slick-list {
+  margin: 0 -10px; /* compensează padding-ul, astfel încât marginile sliderului să fie aliniate */
 }

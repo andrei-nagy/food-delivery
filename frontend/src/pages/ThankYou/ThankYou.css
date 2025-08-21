@@ -3,7 +3,15 @@
     text-align: center;
     margin-top: 20px;
   }
-  
+  .center-container {
+   position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100vw; /* sau max-width: 100% */
+  padding: 1rem; /* opțional, pentru respirabilitate */
+  box-sizing: border-box;
+}
   .thank-you-container h1 {
     color: #4caf50;
     font-size: 2.2rem;
@@ -20,15 +28,14 @@
   }
   
   .thank-you-buttons button {
-    border: none;
     color: white;
     background-color: tomato;
-    width: max(15vw, 200px);
-    padding: 12px 0px;
-    border-radius: 4px;
+    font-size: 16px;
+    border: 2px solid tomato;
+    padding: 10px 30px;
+    border-radius: 10px;
     cursor: pointer;
-    margin-bottom: 20px;
-    margin: 10px;
+    transition: 0.3s;
   }
   
   .thank-you-buttons button:hover {

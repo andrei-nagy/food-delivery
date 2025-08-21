@@ -29,7 +29,7 @@
   .food-list {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 15px;
   }
   .category-menu a.active {
     font-weight: 700; /* doar activul este bold */
@@ -169,16 +169,16 @@ textarea {
   opacity: 0;
   transition: transform 0.4s ease, opacity 0.4s ease;
   position: fixed;
-  bottom: 9.5vh;
+  bottom: 10vh;
   left: 50%;
-  width: 85vw;
-  background-color: tomato;
+  width: 90%;
+  background-color: #e86514;
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 15px;
-  border-radius: 12px;
+  border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   /* z-index: 1001; */
   font-size: 1rem;

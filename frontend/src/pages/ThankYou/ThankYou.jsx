@@ -74,6 +74,8 @@ const ThankYou = () => {
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
     >
+      <div className="center-container">
+
       <div className="thank-you-container">
         {/* <h1>🎉 Thank you! 🎉</h1><br /> */}
         <h1>{t('thank_you_title')}</h1><br />
@@ -112,6 +114,7 @@ const ThankYou = () => {
           </Link>
           {/* <button onClick={() => navigate('/myorders')}>Track my order status</button> */}
         </div>
+      </div>
       </div>
     </motion.div>
   );

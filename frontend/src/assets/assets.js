@@ -51,7 +51,9 @@ import food_29 from './food_29.png'
 import food_30 from './food_30.png'
 import food_31 from './food_31.png'
 import food_32 from './food_32.png'
+import empty_cart2 from './empty_cart2.png'
 
+import empty_cart from './empty_cart.png'
 import add_icon_white from './add_icon_white.png'
 import add_icon_green from './add_icon_green.png'
 import remove_icon_red from './remove_icon_red.png'
@@ -189,7 +191,9 @@ export const assets = {
     usaFlag,
     arrow_down,
     desk_bell,
-    mainLogo
+    mainLogo,
+    empty_cart,
+    empty_cart2
 }
 
 export const menu_list = [

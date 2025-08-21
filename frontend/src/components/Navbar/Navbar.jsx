@@ -234,7 +234,10 @@ const Navbar = ({ setShowLogin }) => {
             <span> {t('home_navbar')}</span>
           </div>
 
-          <div className={getTotalCartAmount() === 0 ? "mobile-footer-item" : "mobile-footer-item dot"} onClick={handleOpenModal}>
+          <div className={getTotalCartAmount() === 0 ? "mobile-footer-item" : "mobile-footer-item dot"}  onClick={() => {
+      navigate("/cart");
+      window.scrollTo(0, 0);
+    }}/*onClick={handleOpenModal}*/>
             <img src={getTotalCartAmount() === 0 ? assets.order_icon_phone : assets.order_icon_phone} alt="Order Icon" />
             {getTotalCartAmount() > 0 && <span className="dot"></span>} {/* Aici apare punctul roșu */}
             <span> {t('view_order')}</span>

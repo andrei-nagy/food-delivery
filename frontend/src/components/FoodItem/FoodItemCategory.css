@@ -16,7 +16,18 @@
 .food-display-list>.food-item:only-child {
     min-width: 100%;
 }
-
+.food-item-name-price {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+.food-item-name,
+.food-item-price {
+  margin: 0;
+  font-weight: 600;
+  font-size: 16px;
+}
 .food-item-img {
     width: 100%;
     border-radius: 15px 15px 0px 0px;
@@ -99,9 +110,11 @@
 
 .food-item-price {
     color: tomato;
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 500;
     margin: 5px 0px;
+      white-space: nowrap;
+  flex-shrink: 0;
 }
 
 
@@ -129,6 +142,25 @@
     border-radius: 50px;
     background-color: white;
 }
+.food-item-counter-cart {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  position: absolute;
+  bottom: 15px; 
+  right: 15px;
+  z-index: 0;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
+  color: #333;
+  border: 1px solid #a7a7a7;
+}
+
 
 .food-item-counter img {
     width: 30px;

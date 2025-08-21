@@ -9,6 +9,7 @@ import Slider from "react-slick";
 import FoodModal from "../FoodItem/FoodModal"; // ✅ nou
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import FoodItemBestSeller from "../FoodItem/FoodItemBestSeller";
 
 const FoodDisplay = ({ category }) => {
   const { food_list, getTotalCartAmount, cartItems } = useContext(StoreContext);
@@ -138,7 +139,7 @@ useEffect(() => {
             <Slider {...sliderSettings} className="best-sellers-slider">
               {bestSellers.map((item, index) => (
                 <div key={index} className="best-seller-item">
-                  <FoodItem
+                  <FoodItemBestSeller
                     key={item._id}
                     id={item._id}
                     {...item}
