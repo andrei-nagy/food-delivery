@@ -107,6 +107,8 @@ useEffect(() => {
     slidesToShow: 5,
     slidesToScroll: 1,
     arrows: false,
+    adaptiveHeight: false,
+  variableWidth: false,
     responsive: [
       { breakpoint: 1024, settings: { slidesToShow: 2 } },
       { breakpoint: 768, settings: { slidesToShow: 1 } },
