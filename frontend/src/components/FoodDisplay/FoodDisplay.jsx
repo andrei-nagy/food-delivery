@@ -136,21 +136,22 @@ useEffect(() => {
               </Link>
             </div>
 
-            <Slider {...sliderSettings} className="best-sellers-slider">
-              {bestSellers.map((item, index) => (
-                <div key={index} className="best-seller-item">
-                  <FoodItemBestSeller
-                    key={item._id}
-                    id={item._id}
-                    {...item}
-                    openModal={(food) => {
-                      setSelectedFood(food);
-                      setIsModalOpen(true);
-                    }}
-                  />
-                </div>
-              ))}
-            </Slider>
+            {bestSellers.length > 0 && (
+  <Slider key={bestSellers.length} {...sliderSettings} className="best-sellers-slider">
+    {bestSellers.map((item) => (
+      <div key={item._id} className="best-seller-item">
+        <FoodItemBestSeller
+          {...item}
+          openModal={(food) => {
+            setSelectedFood(food);
+            setIsModalOpen(true);
+          }}
+        />
+      </div>
+    ))}
+  </Slider>
+)}
+
           </>
         )}
 
