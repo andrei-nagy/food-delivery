@@ -1,3 +1,5 @@
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import React, { useContext, useState, useEffect } from "react";
 import "./FoodDisplay.css";
 import { StoreContext } from "../../context/StoreContext";
@@ -17,6 +19,7 @@ const FoodDisplay = ({ category }) => {
   const cartItemCount = Object.values(cartItems).reduce((a, b) => a + b, 0);
   const [shouldRender, setShouldRender] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+const [sliderKey, setSliderKey] = useState(0);
 
   const { t, i18n } = useTranslation();
 
@@ -44,6 +47,17 @@ useEffect(() => {
     setShouldRender(false);
   }
 }, [cartItemCount]);
+
+useEffect(() => {
+  if (bestSellers.length > 0) {
+    const timer = setTimeout(() => {
+      setSliderKey((prev) => prev + 1); // forțează re-render slider după 300ms
+    }, 300);
+    return () => clearTimeout(timer);
+  }
+}, [bestSellers]);
+
+
 useEffect(() => {
   const handleScroll = () => {
     const currentScrollY = window.scrollY;
@@ -139,7 +153,7 @@ useEffect(() => {
             </div>
 
             {bestSellers.length > 0 && (
-  <Slider key={bestSellers.length} {...sliderSettings} className="best-sellers-slider">
+<Slider key={sliderKey} {...sliderSettings} className="best-sellers-slider">
     {bestSellers.map((item) => (
       <div key={item._id} className="best-seller-item">
         <FoodItemBestSeller
