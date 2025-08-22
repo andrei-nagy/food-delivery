@@ -102,8 +102,7 @@ const FoodDisplay = ({ category }) => {
             <Swiper
               modules={[Autoplay]}
               spaceBetween={20}
-              slidesPerView={1.3}
-              centeredSlides={true} // îl centrează și lasă marginile vizibile
+              slidesPerView={1.4}
               loop={true}
               autoplay={{ delay: 4000 }}
               speed={800}
