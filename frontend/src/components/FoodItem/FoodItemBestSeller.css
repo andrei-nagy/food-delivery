@@ -1,6 +1,6 @@
 .food-item-best {
-  min-width: 215px;
-  /* width: 215px; */
+  /* min-width: 215px; */
+  width: 280px;
   height: 315px;
   display: flex;
   flex-direction: column;
@@ -12,6 +12,9 @@
   transition: transform 0.3s ease;
   overflow: hidden;
   margin-bottom: 10px;
+  /* max-width: 280px;
+    min-width: 215px; */
+
 }
 .food-item-counter-cart {
   width: 35px;

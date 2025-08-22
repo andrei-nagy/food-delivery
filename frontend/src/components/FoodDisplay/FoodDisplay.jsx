@@ -1,5 +1,6 @@
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+// ❌ eliminăm importurile slick
+// import "slick-carousel/slick/slick.css";
+// import "slick-carousel/slick/slick-theme.css";
 import React, { useContext, useState, useEffect } from "react";
 import "./FoodDisplay.css";
 import { StoreContext } from "../../context/StoreContext";
@@ -7,11 +8,18 @@ import FoodItem from "../FoodItem/FoodItem";
 import { useTranslation } from "react-i18next";
 import { FaArrowRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import Slider from "react-slick";
-import FoodModal from "../FoodItem/FoodModal"; // ✅ nou
+// import Slider from "react-slick"; ❌ scos
+import FoodModal from "../FoodItem/FoodModal";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import FoodItemBestSeller from "../FoodItem/FoodItemBestSeller";
+
+// ✅ Swiper imports
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination, EffectFade } from "swiper/modules";
+
+import { Autoplay } from "swiper/modules";
+import "swiper/css";
 
 const FoodDisplay = ({ category }) => {
   const { food_list, getTotalCartAmount, cartItems } = useContext(StoreContext);
@@ -19,115 +27,55 @@ const FoodDisplay = ({ category }) => {
   const cartItemCount = Object.values(cartItems).reduce((a, b) => a + b, 0);
   const [shouldRender, setShouldRender] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-const [sliderKey, setSliderKey] = useState(0);
+  const [groupedFood, setGroupedFood] = useState({});
+  const [bestSellers, setBestSellers] = useState([]);
+  const [selectedFood, setSelectedFood] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(window.scrollY);
 
   const { t, i18n } = useTranslation();
 
-  const [groupedFood, setGroupedFood] = useState({});
-  const [bestSellers, setBestSellers] = useState([]);
-
-  // ✅ pentru modal global
-  const [selectedFood, setSelectedFood] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-const [lastScrollY, setLastScrollY] = useState(window.scrollY);
-const [lastCartChange, setLastCartChange] = useState(Date.now());
-
-useEffect(() => {
-  if (cartItemCount > 0) {
-    setShouldRender(true);
-    setIsVisible(true);
-    setLastCartChange(Date.now());
-
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-    }, 4000); // dispare după 4 secunde
-
-    return () => clearTimeout(timer);
-  } else {
-    setShouldRender(false);
-  }
-}, [cartItemCount]);
-
-useEffect(() => {
-  if (bestSellers.length > 0) {
-    const timer = setTimeout(() => {
-      setSliderKey((prev) => prev + 1); // forțează re-render slider după 300ms
-    }, 300);
-    return () => clearTimeout(timer);
-  }
-}, [bestSellers]);
-
-
-useEffect(() => {
-  const handleScroll = () => {
-    const currentScrollY = window.scrollY;
-
-    if (currentScrollY < lastScrollY) {
-      // Scroll UP → arată butonul
-      if (cartItemCount > 0) {
-        setIsVisible(true);
-      }
-    } else if (currentScrollY > lastScrollY) {
-      // Scroll DOWN → ascunde butonul
-      setIsVisible(false);
-    }
-
-    setLastScrollY(currentScrollY);
-  };
-
-  window.addEventListener("scroll", handleScroll);
-  return () => window.removeEventListener("scroll", handleScroll);
-}, [lastScrollY, cartItemCount]);
-
+  // ✅ Buton floating
   useEffect(() => {
-    if (cartItemCount > 0 && !isModalOpen) {
+    if (cartItemCount > 0) {
       setShouldRender(true);
-      setTimeout(() => setIsVisible(true), 10);
+      setIsVisible(true);
+      const timer = setTimeout(() => setIsVisible(false), 4000);
+      return () => clearTimeout(timer);
     } else {
-      setIsVisible(false);
-      setTimeout(() => setShouldRender(false), 200);
+      setShouldRender(false);
     }
-  }, [cartItemCount, isModalOpen]);
+  }, [cartItemCount]);
 
+  // ✅ Scroll handler floating button
   useEffect(() => {
-    const groupByCategory = () => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY < lastScrollY && cartItemCount > 0) {
+        setIsVisible(true);
+      } else if (currentScrollY > lastScrollY) {
+        setIsVisible(false);
+      }
+      setLastScrollY(currentScrollY);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY, cartItemCount]);
+
+  // ✅ Grupare categorii și Best Sellers
+  useEffect(() => {
+    if (food_list.length > 0) {
       const groups = food_list.reduce((acc, item) => {
-        if (!acc[item.category]) {
-          acc[item.category] = [];
-        }
+        if (!acc[item.category]) acc[item.category] = [];
         acc[item.category].push(item);
         return acc;
       }, {});
       setGroupedFood(groups);
-    };
 
-    const extractBestSellers = () => {
       const best = food_list.filter((item) => item.isBestSeller);
       setBestSellers(best);
-    };
-
-    if (food_list.length > 0) {
-      groupByCategory();
-      extractBestSellers();
     }
   }, [food_list]);
-
-  const sliderSettings = {
-    dots: false,
-    infinite: true,
-    speed: 1000,
-    autoplay: true,
-    autoplaySpeed: 3500,
-    slidesToShow: 5,
-    slidesToScroll: 1,
-    arrows: false,
-    adaptiveHeight: false,
-  variableWidth: false,
-    responsive: [
-      { breakpoint: 1024, settings: { slidesToShow: 2 } },
-      { breakpoint: 768, settings: { slidesToShow: 1 } },
-    ],
-  };
 
   return (
     <motion.div
@@ -146,32 +94,43 @@ useEffect(() => {
                   Must-try favorites 🔥
                 </small>
               </div>
-
               <Link to={`/category/All`} className="view-more">
                 View more <FaArrowRight className="arrow-icon auto-bounce" />
               </Link>
             </div>
 
-            {bestSellers.length > 0 && (
-<Slider key={sliderKey} {...sliderSettings} className="best-sellers-slider">
-    {bestSellers.map((item) => (
-      <div key={item._id} className="best-seller-item">
-        <FoodItemBestSeller
-          {...item}
-          openModal={(food) => {
-            setSelectedFood(food);
-            setIsModalOpen(true);
-          }}
-        />
-      </div>
-    ))}
-  </Slider>
-)}
-
+            <Swiper
+              modules={[Autoplay]}
+              spaceBetween={20}
+              slidesPerView={1.3}
+              centeredSlides={true} // îl centrează și lasă marginile vizibile
+              loop={true}
+              autoplay={{ delay: 4000 }}
+              speed={800}
+              breakpoints={{
+                1024: { slidesPerView: 2.2 }, // pe desktop vezi 2 și un pic din al 3-lea
+                768: { slidesPerView: 1.2 }, // pe tabletă vezi 1 și puțin din următorul
+              }}
+              className="best-sellers-slider"
+            >
+              {bestSellers.map((item) => (
+                <SwiperSlide key={item._id}>
+                  <div className="best-seller-item">
+                    <FoodItemBestSeller
+                      {...item}
+                      openModal={(food) => {
+                        setSelectedFood(food);
+                        setIsModalOpen(true);
+                      }}
+                    />
+                  </div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
           </>
         )}
 
-        {Object.keys(groupedFood).length > 0 ? (
+        {Object.keys(groupedFood).length > 0 &&
           Object.keys(groupedFood).map((cat) => {
             if (
               (category === "All" || category === cat) &&
@@ -190,10 +149,9 @@ useEffect(() => {
                     </Link>
                   </div>
                   <div className="food-display-list">
-                    {groupedFood[cat].map((item, index) => (
+                    {groupedFood[cat].map((item) => (
                       <FoodItem
                         key={item._id}
-                        id={item._id}
                         {...item}
                         openModal={(food) => {
                           setSelectedFood(food);
@@ -206,12 +164,8 @@ useEffect(() => {
               );
             }
             return null;
-          })
-        ) : (
-          <p>No food found.</p>
-        )}
+          })}
 
-        {/* ✅ Modal Global */}
         {isModalOpen && selectedFood && (
           <FoodModal
             food={selectedFood}
@@ -219,6 +173,7 @@ useEffect(() => {
           />
         )}
       </div>
+
       {shouldRender && (
         <div
           className={`floating-checkout-home ${isVisible ? "visible" : ""}`}
