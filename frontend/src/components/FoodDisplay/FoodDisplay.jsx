@@ -1,23 +1,17 @@
 // ❌ eliminăm importurile slick
-// import "slick-carousel/slick/slick.css";
-// import "slick-carousel/slick/slick-theme.css";
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 import "./FoodDisplay.css";
 import { StoreContext } from "../../context/StoreContext";
 import FoodItem from "../FoodItem/FoodItem";
 import { useTranslation } from "react-i18next";
 import { FaArrowRight } from "react-icons/fa";
-import { Link } from "react-router-dom";
-// import Slider from "react-slick"; ❌ scos
+import { Link, useNavigate } from "react-router-dom";
 import FoodModal from "../FoodItem/FoodModal";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 import FoodItemBestSeller from "../FoodItem/FoodItemBestSeller";
 
 // ✅ Swiper imports
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, EffectFade } from "swiper/modules";
-
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
 
@@ -25,6 +19,7 @@ const FoodDisplay = ({ category }) => {
   const { food_list, getTotalCartAmount, cartItems } = useContext(StoreContext);
   const navigate = useNavigate();
   const cartItemCount = Object.values(cartItems).reduce((a, b) => a + b, 0);
+
   const [shouldRender, setShouldRender] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [groupedFood, setGroupedFood] = useState({});
@@ -33,7 +28,9 @@ const FoodDisplay = ({ category }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(window.scrollY);
 
-  const { t, i18n } = useTranslation();
+  const swiperRef = useRef(null);
+
+  const { t } = useTranslation();
 
   // ✅ Buton floating
   useEffect(() => {
@@ -102,13 +99,16 @@ const FoodDisplay = ({ category }) => {
             <Swiper
               modules={[Autoplay]}
               spaceBetween={20}
+              onSwiper={(swiper) => {
+                swiperRef.current = swiper;
+              }}
               slidesPerView={1.4}
               loop={true}
-              autoplay={{ delay: 4000 }}
+              autoplay={{ delay: 4000, disableOnInteraction: false }}
               speed={800}
               breakpoints={{
-                1024: { slidesPerView: 2.2 }, // pe desktop vezi 2 și un pic din al 3-lea
-                768: { slidesPerView: 1.2 }, // pe tabletă vezi 1 și puțin din următorul
+                1024: { slidesPerView: 2.2 },
+                768: { slidesPerView: 1.2 },
               }}
               className="best-sellers-slider"
             >
@@ -116,7 +116,9 @@ const FoodDisplay = ({ category }) => {
                 <SwiperSlide key={item._id}>
                   <div className="best-seller-item">
                     <FoodItemBestSeller
+                      key={item._id}
                       {...item}
+                      swiperRef={swiperRef} // 🔑 transmitem swiperRef
                       openModal={(food) => {
                         setSelectedFood(food);
                         setIsModalOpen(true);

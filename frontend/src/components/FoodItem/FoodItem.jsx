@@ -2,9 +2,10 @@ import React, { useContext, useState, useRef } from "react";
 import "./FoodItem.css";
 import { assets } from "../../assets/assets";
 import { StoreContext } from "../../context/StoreContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 const FoodItem = ({
-  id,
+  _id,
   name,
   price,
   description,
@@ -23,15 +24,16 @@ const FoodItem = ({
     e.stopPropagation();
     setShowCounterControls(true);
 
+    // 🔑 resetăm timerul la fiecare click
     if (timerRef.current) clearTimeout(timerRef.current);
 
     timerRef.current = setTimeout(() => {
       setShowCounterControls(false);
-    }, 5000);
+    }, 3500);
   };
 
   const handleClick = () => {
-    openModal({ id, name, price, description, image });
+    openModal({ _id, name, price, description, image });
   };
 
   return (
@@ -60,41 +62,62 @@ const FoodItem = ({
           alt={name}
         />
 
-        {cartItems && cartItems[id] > 0 ? (
-          showCounterControls ? (
-            <div className="food-item-counter" onClick={handleCounterClick}>
-              <img
+        {cartItems && cartItems[_id] > 0 ? (
+          <AnimatePresence>
+            {showCounterControls ? (
+              <motion.div
+                key="counter"
+                className="food-item-counter"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 15 }}
+                transition={{ duration: 0.12, ease: "easeOut" }}
                 onClick={(e) => {
                   e.stopPropagation();
-                  removeFromCart(id, 1);
+                  handleCounterClick(e);
                 }}
-                src={assets.remove_icon_red}
-                alt="Remove"
-              />
-              <p>{cartItems[id]}</p>
-              <img
-                onClick={(e) => {
-                  e.stopPropagation();
-                  addToCart(id, 1);
-                }}
-                src={assets.add_icon_green}
-                alt="Add"
-              />
-            </div>
-          ) : (
-            <div
-              className="food-item-counter-cart"
-              onClick={handleCounterClick}
-            >
-              {cartItems[id]}
-            </div>
-          )
+              >
+                <img
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeFromCart(_id, 1);
+                    handleCounterClick(e);
+                  }}
+                  src={assets.remove_icon_red}
+                  alt="Remove"
+                />
+                <p>{cartItems[_id]}</p>
+                <img
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addToCart(_id, 1);
+                    handleCounterClick(e);
+                  }}
+                  src={assets.add_icon_green}
+                  alt="Add"
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="cart"
+                className="food-item-counter-cart"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 15 }}
+                transition={{ duration: 0.12, ease: "easeOut" }}
+                onClick={handleCounterClick}
+              >
+                {cartItems[_id]}
+              </motion.div>
+            )}
+          </AnimatePresence>
         ) : (
           <img
             className="add"
             onClick={(e) => {
               e.stopPropagation();
-              addToCart(id, 1);
+              addToCart(_id, 1);
+              handleCounterClick(e);
             }}
             src={assets.add_icon_white}
             alt="Add"

@@ -289,16 +289,13 @@ const Cart = () => {
 
                               <AnimatePresence>
                                 {editingItemId === item._id && (
-                                  <motion.div
-                                    className="inline-quantity-controls"
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    transition={{
-                                      duration: 0.3,
-                                      ease: "easeInOut",
-                                    }} // <-- schimbat aici
-                                  >
+                                <motion.div
+  className="inline-quantity-controls"
+  initial={{ opacity: 0, scale: 0.8, borderRadius: "999px" }}
+  animate={{ opacity: 1, scale: 1, borderRadius: "999px" }}
+  exit={{ opacity: 0, scale: 0.8, borderRadius: "999px" }}
+  transition={{ duration: 0.3, ease: "easeInOut" }}
+>
                                     <button
                                       onClick={() => {
                                         updateCartItemQuantity(

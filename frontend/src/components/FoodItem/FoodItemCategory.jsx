@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect, useRef } from "react";
 import "./FoodItemCategory.css";
 import { assets } from "../../assets/assets";
 import { StoreContext } from "../../context/StoreContext";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const FoodItemCategory = ({
   id,
@@ -77,17 +77,16 @@ const FoodItemCategory = ({
     }
     closeFoodModal();
   };
+
   const handleCounterClick = (e) => {
     e.stopPropagation();
     setShowCounterControls(true);
 
-    // Clear existing timer
     if (timerRef.current) clearTimeout(timerRef.current);
 
-    // Set hide timer
     timerRef.current = setTimeout(() => {
       setShowCounterControls(false);
-    }, 5000);
+    }, 3500);
   };
 
   const nutritionDummyText = `
@@ -137,44 +136,65 @@ Sare: 1g.
             />
 
             {cartItems && cartItems[id] > 0 ? (
-  showCounterControls ? (
-    <div className="food-item-counter" onClick={handleCounterClick}>
-      <img
-        onClick={(e) => {
-          e.stopPropagation();
-          removeFromCart(id, 1);
-        }}
-        src={assets.remove_icon_red}
-        alt="Remove"
-      />
-      <p>{cartItems[id]}</p>
-      <img
-        onClick={(e) => {
-          e.stopPropagation();
-          addToCart(id, 1);
-        }}
-        src={assets.add_icon_green}
-        alt="Add"
-      />
-    </div>
-  ) : (
-    <div className="food-item-counter-cart" onClick={handleCounterClick}>
-      {cartItems[id]}
-    </div>
-  )
-) : (
-  <img
-    className="add"
-    onClick={(e) => {
-      e.stopPropagation();
-      addToCart(id, 1);
-    }}
-    src={assets.add_icon_white}
-    alt="Add"
-  />
-)}
-
+              <AnimatePresence>
+                {showCounterControls ? (
+                  <motion.div
+                    key="counter"
+                    className="food-item-counter"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 15 }}
+                    transition={{ duration: 0.12, ease: "easeOut" }}
+                    onClick={handleCounterClick}
+                  >
+                    <img
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFromCart(id, 1);
+                        handleCounterClick(e);
+                      }}
+                      src={assets.remove_icon_red}
+                      alt="Remove"
+                    />
+                    <p>{cartItems[id]}</p>
+                    <img
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(id, 1);
+                        handleCounterClick(e);
+                      }}
+                      src={assets.add_icon_green}
+                      alt="Add"
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="cart"
+                    className="food-item-counter-cart"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 15 }}
+                    transition={{ duration: 0.12, ease: "easeOut" }}
+                    onClick={handleCounterClick}
+                  >
+                    {cartItems[id]}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            ) : (
+              <img
+                className="add"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  addToCart(id, 1);
+                  handleCounterClick(e);
+                }}
+                src={assets.add_icon_white}
+                alt="Add"
+              />
+            )}
           </div>
+
           <div className="food-item-info">
             <div className="food-item-name-price">
               <p className="food-item-name">{name}</p>
@@ -210,7 +230,6 @@ Sare: 1g.
 
               <p className="modal-description">{selectedFood.description}</p>
 
-              {/* Buton pentru a deschide modal nutrițional */}
               <div
                 className="nutrition-info-button"
                 onClick={openNutritionModal}

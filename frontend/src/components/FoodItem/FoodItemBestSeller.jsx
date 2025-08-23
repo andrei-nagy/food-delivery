@@ -2,9 +2,10 @@ import React, { useContext, useState, useRef } from "react";
 import "./FoodItemBestSeller.css";
 import { assets } from "../../assets/assets";
 import { StoreContext } from "../../context/StoreContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 const FoodItemBestSeller = ({
-  id,
+  _id,
   name,
   price,
   description,
@@ -13,6 +14,7 @@ const FoodItemBestSeller = ({
   isNewAdded,
   isVegan,
   openModal,
+  swiperRef, // 🔑 primim referința la swiper
 }) => {
   const { cartItems, addToCart, removeFromCart, url } =
     useContext(StoreContext);
@@ -23,14 +25,26 @@ const FoodItemBestSeller = ({
     e.stopPropagation();
     setShowCounterControls(true);
 
+    // 🔑 resetăm timerul la fiecare click
     if (timerRef.current) clearTimeout(timerRef.current);
 
     timerRef.current = setTimeout(() => {
       setShowCounterControls(false);
-    }, 5000);
+    }, 3500);
   };
+
+  // 🔑 helper ca să oprești sliderul când user-ul adaugă în coș
+  const pauseSwiper = () => {
+    if (swiperRef?.current?.autoplay) {
+      swiperRef.current.autoplay.stop();
+      setTimeout(() => {
+        swiperRef.current?.autoplay?.start();
+      }, 5000); // după 5s îl pornim iar
+    }
+  };
+
   const handleClick = () => {
-    openModal({ id, name, price, description, image });
+    openModal({ _id, name, price, description, image });
   };
 
   return (
@@ -59,41 +73,61 @@ const FoodItemBestSeller = ({
           alt={name}
         />
 
-        {cartItems && cartItems[id] > 0 ? (
-          showCounterControls ? (
-            <div className="food-item-counter" onClick={handleCounterClick}>
-              <img
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeFromCart(id, 1);
-                }}
-                src={assets.remove_icon_red}
-                alt="Remove"
-              />
-              <p>{cartItems[id]}</p>
-              <img
-                onClick={(e) => {
-                  e.stopPropagation();
-                  addToCart(id, 1);
-                }}
-                src={assets.add_icon_green}
-                alt="Add"
-              />
-            </div>
-          ) : (
-            <div
-              className="food-item-counter-cart"
-              onClick={handleCounterClick}
-            >
-              {cartItems[id]}
-            </div>
-          )
+        {cartItems && cartItems[_id] > 0 ? (
+          <AnimatePresence>
+            {showCounterControls ? (
+              <motion.div
+                key="counter"
+                className="food-item-counter"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 15 }}
+                transition={{ duration: 0.12, ease: "easeOut" }}
+              >
+                <img
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeFromCart(_id, 1);
+                    pauseSwiper();
+                    handleCounterClick(e);
+                  }}
+                  src={assets.remove_icon_red}
+                  alt="Remove"
+                />
+                <p>{cartItems[_id]}</p>
+                <img
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addToCart(_id, 1);
+                    pauseSwiper();
+                    handleCounterClick(e);
+                  }}
+                  src={assets.add_icon_green}
+                  alt="Add"
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="cart"
+                className="food-item-counter-cart"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                onClick={handleCounterClick}
+              >
+                {cartItems[_id]}
+              </motion.div>
+            )}
+          </AnimatePresence>
         ) : (
           <img
             className="add"
             onClick={(e) => {
               e.stopPropagation();
-              addToCart(id, 1);
+              addToCart(_id, 1);
+              pauseSwiper();
+              handleCounterClick(e);
             }}
             src={assets.add_icon_white}
             alt="Add"
@@ -106,8 +140,8 @@ const FoodItemBestSeller = ({
           <p className="food-item-price">{price} €</p>
         </div>
         <p className="food-item-desc">
-          {description.length > 70
-            ? description.slice(0, 70) + "..."
+          {description.length > 150
+            ? description.slice(0, 150) + "..."
             : description}
         </p>
       </div>
