@@ -213,7 +213,7 @@ const Cart = () => {
                           animate={{
                             opacity: 1,
                             height: "auto",
-                            marginBottom: "20px",
+                            marginBottom: "10px",
                           }}
                           exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                           transition={{ duration: 0.3 }}
@@ -247,9 +247,6 @@ const Cart = () => {
                             <div className="cart-item-info">
                               <p className="cart-item-name">
                                 {item.name}{" "}
-                                <span className="cart-item-qty">
-                                  x{quantity}
-                                </span>
                                 <br />
                                 <span className="cart-item-description">
                                   {item.description}
@@ -262,71 +259,30 @@ const Cart = () => {
                             </div>
 
                             <div
-                              className="cart-item-buttons"
-                              style={{ position: "relative" }}
-                            >
-                              {editingItemId !== item._id && (
-                                <motion.div
-                                  className="cart-qty-badge"
-                                  initial={{ opacity: 0, scale: 0.5 }}
-                                  animate={{
-                                    opacity: editingItemId === item._id ? 0 : 1,
-                                    scale: editingItemId === item._id ? 0.5 : 1,
-                                  }}
-                                  transition={{
-                                    duration: 0.3,
-                                    ease: "easeInOut",
-                                  }}
-                                  onClick={() => {
-                                    setEditingItemId(item._id);
-                                    startHideTimer();
-                                  }}
-                                  title="Edit quantity"
-                                >
-                                  {quantity}
-                                </motion.div>
-                              )}
-
-                              <AnimatePresence>
-                                {editingItemId === item._id && (
-                                <motion.div
-  className="inline-quantity-controls"
-  initial={{ opacity: 0, scale: 0.8, borderRadius: "999px" }}
-  animate={{ opacity: 1, scale: 1, borderRadius: "999px" }}
-  exit={{ opacity: 0, scale: 0.8, borderRadius: "999px" }}
-  transition={{ duration: 0.3, ease: "easeInOut" }}
+  className="cart-item-buttons"
+  style={{ position: "relative" }}
 >
-                                    <button
-                                      onClick={() => {
-                                        updateCartItemQuantity(
-                                          item._id,
-                                          quantity - 1
-                                        );
-                                        startHideTimer();
-                                      }}
-                                      className="quantity-btn-order"
-                                    >
-                                      <FaMinus />
-                                    </button>
-                                    <span className="quantity-order">
-                                      {quantity}
-                                    </span>
-                                    <button
-                                      onClick={() => {
-                                        updateCartItemQuantity(
-                                          item._id,
-                                          quantity + 1
-                                        );
-                                        startHideTimer();
-                                      }}
-                                      className="quantity-btn-order"
-                                    >
-                                      <FaPlus />
-                                    </button>
-                                  </motion.div>
-                                )}
-                              </AnimatePresence>
-                            </div>
+  <div className="inline-quantity-controls">
+    <button
+      onClick={() => {
+        updateCartItemQuantity(item._id, quantity - 1);
+      }}
+      className="quantity-btn-order"
+    >
+      <FaMinus />
+    </button>
+    <span className="quantity-order">{quantity}</span>
+    <button
+      onClick={() => {
+        updateCartItemQuantity(item._id, quantity + 1);
+      }}
+      className="quantity-btn-order"
+    >
+      <FaPlus />
+    </button>
+  </div>
+</div>
+
                           </div>
                         </motion.div>
                         <hr className="cart-separator" />
@@ -337,12 +293,15 @@ const Cart = () => {
             </div>
 
             <div className="add-more-wrapper">
-              <button
-                className="add-more-products"
-                onClick={() => navigate("/category/All")}
-              >
-                Add more products +
-              </button>
+             <button
+  className="add-more-products"
+  onClick={() => navigate("/category/All")}
+>
+  Add more products 
+  <span className="plus-btn">
+    <FaPlus />
+  </span>
+</button>
             </div>
 
             <div className="special-instructions">

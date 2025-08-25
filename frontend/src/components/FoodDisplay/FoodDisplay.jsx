@@ -104,7 +104,7 @@ const FoodDisplay = ({ category }) => {
               }}
               slidesPerView={1.4}
               loop={true}
-              autoplay={{ delay: 4000, disableOnInteraction: false }}
+              autoplay={{ delay: 3000, disableOnInteraction: false }}
               speed={800}
               breakpoints={{
                 1024: { slidesPerView: 2.2 },
@@ -168,10 +168,11 @@ const FoodDisplay = ({ category }) => {
           })}
 
         {isModalOpen && selectedFood && (
-          <FoodModal
-            food={selectedFood}
-            closeModal={() => setIsModalOpen(false)}
-          />
+          <FoodModal 
+  food={selectedFood} 
+  closeModal={() => setIsModalOpen(false)} 
+  isOpen={isModalOpen} 
+/>
         )}
       </div>
 

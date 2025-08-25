@@ -6,30 +6,26 @@ import { FaArrowLeft } from 'react-icons/fa';
 import './CategoryPage.css';
 import SearchBar from '../SearchBar/SearchBar';
 import { motion } from 'framer-motion';
+import FoodModal from '../FoodItem/FoodModal'; // Import FoodModal
 
 const CategoryPage = () => {
     const { categoryName } = useParams();
-    const { food_list, addToCart,getTotalCartAmount,cartItems } = useContext(StoreContext);
+    const { food_list, addToCart, getTotalCartAmount, cartItems } = useContext(StoreContext);
     const navigate = useNavigate();
     const activeCategoryRef = useRef(null);
     const menuContainerRef = useRef(null);
     const [categories, setCategories] = useState([]);
     const [selectedFood, setSelectedFood] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [specialInstructions, setSpecialInstructions] = useState("");
-    const [selectedQuantity, setSelectedQuantity] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [shouldRender, setShouldRender] = useState(false);
-const [isVisible, setIsVisible] = useState(false);
-const [lastScrollY, setLastScrollY] = useState(window.scrollY);
-const [lastCartChange, setLastCartChange] = useState(Date.now());
+    const [isVisible, setIsVisible] = useState(false);
+    const [lastScrollY, setLastScrollY] = useState(window.scrollY);
 
-  const cartItemCount = Object.values(cartItems).reduce((a, b) => a + b, 0);
+    const cartItemCount = Object.values(cartItems).reduce((a, b) => a + b, 0);
 
     const openModal = (food) => {
         setSelectedFood(food);
-        setSelectedQuantity(1);
-        setSpecialInstructions("");
         setIsModalOpen(true);
     };
 
@@ -38,52 +34,50 @@ const [lastCartChange, setLastCartChange] = useState(Date.now());
         setIsModalOpen(false);
     };
 
+    useEffect(() => {
+        if (cartItemCount > 0) {
+            setShouldRender(true);
+            setIsVisible(true);
+            
+            const timer = setTimeout(() => {
+                setIsVisible(false);
+            }, 4000);
+            
+            return () => clearTimeout(timer);
+        } else {
+            setShouldRender(false);
+        }
+    }, [cartItemCount]);
+    
+    useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            
+            if (currentScrollY < lastScrollY) {
+                if (cartItemCount > 0) {
+                    setIsVisible(true);
+                }
+            } else if (currentScrollY > lastScrollY) {
+                setIsVisible(false);
+            }
+            
+            setLastScrollY(currentScrollY);
+        };
+        
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, [lastScrollY, cartItemCount]);
+    
+    useEffect(() => {
+        if (cartItemCount > 0 && !isModalOpen) {
+            setShouldRender(true);
+            setTimeout(() => setIsVisible(true), 10);
+        } else {
+            setIsVisible(false);
+            setTimeout(() => setShouldRender(false), 200);
+        }
+    }, [cartItemCount, isModalOpen]);
 
-useEffect(() => {
-  if (cartItemCount > 0) {
-    setShouldRender(true);
-    setIsVisible(true);
-    setLastCartChange(Date.now());
-
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-    }, 4000); // dispare după 4 secunde
-
-    return () => clearTimeout(timer);
-  } else {
-    setShouldRender(false);
-  }
-}, [cartItemCount]);
-useEffect(() => {
-  const handleScroll = () => {
-    const currentScrollY = window.scrollY;
-
-    if (currentScrollY < lastScrollY) {
-      // Scroll UP → arată butonul
-      if (cartItemCount > 0) {
-        setIsVisible(true);
-      }
-    } else if (currentScrollY > lastScrollY) {
-      // Scroll DOWN → ascunde butonul
-      setIsVisible(false);
-    }
-
-    setLastScrollY(currentScrollY);
-  };
-
-  window.addEventListener("scroll", handleScroll);
-  return () => window.removeEventListener("scroll", handleScroll);
-}, [lastScrollY, cartItemCount]);
-
-useEffect(() => {
-  if (cartItemCount > 0 && !isModalOpen) {
-    setShouldRender(true);
-    setTimeout(() => setIsVisible(true), 10); 
-  } else {
-    setIsVisible(false);
-    setTimeout(() => setShouldRender(false), 200); 
-  }
-}, [cartItemCount, isModalOpen]);
     useEffect(() => {
         const uniqueCategories = ['All', ...new Set(food_list.map(item => item.category))];
         setCategories(uniqueCategories);
@@ -139,12 +133,10 @@ useEffect(() => {
                     <FaArrowLeft /> Back
                 </button>
 
-
                 <nav
                     className="category-menu"
                     ref={menuContainerRef}
                 >
-
                     {categories.map(cat => (
                         <Link
                             key={cat}
@@ -160,12 +152,14 @@ useEffect(() => {
                         </Link>
                     ))}
                 </nav>
+                
                 <SearchBar
                     food_list={food_list || []}
                     onItemClick={openModal}
                     searchQuery={searchQuery}
                     setSearchQuery={setSearchQuery}
                 />
+                
                 {!searchQuery && filteredFood.length > 0 ? (
                     <div className="food-list">
                         {filteredFood.map(item => (
@@ -180,41 +174,39 @@ useEffect(() => {
                                 isNewAdded={item.isNewAdded}
                                 isVegan={item.isVegan}
                                 category={item.category}
-                                onClick={() =>
-                                    openModal({
-                                        id: item._id,
-                                        name: item.name,
-                                        price: item.price,
-                                        description: item.description,
-                                        image: item.image,
-                                    })
-                                }
+                                onClick={() => openModal(item)}
                             />
                         ))}
                     </div>
                 ) : null}
 
-
-
+                {/* Use the same FoodModal component */}
+                {isModalOpen && selectedFood && (
+                    <FoodModal 
+                        food={selectedFood} 
+                        closeModal={closeModal} 
+                        isOpen={isModalOpen}
+                    />
+                )}
             </div>
+            
             {shouldRender && (
-  <div
-    className={`floating-checkout-home ${isVisible ? "visible" : ""}`}
-    onClick={() => {
-      navigate("/cart");
-      window.scrollTo(0, 0);
-    }}
-  >
-    <div className="floating-checkout-left column">
-      <span className="floating-checkout-count">{cartItemCount}</span>
-      <span className="floating-checkout-cta">View Order</span>
-      <span className="floating-checkout-total">
-        {getTotalCartAmount().toFixed(2)} €
-      </span>
-    </div>
-  </div>
-)}
-
+                <div
+                    className={`floating-checkout-home ${isVisible ? "visible" : ""}`}
+                    onClick={() => {
+                        navigate("/cart");
+                        window.scrollTo(0, 0);
+                    }}
+                >
+                    <div className="floating-checkout-left column">
+                        <span className="floating-checkout-count">{cartItemCount}</span>
+                        <span className="floating-checkout-cta">View Order</span>
+                        <span className="floating-checkout-total">
+                            {getTotalCartAmount().toFixed(2)} €
+                        </span>
+                    </div>
+                </div>
+            )}
         </motion.div>
     );
 };

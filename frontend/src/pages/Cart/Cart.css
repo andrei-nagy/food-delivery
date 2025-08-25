@@ -1,7 +1,10 @@
 .cart {
   margin-top: 100px;
 }
-
+.cart-item-buttons{
+  border: 1px solid #ccc;
+  border-radius: 100px;
+}
 .cart-items-title {
   display: grid;
   grid-template-columns: 1.5fr 2fr 1fr 1fr;
@@ -185,7 +188,7 @@
   }
 
   .cart {
-    margin-top: 10px;
+    margin-top: 30px;
   }
 }
 
@@ -300,18 +303,22 @@ form.place-order {
  background: transparent;
     font-size: 16px;
     color: #49557e;
-    border: 2px solid tomato;
+    border: none;
     padding: 10px 30px;
-    border-radius: 10px;
+    border-radius: 4px;
     cursor: pointer;
     transition: 0.3s;
+    font-weight: 700;
+    color:#28a745;
 }
 .add-more-products-text{
   color: #32bb78
 }
 .add-more-wrapper {
-  text-align: center;
-  padding-top: 35px;
+  display: flex;
+  justify-content: center; /* centrează pe orizontală */
+  align-items: center;     /* centrează pe verticală (dacă vrei pe tot ecranul) */
+  margin-top: 20px;        /* opțional, spațiu față de elementele de sus */
 }
 
 .edit-quantity-icon {
@@ -542,7 +549,7 @@ margin-bottom: 20px;
   padding-right: 20px;
   font-size: 20px;
   z-index: 0;
-  border-radius: 12px;
+  border-radius: 4px;
 }
 
 .swipe-trash-icon {
@@ -579,7 +586,7 @@ margin-bottom: 20px;
   padding-right: 20px;
   font-size: 20px;
   z-index: 0;
-  border-radius: 12px;
+  border-radius: 4px;
 }
 
 .swipe-trash-icon {
@@ -596,7 +603,7 @@ margin-bottom: 20px;
   flex-wrap: wrap;
   padding: 12px 8px;
   min-height: 80px; /* păstrează înălțimea la fel cu containerul */
-  border-radius: 12px;
+  border-radius: 4px;
   transition: transform 0.25s ease;
 }
 
@@ -663,7 +670,24 @@ margin-bottom: 20px;
   justify-content: space-between;
   margin-bottom: 20px;
 }
+.add-more-products {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* distanță între text și butonul + */
+}
 
+.plus-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #28a745; /* verde */
+  border-radius: 50%;        /* cerc */
+  color: #28a745;            /* plus-ul verde */
+  font-size: 12px;
+  cursor: pointer;
+}
 .cart-back-btn, .cart-clear-btn {
   background: none;
   border: none;

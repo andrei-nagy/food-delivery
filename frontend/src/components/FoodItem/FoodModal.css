@@ -1,68 +1,337 @@
-.modal-overlay {
+/* Food Item Modal Styles - Clase unice pentru a evita conflictele */
+
+.food-item-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 9999;
+    background-color: rgba(0, 0, 0, 0);
+    z-index: 10000;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
+    opacity: 0;
+    pointer-events: none;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
 }
 
-.modal-content {
+.food-item-modal-overlay.active {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.5);
+    pointer-events: all;
+}
+
+.food-item-modal-container {
     background: #fff;
-    padding: 2rem;
-    border-radius: 12px;
-    max-width: 500px;
-    width: 90%;
-    position: relative;
-}
-
-.modal-close-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    font-size: 1.5rem;
-    border: none;
-    cursor: pointer;
-}
-
-.modal-food-image {
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
     width: 100%;
-    max-height: 250px;
-    object-fit: cover;
-    margin-bottom: 1rem;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.2);
+    touch-action: none; /* Pentru a preveni comportamentul implicit de touch */
 }
 
-.quantity-control {
+.food-item-modal-overlay.active .food-item-modal-container {
+    transform: translateY(0);
+}
+
+.food-item-modal-drag-handle {
+    width: 40px;
+    height: 5px;
+    background-color: #e0e0e0;
+    border-radius: 3px;
+    margin: 12px auto;
+    cursor: grab;
+    transition: background-color 0.2s;
+    user-select: none;
+}
+
+.food-item-modal-drag-handle:active {
+    cursor: grabbing;
+    background-color: #c0c0c0;
+}
+
+.food-item-modal-header {
     display: flex;
-    gap: 10px;
+    justify-content: space-between;
     align-items: center;
-
+    padding: 0 20px 15px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
 }
 
-.quantity-btn {
+.food-item-modal-title {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.food-item-modal-close-btn {
+    background: #f5f5f5;
+    border: none;
     font-size: 1.2rem;
-    padding: 5px 10px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #666;
+    transition: all 0.2s ease;
 }
 
-.add-to-cart-btn {
-    background: #1e90ff;
+.food-item-modal-close-btn:hover {
+    background: #e0e0e0;
+    transform: scale(1.05);
+}
+
+.food-item-modal-body {
+    padding: 0 20px 20px 20px;
+}
+
+.food-item-modal-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin: 10px 0 15px 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.food-item-modal-image:hover {
+    transform: scale(1.02);
+}
+
+.food-item-modal-description {
+    color: #666;
+    margin: 10px 0 15px 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.food-item-modal-price-section {
+    margin: 15px 0;
+    padding: 10px 0;
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.food-item-modal-current-price {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.food-item-modal-original-price {
+    font-size: 1rem;
+    text-decoration: line-through;
+    color: #999;
+    margin-left: 10px;
+}
+
+.food-item-modal-ingredients,
+.food-item-modal-remove-section {
+    margin: 18px 0;
+}
+
+.food-item-modal-section-title {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    color: #333;
+    font-weight: 600;
+}
+
+.food-item-modal-section-content {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.5;
+}
+
+.food-item-modal-remove-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.food-item-modal-remove-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    padding: 8px 0;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+.food-item-modal-remove-option:active {
+    transform: scale(0.98);
+}
+
+.food-item-modal-remove-option input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #ff8000;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+.food-item-modal-textarea {
+    width: 100%;
+    margin: 18px 0;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    min-height: 80px;
+    font-family: inherit;
+    resize: vertical;
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.food-item-modal-textarea:focus {
+    outline: none;
+    border-color: #ff8000;
+    box-shadow: 0 0 0 2px rgba(255, 128, 0, 0.1);
+}
+
+.food-item-modal-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 15px 0 5px 0;
+    position: sticky;
+    bottom: 0;
+    background: white;
+    border-top: 1px solid #f0f0f0;
+}
+
+.food-item-modal-quantity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 6px 10px;
+    background: #fff;
+    transition: border-color 0.2s ease;
+}
+
+.food-item-modal-quantity:focus-within {
+    border-color: #ff8000;
+}
+
+.food-item-modal-qty-btn {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 8px;
+    color: #ff8000;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.food-item-modal-qty-btn:hover {
+    background: #fff5e6;
+    transform: scale(1.1);
+}
+
+.food-item-modal-qty-btn:active {
+    transform: scale(0.95);
+}
+
+.food-item-modal-qty-value {
+    font-weight: bold;
+    min-width: 24px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.food-item-modal-add-btn {
+    background: #ff8000;
     color: white;
     border: none;
-    padding: 10px 15px;
-    border-radius: 6px;
+    padding: 14px 22px;
+    border-radius: 10px;
     cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    flex: 1;
+    max-width: 220px;
+    margin-left: 15px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(255, 128, 0, 0.3);
 }
 
-.special-instructions-modal {
-    width: 100%;
-    margin-top: 1rem;
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    min-height: 60px;
+.food-item-modal-add-btn:hover {
+    background: #e67300;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 128, 0, 0.4);
+}
+
+.food-item-modal-add-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(255, 128, 0, 0.3);
+}
+
+/* Pentru desktop */
+@media (min-width: 768px) {
+    .food-item-modal-overlay {
+        align-items: center;
+        background-color: rgba(0, 0, 0, 0);
+    }
+    
+    .food-item-modal-overlay.active {
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+    
+    .food-item-modal-container {
+        border-radius: 20px;
+        max-height: 80vh;
+        width: 90%;
+        max-width: 650px;
+        transform: translateY(20px) scale(0.95);
+    }
+    
+    .food-item-modal-overlay.active .food-item-modal-container {
+        transform: translateY(0) scale(1);
+    }
+    
+    .food-item-modal-drag-handle {
+        display: none;
+    }
+}
+
+/* Animație pentru închidere */
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+.food-item-modal-overlay:not(.active) {
+    animation: fadeOut 0.3s ease forwards;
 }

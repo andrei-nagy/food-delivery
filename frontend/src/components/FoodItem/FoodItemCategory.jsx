@@ -3,6 +3,7 @@ import "./FoodItemCategory.css";
 import { assets } from "../../assets/assets";
 import { StoreContext } from "../../context/StoreContext";
 import { motion, AnimatePresence } from "framer-motion";
+import FoodModal from "../FoodItem/FoodModal";
 
 const FoodItemCategory = ({
   id,
@@ -14,6 +15,7 @@ const FoodItemCategory = ({
   isNewAdded,
   isVegan,
   category,
+  onClick
 }) => {
   const { cartItems, addToCart, removeFromCart, url, updateCartItemQuantity } =
     useContext(StoreContext);
@@ -38,11 +40,22 @@ const FoodItemCategory = ({
   }, [isModalOpen]);
 
   const openFoodModal = () => {
-    setSelectedFood({ id, name, price, description, image });
-    const currentQuantity = cartItems[id] || 0;
-    setSelectedQuantity(currentQuantity > 0 ? currentQuantity : 1);
-    setSpecialInstructions("");
-    setIsModalOpen(true);
+    // Just call the parent's onClick handler
+    if (onClick) {
+      onClick({ id, name, price, description, image });
+    }
+  };
+
+  // Funcție nouă pentru a deschide modalul când se apasă pe iconița Add
+  const handleAddIconClick = (e) => {
+    e.stopPropagation();
+    openFoodModal();
+  };
+
+  // Funcție pentru a deschide modalul când se apasă pe counter
+  const handleCounterClick = (e) => {
+    e.stopPropagation();
+    openFoodModal(); // Schimbat: acum deschide modalul în loc să arate controalele
   };
 
   const closeFoodModal = () => {
@@ -76,17 +89,6 @@ const FoodItemCategory = ({
       );
     }
     closeFoodModal();
-  };
-
-  const handleCounterClick = (e) => {
-    e.stopPropagation();
-    setShowCounterControls(true);
-
-    if (timerRef.current) clearTimeout(timerRef.current);
-
-    timerRef.current = setTimeout(() => {
-      setShowCounterControls(false);
-    }, 3500);
   };
 
   const nutritionDummyText = `
@@ -137,58 +139,23 @@ Sare: 1g.
 
             {cartItems && cartItems[id] > 0 ? (
               <AnimatePresence>
-                {showCounterControls ? (
-                  <motion.div
-                    key="counter"
-                    className="food-item-counter"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 15 }}
-                    transition={{ duration: 0.12, ease: "easeOut" }}
-                    onClick={handleCounterClick}
-                  >
-                    <img
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFromCart(id, 1);
-                        handleCounterClick(e);
-                      }}
-                      src={assets.remove_icon_red}
-                      alt="Remove"
-                    />
-                    <p>{cartItems[id]}</p>
-                    <img
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addToCart(id, 1);
-                        handleCounterClick(e);
-                      }}
-                      src={assets.add_icon_green}
-                      alt="Add"
-                    />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="cart"
-                    className="food-item-counter-cart"
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 15 }}
-                    transition={{ duration: 0.12, ease: "easeOut" }}
-                    onClick={handleCounterClick}
-                  >
-                    {cartItems[id]}
-                  </motion.div>
-                )}
+                {/* Eliminat controalele de +/- și lăsat doar counter-ul care deschide modalul */}
+                <motion.div
+                  key="cart"
+                  className="food-item-counter-cart"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 15 }}
+                  transition={{ duration: 0.12, ease: "easeOut" }}
+                  onClick={handleCounterClick} // Acum deschide modalul
+                >
+                  {cartItems[id]}
+                </motion.div>
               </AnimatePresence>
             ) : (
               <img
                 className="add"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  addToCart(id, 1);
-                  handleCounterClick(e);
-                }}
+                onClick={handleAddIconClick}
                 src={assets.add_icon_white}
                 alt="Add"
               />
@@ -208,65 +175,13 @@ Sare: 1g.
           </div>
         </div>
 
-        {/* Modal principal */}
+        {/* Folosim FoodModal în loc de modalul vechi */}
         {isModalOpen && selectedFood && (
-          <div
-            className="modal-overlay quick-food-modal"
-            onClick={closeFoodModal}
-          >
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <button className="modal-close-button" onClick={closeFoodModal}>
-                ✕
-              </button>
-              <div className="modal-header">
-                <h2>{selectedFood.name}</h2>
-              </div>
-
-              <img
-                src={url + "/images/" + selectedFood.image}
-                alt={selectedFood.name}
-                className="modal-food-image"
-              />
-
-              <p className="modal-description">{selectedFood.description}</p>
-
-              <div
-                className="nutrition-info-button"
-                onClick={openNutritionModal}
-              >
-                Informații nutriționale
-              </div>
-
-              <div className="modal-controls">
-                <div className="quantity-control">
-                  <button
-                    className="quantity-btn"
-                    onClick={handleDecreaseQuantityModal}
-                  >
-                    -
-                  </button>
-                  <span className="quantity">{selectedQuantity}</span>
-                  <button
-                    className="quantity-btn"
-                    onClick={handleIncreaseQuantityModal}
-                  >
-                    +
-                  </button>
-                </div>
-
-                <button className="add-to-cart-btn" onClick={handleAddToOrder}>
-                  Add {(selectedFood.price * selectedQuantity).toFixed(2)} €
-                </button>
-              </div>
-
-              <textarea
-                className="special-instructions-modal"
-                placeholder="Special instructions (optional)"
-                value={specialInstructions}
-                onChange={(e) => setSpecialInstructions(e.target.value)}
-              />
-            </div>
-          </div>
+          <FoodModal 
+            food={selectedFood} 
+            closeModal={closeFoodModal} 
+            isOpen={isModalOpen}
+          />
         )}
 
         {/* Modal mic pentru informații nutriționale */}
