@@ -69,7 +69,7 @@
     height: 5px;
     background-color: #e0e0e0;
     border-radius: 3px;
-    margin: 12px auto;
+    margin: 0px auto;
     cursor: grab;
     transition: background-color 0.2s;
     user-select: none;
@@ -81,15 +81,22 @@
 }
 
 .food-item-modal-header {
+     position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 20px 15px 20px;
+    padding: 0 20px 10px 20px;
     border-bottom: 1px solid #f0f0f0;
     position: sticky;
     top: 0;
     background: white;
     z-index: 10;
+margin-bottom: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .food-item-modal-title {
@@ -97,6 +104,11 @@
     font-size: 1.3rem;
     font-weight: 600;
     color: #333;
+    /* Asigurăm că titlul nu se decupează */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 80%;
 }
 
 .food-item-modal-close-btn {
@@ -113,6 +125,8 @@
     border-radius: 50%;
     color: #666;
     transition: all 0.2s ease;
+    /* Asigurăm că butonul rămâne vizibil */
+    flex-shrink: 0;
 }
 
 .food-item-modal-close-btn:hover {
@@ -357,4 +371,33 @@
 
 .food-item-modal-overlay:not(.active) {
     animation: fadeOut 0.3s ease forwards;
+}
+
+
+/* Container pentru header-ul sticky */
+.food-item-modal-sticky-header {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 20;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding-top: 12px; /* Mutăm padding-ul aici în loc de margin pe handle */
+
+}
+
+ 
+
+/* Ajustări pentru conținutul modalului */
+.food-item-modal-body {
+    padding: 0 20px 20px 20px;
+    margin-top: -10px; /* Compensează pentru spațiul header-ului sticky */
+}
+
+/* Ajustări pentru desktop */
+@media (min-width: 768px) {
+    .food-item-modal-sticky-header {
+        border-radius: 20px 20px 0 0;
+    }
 }

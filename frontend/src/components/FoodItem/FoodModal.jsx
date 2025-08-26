@@ -187,13 +187,15 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
 
     if (!isOpen || !food) return null;
 
-    return (
-        <div className={`food-item-modal-overlay ${isVisible ? 'active' : ''}`} onClick={closeModal}>
-            <div 
-                className="food-item-modal-container" 
-                ref={modalRef}
-                onClick={(e) => e.stopPropagation()}
-            >
+    // Înlocuiește secțiunea de return cu acest cod
+return (
+    <div className={`food-item-modal-overlay ${isVisible ? 'active' : ''}`} onClick={closeModal}>
+        <div 
+            className="food-item-modal-container" 
+            ref={modalRef}
+            onClick={(e) => e.stopPropagation()}
+        >
+            <div className="food-item-modal-sticky-header">
                 <div 
                     className="food-item-modal-drag-handle"
                     onMouseDown={handleDragStart}
@@ -203,69 +205,71 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                     <h2 className="food-item-modal-title">{food.name}</h2>
                     <button className="food-item-modal-close-btn" onClick={closeModal}>✕</button>
                 </div>
+            </div>
+            
+            <div className="food-item-modal-body">
+                {/* Restul conținutului rămâne neschimbat */}
+                <img src={url + "/images/" + food.image} alt={food.name} className="food-item-modal-image" />
+                <p className="food-item-modal-description">{food.description}</p>
                 
-                <div className="food-item-modal-body">
-                    <img src={url + "/images/" + food.image} alt={food.name} className="food-item-modal-image" />
-                    <p className="food-item-modal-description">{food.description}</p>
-                    
-                    <div className="food-item-modal-price-section">
-                        <span className="food-item-modal-current-price">{food.price.toFixed(2)} €</span>
-                        {food.originalPrice && (
-                            <span className="food-item-modal-original-price">{food.originalPrice.toFixed(2)} €</span>
-                        )}
+                <div className="food-item-modal-price-section">
+                    <span className="food-item-modal-current-price">{food.price.toFixed(2)} €</span>
+                    {food.originalPrice && (
+                        <span className="food-item-modal-original-price">{food.originalPrice.toFixed(2)} €</span>
+                    )}
+                </div>
+                
+                <div className="food-item-modal-ingredients">
+                    <h3 className="food-item-modal-section-title">Ingrediente</h3>
+                    <p className="food-item-modal-section-content">Orez (120g), creveți tempura (produs decongelat) (45g), castravete (20g), cremă de brânză (25g), iree tobiko (produs decongelat) (10g), mango (15g), sos sriracha (5g), sos de ananas (5g), alge nori (1g) - 246g.</p>
+                </div>
+                
+                <div className="food-item-modal-remove-section" ref={optionsRef}>
+                    <h3 className="food-item-modal-section-title">Adaugă extra (selectați cel puțin o opțiune)</h3>
+                    <div className="food-item-modal-remove-options">
+                        <label className="food-item-modal-remove-option">
+                            <input 
+                                type="checkbox" 
+                                checked={selectedOptions.includes("Creveți tempura")}
+                                onChange={() => handleOptionChange("Creveți tempura")}
+                            />
+                            <span>Creveți tempura</span>
+                        </label>
+                        <label className="food-item-modal-remove-option">
+                            <input 
+                                type="checkbox" 
+                                checked={selectedOptions.includes("Sos sriracha")}
+                                onChange={() => handleOptionChange("Sos sriracha")}
+                            />
+                            <span>Sos sriracha</span>
+                        </label>
                     </div>
-                    
-                    <div className="food-item-modal-ingredients">
-                        <h3 className="food-item-modal-section-title">Ingrediente</h3>
-                        <p className="food-item-modal-section-content">Orez (120g), creveți tempura (produs decongelat) (45g), castravete (20g), cremă de brânză (25g), iree tobiko (produs decongelat) (10g), mango (15g), sos sriracha (5g), sos de ananas (5g), alge nori (1g) - 246g.</p>
+                    {validationError && (
+                        <div className="food-item-modal-error">{validationError}</div>
+                    )}
+                </div>
+                
+                <textarea
+                    className="food-item-modal-textarea"
+                    placeholder="Instrucțiuni speciale (opțional)"
+                    value={specialInstructions}
+                    onChange={(e) => setSpecialInstructions(e.target.value)}
+                />
+                
+                <div className="food-item-modal-controls">
+                    <div className="food-item-modal-quantity">
+                        <button className="food-item-modal-qty-btn" onClick={decrease}>-</button>
+                        <span className="food-item-modal-qty-value">{selectedQuantity}</span>
+                        <button className="food-item-modal-qty-btn" onClick={increase}>+</button>
                     </div>
-                    
-                    <div className="food-item-modal-remove-section" ref={optionsRef}>
-                        <h3 className="food-item-modal-section-title">Adaugă extra (selectați cel puțin o opțiune)</h3>
-                        <div className="food-item-modal-remove-options">
-                            <label className="food-item-modal-remove-option">
-                                <input 
-                                    type="checkbox" 
-                                    checked={selectedOptions.includes("Creveți tempura")}
-                                    onChange={() => handleOptionChange("Creveți tempura")}
-                                />
-                                <span>Creveți tempura</span>
-                            </label>
-                            <label className="food-item-modal-remove-option">
-                                <input 
-                                    type="checkbox" 
-                                    checked={selectedOptions.includes("Sos sriracha")}
-                                    onChange={() => handleOptionChange("Sos sriracha")}
-                                />
-                                <span>Sos sriracha</span>
-                            </label>
-                        </div>
-                        {validationError && (
-                            <div className="food-item-modal-error">{validationError}</div>
-                        )}
-                    </div>
-                    
-                    <textarea
-                        className="food-item-modal-textarea"
-                        placeholder="Instrucțiuni speciale (opțional)"
-                        value={specialInstructions}
-                        onChange={(e) => setSpecialInstructions(e.target.value)}
-                    />
-                    
-                    <div className="food-item-modal-controls">
-                        <div className="food-item-modal-quantity">
-                            <button className="food-item-modal-qty-btn" onClick={decrease}>-</button>
-                            <span className="food-item-modal-qty-value">{selectedQuantity}</span>
-                            <button className="food-item-modal-qty-btn" onClick={increase}>+</button>
-                        </div>
-                        <button className="food-item-modal-add-btn" onClick={add}>
-                            Adaugă {(food.price * selectedQuantity).toFixed(2)} €
-                        </button>
-                    </div>
+                    <button className="food-item-modal-add-btn" onClick={add}>
+                        Adaugă {(food.price * selectedQuantity).toFixed(2)} €
+                    </button>
                 </div>
             </div>
         </div>
-    );
+    </div>
+);
 };
 
 export default FoodModal;
