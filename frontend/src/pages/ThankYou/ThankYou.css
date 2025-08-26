@@ -1,17 +1,4 @@
-/* src/pages/ThankYou.css */
-.thank-you-container {
-    text-align: center;
-    margin-top: 20px;
-  }
-  .center-container {
-   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100vw; /* sau max-width: 100% */
-  padding: 1rem; /* opțional, pentru respirabilitate */
-  box-sizing: border-box;
-}
+ 
   .thank-you-container h1 {
     color: #4caf50;
     font-size: 2.2rem;
@@ -41,16 +28,7 @@
   .thank-you-buttons button:hover {
     background-color: #0056b3;
   }
-  .star-rating {
-    font-size: 24px;
-    cursor: pointer;
-  }
-  
-  .star {
-    color: #ddd;
-    margin-right: 5px;
-    transition: color 0.3s;
-  }
+ 
   
   .star.filled {
     color: #ffc107;
@@ -60,3 +38,112 @@
     color: #ff9800;
   }
   
+/* ThankYou.css - Only affects the ThankYou component */
+.thank-you-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.95);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.thank-you-container {
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  max-width: 550px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: 20px;
+}
+
+.star-rating {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 15px 0;
+}
+
+.star {
+  font-size: 2.2rem;
+  color: #ddd;
+  transition: color 0.2s ease;
+}
+
+.star.filled {
+  color: #FFD700;
+}
+
+.thank-you-buttons button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 150px;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* Responsive adjustments */
+@media (max-height: 700px) {
+  .thank-you-container {
+    padding: 20px;
+    max-height: 95vh;
+  }
+  
+  .star {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .thank-you-container {
+    padding: 15px;
+  }
+  
+  .thank-you-container h1 {
+    font-size: 1.5rem;
+  }
+  
+  .star {
+    font-size: 1.6rem;
+  }
+  
+  .thank-you-buttons button {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+}
+
+.countdown-message {
+  margin: 15px 0;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #4CAF50;
+}
+
+.countdown-message p {
+  margin: 0;
+  color: #495057;
+  font-size: 0.95rem;
+}

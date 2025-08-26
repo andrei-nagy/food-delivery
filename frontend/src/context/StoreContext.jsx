@@ -100,7 +100,8 @@ const StoreContextProvider = (props) => {
           console.error("Error removing item completely:", err);
         }
       };
-      
+   
+
     const updateCartItemQuantity = async (itemId, newQuantity, specialInstructions = "") => {
     
         // Copiem local cart-ul
