@@ -7,7 +7,10 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     const [selectedQuantity, setSelectedQuantity] = useState(1);
     const [specialInstructions, setSpecialInstructions] = useState("");
     const [isVisible, setIsVisible] = useState(false);
+    const [selectedOptions, setSelectedOptions] = useState([]);
+    const [validationError, setValidationError] = useState("");
     const modalRef = useRef(null);
+    const optionsRef = useRef(null);
     const dragStartY = useRef(0);
     const currentY = useRef(0);
     const isDragging = useRef(false);
@@ -20,6 +23,9 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
             });
         } else {
             setIsVisible(false);
+            // Resetăm starea la închidere
+            setSelectedOptions([]);
+            setValidationError("");
             // Mic delay înainte de a permite scroll-ul din nou
             setTimeout(() => {
                 document.body.style.overflow = '';
@@ -30,6 +36,17 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
             document.body.style.overflow = '';
         };
     }, [isOpen]);
+
+    // Handler pentru selectarea opțiunilor
+    const handleOptionChange = (option) => {
+        setValidationError(""); // Resetează eroarea la interacțiunea utilizatorului
+        
+        if (selectedOptions.includes(option)) {
+            setSelectedOptions(selectedOptions.filter(item => item !== option));
+        } else {
+            setSelectedOptions([...selectedOptions, option]);
+        }
+    };
 
     // Handler pentru începutul drag-ului
     const handleDragStart = (e) => {
@@ -66,6 +83,16 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         }
         
         currentY.current = 0;
+    };
+
+    // Funcție pentru scroll smooth către opțiuni
+    const scrollToOptions = () => {
+        if (optionsRef.current) {
+            optionsRef.current.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
     };
 
     // Adaugă event listeners pentru drag
@@ -133,12 +160,12 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     const decrease = () => setSelectedQuantity(q => Math.max(1, q - 1));
     
     const add = () => {
-        // console.log("Adding to cart:", {
-        //     food: food,
-        //     id: food?.id || food?._id,
-        //     quantity: selectedQuantity,
-        //     instructions: specialInstructions
-        // });
+        // Validare - cel puțin o opțiune trebuie selectată
+        if (selectedOptions.length === 0) {
+            setValidationError("Selectați cel puțin o opțiune");
+            scrollToOptions(); // Face scroll către secțiunea cu opțiuni
+            return;
+        }
         
         if (!food) {
             console.error("Food object is undefined!");
@@ -154,7 +181,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
             return;
         }
         
-        addToCart(foodId, selectedQuantity, specialInstructions);
+        addToCart(foodId, selectedQuantity, specialInstructions, selectedOptions);
         closeModal();
     };
 
@@ -193,18 +220,29 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                         <p className="food-item-modal-section-content">Orez (120g), creveți tempura (produs decongelat) (45g), castravete (20g), cremă de brânză (25g), iree tobiko (produs decongelat) (10g), mango (15g), sos sriracha (5g), sos de ananas (5g), alge nori (1g) - 246g.</p>
                     </div>
                     
-                    <div className="food-item-modal-remove-section">
-                        <h3 className="food-item-modal-section-title">Elimină</h3>
+                    <div className="food-item-modal-remove-section" ref={optionsRef}>
+                        <h3 className="food-item-modal-section-title">Adaugă extra (selectați cel puțin o opțiune)</h3>
                         <div className="food-item-modal-remove-options">
                             <label className="food-item-modal-remove-option">
-                                <input type="checkbox" />
+                                <input 
+                                    type="checkbox" 
+                                    checked={selectedOptions.includes("Creveți tempura")}
+                                    onChange={() => handleOptionChange("Creveți tempura")}
+                                />
                                 <span>Creveți tempura</span>
                             </label>
                             <label className="food-item-modal-remove-option">
-                                <input type="checkbox" />
+                                <input 
+                                    type="checkbox" 
+                                    checked={selectedOptions.includes("Sos sriracha")}
+                                    onChange={() => handleOptionChange("Sos sriracha")}
+                                />
                                 <span>Sos sriracha</span>
                             </label>
                         </div>
+                        {validationError && (
+                            <div className="food-item-modal-error">{validationError}</div>
+                        )}
                     </div>
                     
                     <textarea

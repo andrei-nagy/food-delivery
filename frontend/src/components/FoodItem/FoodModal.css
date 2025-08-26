@@ -1,5 +1,29 @@
 /* Food Item Modal Styles - Clase unice pentru a evita conflictele */
+/* Adăugați aceste stiluri la sfârșitul fișierului FoodModal.css */
 
+.food-item-modal-error {
+    color: #ff3b30;
+    font-size: 14px;
+    margin-top: 8px;
+    font-weight: 500;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+}
+
+.food-item-modal-remove-section {
+    transition: background-color 0.3s ease;
+}
+
+.food-item-modal-error ~ .food-item-modal-remove-options {
+    border: 1px solid #ff3b30;
+    border-radius: 8px;
+    padding: 8px;
+}
 .food-item-modal-overlay {
     position: fixed;
     top: 0;
@@ -34,7 +58,6 @@
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.2);
-    touch-action: none; /* Pentru a preveni comportamentul implicit de touch */
 }
 
 .food-item-modal-overlay.active .food-item-modal-container {
