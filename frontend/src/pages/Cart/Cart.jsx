@@ -30,6 +30,8 @@ const Cart = () => {
   const [showConfirmClear, setShowConfirmClear] = useState(false);
   const [data, setData] = useState({ tableNo: "" });
   const navigate = useNavigate();
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
 
   const swipeData = useRef({});
   const [swipeOffsets, setSwipeOffsets] = useState({});
@@ -68,8 +70,10 @@ const Cart = () => {
   };
 
   const placeOrder = async (event) => {
-    event.preventDefault();
-
+    if (event) event.preventDefault();
+    
+    if (orderPlaced) return; // Prevent multiple clicks
+    
     if (!paymentMethod) {
       setPaymentError("Please select a payment method.");
       setTimeout(() => {
@@ -80,6 +84,8 @@ const Cart = () => {
       }, 100);
       return;
     } else setPaymentError("");
+
+    setIsPlacingOrder(true); // Start animation
 
     let orderItems = [];
     food_list.forEach((item) => {
@@ -97,25 +103,39 @@ const Cart = () => {
       specialInstructions,
     };
 
-    if (paymentMethod === "creditCard") {
-      const response = await axios.post(url + "/api/order/place", orderData, {
-        headers: { token },
-      });
-      if (response.data.success)
-        window.location.replace(response.data.session_url);
-      else alert("Error processing payment.");
-    } else if (paymentMethod === "cashPOS") {
-      const response = await axios.post(
-        url + "/api/order/place-cash",
-        orderData,
-        { headers: { token } }
-      );
-      if (response.data.success) {
-        navigate("/thank-you", {
-          state: { tableNo: orderData.tableNo, orderId: response.data.orderId },
+    try {
+      if (paymentMethod === "creditCard") {
+        const response = await axios.post(url + "/api/order/place", orderData, {
+          headers: { token },
         });
-        localStorage.setItem("isReloadNeeded", "true");
-      } else alert("Error placing order.");
+        if (response.data.success)
+          window.location.replace(response.data.session_url);
+        else alert("Error processing payment.");
+      } else if (paymentMethod === "cashPOS") {
+        const response = await axios.post(
+          url + "/api/order/place-cash",
+          orderData,
+          { headers: { token } }
+        );
+        if (response.data.success) {
+          setOrderPlaced(true);
+          
+          // Wait for 3 seconds before navigating to thank you page
+          setTimeout(() => {
+            navigate("/thank-you", {
+              state: { tableNo: orderData.tableNo, orderId: response.data.orderId },
+            });
+            localStorage.setItem("isReloadNeeded", "true");
+          }, 1500);
+        } else {
+          alert("Error placing order.");
+          setIsPlacingOrder(false);
+        }
+      }
+    } catch (error) {
+      console.error("Order placement error:", error);
+      alert("Error placing order.");
+      setIsPlacingOrder(false);
     }
   };
 
@@ -259,29 +279,29 @@ const Cart = () => {
                             </div>
 
                             <div
-  className="cart-item-buttons"
-  style={{ position: "relative" }}
->
-  <div className="inline-quantity-controls">
-    <button
-      onClick={() => {
-        updateCartItemQuantity(item._id, quantity - 1);
-      }}
-      className="quantity-btn-order"
-    >
-      <FaMinus />
-    </button>
-    <span className="quantity-order">{quantity}</span>
-    <button
-      onClick={() => {
-        updateCartItemQuantity(item._id, quantity + 1);
-      }}
-      className="quantity-btn-order"
-    >
-      <FaPlus />
-    </button>
-  </div>
-</div>
+                              className="cart-item-buttons"
+                              style={{ position: "relative" }}
+                            >
+                              <div className="inline-quantity-controls">
+                                <button
+                                  onClick={() => {
+                                    updateCartItemQuantity(item._id, quantity - 1);
+                                  }}
+                                  className="quantity-btn-order"
+                                >
+                                  <FaMinus />
+                                </button>
+                                <span className="quantity-order">{quantity}</span>
+                                <button
+                                  onClick={() => {
+                                    updateCartItemQuantity(item._id, quantity + 1);
+                                  }}
+                                  className="quantity-btn-order"
+                                >
+                                  <FaPlus />
+                                </button>
+                              </div>
+                            </div>
 
                           </div>
                         </motion.div>
@@ -293,15 +313,15 @@ const Cart = () => {
             </div>
 
             <div className="add-more-wrapper">
-             <button
-  className="add-more-products"
-  onClick={() => navigate("/category/All")}
->
-  Add more products 
-  <span className="plus-btn">
-    <FaPlus />
-  </span>
-</button>
+              <button
+                className="add-more-products"
+                onClick={() => navigate("/category/All")}
+              >
+                Add more products 
+                <span className="plus-btn">
+                  <FaPlus />
+                </span>
+              </button>
             </div>
 
             <div className="special-instructions">
@@ -406,7 +426,7 @@ const Cart = () => {
                   onSubmit={placeOrder}
                   className={`place-order ${showFloating ? "hide" : "show"}`}
                 >
-                  <button type="submit">
+                  <button type="submit" disabled={isPlacingOrder}>
                     {paymentMethod === "creditCard"
                       ? "PROCEED TO PAYMENT"
                       : "PLACE ORDER"}
@@ -437,7 +457,10 @@ const Cart = () => {
         )}
 
         {!isCartEmpty && (
-          <div className="floating-checkout" onClick={placeOrder}>
+          <div 
+            className={`floating-checkout ${isPlacingOrder ? 'placing-order' : ''}`} 
+            onClick={placeOrder}
+          >
             <div className="floating-checkout-left">
               <span className="floating-checkout-count">
                 {Object.values(cartItems).reduce((a, b) => a + b, 0)}
@@ -450,6 +473,7 @@ const Cart = () => {
               <span className="floating-checkout-total">
                 {(getTotalCartAmount() - discount).toFixed(2)} €
               </span>
+              <span className="order-confirmation">Order Placed!</span>
             </div>
           </div>
         )}

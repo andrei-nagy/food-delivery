@@ -840,3 +840,161 @@ margin-bottom: 20px;
   border-radius: 8px;
   cursor: pointer;
 }
+
+
+/* Adaugă aceste stiluri în fișierul Cart.css */
+
+.floating-checkout {
+  /* Păstrează stilurile tale existente */
+  position: fixed;
+  bottom: 10vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  background-color: #e86514;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* Pseudo-element pentru animația de slide */
+.floating-checkout::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+              rgba(46, 204, 113, 0.5) 0%, 
+              rgba(46, 204, 113, 0.8) 50%, 
+              rgba(46, 204, 113, 0.5) 100%);
+  z-index: -1;
+  transition: left 0.5s ease;
+}
+
+/* Stiluri pentru animația activă */
+.floating-checkout.placing-order {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.floating-checkout.placing-order::after {
+  left: 100%;
+  transition: left 1.5s ease-in-out;
+}
+
+/* Stil pentru textul de confirmare */
+.floating-checkout .order-confirmation {
+  display: none;
+  font-weight: bold;
+}
+
+.floating-checkout.placing-order .floating-checkout-cta,
+.floating-checkout.placing-order .floating-checkout-count,
+.floating-checkout.placing-order .floating-checkout-total {
+  display: none;
+}
+
+.floating-checkout.placing-order .order-confirmation {
+  display: inline;
+  animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Add these styles to your existing CSS */
+
+.floating-checkout {
+  position: fixed;
+  bottom: 10vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  background-color: #e86514; /* Orange base color */
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* Pseudo-element for the sliding animation */
+.floating-checkout::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+              transparent 0%, 
+              rgba(46, 204, 113, 0.6) 50%, 
+              transparent 100%);
+  z-index: 0;
+  transition: left 1.2s ease-in-out;
+}
+
+.floating-checkout > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Active animation state */
+.floating-checkout.placing-order {
+  background-color: #2ecc71; /* Green color */
+}
+
+.floating-checkout.placing-order::before {
+  left: 100%;
+}
+
+/* Order confirmation text */
+.floating-checkout .order-confirmation {
+  display: none;
+  font-weight: bold;
+}
+
+.floating-checkout.placing-order .floating-checkout-cta,
+.floating-checkout.placing-order .floating-checkout-count,
+.floating-checkout.placing-order .floating-checkout-total {
+  display: none;
+}
+
+.floating-checkout.placing-order .order-confirmation {
+  display: inline;
+  animation: fadeIn 0.5s ease forwards;
+  width: 100%;
+  text-align: center;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Additional styles for the sliding effect */
+.floating-checkout.placing-order {
+  transition: background-color 1.5s ease;
+}
