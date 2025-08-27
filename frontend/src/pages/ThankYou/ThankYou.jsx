@@ -18,7 +18,7 @@ const ThankYou = () => {
   const orderId = location.state?.orderId;
   const [rating, setRating] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(10);
 
   useEffect(() => {
     window.scrollTo(0, 0);
