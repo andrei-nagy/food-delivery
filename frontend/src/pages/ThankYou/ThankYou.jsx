@@ -228,7 +228,7 @@ const ThankYou = () => {
         </motion.div>
         <motion.br variants={itemVariants} />
 
-        <motion.div 
+        {/* <motion.div 
           className="thank-you-buttons"
           variants={itemVariants}
         >
@@ -244,7 +244,7 @@ const ThankYou = () => {
               {t('view_our_menu')}
             </motion.button>
           </Link>
-        </motion.div>
+        </motion.div> */}
       </motion.div>
     </motion.div>
   );
