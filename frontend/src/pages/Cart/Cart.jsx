@@ -32,6 +32,7 @@ const Cart = () => {
   const navigate = useNavigate();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null); // Starea pentru item-ul de șters
 
   const swipeData = useRef({});
   const [swipeOffsets, setSwipeOffsets] = useState({});
@@ -144,29 +145,94 @@ const Cart = () => {
     hideTimer.current = setTimeout(() => setEditingItemId(null), 4000);
   };
 
-  // swipe handlers
-  const handleTouchStart = (e, id) => {
-    swipeData.current[id] = {
-      startX: e.touches[0].clientX,
-      currentX: e.touches[0].clientX,
-    };
+ // swipe handlers
+const handleTouchStart = (e, id) => {
+  swipeData.current[id] = {
+    startX: e.touches[0].clientX,
+    currentX: e.touches[0].clientX,
+    isSwiping: false
   };
+};
 
-  const handleTouchMove = (e, id) => {
-    const current = swipeData.current[id];
-    if (!current) return;
-    current.currentX = e.touches[0].clientX;
-    const diff = current.currentX - current.startX;
-    if (diff < 0) setSwipeOffsets((prev) => ({ ...prev, [id]: diff }));
-  };
+const handleTouchMove = (e, id) => {
+  const current = swipeData.current[id];
+  if (!current) return;
+  current.currentX = e.touches[0].clientX;
+  const diff = current.currentX - current.startX;
+  
+  // Permit doar mișcări negative (spre stânga)
+  // Blochează mișcările pozitive (spre dreapta) care ar dezvălui fundalul pe stânga
+  if (diff < 0) {
+    // Limităm swipe-ul la maxim 20% din lățimea ecranului
+    const maxSwipe = -window.innerWidth * 0.2;
+    const offset = Math.max(diff, maxSwipe);
+    setSwipeOffsets((prev) => ({ ...prev, [id]: offset }));
+  } else {
+    // Nu permitem mișcări pozitive (spre dreapta)
+    // Păstrăm offset-ul la 0 sau la ultima valoare negativă
+    const currentOffset = swipeOffsets[id] || 0;
+    if (currentOffset < 0) {
+      setSwipeOffsets((prev) => ({ ...prev, [id]: currentOffset }));
+    } else {
+      setSwipeOffsets((prev) => ({ ...prev, [id]: 0 }));
+    }
+  }
+  
+  current.isSwiping = true;
+};
 
-  const handleTouchEnd = (id) => {
-    const current = swipeData.current[id];
-    if (!current) return;
-    const diff = current.currentX - current.startX;
-    if (Math.abs(diff) > window.innerWidth * 0.5) removeItemCompletely(id);
+const handleTouchEnd = (id) => {
+  const current = swipeData.current[id];
+  if (!current) return;
+  
+  const diff = current.currentX - current.startX;
+  const threshold = window.innerWidth * 0.1;
+  
+  // Dacă utilizatorul a făcut swipe suficient spre stânga pentru a afișa butonul de ștergere
+  if (diff < -threshold) {
+    // Păstrăm offset-ul la maxim 20%
+    const maxSwipe = -window.innerWidth * 0.2;
+    setSwipeOffsets((prev) => ({ ...prev, [id]: maxSwipe }));
+  } 
+  // Dacă utilizatorul a făcut swipe suficient spre dreapta pentru a anula
+  else if (diff > threshold) {
+    // Resetăm la poziția inițială
     setSwipeOffsets((prev) => ({ ...prev, [id]: 0 }));
-    delete swipeData.current[id];
+  }
+  // Dacă swipe-ul nu este suficient, revenim la starea anterioară
+  else {
+    // Dacă elementul era deja swiped, îl păstrăm swiped
+    const currentOffset = swipeOffsets[id] || 0;
+    if (currentOffset < -threshold) {
+      const maxSwipe = -window.innerWidth * 0.2;
+      setSwipeOffsets((prev) => ({ ...prev, [id]: maxSwipe }));
+    } else {
+      setSwipeOffsets((prev) => ({ ...prev, [id]: 0 }));
+    }
+  }
+  
+  delete swipeData.current[id];
+};
+
+  const handleDeleteClick = (id) => {
+    setItemToDelete(id);
+  };
+
+  const confirmDelete = () => {
+    if (itemToDelete) {
+      removeItemCompletely(itemToDelete);
+      setSwipeOffsets((prev) => ({ ...prev, [itemToDelete]: 0 }));
+      setItemToDelete(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setSwipeOffsets((prev) => ({ ...prev, [itemToDelete]: 0 }));
+    setItemToDelete(null);
+  };
+
+  const resetSwipe = (id) => {
+    setSwipeOffsets((prev) => ({ ...prev, [id]: 0 }));
   };
 
   const isCartEmpty = Object.values(cartItems).reduce((a, b) => a + b, 0) === 0;
@@ -194,7 +260,7 @@ const Cart = () => {
             <button className="cart-back-btn" onClick={() => navigate(-1)}>
               <FaArrowLeft className="arrow-left-icon" />
             </button>
-            <h2 className="order-summary">Your order summary</h2>
+            <h2 className="order-summary">Order summary</h2>
             <button
               className="cart-clear-btn"
               onClick={() => setShowConfirmClear(true)}
@@ -239,7 +305,10 @@ const Cart = () => {
                           transition={{ duration: 0.3 }}
                           layout
                         >
-                          <div className="cart-swipe-background">
+                          <div 
+                            className="cart-swipe-background"
+                            onClick={() => handleDeleteClick(item._id)}
+                          >
                             <FaTrash className="swipe-trash-icon" />
                           </div>
 
@@ -250,6 +319,7 @@ const Cart = () => {
                             onTouchStart={(e) => handleTouchStart(e, item._id)}
                             onTouchMove={(e) => handleTouchMove(e, item._id)}
                             onTouchEnd={() => handleTouchEnd(item._id)}
+                            onClick={() => resetSwipe(item._id)}
                             style={{
                               transform: `translateX(${
                                 swipeOffsets[item._id] || 0
@@ -478,6 +548,46 @@ const Cart = () => {
           </div>
         )}
       </div>
+      
+      {/* Modal pentru confirmarea ștergerii unui singur item */}
+      <AnimatePresence>
+        {itemToDelete && (
+          <motion.div
+            className="confirm-modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={cancelDelete}
+          >
+            <motion.div
+              className="confirm-modal"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3>Are you sure you want to remove this item?</h3>
+              <div className="confirm-buttons">
+                <button
+                  className="confirm-yes"
+                  onClick={confirmDelete}
+                >
+                  Yes
+                </button>
+                <button
+                  className="confirm-no"
+                  onClick={cancelDelete}
+                >
+                  No
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Modal pentru confirmarea ștergerii întregului coș */}
       <AnimatePresence>
         {showConfirmClear && (
           <motion.div

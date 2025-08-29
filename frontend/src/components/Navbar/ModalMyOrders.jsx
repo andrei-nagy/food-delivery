@@ -233,18 +233,14 @@ const ModalMyOrders = ({ show, onClose }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="header-myorders">
-          <Link
-            to="/category/All"
-            className="menu-button-myorders"
-            onClick={onClose}
-          >
-            <FaArrowLeft />{" "}
-            <span className="back-text-button">{t("view_menu")}</span>
-          </Link>
-          <div className="close-menu-button-myorders" onClick={onClose}>
-            <FaTimes />
-          </div>
-        </div>
+                 <div className="menu-button-myorders" onClick={() => onClose()}>
+                   <FaArrowLeft />
+                 </div>
+                 <h2 className="modal-title">Orders</h2>
+                 <div className="close-menu-button-myorders" onClick={onClose}>
+                   <FaTimes />
+                 </div>
+               </div>
 
         {orders.length > 0 ? (
           <>

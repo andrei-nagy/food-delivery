@@ -89,7 +89,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 20px 10px 20px;
+    padding: 10px 20px 10px 20px;
     border-bottom: 1px solid #f0f0f0;
     position: sticky;
     top: 0;
@@ -305,7 +305,7 @@ margin-bottom: 10px;
 }
 
 .food-item-modal-add-btn {
-    background: #ff8000;
+    background: #e86514;
     color: white;
     border: none;
     padding: 14px 22px;
@@ -400,4 +400,54 @@ margin-bottom: 10px;
     .food-item-modal-sticky-header {
         border-radius: 20px 20px 0 0;
     }
+}
+
+.food-item-modal-description-wrapper {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.food-item-modal-description {
+    line-height: 1.5;
+    overflow: hidden;
+    transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* Animatie mai smooth */
+    max-height: 60px;
+}
+
+.food-item-modal-description.expanded {
+    max-height: 500px;
+}
+
+.food-item-modal-description-content {
+    margin-bottom: 5px;
+}
+.food-item-modal-view-more {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: none;
+    border: none;
+    color: #ff6b00;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 0;
+    margin-top: 5px;
+    align-items: center;
+    gap: 8px;
+    color: #000;
+    font-weight: 400;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.food-item-modal-view-more:hover {
+    color: #333;
+}
+
+.food-item-modal-chevron {
+    font-size: 0.8em;
+    margin-left: 5px;
+}
+.food-item-modal-description.expanded + .food-item-modal-view-more .food-item-modal-chevron {
+    transform: rotate(180deg);
 }

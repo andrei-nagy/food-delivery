@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { assets } from '../../assets/assets';
 import { useTranslation } from 'react-i18next';
-import { FaArrowLeft,FaTimes } from 'react-icons/fa';
+import { FaArrowLeft, FaTimes, FaComments, FaMoneyBillWave, FaQuestionCircle, FaSignOutAlt } from 'react-icons/fa';
 
 const WaiterModalCart = ({ show, onClose }) => {
   const { url, setToken, token } = useContext(StoreContext);
@@ -16,8 +16,9 @@ const WaiterModalCart = ({ show, onClose }) => {
   const { t, i18n } = useTranslation();
 
   const changeLanguage = (lng) => {
-    i18n.changeLanguage(lng); // Schimbă limba
+    i18n.changeLanguage(lng);
   };
+  
   if (!show) return null;
 
   const logout = () => {
@@ -58,46 +59,59 @@ const WaiterModalCart = ({ show, onClose }) => {
       <div className="modal-content-waiter" onClick={(e) => e.stopPropagation()}>
         <div className="header-myorders">
           <div className="menu-button-myorders" onClick={() => onClose()}>
-            <FaArrowLeft /><span className='back-text-button'>{t('back')}</span>
+            <FaArrowLeft />
           </div>
+          <h2 className="modal-title">Assistant</h2>
           <div className="close-menu-button-myorders" onClick={onClose}>
             <FaTimes />
           </div>
         </div>
 
-        {/* Mesaj profesional de introducere */}
         <div className="assistance-message">
           <p>{t('can_we_assist')}</p>
         </div>
 
         <div className="action-buttons">
           <button type="button" className="action-btn call-waiter" onClick={() => handleActionClick('Call a waiter')}>
-            <img className='waiter-icon-actions' src={assets.waiter_icon} alt="" />
-            {t('call_waiter')}
+            <div className="action-icon-wrapper">
+              <img className='waiter-icon-actions' src={assets.waiter_icon} alt="" />
+            </div>
+            <span className="action-label">{t('call_waiter')}</span>
           </button>
+          
           <button type="button" className="action-btn pay-bill" onClick={() => handleActionClick('I want to pay')}>
-            <span className="icon">&#x1F4B5;</span> {/* Iconă de bani */}
-            {t('to_pay')}
+            <div className="action-icon-wrapper">
+              <FaMoneyBillWave className="action-icon" />
+            </div>
+            <span className="action-label">{t('to_pay')}</span>
           </button>
+          
           <button type="button" className="action-btn need-help" onClick={() => handleActionClick('I need help')}>
-            <span className="icon">&#x2753;</span> {/* Iconă de ajutor */}
-            {t('need_help')}
+            <div className="action-icon-wrapper">
+              <FaQuestionCircle className="action-icon" />
+            </div>
+            <span className="action-label">{t('need_help')}</span>
           </button>
-          <button type="button" className="action-btn need-help" onClick={() => handleActionClick('Live chat')}>
-<span className="icon">&#x1F4AC;</span> {/* Iconă live chat */}
-            Live chat
+          
+          <button type="button" className="action-btn live-chat" onClick={() => handleActionClick('Live chat')}>
+            <div className="action-icon-wrapper">
+              <FaComments className="action-icon" />
+            </div>
+            <span className="action-label">Live chat</span>
           </button>
-          {/* {token ?  <button type="button" className="action-btn need-help" onClick={logout}> */}
-          {/* <span className="icon">&#x1F6AA;</span> Iconă de ajutor */}
-            {/* {t('logout')} */}
-          {/* </button> : null} */}
         </div>
 
-        {/* {token ? <button type='button' className="submit-btn" onClick={logout}>{t('logout')}</button> : null} */}
+        {/* {token && (
+          <div className="logout-section">
+            <button type="button" className="logout-btn" onClick={logout}>
+              <FaSignOutAlt className="logout-icon" />
+              {t('logout')}
+            </button>
+          </div>
+        )} */}
       </div>
     </div>
   );
-
 };
 
 export default WaiterModalCart;

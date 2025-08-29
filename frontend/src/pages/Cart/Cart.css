@@ -64,7 +64,9 @@
 .cart-total hr {
   margin: 10px 0px;
 }
-
+.cart-total h2 {
+  margin-bottom: 15px;
+}
 .checkout-button {
   align-items: center;
   cursor: pointer;
@@ -535,22 +537,7 @@ margin-bottom: 20px;
 .cart-swipe-container.tall {
   min-height: 120px;
 }
-.cart-swipe-background {
-  background-color: #ff3b30;
-  color: white;
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 20px;
-  font-size: 20px;
-  z-index: 0;
-  border-radius: 4px;
-}
+
 
 .swipe-trash-icon {
   pointer-events: none;
@@ -575,19 +562,6 @@ margin-bottom: 20px;
   /* border-radius: 12px; */
 }
 
-.cart-swipe-background {
-  background-color: #ff3b30;
-  color: white;
-  position: absolute;
-  inset: 0; /* echivalent cu top:0; right:0; bottom:0; left:0 */
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 20px;
-  font-size: 20px;
-  z-index: 0;
-  border-radius: 4px;
-}
 
 .swipe-trash-icon {
   pointer-events: none;
@@ -603,7 +577,7 @@ margin-bottom: 20px;
   flex-wrap: wrap;
   padding: 12px 8px;
   min-height: 80px; /* păstrează înălțimea la fel cu containerul */
-  border-radius: 4px;
+  /* border-radius: 4px; */
   transition: transform 0.25s ease;
 }
 
@@ -997,4 +971,122 @@ margin-bottom: 20px;
 /* Additional styles for the sliding effect */
 .floating-checkout.placing-order {
   transition: background-color 1.5s ease;
+}
+
+
+
+
+.cart-swipe-background .swipe-trash-icon {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+.cart-swipe-background span {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.cart-swipe-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.cart-summary-item {
+  position: relative;
+  background: white;
+  z-index: 1;
+}
+ 
+
+/* Adăugăm un mic text sub iconiță */
+.cart-swipe-background .swipe-trash-icon {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+.cart-swipe-background span {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.cart-swipe-container {
+  position: relative;
+  overflow: hidden;
+  min-height: 90px;
+}
+
+.cart-summary-item {
+  position: relative;
+  z-index: 1;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding: 12px 8px;
+  min-height: 90px;
+  /* border-radius: 4px; */
+  transition: transform 0.25s ease;
+}
+
+/* Asigurăm că elementul poate fi glisat */
+.cart-summary-item.swipeable {
+  touch-action: pan-y;
+  user-select: none;
+}
+
+ 
+.cart-swipe-container.swiping .cart-swipe-background {
+  opacity: 1; /* fundalul devine vizibil doar în timpul swipe-ului */
+}
+
+.cart-summary-item {
+  position: relative;
+  z-index: 1;
+  background: white;
+  transition: transform 0.25s ease;
+}
+.cart-swipe-background .swipe-trash-icon {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+.cart-swipe-background span {
+  font-size: 12px;
+  font-weight: bold;
+}
+/* Adaugă tranziție smooth pentru resetarea swipe-ului */
+.cart-summary-item {
+  transition: transform 0.3s ease;
+}
+
+
+.cart-swipe-container {
+  position: relative;
+  overflow: hidden;
+  min-height: 90px;
+  /* Previne mișcarea neintenționată a containerului */
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+ 
+
+.cart-swipe-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ff3b30;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  padding-right: 20px;
+  color: white;
+  z-index: 0;
+  /* Ascunde fundalul în afara limitelor containerului */
+  overflow: hidden;
 }

@@ -5,306 +5,293 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  /* Fundal transparent negru */
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  animation: fadeIn 0.5s;
-  padding: 10px;
+  animation: fadeIn 0.3s ease;
+  padding: 20px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Stiluri pentru conținutul modalului */
 .modal-content-waiter {
   background-color: #fff;
-  /* Fundal alb pentru modal */
-  padding: 15px;
-  border-radius: 10px;
+  padding: 25px;
+  border-radius: 20px;
   width: 100%;
-  max-width: 600px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   z-index: 1001;
   position: relative;
-  max-height: 80vh;
-  /* Înălțimea maximă a modalului */
-  overflow-y: hidden;
-  /* Ascunde overflow-ul pentru a controla scroll-ul doar pe lista de produse */
-  height: 60vh;
-}
-
-/* Butonul de închidere */
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: transparent;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 10px 15px !important;
-}
-.waiter-icon-actions{
-  width: 45px;
-  margin-bottom: 10px
-}
-/* Stiluri pentru itemii din coș */
-.cart-total {
-  display: flex;
-  flex-direction: column;
-  /* gap: 10px; */
-}
-
-.remove-order-button {
-  width: 20px !important;
-  cursor: pointer;
-  margin: auto;
-}
-
-.cart-items {
-  max-height: 55vh;
+  max-height: 85vh;
   overflow-y: auto;
-  margin-top: 20px;
-  margin-bottom: 20px;
+  animation: slideUp 0.4s cubic-bezier(0.18, 1.25, 0.4, 1);
 }
 
-.cart-items::-webkit-scrollbar {
-  width: 6px;
-  display: none;
+@keyframes slideUp {
+  from { 
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-.cart-items::-webkit-scrollbar-thumb {
-  background-color: #ccc;
-  border-radius: 5px;
-}
-
-
-.modal-cart-item {
+/* Header styling */
+.header-myorders {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 0;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 25px;
+  position: relative;
 }
 
-/* Stiluri pentru titlu și cantitate */
-.cart-items-title p {
+.modal-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   margin: 0;
-  font-size: 16px;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #2d3436;
+}
+
+.menu-button-myorders {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
   font-weight: 500;
 }
 
-
-
-
-/* Imaginea produsului */
-.modal-cart-image {
-  width: 50px;
-  height: 50px;
-  border-radius: 5px;
-  object-fit: cover;
-  margin-right: 15px;
+.menu-button-myorders:hover {
+  background-color: #e9ecef;
 }
 
-/* Stiluri pentru detalii produs */
-.cart-items-item {
+.close-menu-button-myorders {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  width: 100%;
-}
-
-/* Prețul fiecărui produs */
-.modal-cart-item p:last-child {
-  font-weight: 600;
-  color: #333;
-  font-size: 16px;
-}
-
-/* Un stil simplu pentru linia de separare între produse */
-hr {
-  border: none;
-  border-top: 1px solid #e0e0e0;
-  margin: 10px 0;
-}
-
-/* Responsivitate pentru mobil */
-@media (max-width: 600px) {
-  .modal-content {
-    max-width: 90%;
-  }
-
-  .modal-cart-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .modal-cart-image {
-    width: 50px;
-    height: 50px;
-    margin-bottom: 10px;
-  }
-
-  .cart-items-title p {
-    font-size: 14px;
-  }
-
-  .modal-cart-item p:last-child {
-    font-size: 14px;
-  }
-}
-
-
-
-/* .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  } */
-
-/* .modal-content {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    width: 400px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    position: relative;
-  } */
-
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: transparent;
-  border: none;
-  font-size: 24px;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #f8f9fa;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.waiter-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.close-menu-button-myorders:hover {
+  background-color: #e9ecef;
+  transform: rotate(90deg);
+}
+
+/* Mesaj de asistență */
+.assistance-message {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.assistance-message p {
+  font-size: 1.1rem;
+  color: #636e72;
+  margin: 0;
+  font-weight: 500;
 }
 
 /* Container pentru butoanele de acțiune */
 .action-buttons {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  /* Două coloane */
   gap: 15px;
-  margin-bottom: 50px;
-  margin-top: 50px;
+  margin-bottom: 25px;
 }
 
 /* Stiluri pentru fiecare buton de acțiune */
 .action-btn {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  width: 100%;
-  height: 100px;
-  /* Dimensiune pătrată */
-  border: none;
-  border-radius: 10px;
+  justify-content: center;
+  padding: 20px 15px;
+  border: 2px solid #f1f3f5;
+  border-radius: 16px;
+  background: white;
   cursor: pointer;
-  font-size: 14px;
-  color: #fff;
-  transition: background-color 0.3s ease;
-}
-
-/* Adaugă iconiță în buton */
-.action-btn .icon {
-  font-size: 30px;
-  margin-bottom: 5px;
-
-}
-
-/* Culori pentru fiecare buton */
-.call-waiter, .pay-bill, .need-help {
-  border: 2px solid #d7d7d7 !important;
-  border-radius: 10px !important
-
-  /* Mov */
-}
-
-
- 
-
-/* Stiluri pentru Logout */
-.submit-btn {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  background-color: #343a40;
-  color: #fff;
-  margin-top: 15px;
-  transition: background-color 0.3s ease;
-  border: 2px solid tomato !important;
-  border-radius: 10px !important
-}
-
-.submit-btn:hover {
-  background-color: #23272b;
-}
-
-.assistance-message {
-  margin: 15px 0;
-  text-align: center;
-  font-size: 1rem;
-  color: #555;
-  top: 20px !important;
-  position: relative;
+  transition: all 0.3s ease;
+  min-height: 120px;
 }
 
 .action-btn:hover {
-  background-color: #ff6b6b;
-  color: #fff;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-.table-number-field {
-  margin-bottom: 20px;
+.action-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  background: #f8f9fa;
+}
+
+.action-icon {
+  font-size: 24px;
+}
+
+.waiter-icon-actions {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.action-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2d3436;
+  text-align: center;
+}
+
+/* Culori specifice pentru fiecare buton */
+.call-waiter:hover {
+  border-color: #74b9ff;
+  background-color: rgba(116, 185, 255, 0.05);
+}
+
+.call-waiter .action-icon-wrapper {
+  background-color: rgba(116, 185, 255, 0.15);
+}
+
+.call-waiter .action-icon,
+.call-waiter .waiter-icon-actions {
+  color: #0984e3;
+}
+
+.pay-bill:hover {
+  border-color: #00b894;
+  background-color: rgba(0, 184, 148, 0.05);
+}
+
+.pay-bill .action-icon-wrapper {
+  background-color: rgba(0, 184, 148, 0.15);
+}
+
+.pay-bill .action-icon {
+  color: #00b894;
+}
+
+.need-help:hover {
+  border-color: #fdcb6e;
+  background-color: rgba(253, 203, 110, 0.05);
+}
+
+.need-help .action-icon-wrapper {
+  background-color: rgba(253, 203, 110, 0.15);
+}
+
+.need-help .action-icon {
+  color: #fdcb6e;
+}
+
+.live-chat:hover {
+  border-color: #a29bfe;
+  background-color: rgba(162, 155, 254, 0.05);
+}
+
+.live-chat .action-icon-wrapper {
+  background-color: rgba(162, 155, 254, 0.15);
+}
+
+.live-chat .action-icon {
+  color: #6c5ce7;
+}
+
+/* Sectiunea de logout */
+.logout-section {
+  border-top: 1px solid #f1f3f5;
+  padding-top: 20px;
+  margin-top: 10px;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   width: 100%;
-}
-
-.table-number-field label {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-.table-number-field input {
-  width: 100%;
-  padding: 8px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.submit-btn {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  border: none;
-  border-radius: 5px;
+  padding: 14px;
+  background-color: #f8f9fa;
+  border: 2px solid #f1f3f5;
+  border-radius: 12px;
+  color: #e17055;
+  font-weight: 600;
   cursor: pointer;
-  background-color: #28a745;
-  color: #fff;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
-.submit-btn:hover {
-  background-color: #218838;
+.logout-btn:hover {
+  background-color: #ffeaea;
+  border-color: #ff7675;
+  color: #d63031;
+}
+
+/* Responsivitate */
+@media (max-width: 600px) {
+  .modal-content-waiter {
+    padding: 20px;
+    border-radius: 16px;
+  }
+  
+  .action-buttons {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .action-btn {
+    min-height: 100px;
+    padding: 15px;
+  }
+  
+  .modal-title {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .modal-overlay-waiter {
+    padding: 10px;
+  }
+  
+  .modal-content-waiter {
+    padding: 15px;
+  }
+  
+  .action-icon-wrapper {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .action-icon {
+    font-size: 20px;
+  }
+  
+  .waiter-icon-actions {
+    width: 25px;
+    height: 25px;
+  }
 }
