@@ -22,6 +22,10 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
+            // Forțează recalcularea layout-ului
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+            }, 100);
             requestAnimationFrame(() => {
                 setIsVisible(true);
             });
@@ -134,7 +138,6 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         const handleTouchMove = (e) => {
             if (!isDragging.current) return;
             
-            // Prevenim mișcarea implicită doar dacă suntem în modul de drag
             e.preventDefault();
             
             const y = e.touches[0].clientY;
@@ -197,6 +200,18 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         
         addToCart(foodId, selectedQuantity, specialInstructions, selectedOptions);
         closeModal();
+    };
+
+    const handleAddButton = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        add();
+    };
+
+    const handleQtyButton = (action) => (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        action();
     };
 
     const truncateDescription = (text, maxLength) => {
@@ -302,11 +317,23 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                     
                     <div className="food-item-modal-controls">
                         <div className="food-item-modal-quantity">
-                            <button className="food-item-modal-qty-btn" onClick={decrease}>-</button>
+                            <button 
+                                className="food-item-modal-qty-btn" 
+                                onClick={handleQtyButton(decrease)}
+                                onTouchEnd={handleQtyButton(decrease)}
+                            >-</button>
                             <span className="food-item-modal-qty-value">{selectedQuantity}</span>
-                            <button className="food-item-modal-qty-btn" onClick={increase}>+</button>
+                            <button 
+                                className="food-item-modal-qty-btn" 
+                                onClick={handleQtyButton(increase)}
+                                onTouchEnd={handleQtyButton(increase)}
+                            >+</button>
                         </div>
-                        <button className="food-item-modal-add-btn" onClick={add}>
+                        <button 
+                            className="food-item-modal-add-btn" 
+                            onClick={handleAddButton}
+                            onTouchEnd={handleAddButton}
+                        >
                             Adaugă {(food.price * selectedQuantity).toFixed(2)} €
                         </button>
                     </div>
