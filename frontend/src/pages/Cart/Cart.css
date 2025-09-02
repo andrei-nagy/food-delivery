@@ -418,6 +418,10 @@ form.place-order {
 margin-bottom: 20px;
   font-size: 0.9rem;
 }
+
+.arrow-left-icon, .cart-clear-btn{
+  color:#000000 !important;
+}
 /* @keyframes pulseGlow {
   0%, 100% {
     box-shadow: 0 0 0 rgba(255, 99, 71, 0.4);
@@ -979,6 +983,8 @@ margin-bottom: 20px;
 .cart-swipe-background .swipe-trash-icon {
   font-size: 20px;
   margin-bottom: 5px;
+  right: 10px;
+  position: relative;
 }
 
 .cart-swipe-background span {
@@ -1089,4 +1095,24 @@ margin-bottom: 20px;
   z-index: 0;
   /* Ascunde fundalul în afara limitelor containerului */
   overflow: hidden;
+}
+
+/* Asigură-te că animația este aplicată corect */
+.cart-summary-item {
+  transform: translateX(0);
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Stiluri pentru a preveni flash-uri pe iOS */
+.cart-summary-item {
+  -webkit-backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  -webkit-transform: translate3d(0,0,0);
+  -webkit-transform-style: preserve-3d;
+}
+.empty-cart-img {
+  max-width: 250px;
+  margin-bottom: 30px;
+  width: 100%;
+  height: auto;
 }

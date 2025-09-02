@@ -32,7 +32,7 @@ const Cart = () => {
   const navigate = useNavigate();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState(null); // Starea pentru item-ul de șters
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   const swipeData = useRef({});
   const [swipeOffsets, setSwipeOffsets] = useState({});
@@ -73,7 +73,7 @@ const Cart = () => {
   const placeOrder = async (event) => {
     if (event) event.preventDefault();
     
-    if (orderPlaced) return; // Prevent multiple clicks
+    if (orderPlaced) return;
     
     if (!paymentMethod) {
       setPaymentError("Please select a payment method.");
@@ -86,7 +86,7 @@ const Cart = () => {
       return;
     } else setPaymentError("");
 
-    setIsPlacingOrder(true); // Start animation
+    setIsPlacingOrder(true);
 
     let orderItems = [];
     food_list.forEach((item) => {
@@ -121,7 +121,6 @@ const Cart = () => {
         if (response.data.success) {
           setOrderPlaced(true);
           
-          // Wait for 3 seconds before navigating to thank you page
           setTimeout(() => {
             navigate("/thank-you", {
               state: { tableNo: orderData.tableNo, orderId: response.data.orderId },
@@ -145,74 +144,62 @@ const Cart = () => {
     hideTimer.current = setTimeout(() => setEditingItemId(null), 4000);
   };
 
- // swipe handlers
-const handleTouchStart = (e, id) => {
-  swipeData.current[id] = {
-    startX: e.touches[0].clientX,
-    currentX: e.touches[0].clientX,
-    isSwiping: false
+  const handleTouchStart = (e, id) => {
+    swipeData.current[id] = {
+      startX: e.touches[0].clientX,
+      currentX: e.touches[0].clientX,
+      isSwiping: false
+    };
   };
-};
 
-const handleTouchMove = (e, id) => {
-  const current = swipeData.current[id];
-  if (!current) return;
-  current.currentX = e.touches[0].clientX;
-  const diff = current.currentX - current.startX;
-  
-  // Permit doar mișcări negative (spre stânga)
-  // Blochează mișcările pozitive (spre dreapta) care ar dezvălui fundalul pe stânga
-  if (diff < 0) {
-    // Limităm swipe-ul la maxim 20% din lățimea ecranului
-    const maxSwipe = -window.innerWidth * 0.2;
-    const offset = Math.max(diff, maxSwipe);
-    setSwipeOffsets((prev) => ({ ...prev, [id]: offset }));
-  } else {
-    // Nu permitem mișcări pozitive (spre dreapta)
-    // Păstrăm offset-ul la 0 sau la ultima valoare negativă
-    const currentOffset = swipeOffsets[id] || 0;
-    if (currentOffset < 0) {
-      setSwipeOffsets((prev) => ({ ...prev, [id]: currentOffset }));
+  const handleTouchMove = (e, id) => {
+    const current = swipeData.current[id];
+    if (!current) return;
+    current.currentX = e.touches[0].clientX;
+    const diff = current.currentX - current.startX;
+    
+    if (diff < 0) {
+      const maxSwipe = -window.innerWidth * 0.2;
+      const offset = Math.max(diff, maxSwipe);
+      setSwipeOffsets((prev) => ({ ...prev, [id]: offset }));
     } else {
-      setSwipeOffsets((prev) => ({ ...prev, [id]: 0 }));
+      const currentOffset = swipeOffsets[id] || 0;
+      if (currentOffset < 0) {
+        setSwipeOffsets((prev) => ({ ...prev, [id]: currentOffset }));
+      } else {
+        setSwipeOffsets((prev) => ({ ...prev, [id]: 0 }));
+      }
     }
-  }
-  
-  current.isSwiping = true;
-};
+    
+    current.isSwiping = true;
+  };
 
-const handleTouchEnd = (id) => {
-  const current = swipeData.current[id];
-  if (!current) return;
-  
-  const diff = current.currentX - current.startX;
-  const threshold = window.innerWidth * 0.1;
-  
-  // Dacă utilizatorul a făcut swipe suficient spre stânga pentru a afișa butonul de ștergere
-  if (diff < -threshold) {
-    // Păstrăm offset-ul la maxim 20%
-    const maxSwipe = -window.innerWidth * 0.2;
-    setSwipeOffsets((prev) => ({ ...prev, [id]: maxSwipe }));
-  } 
-  // Dacă utilizatorul a făcut swipe suficient spre dreapta pentru a anula
-  else if (diff > threshold) {
-    // Resetăm la poziția inițială
-    setSwipeOffsets((prev) => ({ ...prev, [id]: 0 }));
-  }
-  // Dacă swipe-ul nu este suficient, revenim la starea anterioară
-  else {
-    // Dacă elementul era deja swiped, îl păstrăm swiped
-    const currentOffset = swipeOffsets[id] || 0;
-    if (currentOffset < -threshold) {
+  const handleTouchEnd = (id) => {
+    const current = swipeData.current[id];
+    if (!current) return;
+    
+    const diff = current.currentX - current.startX;
+    const threshold = window.innerWidth * 0.1;
+    
+    if (diff < -threshold) {
       const maxSwipe = -window.innerWidth * 0.2;
       setSwipeOffsets((prev) => ({ ...prev, [id]: maxSwipe }));
-    } else {
+    } 
+    else if (diff > threshold) {
       setSwipeOffsets((prev) => ({ ...prev, [id]: 0 }));
     }
-  }
-  
-  delete swipeData.current[id];
-};
+    else {
+      const currentOffset = swipeOffsets[id] || 0;
+      if (currentOffset < -threshold) {
+        const maxSwipe = -window.innerWidth * 0.2;
+        setSwipeOffsets((prev) => ({ ...prev, [id]: maxSwipe }));
+      } else {
+        setSwipeOffsets((prev) => ({ ...prev, [id]: 0 }));
+      }
+    }
+    
+    delete swipeData.current[id];
+  };
 
   const handleDeleteClick = (id) => {
     setItemToDelete(id);
@@ -271,15 +258,22 @@ const handleTouchEnd = (id) => {
         )}
 
         {isCartEmpty ? (
-          <div className="cart-empty">
-            <img className="empty-cart-img" src={assets.empty_cart2} alt="" />
-            <button
+          <motion.div 
+            className="cart-empty"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
+            <img className="empty-cart-img" src={assets.empty_cart2} alt="Empty cart" />
+            <motion.button
               className="add-more-products"
               onClick={() => navigate("/category/All")}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               View menu
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         ) : (
           <>
             <div className="cart-summary-list">
@@ -324,9 +318,7 @@ const handleTouchEnd = (id) => {
                               transform: `translateX(${
                                 swipeOffsets[item._id] || 0
                               }px)`,
-                              transition: swipeOffsets[item._id]
-                                ? "none"
-                                : "transform 0.3s ease",
+                              transition: "transform 0.3s ease",
                             }}
                           >
                             <img
@@ -372,7 +364,6 @@ const handleTouchEnd = (id) => {
                                 </button>
                               </div>
                             </div>
-
                           </div>
                         </motion.div>
                         <hr className="cart-separator" />
@@ -549,7 +540,6 @@ const handleTouchEnd = (id) => {
         )}
       </div>
       
-      {/* Modal pentru confirmarea ștergerii unui singur item */}
       <AnimatePresence>
         {itemToDelete && (
           <motion.div
@@ -587,7 +577,6 @@ const handleTouchEnd = (id) => {
         )}
       </AnimatePresence>
       
-      {/* Modal pentru confirmarea ștergerii întregului coș */}
       <AnimatePresence>
         {showConfirmClear && (
           <motion.div

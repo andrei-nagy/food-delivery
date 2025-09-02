@@ -21,6 +21,7 @@ import "./i18n"; // Asigură-te că i18n este inițializat înainte de aplicați
 import CategoryPage from "./components/FoodDisplay/CategoryPage";
 import { AnimatePresence } from "framer-motion";
 import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
+import GlobalNotification from "./components/GlobalNotifications/GlobalNotifications";
 
 const App = () => {
   const { url } = useContext(StoreContext);
@@ -168,6 +169,7 @@ const App = () => {
           <div className="app">
             <ToastContainer />
             <ScrollToTop />
+            <GlobalNotification /> 
             <Navbar setShowLogin={setShowLogin} isWelcomePage={isWelcomePage} />
             <AnimatePresence mode="wait">
               <Routes>
