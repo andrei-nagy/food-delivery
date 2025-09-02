@@ -290,16 +290,18 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                         onChange={(e) => setSpecialInstructions(e.target.value)}
                     />
                     
-                    <div className="food-item-modal-controls">
-                        <div className="food-item-modal-quantity">
-                            <button className="food-item-modal-qty-btn" onClick={decrease}>-</button>
-                            <span className="food-item-modal-qty-value">{selectedQuantity}</span>
-                            <button className="food-item-modal-qty-btn" onClick={increase}>+</button>
-                        </div>
-                        <button className="food-item-modal-add-btn" onClick={add}>
-                            Adaugă {(food.price * selectedQuantity).toFixed(2)} €
-                        </button>
-                    </div>
+                   <div className="food-item-modal-controls-wrapper">
+  <div className="food-item-modal-controls">
+    <div className="food-item-modal-quantity">
+      <button className="food-item-modal-qty-btn" onClick={decrease}>-</button>
+      <span className="food-item-modal-qty-value">{selectedQuantity}</span>
+      <button className="food-item-modal-qty-btn" onClick={increase}>+</button>
+    </div>
+    <button className="food-item-modal-add-btn" onClick={add}>
+      Adaugă {(food.price * selectedQuantity).toFixed(2)} €
+    </button>
+  </div>
+</div>
                 </div>
             </div>
         </div>

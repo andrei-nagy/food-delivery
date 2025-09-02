@@ -250,7 +250,7 @@ margin-bottom: 10px;
     justify-content: space-between;
     align-items: center;
     margin-top: 20px;
-    padding: 15px 0 5px 0;
+    padding: 0px 0 5px 0;
     position: sticky;
     bottom: 0;
     background: white;
@@ -450,4 +450,36 @@ margin-bottom: 10px;
 }
 .food-item-modal-description.expanded + .food-item-modal-view-more .food-item-modal-chevron {
     transform: rotate(180deg);
+}
+
+/* Adaugă acest cod în fișierul FoodModal.css */
+
+.food-item-modal-controls-wrapper {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 0px 20px 25px;
+  margin: 0 -20px -20px;
+  border-top: 1px solid #f0f0f0;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.food-item-modal-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Ajustări pentru dispozitive mobile */
+@media (max-width: 767px) {
+  .food-item-modal-controls-wrapper {
+    padding-bottom: calc(25px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Asigură-te că container-ul modal are suficient spațiu la partea de jos */
+.food-item-modal-container {
+  padding-bottom: env(safe-area-inset-bottom);
 }

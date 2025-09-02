@@ -41,6 +41,23 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px 16px;
+  background: linear-gradient(90deg, #e86514 0%, #ff8c42 100%); /* Culoare implicită */
+}
+
+/* Culori diferite pentru fiecare tip de notificare - TREBUIE să fie după .notification-header */
+.global-notification-modern.processing .notification-header {
+  background: linear-gradient(90deg, #e86514 0%, #ff8c42 100%);
+}
+
+.global-notification-modern.delivery .notification-header {
+background: linear-gradient(90deg, #e67300 0%, #ff9933 100%);
+}
+
+.global-notification-modern.delivered .notification-header {
+  background: linear-gradient(90deg, #27ae60 0%, #2ecc71 100%);
+}
+
+.global-notification-modern.info .notification-header {
   background: linear-gradient(90deg, #e86514 0%, #ff8c42 100%);
 }
 
@@ -92,8 +109,25 @@
 .progress-bar {
   height: 100%;
   width: 100%;
-  background: linear-gradient(90deg, #e86514 0%, #ff8c42 100%);
+  background: linear-gradient(90deg, #e86514 0%, #ff8c42 100%); /* Culoare implicită */
   animation: progressAnimation 5s linear forwards;
+}
+
+/* Culori diferite pentru progress bar - TREBUIE să fie după .progress-bar */
+.global-notification-modern.processing .progress-bar {
+  background: linear-gradient(90deg, #e86514 0%, #ff8c42 100%);
+}
+
+.global-notification-modern.delivery .progress-bar {
+background: linear-gradient(90deg, #e67300 0%, #ff9933 100%);
+}
+
+.global-notification-modern.delivered .progress-bar {
+  background: linear-gradient(90deg, #27ae60 0%, #2ecc71 100%);
+}
+
+.global-notification-modern.info .progress-bar {
+  background: linear-gradient(90deg, #e86514 0%, #ff8c42 100%);
 }
 
 @keyframes slideIn {
@@ -125,14 +159,14 @@
   }
   to {
     backdrop-filter: blur(4px);
-    background-color: rgba(232, 101, 20, 0.05);
+    background-color: rgba(0, 0, 0, 0.05);
   }
 }
 
 @keyframes fadeOut {
   from {
     backdrop-filter: blur(4px);
-    background-color: rgba(232, 101, 20, 0.05);
+    background-color: rgba(0, 0, 0, 0.05);
   }
   to {
     backdrop-filter: blur(0);
@@ -182,13 +216,13 @@
   }
 }
 
-/* Variante de notificări pe tipuri */
+/* PĂSTRĂM și clasele vechi pentru compatibilitate */
 .notification-status-processing .notification-header {
   background: linear-gradient(90deg, #e86514 0%, #ff8c42 100%);
 }
 
 .notification-status-delivery .notification-header {
-  background: linear-gradient(90deg, #2d7bf9 0%, #5b9cfd 100%);
+background: linear-gradient(90deg, #e67300 0%, #ff9933 100%);
 }
 
 .notification-status-delivered .notification-header {
