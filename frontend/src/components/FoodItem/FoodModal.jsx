@@ -43,10 +43,8 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     useEffect(() => {
         if (descriptionRef.current) {
             if (isDescriptionExpanded) {
-                // Setăm înălțimea exactă a conținutului pentru expandare
                 setDescriptionHeight(`${descriptionRef.current.scrollHeight}px`);
             } else {
-                // Folosim requestAnimationFrame pentru o tranziție smooth
                 requestAnimationFrame(() => {
                     setDescriptionHeight('60px');
                 });
@@ -54,7 +52,6 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         }
     }, [isDescriptionExpanded, food.description]);
 
-    // Restul codului rămâne la fel...
     const handleOptionChange = (option) => {
         setValidationError("");
         
@@ -111,7 +108,8 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         if (!modal) return;
 
         const handleMouseDown = (e) => {
-            if (e.target.classList.contains('food-item-modal-drag-handle')) {
+            if (e.target.classList.contains('food-item-modal-drag-handle') || 
+                e.target.closest('.food-item-modal-drag-handle')) {
                 handleDragStart(e);
             }
         };
@@ -127,13 +125,25 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         };
 
         const handleTouchStart = (e) => {
-            if (e.target.classList.contains('food-item-modal-drag-handle')) {
+            if (e.target.classList.contains('food-item-modal-drag-handle') || 
+                e.target.closest('.food-item-modal-drag-handle')) {
                 handleDragStart(e);
             }
         };
 
         const handleTouchMove = (e) => {
-            handleDrag(e);
+            if (!isDragging.current) return;
+            
+            // Prevenim mișcarea implicită doar dacă suntem în modul de drag
+            e.preventDefault();
+            
+            const y = e.touches[0].clientY;
+            const deltaY = y - dragStartY.current;
+            
+            if (deltaY > 0) {
+                currentY.current = deltaY;
+                modalRef.current.style.transform = `translateY(${deltaY}px)`;
+            }
         };
 
         const handleTouchEnd = () => {
