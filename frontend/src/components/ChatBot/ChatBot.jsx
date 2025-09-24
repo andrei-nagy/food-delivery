@@ -18,6 +18,17 @@ const ChatBot = ({ show, onClose }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Adaugă acest useEffect pentru a gestiona afișarea tastaturii
+useEffect(() => {
+  const handleResize = () => {
+    // Forțează re-render când se schimbă dimensiunea ferestrei (când apare/dispare tastatura)
+    scrollToBottom();
+  };
+
+  window.addEventListener('resize', handleResize);
+  return () => window.removeEventListener('resize', handleResize);
+}, []);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
