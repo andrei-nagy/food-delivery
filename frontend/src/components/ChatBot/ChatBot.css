@@ -17,11 +17,12 @@
   border-radius: 15px;
   width: 90%;
   max-width: 400px;
-  max-height: 80vh;
+  height: 80vh;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 .diana-ai-chat {
@@ -37,10 +38,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: sticky; /* Face header-ul fix */
+  position: absolute;
   top: 0;
-  z-index: 10; /* Asigură că header-ul este deasupra conținutului */
-  flex-shrink: 0; /* Previne comprimarea */
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: 60px; /* Înălțime fixă pentru header */
 }
 
 .chat-title {
@@ -106,14 +109,13 @@
 
 .chat-messages {
   flex: 1;
-  padding: 20px;
+  padding: 80px 20px 90px; /* Padding sus și jos pentru header și input fixe */
   overflow-y: auto;
   background: #f8f9fa;
   display: flex;
   flex-direction: column;
   gap: 15px;
-  /* Ajustează pentru header-ul fix */
-  max-height: calc(100% - 130px); /* Scade înălțimea header-ului și input-ului */
+  -webkit-overflow-scrolling: touch; /* Scroll smooth pe iOS */
 }
 
 .message {
@@ -171,7 +173,11 @@
   padding: 15px 20px;
   background: white;
   border-top: 1px solid #e0e0e0;
-  flex-shrink: 0; /* Previne comprimarea */
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
 }
 
 .chat-input {
@@ -267,14 +273,12 @@
   .diana-ai-modal {
     width: 95%;
     height: 85vh;
-    /* Ajustări pentru mobile cu tastatura */
-    max-height: 90vh;
+    max-height: 85vh;
   }
   
   .chat-header {
     padding: 12px 15px;
-    position: sticky;
-    top: 0;
+    height: 55px;
   }
   
   .chat-title {
@@ -282,9 +286,7 @@
   }
   
   .chat-messages {
-    padding: 15px;
-    /* Ajustează înălțimea pentru mobile */
-    max-height: calc(100% - 120px);
+    padding: 70px 15px 80px; /* Ajustat pentru mobile */
   }
   
   .message-content {
@@ -295,6 +297,10 @@
   /* Previne zoom-ul pe mobile */
   .message-input {
     font-size: 16px;
+  }
+  
+  .chat-input-container {
+    padding: 10px 15px;
   }
 }
 
