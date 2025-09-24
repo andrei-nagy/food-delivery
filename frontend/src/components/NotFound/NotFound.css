@@ -1,0 +1,204 @@
+/* components/NotFound.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+ 
+
+.welcome-page.not-found-page {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    padding: 0;
+}
+
+/* Ascunde navbar-ul pe pagina de not found */
+.welcome-page.not-found-page ~ .navbar {
+    display: none !important;
+}
+
+.welcome-background.not-found-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    z-index: -2;
+}
+
+.welcome-background.not-found-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.07)"/></svg>');
+    background-size: cover;
+}
+
+.background-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: -1;
+}
+
+.welcome-container.not-found-container {
+    width: 100%;
+    max-width: 1200px;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
+.welcome-card.not-found-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 3rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+}
+
+.welcome-card.not-found-card h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    line-height: 1.2;
+}
+
+.error-code {
+    font-size: 6rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.1);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+}
+
+.slogan {
+    font-size: 1.2rem;
+    color: #7f8c8d;
+    font-style: italic;
+    margin-bottom: 2.5rem;
+}
+
+.button-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.explore-button.back-button, 
+.contact-button.home-button {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: none;
+    display: block;
+    width: 100%;
+    text-align: center;
+}
+
+.explore-button.back-button {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+
+.contact-button.home-button {
+    background: transparent;
+    color: #2c3e50;
+    border: 2px solid #2c3e50;
+}
+
+.explore-button.back-button:hover {
+    background: linear-gradient(135deg, #c0392b 0%, #a23526 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+}
+
+.contact-button.home-button:hover {
+    background: #2c3e50;
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .welcome-container.not-found-container {
+        padding: 1rem;
+    }
+    
+    .welcome-card.not-found-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .welcome-card.not-found-card h1 {
+        font-size: 2rem;
+    }
+    
+    .button-container {
+        flex-direction: column;
+    }
+    
+    .error-code {
+        font-size: 4rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-card.not-found-card {
+        padding: 1.5rem 1rem;
+    }
+    
+    .welcome-card.not-found-card h1 {
+        font-size: 1.8rem;
+    }
+    
+    .explore-button.back-button, 
+    .contact-button.home-button {
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .error-code {
+        font-size: 3rem;
+    }
+}
+
+/* Stiluri pentru logo */
+.logo-container {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.welcome-logo {
+    width: 120px;
+    object-fit: cover;
+}

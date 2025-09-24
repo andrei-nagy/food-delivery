@@ -22,6 +22,7 @@ import CategoryPage from "./components/FoodDisplay/CategoryPage";
 import { AnimatePresence } from "framer-motion";
 import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
 import GlobalNotification from "./components/GlobalNotifications/GlobalNotifications";
+import NotFound from "./components/NotFound/NotFound";
 
 const App = () => {
   const { url } = useContext(StoreContext);
@@ -169,7 +170,7 @@ const App = () => {
           <div className="app">
             <ToastContainer />
             <ScrollToTop />
-            <GlobalNotification /> 
+            <GlobalNotification />
             <Navbar setShowLogin={setShowLogin} isWelcomePage={isWelcomePage} />
             <AnimatePresence mode="wait">
               <Routes>
@@ -187,6 +188,7 @@ const App = () => {
                   path="/category/:categoryName"
                   element={<CategoryPage />}
                 />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </AnimatePresence>
           </div>

@@ -17,7 +17,7 @@ import CategoriesPage from "./pages/CategoriesPage";
 import CustomizationPage from "./pages/CustomizationPage";
 import CloseOrder from "./pages/CloseOrder";
 import OrdersHistoryPage from "./pages/OrdersHistory";
-import { ThemeProvider } from "./components/themeToggle/ThemeContext"; // Importăm ThemeProvider
+import AddProductsInOrderPage from './pages/AddProductsInOrder';
 import { UrlProvider } from "./components/context/UrlContext";
 import SupportPage from "./pages/SupportPage";
 import { AppVersionProvider } from "./components/context/AppVersionContext";
@@ -81,6 +81,8 @@ function App() {
 						<Route path='/create-account' element={<CreateAccountPage />} />
 						<Route path='/create-qrcode' element={<CreateQrCodePage />} />
 						<Route path='/qrcodes' element={<QrCodesPage />} />
+<Route path="/add-products" element={<AddProductsInOrderPage />} />
+
 
 					</Routes>
 				</div>

@@ -1,110 +1,199 @@
 import foodModel from "../models/foodModel.js";
 import fs from "fs";
 
-// add food item
 
-// Controller function to get all foods
-// const getAllFoods = async (req, res) => {
-//     try {
-//         const foods = await foodModel.find({}, 'id name category price'); // Return only id, name, category, price
-//         res.status(200).json(foods);
-//     } catch (error) {
-//         res.status(500).json({ message: 'Error retrieving foods', error });
-//     }
-// };
+console.log("🔥 addFood file loaded");
 
 const addFood = async (req, res) => {
+  console.log("=== START addFood ===");
+  console.log("Request body:", req.body);
+  console.log("Request file:", req.file ? req.file.filename : "No file");
+  
   try {
+    const { name, description, price, category, isBestSeller, isNewAdded, isVegan, extras } = req.body;
+    
+    // DEBUG: Log all request body keys
+    console.log("All body keys:", Object.keys(req.body));
+    console.log("Extras field type:", typeof extras);
+    console.log("Extras field value:", extras);
+    
+    // PROCESEAZĂ EXTRASELE - VARIANTĂ SIMPLIFICATĂ
+    let parsedExtras = [];
+    
+    try {
+      if (typeof extras === 'string') {
+        parsedExtras = JSON.parse(extras);
+      } else if (Array.isArray(extras)) {
+        parsedExtras = extras;
+      }
+      console.log("Parsed extras:", parsedExtras);
+    } catch (error) {
+      console.error("Error parsing extras:", error);
+    }
+    
+    // Dacă tot nu avem extrase, folosește cele default din model
+    if (!parsedExtras || parsedExtras.length === 0) {
+      console.log("Using default extras from model");
+      // Lăsăm modelul să aplice extrasele default
+      parsedExtras = undefined; // Sau [] pentru array gol
+    }
+    
+    // Validate required fields
+    if (!name || !description || !price || !category) {
+      console.log("Missing required fields");
+      return res.status(400).json({ 
+        success: false, 
+        message: "Missing required fields: name, description, price, or category" 
+      });
+    }
+    
     if (!req.file) {
-      return res.status(400).json({ success: false, message: "No image uploaded" });
+      console.log("No image file provided");
+      return res.status(400).json({ 
+        success: false, 
+        message: "Image is required" 
+      });
     }
 
-    const image_filename = req.file.filename;
-
-    console.log("IN CONTROLLER addFood");
-    console.log("Body:", req.body);
-    console.log("File:", req.file);
-
-    const food = new foodModel({
-      name: req.body.name,
-      description: req.body.description,
-      price: req.body.price,
-      category: req.body.category,
-      image: image_filename,
-      isBestSeller: req.body.isBestSeller === "true",
-      isNewAdded: req.body.isNewAdded === "true",
-      isVegan: req.body.isVegan === "true",
+    console.log("Creating new food object");
+    const newFood = new foodModel({
+      name,
+      description,
+      price: parseFloat(price),
+      category,
+      image: req.file.filename,
+      isBestSeller: isBestSeller === 'true' || isBestSeller === true,
+      isNewAdded: isNewAdded === 'true' || isNewAdded === true,
+      isVegan: isVegan === 'true' || isVegan === true,
+      extras: parsedExtras // Poate fi undefined pentru a folosi default-ul
     });
 
-    await food.save();
-
-    res.json({
-      success: true,
-      message: "Food Added",
-    });
+    console.log("Food object to save:", newFood);
+    await newFood.save();
+    console.log("Food saved successfully with extras:", newFood.extras);
+    
+    res.json({ success: true, message: "Food added successfully", data: newFood });
   } catch (error) {
-    console.error("Eroare în addFood:", error);
-    res.status(500).json({ success: false, message: "Error" });
+    console.error("Error in addFood:", error);
+    res.status(500).json({ success: false, message: "Error adding food: " + error.message });
   }
 };
-
-//all food list
+// all food list
 const listFood = async (req, res) => {
-  try {
-    const foods = await foodModel.find({});
-    res.json({ success: true, data: foods });
-  } catch (error) {
-    console.log(error);
-    res.json({ success: false, message: "error" });
-  }
+    console.log("🔥  2 addFood function");
+
+    try {
+        const foods = await foodModel.find({});
+        res.json({ success: true, data: foods });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: "Error retrieving food list" });
+    }
 };
 
-//remove food item
-
+// remove food item
 const removeFood = async (req, res) => {
-  try {
-    const food = await foodModel.findById(req.body.id);
-    //delete image from uploads folder
-    fs.unlink(`uploads/${food.image}`, () => {});
+    console.log("🔥  3 addFood function");
 
-    await foodModel.findByIdAndDelete(req.body.id);
-    res.json({ success: true, message: "Food Removed" });
-  } catch (error) {
-    console.log(error);
-    res.json({ success: false, message: "error" });
-  }
+    try {
+        const food = await foodModel.findById(req.body.id);
+        if (!food) {
+            return res.json({ success: false, message: "Food not found" });
+        }
+        
+        // Delete image from uploads folder
+        if (food.image) {
+            fs.unlink(`uploads/${food.image}`, (err) => {
+                if (err) console.error("Error deleting image:", err);
+            });
+        }
+
+        await foodModel.findByIdAndDelete(req.body.id);
+        res.json({ success: true, message: "Food Removed" });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: "Error removing food" });
+    }
 };
 
+// update food item
 const updateFood = async (req, res) => {
-  const { id, name, category, price, isBestSeller, isNewAdded, isVegan } =
-    req.body;
-  const image = req.file ? req.file.filename : undefined; // Preluăm numele fișierului din req.file, dacă este definit
-  const updateData = {
-    name,
-    category,
-    price,
-    isBestSeller,
-    isNewAdded,
-    isVegan,
-  }; // Creează un obiect de actualizare
+    console.log("🔥  4 addFood function");
 
-  if (image) {
-    updateData.image = image;
-  }
+    try {
+        const { id, name, description, category, price, isBestSeller, isNewAdded, isVegan, extras } = req.body;
+        
+        let parsedExtras = [];
+        
+        // Parse extras if provided
+        if (extras) {
+            try {
+                parsedExtras = typeof extras === 'string' ? JSON.parse(extras) : extras;
+                
+                // Validate extras structure
+                if (Array.isArray(parsedExtras)) {
+                    parsedExtras = parsedExtras.map(extra => ({
+                        name: extra.name || '',
+                        price: parseFloat(extra.price) || 0
+                    })).filter(extra => extra.name.trim() !== ''); // Remove extras with empty names
+                } else {
+                    parsedExtras = [];
+                }
+            } catch (error) {
+                console.error("Error parsing extras:", error);
+                parsedExtras = [];
+            }
+        }
+        
+        const updateData = {
+            name,
+            description,
+            category,
+            price: parseFloat(price),
+            isBestSeller: isBestSeller === 'true' || isBestSeller === true,
+            isNewAdded: isNewAdded === 'true' || isNewAdded === true,
+            isVegan: isVegan === 'true' || isVegan === true,
+            extras: parsedExtras
+        };
+        
+        // Add image to update data if a new image was uploaded
+        if (req.file) {
+            // Delete old image if exists
+            const oldFood = await foodModel.findById(id);
+            if (oldFood && oldFood.image) {
+                fs.unlink(`uploads/${oldFood.image}`, (err) => {
+                    if (err) console.error("Error deleting old image:", err);
+                });
+            }
+            
+            updateData.image = req.file.filename;
+        }
 
-  try {
-    const product = await foodModel.findByIdAndUpdate(id, updateData, {
-      new: true,
-    });
+        const product = await foodModel.findByIdAndUpdate(id, updateData, {
+            new: true, // Return the updated document
+            runValidators: true // Run model validators on update
+        });
 
-    res.json({
-      success: true,
-      message: "Product updated successfully!",
-      data: product,
-    });
-  } catch (error) {
-    res.json({ success: false, message: "Error updating product.", error });
-  }
+        if (!product) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Product not found" 
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Product updated successfully!",
+            data: product
+        });
+    } catch (error) {
+        console.error("Error updating product:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Error updating product.", 
+            error: error.message 
+        });
+    }
 };
 
 export { addFood, listFood, removeFood, updateFood };

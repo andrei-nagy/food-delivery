@@ -195,7 +195,7 @@ const Sidebar = () => {
 																	location.pathname === "/close-order" ? "rgba(255, 255, 255, 0.1)" : "transparent",
 															}}
 														>
-															Close order
+															Active orders
 														</motion.div>
 													</Link>
 												</motion.div>

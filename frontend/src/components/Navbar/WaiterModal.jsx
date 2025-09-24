@@ -6,11 +6,13 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { assets } from '../../assets/assets';
 import { useTranslation } from 'react-i18next';
-import { FaArrowLeft, FaTimes, FaComments, FaMoneyBillWave, FaQuestionCircle, FaSignOutAlt } from 'react-icons/fa';
+import { FaArrowLeft, FaTimes, FaComments, FaMoneyBillWave } from 'react-icons/fa';
+import ChatBot from '../ChatBot/ChatBot';
 
 const WaiterModalCart = ({ show, onClose }) => {
   const { url, setToken, token } = useContext(StoreContext);
   const [actionName, setActionName] = useState('');
+  const [showDianaAI, setShowDianaAI] = useState(false); // Stare pentru chat modal
   const tableNumber = localStorage.getItem("tableNumber");
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -38,8 +40,13 @@ const WaiterModalCart = ({ show, onClose }) => {
 
       if (response.data.success) {
         setActionName('');
-        onClose();
-        toast.success(response.data.message);
+        
+        if (action === 'Ask Diana AI') {
+          setShowDianaAI(true); // Deschide modalul Diana AI
+        } else {
+          onClose();
+          toast.success(response.data.message);
+        }
       } else {
         toast.error(response.data.message);
       }
@@ -55,62 +62,55 @@ const WaiterModalCart = ({ show, onClose }) => {
   };
 
   return (
-    <div className="modal-overlay-waiter" onClick={onClose}>
-      <div className="modal-content-waiter" onClick={(e) => e.stopPropagation()}>
-        <div className="header-myorders">
-          <div className="menu-button-myorders" onClick={() => onClose()}>
-            <FaArrowLeft />
+    <>
+      {/* Modalul principal */}
+      <div className="modal-overlay-waiter" onClick={onClose}>
+        <div className="modal-content-waiter" onClick={(e) => e.stopPropagation()}>
+          <div className="header-myorders">
+            <div className="menu-button-myorders" onClick={() => onClose()}>
+              <FaArrowLeft />
+            </div>
+            <h2 className="modal-title">Assistant</h2>
+            <div className="close-menu-button-myorders" onClick={onClose}>
+              <FaTimes />
+            </div>
           </div>
-          <h2 className="modal-title">Assistant</h2>
-          <div className="close-menu-button-myorders" onClick={onClose}>
-            <FaTimes />
+
+          <div className="assistance-message">
+            <p>{t('can_we_assist')}</p>
           </div>
-        </div>
 
-        <div className="assistance-message">
-          <p>{t('can_we_assist')}</p>
-        </div>
-
-        <div className="action-buttons">
-          <button type="button" className="action-btn call-waiter" onClick={() => handleActionClick('Call a waiter')}>
-            <div className="action-icon-wrapper">
-              <img className='waiter-icon-actions' src={assets.waiter_icon} alt="" />
-            </div>
-            <span className="action-label">{t('call_waiter')}</span>
-          </button>
-          
-          <button type="button" className="action-btn pay-bill" onClick={() => handleActionClick('I want to pay')}>
-            <div className="action-icon-wrapper">
-              <FaMoneyBillWave className="action-icon" />
-            </div>
-            <span className="action-label">{t('to_pay')}</span>
-          </button>
-          
-          <button type="button" className="action-btn need-help" onClick={() => handleActionClick('I need help')}>
-            <div className="action-icon-wrapper">
-              <FaQuestionCircle className="action-icon" />
-            </div>
-            <span className="action-label">{t('need_help')}</span>
-          </button>
-          
-          <button type="button" className="action-btn live-chat" onClick={() => handleActionClick('Live chat')}>
-            <div className="action-icon-wrapper">
-              <FaComments className="action-icon" />
-            </div>
-            <span className="action-label">Live chat</span>
-          </button>
-        </div>
-
-        {/* {token && (
-          <div className="logout-section">
-            <button type="button" className="logout-btn" onClick={logout}>
-              <FaSignOutAlt className="logout-icon" />
-              {t('logout')}
+          <div className="action-buttons">
+            <button type="button" className="action-btn call-waiter" onClick={() => handleActionClick('Call a waiter')}>
+              <div className="action-icon-wrapper">
+                <img className='waiter-icon-actions' src={assets.waiter_icon} alt="" />
+              </div>
+              <span className="action-label">{t('call_waiter')}</span>
+            </button>
+            
+            <button type="button" className="action-btn pay-bill" onClick={() => handleActionClick('I want to pay')}>
+              <div className="action-icon-wrapper">
+                <FaMoneyBillWave className="action-icon" />
+              </div>
+              <span className="action-label">{t('to_pay')}</span>
+            </button>
+            
+            <button type="button" className="action-btn live-chat" onClick={() => handleActionClick('Ask Diana AI')}>
+              <div className="action-icon-wrapper">
+                <FaComments className="action-icon" />
+              </div>
+              <span className="action-label">Ask Diana AI</span>
             </button>
           </div>
-        )} */}
+        </div>
       </div>
-    </div>
+
+      {/* Modalul Diana AI */}
+      <ChatBot 
+        show={showDianaAI} 
+        onClose={() => setShowDianaAI(false)} 
+      />
+    </>
   );
 };
 

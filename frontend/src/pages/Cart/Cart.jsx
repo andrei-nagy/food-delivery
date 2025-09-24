@@ -71,10 +71,11 @@ const Cart = () => {
   };
 
   const placeOrder = async (event) => {
+    console.log('am apelat place order ')
     if (event) event.preventDefault();
-    
+
     if (orderPlaced) return;
-    
+
     if (!paymentMethod) {
       setPaymentError("Please select a payment method.");
       setTimeout(() => {
@@ -120,10 +121,13 @@ const Cart = () => {
         );
         if (response.data.success) {
           setOrderPlaced(true);
-          
+
           setTimeout(() => {
             navigate("/thank-you", {
-              state: { tableNo: orderData.tableNo, orderId: response.data.orderId },
+              state: {
+                tableNo: orderData.tableNo,
+                orderId: response.data.orderId,
+              },
             });
             localStorage.setItem("isReloadNeeded", "true");
           }, 1500);
@@ -148,7 +152,7 @@ const Cart = () => {
     swipeData.current[id] = {
       startX: e.touches[0].clientX,
       currentX: e.touches[0].clientX,
-      isSwiping: false
+      isSwiping: false,
     };
   };
 
@@ -157,7 +161,7 @@ const Cart = () => {
     if (!current) return;
     current.currentX = e.touches[0].clientX;
     const diff = current.currentX - current.startX;
-    
+
     if (diff < 0) {
       const maxSwipe = -window.innerWidth * 0.2;
       const offset = Math.max(diff, maxSwipe);
@@ -170,25 +174,23 @@ const Cart = () => {
         setSwipeOffsets((prev) => ({ ...prev, [id]: 0 }));
       }
     }
-    
+
     current.isSwiping = true;
   };
 
   const handleTouchEnd = (id) => {
     const current = swipeData.current[id];
     if (!current) return;
-    
+
     const diff = current.currentX - current.startX;
     const threshold = window.innerWidth * 0.1;
-    
+
     if (diff < -threshold) {
       const maxSwipe = -window.innerWidth * 0.2;
       setSwipeOffsets((prev) => ({ ...prev, [id]: maxSwipe }));
-    } 
-    else if (diff > threshold) {
+    } else if (diff > threshold) {
       setSwipeOffsets((prev) => ({ ...prev, [id]: 0 }));
-    }
-    else {
+    } else {
       const currentOffset = swipeOffsets[id] || 0;
       if (currentOffset < -threshold) {
         const maxSwipe = -window.innerWidth * 0.2;
@@ -197,7 +199,7 @@ const Cart = () => {
         setSwipeOffsets((prev) => ({ ...prev, [id]: 0 }));
       }
     }
-    
+
     delete swipeData.current[id];
   };
 
@@ -258,13 +260,17 @@ const Cart = () => {
         )}
 
         {isCartEmpty ? (
-          <motion.div 
+          <motion.div
             className="cart-empty"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
-            <img className="empty-cart-img" src={assets.empty_cart2} alt="Empty cart" />
+            <img
+              className="empty-cart-img"
+              src={assets.empty_cart2}
+              alt="Empty cart"
+            />
             <motion.button
               className="add-more-products"
               onClick={() => navigate("/category/All")}
@@ -299,7 +305,7 @@ const Cart = () => {
                           transition={{ duration: 0.3 }}
                           layout
                         >
-                          <div 
+                          <div
                             className="cart-swipe-background"
                             onClick={() => handleDeleteClick(item._id)}
                           >
@@ -328,8 +334,7 @@ const Cart = () => {
                             />
                             <div className="cart-item-info">
                               <p className="cart-item-name">
-                                {item.name}{" "}
-                                <br />
+                                {item.name} <br />
                                 <span className="cart-item-description">
                                   {item.description}
                                 </span>
@@ -347,16 +352,24 @@ const Cart = () => {
                               <div className="inline-quantity-controls">
                                 <button
                                   onClick={() => {
-                                    updateCartItemQuantity(item._id, quantity - 1);
+                                    updateCartItemQuantity(
+                                      item._id,
+                                      quantity - 1
+                                    );
                                   }}
                                   className="quantity-btn-order"
                                 >
                                   <FaMinus />
                                 </button>
-                                <span className="quantity-order">{quantity}</span>
+                                <span className="quantity-order">
+                                  {quantity}
+                                </span>
                                 <button
                                   onClick={() => {
-                                    updateCartItemQuantity(item._id, quantity + 1);
+                                    updateCartItemQuantity(
+                                      item._id,
+                                      quantity + 1
+                                    );
                                   }}
                                   className="quantity-btn-order"
                                 >
@@ -378,7 +391,7 @@ const Cart = () => {
                 className="add-more-products"
                 onClick={() => navigate("/category/All")}
               >
-                Add more products 
+                Add more products
                 <span className="plus-btn">
                   <FaPlus />
                 </span>
@@ -518,8 +531,10 @@ const Cart = () => {
         )}
 
         {!isCartEmpty && (
-          <div 
-            className={`floating-checkout ${isPlacingOrder ? 'placing-order' : ''}`} 
+          <div
+            className={`floating-checkout ${
+              isPlacingOrder ? "placing-order" : ""
+            }`}
             onClick={placeOrder}
           >
             <div className="floating-checkout-left">
@@ -539,7 +554,7 @@ const Cart = () => {
           </div>
         )}
       </div>
-      
+
       <AnimatePresence>
         {itemToDelete && (
           <motion.div
@@ -559,16 +574,10 @@ const Cart = () => {
             >
               <h3>Are you sure you want to remove this item?</h3>
               <div className="confirm-buttons">
-                <button
-                  className="confirm-yes"
-                  onClick={confirmDelete}
-                >
+                <button className="confirm-yes" onClick={confirmDelete}>
                   Yes
                 </button>
-                <button
-                  className="confirm-no"
-                  onClick={cancelDelete}
-                >
+                <button className="confirm-no" onClick={cancelDelete}>
                   No
                 </button>
               </div>
@@ -576,7 +585,7 @@ const Cart = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       <AnimatePresence>
         {showConfirmClear && (
           <motion.div

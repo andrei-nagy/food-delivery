@@ -150,6 +150,7 @@ const payOrder = async (req, res) => {
 
 }
 const placeOrderCash = async (req, res) => {
+      
     try {
         let counter = await OrderCounter.findOne();
 
@@ -184,12 +185,17 @@ const placeOrderCash = async (req, res) => {
             orderId: newOrder._id
         });
     } catch (error) {
-        console.log(error);
-        res.json({
-            success: false,
-            message: error
-        });
-    }
+    console.log("=== ERROR IN PLACE ORDER CASH ===");
+    console.log("Error name:", error.name);
+    console.log("Error message:", error.message);
+    
+    // Returnează eroarea reală temporar pentru debugging
+    res.json({
+        success: false,
+        message: error.message, // ← Schimbă asta temporar
+        errorType: error.name   // ← Și adaugă asta
+    });
+}
 };
 const getOrderRating = async (req, res) => {
     const { orderId } = req.params; // Asigură-te că extragi din params

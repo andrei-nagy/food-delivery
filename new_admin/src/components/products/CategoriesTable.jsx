@@ -330,90 +330,146 @@ const CategoriesTable = () => {
                 </motion.div>
             )}
             {isModalOpen && (
-                <div id="crud-modal" className="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full bg-black bg-opacity-50">
-                    <div className="relative p-4 w-full max-w-md max-h-full">
-                        <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    Create a new category
-                                </h3>
-                                <button
-                                    type="button"
-                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                    onClick={() => setIsModalOpen(false)}
-                                >
-                                    <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+    <motion.div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+    >
+        <motion.div
+            className="relative bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-700">
+                <h3 className="text-2xl font-bold text-white">
+                    Create New Category
+                </h3>
+                <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="text-gray-400 hover:text-white transition-colors duration-200 p-2 rounded-lg hover:bg-gray-700"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            {/* Form */}
+            <form className="p-6 space-y-6" onSubmit={handleAddCategory}>
+                {/* Image Upload */}
+                <div className="space-y-3">
+                    <label className="block text-lg font-semibold text-white">Category Image</label>
+                    <label htmlFor="image" className="cursor-pointer group">
+                        <div className="w-full h-48 border-2 border-dashed border-gray-600 rounded-xl flex flex-col items-center justify-center transition-all duration-300 group-hover:border-blue-500 group-hover:bg-gray-700/50">
+                            {image ? (
+                                <div className="relative w-full h-full">
+                                    <img 
+                                        src={URL.createObjectURL(image)} 
+                                        alt="Category preview" 
+                                        className="w-full h-full object-cover rounded-xl"
+                                    />
+                                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="text-white text-center">
+                                            <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            <p className="text-sm">Change Image</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center p-6">
+                                    <svg className="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    <span className="sr-only">Close modal</span>
-                                </button>
-                            </div>
-                            <form className="p-4 md:p-5" onSubmit={handleAddCategory}>
-                                <div className="grid gap-4 mb-4 grid-cols-2">
-                                    <div className="col-span-2">
-                                        <label htmlFor="image" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white cursor-pointer">Upload image
-                                            <div className='w-40 h-40 border-2 border-dashed border-gray-300 rounded flex items-center justify-center cursor-pointer'>
-                                                {image ? (
-                                                    <img src={URL.createObjectURL(image)} alt="Product preview" className='object-cover w-full h-full rounded' />
-                                                ) : (
-                                                    <span className='text-gray-400'>No image selected</span>
-                                                )}
-                                            </div>
-                                        </label>
-                                        <input onChange={(e) => setImage(e.target.files[0])} type="file" id='image' hidden required />
-
-                                    </div>
-                                    <div className="col-span-2">
-                                        <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category name</label>
-                                        <input
-                                            type="text"
-                                            name="menu_name"
-                                            id="name"
-                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                            placeholder="Type category name"
-                                            value={updatedCategory.menu_name}
-                                            onChange={(e) => setUpdatedCategory({ ...updatedCategory, menu_name: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="col-span-2">
-                                        <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category description</label>
-                                        <textarea
-                                            id="description"
-                                            rows="4"
-                                            className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            placeholder="Write category description here"
-                                            value={updatedCategory.description}
-                                            onChange={(e) => setUpdatedCategory({ ...updatedCategory, description: e.target.value })}
-                                        ></textarea>
-                                    </div>
-                                    <div className="col-span-2">
-                                        <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category status</label>
-                                        <select
-                                            name="isActive"
-                                            value={updatedCategory.isActive}
-                                            onChange={(e) => setUpdatedCategory({ ...updatedCategory, isActive: e.target.value })}
-                                            className='border border-gray-300 rounded-lg p-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 text-black bg-white'
-                                            required
-                                        >
-                                            <option value="" disabled>Select status</option> {/* Opțiune goală care poate fi selectată */}
-                                            <option value={true}>Active</option>
-                                            <option value={false}>Inactive</option>
-                                        </select>
-                                    </div>
+                                    <p className="text-gray-400 text-sm">Click to upload category image</p>
+                                    <p className="text-gray-500 text-xs mt-1">PNG, JPG, JPEG up to 10MB</p>
                                 </div>
-                                <div className='flex justify-center mt-4'>
-                                    <button type="submit" className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                        <svg className="me-1 -ms-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd"></path></svg>
-                                        Add new category
-                                    </button>
-                                </div>
-                            </form>
+                            )}
                         </div>
+                        <input 
+                            onChange={(e) => setImage(e.target.files[0])} 
+                            type="file" 
+                            id="image" 
+                            hidden 
+                            required 
+                            accept="image/*"
+                        />
+                    </label>
+                </div>
+
+                {/* Grid Layout */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Category Name */}
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-white">Category Name</label>
+                        <input
+                            type="text"
+                            name="menu_name"
+                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                            placeholder="Enter category name"
+                            value={updatedCategory.menu_name}
+                            onChange={(e) => setUpdatedCategory({ ...updatedCategory, menu_name: e.target.value })}
+                            required
+                        />
+                    </div>
+
+                    {/* Status */}
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-white">Status</label>
+                        <select
+                            name="isActive"
+                            value={updatedCategory.isActive}
+                            onChange={(e) => setUpdatedCategory({ ...updatedCategory, isActive: e.target.value })}
+                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                            required
+                        >
+                            <option value="" disabled>Select status</option>
+                            <option value={true}>Active</option>
+                            <option value={false}>Inactive</option>
+                        </select>
                     </div>
                 </div>
-            )}
+
+                {/* Description */}
+                <div className="space-y-2">
+                    <label className="block text-sm font-medium text-white">Description</label>
+                    <textarea
+                        rows="4"
+                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                        placeholder="Describe your category..."
+                        value={updatedCategory.description}
+                        onChange={(e) => setUpdatedCategory({ ...updatedCategory, description: e.target.value })}
+                    />
+                </div>
+
+                {/* Actions */}
+                <div className="flex justify-end space-x-4 pt-6 border-t border-gray-700">
+                    <button
+                        type="button"
+                        onClick={() => setIsModalOpen(false)}
+                        className="px-6 py-3 text-gray-300 bg-gray-700 hover:bg-gray-600 rounded-xl transition-colors duration-200 font-medium"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors duration-200 font-medium flex items-center space-x-2"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        <span>Add Category</span>
+                    </button>
+                </div>
+            </form>
+        </motion.div>
+    </motion.div>
+)}
         </motion.div>
     );
 };

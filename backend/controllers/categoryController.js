@@ -2,13 +2,8 @@ import categoryModel from '../models/categoryModel.js'
 import fs from 'fs'
 
 
-// add food category item 
 
 const addCategory = async (req, res) => {
-      console.log("🌟 addCategory handler called");
-  console.log("Req.body:", req.body);
-  console.log("Req.file:", req.file);
-
     let image_filename = `${req.file.filename}`
 
     const category = new categoryModel({

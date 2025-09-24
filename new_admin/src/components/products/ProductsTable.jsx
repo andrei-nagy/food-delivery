@@ -1,11 +1,78 @@
 import { motion } from "framer-motion";
-import { Edit, Search, Trash2 } from "lucide-react";
+import { Edit, Search, Trash2, Plus, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useUrl } from "../context/UrlContext";
 import "react-toastify/dist/ReactToastify.css";
 
+// Componenta ExtraOptionsSection mutată în afara componentei principale
+const ExtraOptionsSection = ({ 
+  extraName, 
+  setExtraName, 
+  extraPrice, 
+  setExtraPrice, 
+  addExtra, 
+  updatedProduct, 
+  removeExtra 
+}) => (
+  <div className="space-y-4">
+    <label className="block text-sm font-medium text-white">Extra Options</label>
+    
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="md:col-span-2">
+        <input
+          type="text"
+          value={extraName}
+          onChange={(e) => setExtraName(e.target.value)}
+          placeholder="Extra name (e.g., Extra Cheese)"
+          className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+      <div className="flex gap-2">
+        <input
+          type="number"
+          value={extraPrice}
+          onChange={(e) => setExtraPrice(e.target.value)}
+          placeholder="Price"
+          step="0.01"
+          min="0"
+          className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          type="button"
+          onClick={addExtra}
+          className="bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-500 transition duration-200"
+        >
+          <Plus size={16} />
+        </button>
+      </div>
+    </div>
+
+    {updatedProduct.extras.length > 0 && (
+      <div className="bg-gray-700/30 rounded-lg p-3">
+        <h4 className="text-sm font-medium text-white mb-2">Added Extras:</h4>
+        <div className="space-y-2">
+          {updatedProduct.extras.map((extra, index) => (
+            <div key={index} className="flex justify-between items-center bg-gray-600/50 rounded px-3 py-2">
+              <div>
+                <span className="text-white text-sm">{extra.name}</span>
+                <span className="text-green-400 text-sm ml-2">+${extra.price}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => removeExtra(index)}
+                className="text-red-400 hover:text-red-300"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+);
 
 const ProductsTable = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -23,13 +90,14 @@ const ProductsTable = () => {
         description: "",
         isBestSeller: false,
         isNewAdded: false,
-        isVegan: false
+        isVegan: false,
+        extras: []
     });
+    const [extraName, setExtraName] = useState("");
+    const [extraPrice, setExtraPrice] = useState("");
     const productsPerPage = 10;
     const { url } = useUrl();
     const [list, setList] = useState([]);
-
-
     const fetchProducts = async () => {
         try {
             const response = await axios.get(`${url}/api/food/list`);
@@ -48,9 +116,8 @@ const ProductsTable = () => {
     const getCategoryList = async () => {
         try {
             const response = await axios.get(`${url}/api/categories/listcategory`);
-            console.log(response.data);
             if (response.data.success) {
-                setList(response.data.data);  // Setăm lista de categorii
+                setList(response.data.data);
             } else {
                 toast.error(response.data.message, { theme: "dark" });
             }
@@ -59,61 +126,128 @@ const ProductsTable = () => {
             toast.error("Error fetching categories", { theme: "dark" });
         }
     };
+
     const handlePriceBlur = (e) => {
-
         let priceValue = parseFloat(e.target.value);
-
-        // Prevenim sume negative
         if (isNaN(priceValue) || priceValue < 0) {
             priceValue = 0;
         }
-
-        // Setăm prețul cu două zecimale
         setUpdatedProduct({ ...updatedProduct, price: priceValue.toFixed(2) });
+    };
 
+    const addExtra = () => {
+        if (!extraName.trim() || !extraPrice) {
+            toast.error("Please fill both extra name and price", { theme: "dark" });
+            return;
+        }
+
+        const numericPrice = parseFloat(extraPrice);
+        if (isNaN(numericPrice)) {
+            toast.error("Please enter a valid price", { theme: "dark" });
+            return;
+        }
+
+        const newExtra = {
+            name: extraName.trim(),
+            price: numericPrice.toFixed(2)
+        };
+
+        setUpdatedProduct(prev => ({
+            ...prev,
+            extras: [...prev.extras, newExtra]
+        }));
+
+        setExtraName("");
+        setExtraPrice("");
+        toast.success("Extra option added successfully!", { theme: "dark" });
+    };
+
+    const removeExtra = (index) => {
+        setUpdatedProduct(prev => ({
+            ...prev,
+            extras: prev.extras.filter((_, i) => i !== index)
+        }));
+        toast.info("Extra option removed", { theme: "dark" });
+    };
+
+ const handleAddProduct = async (event) => {
+  event.preventDefault();
+
+  const productPrice = parseFloat(updatedProduct.price);
+  if (isNaN(productPrice) || productPrice <= 0) {
+    toast.error("Please enter a valid product price", { theme: "dark" });
+    return;
+  }
+
+  if (!image) {
+    toast.error("Please upload a product image", { theme: "dark" });
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("name", updatedProduct.name);
+  formData.append("description", updatedProduct.description);
+  formData.append("price", productPrice);
+  formData.append("category", updatedProduct.category);
+  formData.append("image", image);
+  formData.append("isBestSeller", updatedProduct.isBestSeller);
+  formData.append("isNewAdded", updatedProduct.isNewAdded);
+  formData.append("isVegan", updatedProduct.isVegan);
+  
+  // SCHIMBARE: Trimite extrasele ca JSON string
+  formData.append("extras", JSON.stringify(updatedProduct.extras));
+
+  console.log("FormData contents:");
+  for (let [key, value] of formData.entries()) {
+    console.log(key, value);
+  }
+
+  try {
+    const response = await axios.post(`${url}/api/food/add`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    if (response.data.success) {
+      // Reset form
+      setImage(null);
+      setUpdatedProduct({
+        name: "",
+        category: "",
+        price: "",
+        description: "",
+        isBestSeller: false,
+        isNewAdded: false,
+        isVegan: false,
+        extras: []
+      });
+      setExtraName("");
+      setExtraPrice("");
+      toast.success(response.data.message, { theme: "dark" });
+      fetchProducts();
+      setIsModalOpen(false);
+    } else {
+      toast.error(response.data.message, { theme: "dark" });
     }
-    const handleAddProduct = async (event) => {
-        event.preventDefault();
-
-        const formData = new FormData();
-        formData.append("name", updatedProduct.name);
-        formData.append("description", updatedProduct.description);
-        formData.append("price", Number(updatedProduct.price));
-        formData.append("category", updatedProduct.category);
-        formData.append("image", image);
-        formData.append("isBestSeller", Boolean(updatedProduct.isBestSeller));
-        formData.append("isNewAdded", Boolean(updatedProduct.isNewAdded));
-        formData.append("isVegan", Boolean(updatedProduct.isVegan));
-
-
-        try {
-            const response = await axios.post(`${url}/api/food/add`, formData);
-
-
-            if (response.data.success) {
-                setImage(null);
-                toast.success(response.data.message, { theme: "dark" });
-                fetchProducts(); // Reîncarcă produsele după adăugare
-                setIsModalOpen(false); // Închide modalul
-                setUpdatedProduct({ name: "", description: "", price: "", category: "", isBestSeller: "", isNewAdded: "", isVegan: "" }); // Resetează formularul
-            } else {
-
-                toast.error(response.data.message, { theme: "dark" });
-            }
-        }  catch (error) {
-  console.error("❌ Error message:", error.message);
-  console.error("❌ Error response:", error.response?.data);
-}
-    }
+  } catch (error) {
+    console.error("❌ Error adding product:", error);
+    toast.error("Error adding product", { theme: "dark" });
+  }
+};
 
     const removeFood = async (foodId) => {
-        const response = await axios.post(`${url}/api/food/remove`, { id: foodId });
-        await fetchProducts();
-
-        if (response.data.success) {
-            toast.success(response.data.message, { theme: "dark" });
-        } else {
-            toast.error("Error adding product", { theme: "dark" });
+        try {
+            const response = await axios.post(`${url}/api/food/remove`, { id: foodId });
+            if (response.data.success) {
+                toast.success(response.data.message, { theme: "dark" });
+                fetchProducts();
+            } else {
+                toast.error(response.data.message, { theme: "dark" });
+            }
+        } catch (error) {
+            console.error("Error removing product:", error);
+            toast.error("Error removing product", { theme: "dark" });
         }
     };
 
@@ -127,42 +261,54 @@ const ProductsTable = () => {
             image: null,
             isBestSeller: product.isBestSeller,
             isNewAdded: product.isNewAdded,
-            isVegan: product.isVegan
+            isVegan: product.isVegan,
+            extras: product.extras || []
         });
         setIsEditing(true);
     };
 
-    const handleUpdateProduct = async (e) => {
-        e.preventDefault();
-        const formData = new FormData(); // Crează un obiect FormData
-        formData.append("id", currentProduct._id);
-        formData.append("name", updatedProduct.name);
-        formData.append("category", updatedProduct.category);
-        formData.append("price", updatedProduct.price);
-        formData.append("isBestSeller", updatedProduct.isBestSeller);
-        formData.append("isNewAdded", updatedProduct.isNewAdded);
-        formData.append("isVegan", updatedProduct.isVegan);
-        if (updatedProduct.image) {
-            formData.append("image", updatedProduct.image); // Adaugă imaginea la formData
-        }
-        try {
-            const response = await axios.post(`${url}/api/food/update`, formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data", // Setează headerul corect pentru fișiere
-                },
-            });
-            if (response.data.success) {
-                toast.success(response.data.message, { theme: "dark" });
-                fetchProducts(); // Reîncarcă produsele după actualizare
-                setIsEditing(false); // Închide formularul de editare
-            } else {
-                toast.error(response.data.message, { theme: "dark" });
-            }
-        } catch (error) {
-            console.error("Error updating product:", error);
-            toast.error("Error adding product", { theme: "dark" });
-        }
-    };
+const handleUpdateProduct = async (e) => {
+  e.preventDefault();
+  const formData = new FormData();
+  formData.append("id", currentProduct._id);
+  formData.append("name", updatedProduct.name);
+  formData.append("category", updatedProduct.category);
+  formData.append("price", updatedProduct.price);
+  formData.append("description", updatedProduct.description);
+  formData.append("isBestSeller", updatedProduct.isBestSeller);
+  formData.append("isNewAdded", updatedProduct.isNewAdded);
+  formData.append("isVegan", updatedProduct.isVegan);
+  
+  // SCHIMBARE: Trimite extrasele ca JSON string
+  formData.append("extras", JSON.stringify(updatedProduct.extras));
+  
+  if (updatedProduct.image instanceof File) {
+    formData.append("image", updatedProduct.image);
+  }
+
+  console.log("Update FormData contents:");
+  for (let [key, value] of formData.entries()) {
+    console.log(key, value);
+  }
+
+  try {
+    const response = await axios.post(`${url}/api/food/update`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    if (response.data.success) {
+      toast.success(response.data.message, { theme: "dark" });
+      fetchProducts();
+      setIsEditing(false);
+    } else {
+      toast.error(response.data.message, { theme: "dark" });
+    }
+  } catch (error) {
+    console.error("Error updating product:", error);
+    toast.error("Error updating product", { theme: "dark" });
+  }
+};
 
     useEffect(() => {
         fetchProducts();
@@ -176,7 +322,7 @@ const ProductsTable = () => {
             (product) => product.name.toLowerCase().includes(term) || product.category.toLowerCase().includes(term)
         );
         setFilteredProducts(filtered);
-        setCurrentPage(1); // Reset page la 1 la fiecare căutare
+        setCurrentPage(1);
     };
 
     const indexOfLastProduct = currentPage * productsPerPage;
@@ -193,14 +339,7 @@ const ProductsTable = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
         >
-            {/* <button
-                className="bg-gray-800 text-white font-semibold rounded-md px-6 py-3 border-2 border-blue-500 hover:bg-gray-700 focus:ring-2 focus:ring-blue-100 focus:outline-none"
-                onClick={() => setIsModalOpen(true)}
-            >
-                Add a new product
-            </button> */}
             <div className='flex justify-between items-center mb-6'>
-                {/* <h2 className='text-xl font-semibold text-gray-100'>Products list</h2> */}
                 <button
                     className="bg-gray-800 text-white font-semibold rounded-md px-6 py-3 border-2 border-gray-700 hover:bg-gray-700 focus:ring-2 focus:ring-blue-100 focus:outline-none"
                     onClick={() => setIsModalOpen(true)}
@@ -219,7 +358,6 @@ const ProductsTable = () => {
                 </div>
             </div>
 
-
             <div className='overflow-x-auto'>
                 <table className='min-w-full divide-y divide-gray-700'>
                     <thead>
@@ -227,6 +365,7 @@ const ProductsTable = () => {
                             <th className='px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>Name</th>
                             <th className='px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>Category</th>
                             <th className='px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>Price</th>
+                            <th className='px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>Extras</th>
                             <th className='px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>Actions</th>
                         </tr>
                     </thead>
@@ -249,6 +388,15 @@ const ProductsTable = () => {
                                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>{product.category}</td>
                                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>{product.price.toFixed(2)} €</td>
                                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>
+                                    {product.extras?.length > 0 ? (
+                                        <div className="text-xs text-gray-300">
+                                            {product.extras.length} extra(s)
+                                        </div>
+                                    ) : (
+                                        <span className="text-xs text-gray-500">No extras</span>
+                                    )}
+                                </td>
+                                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>
                                     <button onClick={() => editProduct(product)} className='text-indigo-400 hover:text-indigo-300 mr-2'>
                                         <Edit size={18} />
                                     </button>
@@ -262,225 +410,445 @@ const ProductsTable = () => {
                 </table>
             </div>
 
-            {/* Pagination */}
             <div className='flex justify-center mt-4'>
                 {Array.from({ length: totalPages }, (_, index) => (
                     <button
                         key={index + 1}
                         onClick={() => paginate(index + 1)}
-                        className={`mx-1 px-3 py-1 rounded ${currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300'
-                            }`}
+                        className={`mx-1 px-3 py-1 rounded ${currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300'}`}
                     >
                         {index + 1}
                     </button>
                 ))}
             </div>
+
             {isEditing && (
                 <motion.div
-                    className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                 >
                     <motion.div
-                        className='bg-gray-800 rounded-lg p-6 w-96'
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        exit={{ scale: 0 }}
+                        className="relative bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        transition={{ type: "spring", damping: 25, stiffness: 300 }}
                     >
-                        <h2 className='text-xl font-semibold text-gray-100 mb-4'>Edit Product</h2>
-                        <form onSubmit={handleUpdateProduct}>
-                            <div className="mb-4">
-                                <label className="block text-gray-400">Current Image</label>
-                                {/* Afișează imaginea curentă dacă există */}
-                                {currentProduct.image && (
-                                    <img
-                                        src={`${url}/images/` + currentProduct.image}
-                                        alt="Current category"
-                                        className="mb-2 w-32 h-32 object-cover rounded" // Poți ajusta dimensiunile după preferințe
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-gray-700">
+                            <h3 className="text-2xl font-bold text-white">
+                                Edit Product
+                            </h3>
+                            <button
+                                onClick={() => setIsEditing(false)}
+                                className="text-gray-400 hover:text-white transition-colors duration-200 p-2 rounded-lg hover:bg-gray-700"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Form */}
+                        <form className="p-6 space-y-6" onSubmit={handleUpdateProduct}>
+                            {/* Image Upload */}
+                            <div className="space-y-3">
+                                <label className="block text-lg font-semibold text-white">Product Image</label>
+                                <div className="flex flex-col md:flex-row gap-6">
+                                    {/* Current Image */}
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-medium text-gray-400">Current Image</label>
+                                        <div className="w-full h-48 border-2 border-dashed border-gray-600 rounded-xl flex items-center justify-center overflow-hidden">
+                                            <img
+                                                src={`${url}/images/` + currentProduct.image}
+                                                alt="Current product"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* New Image */}
+                                    <div className="space-y-2 flex-1">
+                                        <label className="block text-sm font-medium text-gray-400">New Image (optional)</label>
+                                        <label htmlFor="edit-image" className="cursor-pointer group">
+                                            <div className="w-full h-48 border-2 border-dashed border-gray-600 rounded-xl flex flex-col items-center justify-center transition-all duration-300 group-hover:border-blue-500 group-hover:bg-gray-700/50">
+                                                {updatedProduct.image instanceof File ? (
+                                                    <div className="relative w-full h-full">
+                                                        <img 
+                                                            src={URL.createObjectURL(updatedProduct.image)} 
+                                                            alt="New product preview" 
+                                                            className="w-full h-full object-cover rounded-xl"
+                                                        />
+                                                        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                            <div className="text-white text-center">
+                                                                <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                                </svg>
+                                                                <p className="text-sm">Change Image</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center p-6">
+                                                        <svg className="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2  002 2z" />
+                                                        </svg>
+                                                        <p className="text-gray-400 text-sm">Click to upload new image</p>
+                                                        <p className="text-gray-500 text-xs mt-1">PNG, JPG, JPEG up to 10MB</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <input 
+                                                onChange={(e) => setUpdatedProduct({ ...updatedProduct, image: e.target.files[0] })} 
+                                                type="file" 
+                                                id="edit-image" 
+                                                hidden 
+                                                accept="image/*"
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Grid Layout */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Name */}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-white">Product Name</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        placeholder="Enter product name"
+                                        value={updatedProduct.name}
+                                        onChange={(e) => setUpdatedProduct({ ...updatedProduct, name: e.target.value })}
+                                        required
                                     />
-                                )}
-                                <label className="block text-gray-400">New Image</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="mt-1 p-2 bg-gray-700 text-white rounded"
-                                    onChange={(e) => setUpdatedProduct({ ...updatedProduct, image: e.target.files[0] })}
+                                </div>
+
+                                {/* Price */}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-white">Price (€)</label>
+                                    <input
+                                        type="number"
+                                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 no-arrows"
+                                        placeholder="0.00"
+                                        value={updatedProduct.price}
+                                        onChange={(e) => setUpdatedProduct({ ...updatedProduct, price: e.target.value })}
+                                        onBlur={handlePriceBlur}
+                                        required
+                                        step="0.01"
+                                        min="0"
+                                    />
+                                </div>
+
+                                {/* Category */}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-white">Category</label>
+                                    <select
+                                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        value={updatedProduct.category}
+                                        onChange={(e) => setUpdatedProduct({ ...updatedProduct, category: e.target.value })}
+                                        required
+                                    >
+                                        <option value="" disabled>Select category</option>
+                                        {list.map((category) => (
+                                            <option key={category._id} value={category.menu_name}>
+                                                {category.menu_name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Tags */}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-white">Product Tags</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <label className="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:bg-gray-700/70 transition-all duration-200 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={updatedProduct.isBestSeller}
+                                                onChange={(e) => setUpdatedProduct({ ...updatedProduct, isBestSeller: e.target.checked })}
+                                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                            />
+                                            <span className="ml-2 text-sm text-white">Best Seller</span>
+                                        </label>
+
+                                        <label className="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:bg-gray-700/70 transition-all duration-200 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={updatedProduct.isNewAdded}
+                                                onChange={(e) => setUpdatedProduct({ ...updatedProduct, isNewAdded: e.target.checked })}
+                                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                            />
+                                            <span className="ml-2 text-sm text-white">New Arrival</span>
+                                        </label>
+
+                                        <label className="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:bg-gray-700/70 transition-all duration-200 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={updatedProduct.isVegan}
+                                                onChange={(e) => setUpdatedProduct({ ...updatedProduct, isVegan: e.target.checked })}
+                                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                            />
+                                            <span className="ml-2 text-sm text-white">Vegan</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Description */}
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-white">Description</label>
+                                <textarea
+                                    rows="4"
+                                    maxLength="500"
+                                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                                    placeholder="Describe your product..."
+                                    value={updatedProduct.description}
+                                    onChange={(e) => setUpdatedProduct({ ...updatedProduct, description: e.target.value })}
                                 />
                             </div>
-                            <div className="mb-4">
-                                <label className="block text-gray-400">Name</label>
-                                <input
-                                    type="text"
-                                    className="mt-1 p-2 bg-gray-700 text-white rounded"
-                                    value={updatedProduct.name}
-                                    onChange={(e) => setUpdatedProduct({ ...updatedProduct, name: e.target.value })}
-                                    required
-                                />
+
+                            {/* Extra Options Section */}
+                            <ExtraOptionsSection 
+                                extraName={extraName}
+                                setExtraName={setExtraName}
+                                extraPrice={extraPrice}
+                                setExtraPrice={setExtraPrice}
+                                addExtra={addExtra}
+                                updatedProduct={updatedProduct}
+                                removeExtra={removeExtra}
+                            />
+
+                            {/* Actions */}
+                            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-700">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditing(false)}
+                                    className="px-6 py-3 text-gray-300 bg-gray-700 hover:bg-gray-600 rounded-xl transition-colors duration-200 font-medium"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors duration-200 font-medium flex items-center space-x-2"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span>Update Product</span>
+                                </button>
                             </div>
-                            <div className="mb-4">
-                                <label className="block text-gray-400">Category</label>
-                                <input
-                                    type="text"
-                                    className="mt-1 p-2 bg-gray-700 text-white rounded"
-                                    value={updatedProduct.category}
-                                    onChange={(e) => setUpdatedProduct({ ...updatedProduct, category: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-gray-400">Price</label>
-                                <input
-                                    type="number"
-                                    className="mt-1 p-2 bg-gray-700 text-white rounded"
-                                    value={updatedProduct.price}
-                                    onChange={(e) => setUpdatedProduct({ ...updatedProduct, price: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Update</button>
-                            <button type="button" onClick={() => setIsEditing(false)} className="bg-red-600 text-white px-4 py-2 rounded ml-2">Cancel</button>
                         </form>
                     </motion.div>
                 </motion.div>
             )}
 
             {isModalOpen && (
-                <div id="crud-modal" className="fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full h-full bg-black bg-opacity-50">
-                    <div className="relative p-4 w-full max-w-md max-h-full">
-                        <div className="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    Create New Product
-                                </h3>
-                                <button
-                                    type="button"
-                                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                                    onClick={() => setIsModalOpen(false)}
-                                >
-                                    <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                                    </svg>
-                                    <span className="sr-only">Close modal</span>
-                                </button>
-                            </div>
-                            <form className="p-4 md:p-5" onSubmit={handleAddProduct}>
-                                <div className="grid gap-4 mb-4 grid-cols-2">
-                                    <div className="col-span-2">
-                                        <label htmlFor="image" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white cursor-pointer">Upload image
-                                            <div className='w-40 h-40 border-2 border-dashed border-gray-300 rounded flex items-center justify-center cursor-pointer'>
-                                                {image ? (
-                                                    <img src={URL.createObjectURL(image)} alt="Product preview" className='object-cover w-full h-full rounded' />
-                                                ) : (
-                                                    <span className='text-gray-400'>No image selected</span>
-                                                )}
-                                            </div>
-                                        </label>
-                                        <input onChange={(e) => setImage(e.target.files[0])} type="file" id='image' hidden required />
+                <motion.div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                >
+                    <motion.div
+                        className="relative bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto"
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                    >
+                        <div className="flex items-center justify-between p-6 border-b border-gray-700">
+                            <h3 className="text-2xl font-bold text-white">Create New Product</h3>
+                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white transition-colors duration-200 p-2 rounded-lg hover:bg-gray-700">
+                                <X size={24} />
+                            </button>
+                        </div>
 
+                        <form className="p-6 space-y-6" onSubmit={handleAddProduct}>
+                            {/* Image Upload */}
+                            <div className="space-y-3">
+                                <label className="block text-lg font-semibold text-white">Product Image</label>
+                                <label htmlFor="image" className="cursor-pointer group">
+                                    <div className="w-full h-48 border-2 border-dashed border-gray-600 rounded-xl flex flex-col items-center justify-center transition-all duration-300 group-hover:border-blue-500 group-hover:bg-gray-700/50">
+                                        {image ? (
+                                            <div className="relative w-full h-full">
+                                                <img 
+                                                    src={URL.createObjectURL(image)} 
+                                                    alt="Product preview" 
+                                                    className="w-full h-full object-cover rounded-xl"
+                                                />
+                                                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div className="text-white text-center">
+                                                        <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                        </svg>
+                                                        <p className="text-sm">Change Image</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-center p-6">
+                                                <svg className="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                </svg>
+                                                <p className="text-gray-400 text-sm">Click to upload product image</p>
+                                                <p className="text-gray-500 text-xs mt-1">PNG, JPG, JPEG up to 10MB</p>
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="col-span-2">
-                                        <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name</label>
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            id="name"
-                                            maxLength="100"
-                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                            placeholder="Type product name"
-                                            value={updatedProduct.name}
-                                            onChange={(e) => setUpdatedProduct({ ...updatedProduct, name: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="col-span-2 sm:col-span-1">
-                                        <label htmlFor="price" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Price</label>
-                                        <input
-                                            type="number"
-                                            name="price"
-                                            id="price"
-                                            maxLength="6"
-                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 no-arrows"
-                                            placeholder="10€"
-                                            value={updatedProduct.price}
-                                            onChange={(e) => setUpdatedProduct({ ...updatedProduct, price: e.target.value })}
-                                            onBlur={handlePriceBlur}
-                                            required
-                                            style={{ appearance: 'textfield', MozAppearance: 'textfield', WebkitAppearance: 'none' }}
-                                        />
-                                    </div>
-                                    <div className="col-span-2 sm:col-span-1">
-                                        <label htmlFor="category" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category</label>
-                                        <select
-                                            id="category"
-                                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                            value={updatedProduct.category}
-                                            onChange={(e) => setUpdatedProduct({ ...updatedProduct, category: e.target.value })}
-                                            required
-                                        >
-                                            <option value="" disabled>Select category</option> {/* Opțiune goală care poate fi selectată */}
-                                            {list.map((category) => (
-                                                <option key={category._id} value={category.menu_name}>
-                                                    {category.menu_name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="add-booleans flex   space-x-16">
-                                        <div className="flex items-center">
+                                    <input 
+                                        onChange={(e) => setImage(e.target.files[0])} 
+                                        type="file" 
+                                        id="image" 
+                                        hidden 
+                                        required 
+                                        accept="image/*"
+                                    />
+                                </label>
+                            </div>
+
+                            {/* Grid Layout */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Name */}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-white">Product Name</label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        maxLength="100"
+                                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        placeholder="Enter product name"
+                                        value={updatedProduct.name}
+                                        onChange={(e) => setUpdatedProduct({ ...updatedProduct, name: e.target.value })}
+                                        required
+                                    />
+                                </div>
+
+                                {/* Price */}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-white">Price (€)</label>
+                                    <input
+                                        type="number"
+                                        name="price"
+                                        maxLength="6"
+                                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 no-arrows"
+                                        placeholder="0.00"
+                                        value={updatedProduct.price}
+                                        onChange={(e) => setUpdatedProduct({ ...updatedProduct, price: e.target.value })}
+                                        onBlur={handlePriceBlur}
+                                        required
+                                        step="0.01"
+                                        min="0"
+                                    />
+                                </div>
+
+                                {/* Category */}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-white">Category</label>
+                                    <select
+                                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                        value={updatedProduct.category}
+                                        onChange={(e) => setUpdatedProduct({ ...updatedProduct, category: e.target.value })}
+                                        required
+                                    >
+                                        <option value="" disabled>Select category</option>
+                                        {list.map((category) => (
+                                            <option key={category._id} value={category.menu_name}>
+                                                {category.menu_name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Tags */}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-white">Product Tags</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <label className="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:bg-gray-700/70 transition-all duration-200 cursor-pointer">
                                             <input
                                                 type="checkbox"
                                                 name="isBestSeller"
                                                 checked={updatedProduct.isBestSeller}
                                                 onChange={(e) => setUpdatedProduct({ ...updatedProduct, isBestSeller: e.target.checked })}
-                                                className="h-4 w-4 text-blue-600 bg-gray-50 border-gray-300 rounded focus:ring-2 focus:ring-primary-600 dark:bg-gray-700 dark:border-gray-500 dark:focus:ring-primary-500"
+                                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                             />
-                                            <label className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-200">Best Seller</label>
-                                        </div>
-                                        <div className="flex items-center">
+                                            <span className="ml-2 text-sm text-white">Best Seller</span>
+                                        </label>
+
+                                        <label className="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:bg-gray-700/70 transition-all duration-200 cursor-pointer">
                                             <input
                                                 type="checkbox"
                                                 name="isNewAdded"
                                                 checked={updatedProduct.isNewAdded}
                                                 onChange={(e) => setUpdatedProduct({ ...updatedProduct, isNewAdded: e.target.checked })}
-                                                className="h-4 w-4 text-blue-600 bg-gray-50 border-gray-300 rounded focus:ring-2 focus:ring-primary-600 dark:bg-gray-700 dark:border-gray-500 dark:focus:ring-primary-500"
+                                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                             />
-                                            <label className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-200">Newly Added</label>
-                                        </div>
-                                        <div className="flex items-center">
+                                            <span className="ml-2 text-sm text-white">New Arrival</span>
+                                        </label>
+
+                                        <label className="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:bg-gray-700/70 transition-all duration-200 cursor-pointer">
                                             <input
                                                 type="checkbox"
                                                 name="isVegan"
                                                 checked={updatedProduct.isVegan}
                                                 onChange={(e) => setUpdatedProduct({ ...updatedProduct, isVegan: e.target.checked })}
-                                                className="h-4 w-4 text-blue-600 bg-gray-50 border-gray-300 rounded focus:ring-2 focus:ring-primary-600 dark:bg-gray-700 dark:border-gray-500 dark:focus:ring-primary-500"
+                                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                                             />
-                                            <label className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-200">Vegan</label>
-                                        </div>
-                                    </div>
-                                    <div className="col-span-2">
-                                        <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Product Description</label>
-                                        <textarea
-                                            id="description"
-                                            rows="4"
-                                            maxLength="500"
-                                            className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                            placeholder="Write product description here"
-                                            value={updatedProduct.description}
-                                            onChange={(e) => setUpdatedProduct({ ...updatedProduct, description: e.target.value })}
-                                        ></textarea>
+                                            <span className="ml-2 text-sm text-white">Vegan</span>
+                                        </label>
                                     </div>
                                 </div>
-                                <div className='flex justify-center mt-4'>
-                                    <button type="submit" className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                        <svg className="me-1 -ms-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd"></path></svg>
-                                        Add new product
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+                            </div>
+
+                            {/* Description */}
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-white">Description</label>
+                                <textarea
+                                    rows="4"
+                                    maxLength="500"
+                                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                                    placeholder="Describe your product..."
+                                    value={updatedProduct.description}
+                                    onChange={(e) => setUpdatedProduct({ ...updatedProduct, description: e.target.value })}
+                                />
+                            </div>
+
+                            {/* Extra Options Section */}
+                            <ExtraOptionsSection 
+                                extraName={extraName}
+                                setExtraName={setExtraName}
+                                extraPrice={extraPrice}
+                                setExtraPrice={setExtraPrice}
+                                addExtra={addExtra}
+                                updatedProduct={updatedProduct}
+                                removeExtra={removeExtra}
+                            />
+
+                            {/* Actions */}
+                            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-700">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsModalOpen(false)}
+                                    className="px-6 py-3 text-gray-300 bg-gray-700 hover:bg-gray-600 rounded-xl transition-colors duration-200 font-medium"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors duration-200 font-medium flex items-center space-x-2"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    </svg>
+                                    <span>Add Product</span>
+                                </button>
+                            </div>
+                        </form>
+                    </motion.div>
+                </motion.div>
             )}
         </motion.div>
     );
