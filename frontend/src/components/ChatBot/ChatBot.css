@@ -37,6 +37,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: sticky; /* Face header-ul fix */
+  top: 0;
+  z-index: 10; /* Asigură că header-ul este deasupra conținutului */
+  flex-shrink: 0; /* Previne comprimarea */
 }
 
 .chat-title {
@@ -108,6 +112,8 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
+  /* Ajustează pentru header-ul fix */
+  max-height: calc(100% - 130px); /* Scade înălțimea header-ului și input-ului */
 }
 
 .message {
@@ -165,6 +171,7 @@
   padding: 15px 20px;
   background: white;
   border-top: 1px solid #e0e0e0;
+  flex-shrink: 0; /* Previne comprimarea */
 }
 
 .chat-input {
@@ -260,10 +267,14 @@
   .diana-ai-modal {
     width: 95%;
     height: 85vh;
+    /* Ajustări pentru mobile cu tastatura */
+    max-height: 90vh;
   }
   
   .chat-header {
     padding: 12px 15px;
+    position: sticky;
+    top: 0;
   }
   
   .chat-title {
@@ -272,6 +283,8 @@
   
   .chat-messages {
     padding: 15px;
+    /* Ajustează înălțimea pentru mobile */
+    max-height: calc(100% - 120px);
   }
   
   .message-content {
