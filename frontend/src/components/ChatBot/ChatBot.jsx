@@ -10,7 +10,11 @@ const ChatBot = ({ show, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [language, setLanguage] = useState('en');
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [pendingLanguageChange, setPendingLanguageChange] = useState(null);
   const messagesEndRef = useRef(null);
+  const modalRef = useRef(null);
+  const closeButtonRef = useRef(null);
   const { url } = useContext(StoreContext);
   const tableNumber = localStorage.getItem('tableNumber');
 
@@ -18,20 +22,28 @@ const ChatBot = ({ show, onClose }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Adaugă acest useEffect pentru a gestiona afișarea tastaturii
-useEffect(() => {
-  const handleResize = () => {
-    // Forțează re-render când se schimbă dimensiunea ferestrei (când apare/dispare tastatura)
-    scrollToBottom();
-  };
-
-  window.addEventListener('resize', handleResize);
-  return () => window.removeEventListener('resize', handleResize);
-}, []);
-
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Gestionare simplă a tastaturii
+  const handleInputFocus = () => {
+    setIsKeyboardVisible(true);
+  };
+
+  const handleInputBlur = () => {
+    setTimeout(() => setIsKeyboardVisible(false), 200);
+  };
+
+  const handleClose = (e) => {
+    const inputElement = document.querySelector('.message-input');
+    if (inputElement) {
+      inputElement.blur();
+    }
+    setTimeout(() => {
+      onClose();
+    }, 50);
+  };
 
   // Initializează limba din sessionStorage
   useEffect(() => {
@@ -46,7 +58,7 @@ useEffect(() => {
     if (show && messages.length === 0) {
       setMessages([
         {
-          id: Date.now(), // Folosește timestamp pentru ID unic
+          id: Date.now(),
           text: language === 'ro' 
             ? "Bună! Sunt Diana AI, asistentul tău virtual. Cu ce te pot ajuta?" 
             : "Hello! I'm Diana AI, your virtual assistant. How can I help you?",
@@ -57,20 +69,17 @@ useEffect(() => {
     }
   }, [language, show]);
 
-  // Funcție pentru a schimba limba fără a traduce mesajele existente
-  const switchLanguage = () => {
-    const newLanguage = language === 'ro' ? 'en' : 'ro';
-    
-    // Schimbă doar limba, fără a modifica mesajele existente
+  // Funcție pentru a schimba limba
+  const switchLanguage = (newLanguage) => {
     setLanguage(newLanguage);
     sessionStorage.setItem('language', newLanguage);
+    setPendingLanguageChange(null);
     
-    // Adaugă un mesaj informativ despre schimbarea limbii
     const infoMessage = {
-      id: Date.now(), // ID unic
+      id: Date.now(),
       text: newLanguage === 'ro' 
-        ? "🌍 Limba a fost schimbată în română. Noile mesaje vor fi în această limbă." 
-        : "🌍 Language switched to English. New messages will be in this language.",
+        ? "🌍 Limba a fost schimbată în română!" 
+        : "🌍 Language switched to English!",
       sender: "bot",
       timestamp: new Date()
     };
@@ -80,6 +89,115 @@ useEffect(() => {
     toast.success(newLanguage === 'ro' 
       ? 'Limba a fost schimbată în română!' 
       : 'Language switched to English!');
+  };
+
+  // Funcție pentru confirmarea schimbării limbii
+const confirmLanguageChange = (newLanguage) => {
+  // Verifică dacă limba este deja setată
+  if (newLanguage === language) {
+    const alreadySetMessage = {
+      id: Date.now(),
+      text: newLanguage === 'ro' 
+        ? "ℹ️ Limba este deja setată pe **română**!" 
+        : "ℹ️ The language is already set to **English**!",
+      sender: "bot",
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, alreadySetMessage]);
+    return;
+  }
+  
+  const confirmationMessage = {
+    id: Date.now(),
+    text: newLanguage === 'ro' 
+      ? "🤔 Sigur doriți să schimbați limba în **română**?" 
+      : "🤔 Are you sure you want to switch to **English**?",
+    sender: "bot",
+    timestamp: new Date(),
+    hasButtons: true,
+    buttons: [
+      { 
+        text: newLanguage === 'ro' ? '✅ Da' : '✅ Yes', 
+        action: 'confirm',
+        language: newLanguage
+      },
+      { 
+        text: newLanguage === 'ro' ? '❌ Nu' : '❌ No', 
+        action: 'cancel'
+      }
+    ]
+  };
+  
+  setMessages(prev => [...prev, confirmationMessage]);
+  setPendingLanguageChange(newLanguage);
+};
+
+  // Funcție pentru a procesa acțiunile butoanelor
+ const handleButtonClick = (button, messageId) => {
+  // Facem butoanele inactive dupa click
+  setMessages(prev => prev.map(msg => {
+    if (msg.id === messageId && msg.hasButtons) {
+      return {
+        ...msg,
+        buttons: msg.buttons.map(btn => ({
+          ...btn,
+          disabled: true
+        }))
+      };
+    }
+    return msg;
+  }));
+
+  if (button.action === 'confirm') {
+    switchLanguage(button.language);
+  } else if (button.action === 'cancel') {
+    const cancelMessage = {
+      id: Date.now(),
+      text: language === 'ro' 
+        ? "✅ Am anulat schimbarea limbii." 
+        : "✅ Language change cancelled.",
+      sender: "bot",
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, cancelMessage]);
+    setPendingLanguageChange(null);
+  }
+};
+
+  // Funcție pentru a procesa răspunsurile text da/nu (pentru compatibilitate)
+  const processConfirmationResponse = (response) => {
+    const lowerResponse = response.toLowerCase().trim();
+    
+    if (pendingLanguageChange) {
+      if ((language === 'ro' && (lowerResponse === 'da' || lowerResponse === 'yes')) || 
+          (language === 'en' && (lowerResponse === 'yes' || lowerResponse === 'da'))) {
+        switchLanguage(pendingLanguageChange);
+      } else if (lowerResponse === 'nu' || lowerResponse === 'no' || lowerResponse === 'not') {
+        const cancelMessage = {
+          id: Date.now(),
+          text: language === 'ro' 
+            ? "✅ Am anulat schimbarea limbii." 
+            : "✅ Language change cancelled.",
+          sender: "bot",
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, cancelMessage]);
+        setPendingLanguageChange(null);
+      } else {
+        const invalidMessage = {
+          id: Date.now(),
+          text: language === 'ro' 
+            ? "❌ Vă rugăm să răspundeți cu **'da'** sau **'nu'**, sau folosiți butoanele." 
+            : "❌ Please reply with **'yes'** or **'no'**, or use the buttons.",
+          sender: "bot",
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, invalidMessage]);
+      }
+      return true;
+    }
+    return false;
   };
 
   // Funcție pentru a trimite cerere către ospătar
@@ -104,18 +222,27 @@ useEffect(() => {
     }
   };
 
-  // Pattern matching extins și completat
-  const findBestMatch = (question, lang) => {
-    const lowerQuestion = question.toLowerCase().trim();
-    
+  // Pattern matching (păstrăm același cod ca înainte)
+const findBestMatch = (question, lang) => {
+  const lowerQuestion = question.toLowerCase().trim();
+
     // Patterns pentru schimbarea limbii
     const languagePatternsRO = [
-      /schimb.*limb/i, /limb.*român/i, /română/i, /vorb.*român/i,
+      /schimb.*limb/i, /schimb.*limba/i, /schimbare.*limb/i, /schimbare.*limba/i,
+      /limb.*român/i, /română/i, /vorb.*român/i, /vreau.*român/i,
       /switch.*english/i, /english/i, /englez/i, /vorb.*englez/i,
       /change.*language/i, /alt.*limb/i, /altă.*limbă/i,
-      /doresc.*român/i, /vreau.*englez/i, /limba.*român/i,
-      /trec.*la.*român/i, /trec.*la.*englez/i, /limbă.*englez/i,
-      /romana/i, /engleza/i, /limba.*engleza/i, /limba.*romana/i
+      /romana/i, /engleza/i, /limba.*romana/i, /limba.*engleza/i,
+      /limba.*român/i, /limba.*englez/i, /trec.*la.*romana/i,
+      /trec.*la.*engleza/i, /vreau.*romana/i, /vreau.*engleza/i,
+      /^română$/i, /^romana$/i, /^engleză$/i, /^engleza$/i,
+      /^ro$/i, /^en$/i, /^român$/i, /^englez$/i,
+      /doresc.*român/i, /doresc.*englez/i, /as.*vrea.*romana/i,
+      /as.*vrea.*engleza/i, /pot.*schimb/i, /pot.*sa.*schimb/i,
+      /limbă.*nou/i, /different.*language/i, /alta.*limba/i,
+      /schimbati.*limba/i, /schimbați.*limba/i, /modifica.*limba/i,
+      /modificare.*limba/i, /setari.*limba/i, /setări.*limba/i,
+      /configurare.*limba/i, /preferința.*limba/i, /preferinta.*limba/i
     ];
 
     const languagePatternsEN = [
@@ -125,10 +252,19 @@ useEffect(() => {
       /language.*change/i, /different.*language/i,
       /want.*english/i, /need.*romanian/i, /change.*to.*english/i,
       /switch.*to.*romanian/i, /language.*english/i, /language.*romanian/i,
-      /i.*want.*english/i, /i.*need.*romanian/i
+      /i.*want.*english/i, /i.*need.*romanian/i, /can.*switch/i,
+      /can.*change/i, /change.*to.*ro/i, /switch.*to.*en/i,
+      /^english$/i, /^romanian$/i, /^en$/i, /^ro$/i,
+      /^romania$/i, /^engleza$/i, /^romana$/i,
+      /i.*would.*like.*english/i, /i.*would.*like.*romanian/i,
+      /i.*prefer.*english/i, /i.*prefer.*romanian/i,
+      /could.*you.*switch/i, /could.*you.*change/i,
+      /new.*language/i, /different.*language/i, /another.*language/i,
+      /set.*language/i, /language.*settings/i, /language.*preference/i,
+      /configure.*language/i, /language.*option/i, /change.*the.*language/i
     ];
 
-    // Patterns pentru chemarea ospătarului (extinse)
+    // Patterns pentru chemarea ospătarului
     const waiterPatternsRO = [
       /plăt/i, /platesc/i, /pay/i, /factur/i, /not/i, /chemi.*ospăt/i,
       /ajutor/i, /help/i, /asisten/i, /suport/i, /problem/i,
@@ -158,180 +294,108 @@ useEffect(() => {
       /it.*doesn.*t.*work/i, /not.*working/i
     ];
 
-    // Patterns pentru recomandări (COMPLET EXTINSE)
+    // Patterns pentru recomandări
     const recommendationPatternsRO = [
-      // Forme directe și corecte
       /ce.*recomanzi/i, /ce.*recomanda/i, /ce.*imi.*recomanzi/i, /ce.*mi\.ai.*recomanda/i,
       /ai.*o.*recomandare/i, /care.*e.*recomandarea.*ta/i, /recomandari/i, /recomandări/i,
       /ce.*sugerezi/i, /ce.*mi\.ai.*sugera/i, /care.*e.*sugestia.*ta/i, /sugestii/i,
-      
-      // Popularitate și "cel mai bun"
       /ce.*este.*cel.*mai.*bun/i, /care.*e.*cel.*mai.*bun/i, /ce.*e.*cel.*mai.*popular/i,
       /care.*e.*specialitatea.*casei/i, /ce.*se.*mananca.*mai.*bine/i, /ce.*mananca.*lumea/i,
       /cel.*mai.*vandut/i, /specialitate/i, /ce.*e.*bun.*azi/i, /ce.*e.*fresh/i,
-      
-      // Client indecis
       /ce.*sa.*comand/i, /ce.*sa.*aleg/i, /nu.*stiu.*ce.*sa.*comand/i, /ma.*ajuti.*sa.*aleg/i,
       /vreau.*sa.*comand.*ceva.*bun/i, /as.*vrea.*o.*recomandare/i, /ce.*sa.*incerc/i,
       /ce.*imi.*pot.*comanda/i, /ce.*mi.*recomanzi.*sa.*mananc/i, /ce.*ai.*recomanda/i,
-      
-      // Greșeli comune și variații
       /recomandati/i, /recomandare/i, /recommand/i, /recomend/i, /recomandă/i,
       /recomendare/i, /recomandation/i, /recomandatii/i, /recomantare/i,
       /recomanadare/i, /recomandari/i, /recomendar/i,
-      
-      // Variații cu "sugestie"
       /sugestie/i, /sugestii/i, /sugeratii/i, /sugestia/i, /sugesti/i,
-      
-      // Alte formulări
       /ce.*parere.*ai/i, /ce.*mi.*recomanzi.*din.*meniu/i, /ce.*ai.*recomanda.*tu/i,
       /care.*iti.*place.*mai.*mult/i, /ce.*e.*delicios/i, /ce.*e.*gustos/i,
       /aveti.*o.*recomandare/i, /puteti.*recomanda/i, /ati.*putea.*recomanda/i,
-      
-      // Căutări generale
       /recomand/i, /recomanda/i, /recomandare/i, /recomandari/i
     ];
 
     const recommendationPatternsEN = [
-      // Direct questions
       /what.*recommend/i, /what.*product.*recommend/i, /what.*do.*you.*recommend/i,
       /what.*should.*i.*order/i, /what.*best/i, /best.*seller/i,
       /most.*popular/i, /what.*popular/i, /recommendation/i,
       /what.*good/i, /what.*specialty/i, /what.*favorite/i,
       /suggestion/i, /advice/i, /help.*choose/i, /what.*you.*suggest/i,
-      
-      // Popularity and best items
       /what.*is.*the.*best/i, /what.*is.*most.*popular/i, /what.*is.*good.*here/i,
       /what.*is.*your.*specialty/i, /what.*do.*people.*order/i, /what.*is.*trending/i,
       /what.*is.*famous/i, /top.*item/i, /most.*ordered/i, /house.*special/i,
-      
-      // Indecisive customer
       /what.*should.*i.*get/i, /what.*should.*i.*try/i, /i.*don.*t.*know.*what.*to.*order/i,
       /help.*me.*choose/i, /help.*me.*decide/i, /can.*t.*decide/i, /what.*to.*have/i,
       /what.*would.*you.*recommend/i, /what.*do.*you.*suggest.*i.*order/i,
-      
-      // Common misspellings and variations
       /recomend/i, /recommand/i, /recomended/i, /recomendation/i, /recomendations/i,
       /recomandation/i, /recomandations/i, /recomendation/i, /recomendations/i,
       /recomendation/i, /recomendations/i, /recomendation/i,
-      
-      // Suggestion variations
       /sugestion/i, /sugestions/i, /sugest/i, /sugestian/i,
-      
-      // Other formulations
       /what.*is.*your.*advice/i, /what.*would.*you.*suggest/i, /any.*recommendations/i,
       /any.*suggestions/i, /give.*me.*a.*recommendation/i, /tell.*me.*what.*to.*order/i,
       /what.*is.*delicious/i, /what.*is.*tasty/i, /what.*tastes.*good/i,
-      
-      // General searches
       /recommend/i, /recommends/i, /recommended/i, /recommending/i
-    ];
-
-    // Patterns pentru meniu (EXTINSE)
-    const menuPatternsRO = [
-      /ce.*meniu/i, /ce.*aveti.*meniu/i, /care.*este.*meniul/i,
-      /ce.*preparate/i, /ce.*mancaruri/i, /lista.*produse/i,
-      /ce.*aveti.*de.*mancare/i, /ce.*optiuni.*aveti/i, /ce.*feluri.*de.*mancare/i,
-      /meniu.*complet/i, /carte.*de.*bauturi/i, /lista.*bauturi/i,
-      /ce.*aveti.*de.*baut/i, /bauturi/i, /aperitive/i, /deserturi/i,
-      /ce.*se.*serveste/i, /ce.*oferiti/i, /ce.*gatiți/i,
-      /meniul.*zilei/i, /oferta.*zilei/i, /preparate.*disponibile/i,
-      /ce.*pot.*comanda/i, /ce.*exista.*in.*meniu/i, /ce.*aveti.*in.*meniu/i,
-      /carte.*alimentara/i, /lista.*preparate/i, /produse.*oferite/i
-    ];
-
-    const menuPatternsEN = [
-      /menu/i, /what.*menu/i, /what.*dishes/i,
-      /what.*food/i, /list.*products/i, /what.*you.*have/i,
-      /offer/i, /serve/i, /what.*options.*do.*you.*have/i,
-      /what.*kind.*of.*food/i, /complete.*menu/i, /drinks.*menu/i,
-      /beverages/i, /appetizers/i, /desserts/i, /main.*courses/i,
-      /what.*do.*you.*serve/i, /what.*is.*available/i, /what.*can.*i.*order/i,
-      /daily.*menu/i, /today.*special/i, /available.*dishes/i,
-      /food.*options/i, /what.*is.*on.*the.*menu/i, /what.*is.*in.*the.*menu/i,
-      /dishes.*you.*have/i, /food.*you.*serve/i, /offerings/i
-    ];
-
-    // Patterns pentru ingrediente (EXTINSE)
-    const ingredientsPatternsRO = [
-      /ce.*ingrediente/i, /din.*ce.*este.*facut/i, /contine.*gluten/i,
-      /este.*vegetarian/i, /are.*lactoza/i, /alergeni/i, /contine.*alergeni/i,
-      /ingredientele.*sunt/i, /din.*ce.*se.*face/i, /ce.*contin/i,
-      /are.*oua/i, /contine.*lactate/i, /este.*vegan/i, /fara.*gluten/i,
-      /fara.*lactoza/i, /alergie/i, /intoleranta/i, /ingrediente.*principal/i,
-      /ce.*este.*in/i, /compizitie/i, /continut/i, /elemente/i,
-      /componente/i, /ce.*mai.*are/i, /ce.*altceva.*contine/i,
-      /ingrediente.*utilizate/i, /materiale/i, /compus/i
-    ];
-
-    const ingredientsPatternsEN = [
-      /ingredients/i, /what.*in.*it/i, /contains/i,
-      /gluten/i, /vegetarian/i, /vegan/i,
-      /lactose/i, /dairy/i, /allergens/i, /what.*is.*it.*made.*of/i,
-      /what.*does.*it.*contain/i, /what.*is.*inside/i,
-      /does.*it.*have/i, /has.*eggs/i, /contains.*dairy/i,
-      /gluten.*free/i, /dairy.*free/i, /allergy/i, /intolerance/i,
-      /main.*ingredients/i, /what.*is.*in.*it/i, /composition/i,
-      /content/i, /elements/i, /components/i, /what.*else.*does.*it.*have/i,
-      /ingredients.*used/i, /materials/i, /made.*of/i, /what.*it.*contains/i
     ];
 
     const patterns = lang === 'ro' ? {
       language: languagePatternsRO,
       waiter: waiterPatternsRO,
       recommendation: recommendationPatternsRO,
-      menu: menuPatternsRO,
-      ingredients: ingredientsPatternsEN
     } : {
       language: languagePatternsEN,
       waiter: waiterPatternsEN,
       recommendation: recommendationPatternsEN,
-      menu: menuPatternsEN,
-      ingredients: ingredientsPatternsEN
     };
 
     // Verificăm tipul de întrebare
     const isLanguageQuestion = patterns.language.some(pattern => pattern.test(lowerQuestion));
     const isWaiterQuestion = patterns.waiter.some(pattern => pattern.test(lowerQuestion));
     const isRecommendationQuestion = patterns.recommendation.some(pattern => pattern.test(lowerQuestion));
-    const isMenuQuestion = patterns.menu.some(pattern => pattern.test(lowerQuestion));
-    const isIngredientsQuestion = patterns.ingredients.some(pattern => pattern.test(lowerQuestion));
 
-    // Răspunsuri în română
+    // Determină ce limbă este solicitată
+   let requestedLanguage = null;
+  if (isLanguageQuestion) {
+    const isRomanianRequest = /român|romana|ro\b|româna|română/i.test(lowerQuestion);
+    const isEnglishRequest = /englez|engleza|en\b|english/i.test(lowerQuestion);
+    
+    if (isRomanianRequest) {
+      requestedLanguage = 'ro';
+    } else if (isEnglishRequest) {
+      requestedLanguage = 'en';
+    } else {
+      requestedLanguage = lang === 'ro' ? 'en' : 'ro';
+    }
+    
+    // Verifică dacă limba solicitată este deja activă
+    if (requestedLanguage === lang) {
+      return lang === 'ro' 
+        ? "ℹ️ Limba este deja setată pe **română**!" 
+        : "ℹ️ The language is already set to **English**!";
+    }
+  }
+
+    // Răspunsuri
     if (lang === 'ro') {
-      if (isLanguageQuestion) {
-        return "language_switch";
-      }
+    if (isLanguageQuestion) {
+      return { type: "language_change", newLanguage: requestedLanguage };
+    }
       if (isWaiterQuestion) {
         return "waiter_request";
       }
       if (isRecommendationQuestion) {
         return "Cel mai vândut produs la noi este **Cartofi prăjiți cu pui**! 🍗🍟 Este o combinație delicioasă și foarte populară în rândul clienților noștri. Puiul este marinat în condimente speciale și serviți cu cartofi crocanți. 😊\n\nDacă vă plac preparatele tradiționale, vă recomand și **Sarmalele noastre casei** sau **Mici cu muștar**!";
       }
-      if (isMenuQuestion) {
-        return "Avem o **varietate foarte largă de produse**! 🍽️ Meniul nostru include:\n\n• **Aperitive**: Bruschete, Platou mezeluri, Salate proaspete\n• **Feluri principale**: Pizza, Paste, Grill, Preparate românești\n• **Deserturi**: Clătite, Prăjituri, Inghețată\n• **Băuturi**: Sucuri, Apă, Băuturi răcoritoare, Cafea\n\nVă recomand să consultați meniul complet din aplicație pentru toate opțiunile! Dacă doriți o recomandare personalizată, spuneți-mi ce preferințe aveți!";
-      }
-      if (isIngredientsQuestion) {
-        return "**Cartofi prăjiți cu pui** conține: piept de pui, cartofi, ulei de floarea-soarelui, condimente speciale. Poate conține urme de gluten și lactoză. Pentru informații detaliate despre alergeni pentru orice produs, vă rugăm să consultați bucătarul sau să mă întrebați despre un anumit preparat!";
-      }
     }
 
-    // Răspunsuri în engleză
-    if (lang === 'en') {
-      if (isLanguageQuestion) {
-        return "language_switch";
-      }
+     if (lang === 'en') {
+    if (isLanguageQuestion) {
+      return { type: "language_change", newLanguage: requestedLanguage };
+    }
       if (isWaiterQuestion) {
         return "waiter_request";
       }
       if (isRecommendationQuestion) {
         return "Our best-selling product is **French Fries with Chicken**! 🍗🍟 It's a delicious combination very popular among our customers. The chicken is marinated in special spices and served with crispy fries. 😊\n\nIf you like traditional dishes, I also recommend our **Homemade Sarmale** or **Grilled Sausages with Mustard**!";
-      }
-      if (isMenuQuestion) {
-        return "We have a **very wide variety of products**! 🍽️ Our menu includes:\n\n• **Appetizers**: Bruschetta, Charcuterie board, Fresh salads\n• **Main courses**: Pizza, Pasta, Grill, Romanian dishes\n• **Desserts**: Pancakes, Cakes, Ice cream\n• **Beverages**: Juices, Water, Soft drinks, Coffee\n\nI recommend checking the full menu in the app for all options! If you'd like a personalized recommendation, tell me your preferences!";
-      }
-      if (isIngredientsQuestion) {
-        return "**French Fries with Chicken** contains: chicken breast, potatoes, sunflower oil, special spices. May contain traces of gluten and lactose. For detailed allergen information about any product, please consult our chef or ask me about a specific dish!";
       }
     }
 
@@ -339,35 +403,39 @@ useEffect(() => {
   };
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return;
+  if (!inputMessage.trim()) return;
 
-    const userMessage = {
-      id: Date.now(), // ID unic bazat pe timestamp
-      text: inputMessage,
-      sender: "user",
-      timestamp: new Date()
-    };
+  const userMessage = {
+    id: Date.now(),
+    text: inputMessage,
+    sender: "user",
+    timestamp: new Date()
+  };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInputMessage('');
+  setMessages(prev => [...prev, userMessage]);
+  setInputMessage('');
 
-    setTimeout(async () => {
-      const botResponse = findBestMatch(inputMessage, language);
-      
-      let botMessageText = "";
-      
-      if (botResponse === "language_switch") {
-        const newLanguage = language === 'ro' ? 'en' : 'ro';
+  // Verifică dacă este un răspuns la confirmare
+  if (pendingLanguageChange && processConfirmationResponse(inputMessage)) {
+    return;
+  }
+
+  setTimeout(async () => {
+    const botResponse = findBestMatch(inputMessage, language);
+    
+    let botMessageText = "";
+    
+    if (botResponse && typeof botResponse === 'object' && botResponse.type === "language_change") {
+      // Verifică dacă limba este deja setată înainte de a cere confirmare
+      if (botResponse.newLanguage === language) {
         botMessageText = language === 'ro' 
-          ? "Vă voi schimba limba în English! 🇺🇸" 
-          : "I'll switch the language to Romanian! 🇷🇴";
-        
-        // Schimbă efectiv limba după ce afișează mesajul
-        setTimeout(() => {
-          switchLanguage();
-        }, 1500);
-        
-      } else if (botResponse === "waiter_request") {
+          ? "ℹ️ Limba este deja setată pe **română**!" 
+          : "ℹ️ The language is already set to **English**!";
+      } else {
+        confirmLanguageChange(botResponse.newLanguage);
+        return;
+      }
+    } else if (botResponse === "waiter_request") {
         const isPaymentRelated = /plăt|pay|factur|bill|check|payment/i.test(inputMessage.toLowerCase());
         const actionType = isPaymentRelated ? 'payment' : 'assistance';
         const actionMessage = isPaymentRelated 
@@ -386,20 +454,20 @@ useEffect(() => {
       
       } else {
         botMessageText = botResponse || (language === 'ro' 
-          ? "Îmi pare rău, momentan pot să vă ajut doar cu recomandări, informații despre meniu, ingrediente sau să chem un ospătar. Încercați să mă întrebați: 'Ce recomanzi?', 'Ce meniu aveți?', 'Ce ingrediente are X?' sau 'Vreau să plătesc'."
-          : "I'm sorry, I can currently only help with recommendations, menu information, ingredients, or calling a waiter. Try asking me: 'What do you recommend?', 'What menu do you have?', 'What ingredients does X have?' or 'I want to pay'.");
-      }
+        ? "Îmi pare rău, momentan pot să vă ajut doar cu recomandări, informații despre meniu, ingrediente sau să chem un ospătar. Încercați să mă întrebați: 'Ce recomanzi?', 'Ce meniu aveți?', 'Ce ingrediente are X?' sau 'Vreau să plătesc'."
+        : "I'm sorry, I can currently only help with recommendations, menu information, ingredients, or calling a waiter. Try asking me: 'What do you recommend?', 'What menu do you have?', 'What ingredients does X have?' or 'I want to pay'.");
+    }
 
-      const botMessage = {
-        id: Date.now() + 1, // ID unic diferit de cel al mesajului utilizatorului
-        text: botMessageText,
-        sender: "bot",
-        timestamp: new Date()
-      };
+    const botMessage = {
+      id: Date.now() + 1,
+      text: botMessageText,
+      sender: "bot",
+      timestamp: new Date()
+    };
 
-      setMessages(prev => [...prev, botMessage]);
-    }, 1000);
-  };
+    setMessages(prev => [...prev, botMessage]);
+  }, 1000);
+};
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
@@ -410,7 +478,7 @@ useEffect(() => {
   const clearChat = () => {
     setMessages([
       {
-        id: Date.now(), // ID unic
+        id: Date.now(),
         text: language === 'ro' 
           ? "Bună! Sunt Diana AI, asistentul tău virtual. Cu ce te pot ajuta?" 
           : "Hello! I'm Diana AI, your virtual assistant. How can I help you?",
@@ -418,18 +486,24 @@ useEffect(() => {
         timestamp: new Date()
       }
     ]);
+    setPendingLanguageChange(null);
   };
 
   if (!show) return null;
 
   return (
     <div className="modal-overlay-diana" onClick={onClose}>
-      <div className="diana-ai-modal" onClick={(e) => e.stopPropagation()}>
+      <div 
+        className="diana-ai-modal" 
+        onClick={(e) => e.stopPropagation()}
+        ref={modalRef}
+        style={isKeyboardVisible ? { maxHeight: '70vh' } : {}}
+      >
         <div className="diana-ai-chat">
           <div className="chat-header">
             <div className="chat-title">
               <FaComments className="chat-icon" />
-              <span>Diana AI Assistant {language === 'ro' ? '(Română)' : '(English)'}</span>
+              <span>Diana AI Assistant v1.2 {language === 'ro' ? '(Română)' : '(English)'}</span>
             </div>
             <div className="chat-actions">
               <button 
@@ -441,7 +515,7 @@ useEffect(() => {
               </button>
               <button 
                 className="language-switch-btn" 
-                onClick={switchLanguage}
+                onClick={() => confirmLanguageChange(language === 'ro' ? 'en' : 'ro')}
                 title={language === 'ro' ? "Switch to English" : "Treceți la Română"}
               >
                 <FaGlobe />
@@ -449,7 +523,11 @@ useEffect(() => {
                   {language === 'ro' ? 'EN' : 'RO'}
                 </span>
               </button>
-              <button className="close-chat" onClick={onClose}>
+              <button 
+                className="close-chat" 
+                onClick={handleClose}
+                ref={closeButtonRef}
+              >
                 <FaTimes />
               </button>
             </div>
@@ -457,21 +535,37 @@ useEffect(() => {
 
           <div className="chat-messages">
             {messages.map((message) => (
-              <div key={message.id} className={`message ${message.sender}`}>
-                <div className="message-content">
-                  {message.text.split('**').map((part, index) => 
-                    index % 2 === 1 ? (
-                      <strong key={index}>{part}</strong>
-                    ) : (
-                      part
-                    )
-                  )}
-                </div>
-                <div className="message-time">
-                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </div>
-              </div>
-            ))}
+  <div key={message.id} className={`message ${message.sender}`}>
+    <div className="message-content">
+      {message.text.split('**').map((part, index) => 
+        index % 2 === 1 ? (
+          <strong key={index}>{part}</strong>
+        ) : (
+          part
+        )
+      )}
+      
+      {/* Butoanele de confirmare */}
+      {message.hasButtons && (
+        <div className="confirmation-buttons">
+          {message.buttons.map((button, index) => (
+            <button
+              key={index}
+              className={`confirmation-button ${button.action} ${button.disabled ? 'disabled' : ''}`}
+              onClick={() => !button.disabled && handleButtonClick(button, message.id)}
+              disabled={button.disabled}
+            >
+              {button.text}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+    <div className="message-time">
+      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+    </div>
+  </div>
+))}
             <div ref={messagesEndRef} />
           </div>
 
@@ -482,6 +576,8 @@ useEffect(() => {
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
                 placeholder={language === 'ro' ? "Scrieți-vă întrebarea aici..." : "Type your question here..."}
                 className="message-input"
                 maxLength={200}
