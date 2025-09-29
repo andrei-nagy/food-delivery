@@ -70,78 +70,91 @@ const Cart = () => {
     if (paymentError) setPaymentError("");
   };
 
-  const placeOrder = async (event) => {
-    console.log('am apelat place order ')
-    if (event) event.preventDefault();
+const placeOrder = async (event) => {
+  console.log('am apelat place order ')
+  if (event) event.preventDefault();
 
-    if (orderPlaced) return;
+  if (orderPlaced) return;
 
-    if (!paymentMethod) {
-      setPaymentError("Please select a payment method.");
-      setTimeout(() => {
-        window.scrollTo({
-          top: document.body.scrollHeight,
-          behavior: "smooth",
-        });
-      }, 100);
-      return;
-    } else setPaymentError("");
+  if (!paymentMethod) {
+    setPaymentError("Please select a payment method.");
+    setTimeout(() => {
+      window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth",
+      });
+    }, 100);
+    return;
+  } else setPaymentError("");
 
-    setIsPlacingOrder(true);
+  setIsPlacingOrder(true);
 
-    let orderItems = [];
-    food_list.forEach((item) => {
-      if (cartItems[item._id] > 0)
-        orderItems.push({ ...item, quantity: cartItems[item._id] });
-    });
-
-    const totalAmount = getTotalCartAmount() - discount;
-
-    const orderData = {
-      tableNo: tableNumber,
-      items: orderItems,
-      userData: data,
-      amount: totalAmount,
-      specialInstructions,
-    };
-
-    try {
-      if (paymentMethod === "creditCard") {
-        const response = await axios.post(url + "/api/order/place", orderData, {
-          headers: { token },
-        });
-        if (response.data.success)
-          window.location.replace(response.data.session_url);
-        else alert("Error processing payment.");
-      } else if (paymentMethod === "cashPOS") {
-        const response = await axios.post(
-          url + "/api/order/place-cash",
-          orderData,
-          { headers: { token } }
-        );
-        if (response.data.success) {
-          setOrderPlaced(true);
-
-          setTimeout(() => {
-            navigate("/thank-you", {
-              state: {
-                tableNo: orderData.tableNo,
-                orderId: response.data.orderId,
-              },
-            });
-            localStorage.setItem("isReloadNeeded", "true");
-          }, 1500);
-        } else {
-          alert("Error placing order.");
-          setIsPlacingOrder(false);
-        }
-      }
-    } catch (error) {
-      console.error("Order placement error:", error);
-      alert("Error placing order.");
-      setIsPlacingOrder(false);
+  // CORECTARE: Construim corect array-ul items cu toate câmpurile necesare
+  let orderItems = [];
+  food_list.forEach((item) => {
+    if (cartItems[item._id] > 0) {
+      const quantity = cartItems[item._id];
+      orderItems.push({
+        foodId: item._id, // Câmp obligatoriu
+        name: item.name,
+        price: item.price,
+        quantity: quantity,
+        itemTotal: (item.price * quantity).toFixed(2), // Câmp obligatoriu
+        image: item.image // IMPORTANT: PĂSTRĂM imaginea
+      });
     }
+  });
+
+  const totalAmount = getTotalCartAmount() - discount;
+
+  const orderData = {
+    userId: token, // Asigură-te că token-ul tău conține userId sau folosește alt mod de a obține userId
+    items: orderItems,
+    amount: totalAmount,
+    tableNo: tableNumber,
+    userData: data,
+    specialInstructions: specialInstructions
   };
+
+  console.log('Order Data to send:', orderData); // Pentru debugging
+
+  try {
+    if (paymentMethod === "creditCard") {
+      const response = await axios.post(url + "/api/order/place", orderData, {
+        headers: { token },
+      });
+      if (response.data.success)
+        window.location.replace(response.data.session_url);
+      else alert("Error processing payment.");
+    } else if (paymentMethod === "cashPOS") {
+      const response = await axios.post(
+        url + "/api/order/place-cash",
+        orderData,
+        { headers: { token } }
+      );
+      if (response.data.success) {
+        setOrderPlaced(true);
+
+        setTimeout(() => {
+          navigate("/thank-you", {
+            state: {
+              tableNo: orderData.tableNo,
+              orderId: response.data.orderId,
+            },
+          });
+          localStorage.setItem("isReloadNeeded", "true");
+        }, 1500);
+      } else {
+        alert("Error placing order.");
+        setIsPlacingOrder(false);
+      }
+    }
+  } catch (error) {
+    console.error("Order placement error:", error);
+    alert("Error placing order.");
+    setIsPlacingOrder(false);
+  }
+};
 
   const startHideTimer = () => {
     if (hideTimer.current) clearTimeout(hideTimer.current);
