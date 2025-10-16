@@ -117,6 +117,17 @@ import usaFlag from './usaFlag.png'
 import roFlag from './roFlag.png'
 import arrow_down from './arrow_down.png'
 import desk_bell from './desk_bell.png'
+import menu_all from './menu.png'
+import new_home from './new_home.png'
+import new_cart from './new_cart.png'
+import new_pay from './new_pay.png'
+import new_ai from './new_ai.png'
+import new_cart_normal from './new_cart_normal.png'
+import new_cart_selected from './new_cart_selected.png'
+import new_home_normal from './new_home_normal.png'
+import new_home_selected from './new_home_selected.png'
+import new_menu_normal from './new_menu_normal.png'
+import new_menu_selected from './new_menu_selected.png'
 
 export const assets = {
     logo,
@@ -193,7 +204,18 @@ export const assets = {
     desk_bell,
     mainLogo,
     empty_cart,
-    empty_cart2
+    empty_cart2,
+    menu_all,
+    new_home,
+    new_cart,
+    new_pay,
+    new_ai,
+    new_cart_normal,
+    new_cart_selected,
+    new_home_normal,
+    new_home_selected,
+    new_menu_normal,
+    new_menu_selected
 }
 
 export const menu_list = [

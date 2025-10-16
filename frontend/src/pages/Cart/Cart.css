@@ -1,10 +1,12 @@
 .cart {
   margin-top: 100px;
 }
-.cart-item-buttons{
+
+.cart-item-buttons {
   border: 1px solid #ccc;
   border-radius: 100px;
 }
+
 .cart-items-title {
   display: grid;
   grid-template-columns: 1.5fr 2fr 1fr 1fr;
@@ -64,9 +66,11 @@
 .cart-total hr {
   margin: 10px 0px;
 }
+
 .cart-total h2 {
   margin-bottom: 15px;
 }
+
 .checkout-button {
   align-items: center;
   cursor: pointer;
@@ -194,23 +198,20 @@
   }
 }
 
-
 .cart-summary-list {
   display: flex;
   flex-direction: column;
-  /* gap: 20px; */
-  /* max-height: 40vh; */
   overflow-y: auto;
   margin-top: 20px;
   margin-bottom: 20px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
 
-  /* Hide scrollbar - cross-browser */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
-}
 .cart-summary-list::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
+  display: none;
 }
+
 .cart-qty-badge {
   border: 1px solid tomato;
   border-radius: 50px;
@@ -223,15 +224,13 @@
   transition: all 0.3s ease;
 }
 
- 
 .cart-summary-item {
-  min-height: 60px; 
+  min-height: 60px;
   display: flex;
   align-items: center;
   background: #fff;
   padding-bottom: 12px;
   padding-right: 8px;
-  /* box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1); */
   justify-content: space-between;
   flex-wrap: wrap;
   position: relative;
@@ -289,7 +288,7 @@
 form.place-order {
   text-align: center;
 }
- 
+
 .place-order.hide {
   opacity: 0;
   visibility: hidden;
@@ -301,26 +300,29 @@ form.place-order {
   visibility: visible;
   pointer-events: auto;
 }
+
 .add-more-products {
- background: transparent;
-    font-size: 16px;
-    color: #49557e;
-    border: none;
-    padding: 10px 30px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: 0.3s;
-    font-weight: 700;
-    color:#28a745;
+  background: transparent;
+  font-size: 16px;
+  color: #49557e;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: 700;
+  color: #28a745;
 }
-.add-more-products-text{
-  color: #32bb78
+
+.add-more-products-text {
+  color: #32bb78;
 }
+
 .add-more-wrapper {
   display: flex;
-  justify-content: center; /* centrează pe orizontală */
-  align-items: center;     /* centrează pe verticală (dacă vrei pe tot ecranul) */
-  margin-top: 20px;        /* opțional, spațiu față de elementele de sus */
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
 }
 
 .edit-quantity-icon {
@@ -390,106 +392,17 @@ form.place-order {
   }
 }
 
-.floating-checkout {
-  position: fixed;
-  bottom: 10vh;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  background-color: #e86514;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  /* animation: pulseGlow 2.5s infinite; */
-  overflow: visible;
-}
 .payment-error-message {
   color: #d32f2f;
   font-weight: 600;
-margin-bottom: 20px;
+  margin-bottom: 20px;
   font-size: 0.9rem;
 }
 
-.arrow-left-icon, .cart-clear-btn{
-  color:#000000 !important;
-}
-/* @keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 0 rgba(255, 99, 71, 0.4);
-    transform: translateX(-50%) scale(1);
-  }
-  50% {
-    box-shadow: 0 0 15px rgba(255, 99, 71, 0.6);
-    transform: translateX(-50%) scale(1.02);
-  }
-} */
-
-/* bordură pulsatoare în exterior */
-/* .floating-checkout::before {
-  content: "";
-  position: absolute;
-  top: -8px;
-  left: -8px;
-  right: -8px;
-  bottom: -8px;
-  border: 2px solid rgba(255, 99, 71, 0.7);
-  border-radius: 16px;
-  opacity: 0.6;
-  animation: pulseBorder 2.5s infinite;
-  pointer-events: none;
-  z-index: -1;
+.arrow-left-icon, .cart-clear-btn {
+  color: #000000 !important;
 }
 
-@keyframes pulseBorder {
-  0% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0;
-    transform: scale(1.2);
-  }
-  100% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-} */
-
-.floating-checkout-left {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.floating-checkout-count {
-  background-color: #ffffff3b;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  font-weight: bold;
-  min-width: 30px;
-  text-align: center;
-}
-
-.floating-checkout-total {
-  font-weight: 500;
-}
-
-.floating-checkout-cta {
-  font-weight: 500;
-  font-size: 1rem;
-}
 .quantity-overlay {
   position: fixed;
   top: 0;
@@ -499,12 +412,11 @@ margin-bottom: 20px;
   backdrop-filter: blur(4px);
   background-color: rgba(255, 255, 255, 0.6);
   z-index: 999;
-  /* framer-motion gestionează opacity */
 }
 
 .quantity-modal {
   position: fixed;
-  inset: 0; /* ocupă tot viewportul ca punct de referință */
+  inset: 0;
   margin: auto;
   width: fit-content;
   height: fit-content;
@@ -518,9 +430,6 @@ margin-bottom: 20px;
   gap: 10px;
   padding: 12px 20px;
 }
-
-
-
 
 @keyframes scaleIn {
   from {
@@ -536,12 +445,12 @@ margin-bottom: 20px;
 .cart-swipe-container {
   position: relative;
   overflow: hidden;
-    min-height: 90px; 
+  min-height: 90px;
 }
+
 .cart-swipe-container.tall {
   min-height: 120px;
 }
-
 
 .swipe-trash-icon {
   pointer-events: none;
@@ -552,20 +461,20 @@ margin-bottom: 20px;
   z-index: 1;
   background: white;
 }
+
 .cart-item-description {
-  color: #a7a7a7; 
+  color: #a7a7a7;
   font-size: 0.85rem;
   display: block;
   margin-top: 4px;
   font-weight: 400;
 }
+
 .cart-swipe-container {
   position: relative;
   overflow: hidden;
-  min-height: 80px; /* asigură înălțimea corectă a fiecărui item */
-  /* border-radius: 12px; */
+  min-height: 80px;
 }
-
 
 .swipe-trash-icon {
   pointer-events: none;
@@ -580,8 +489,7 @@ margin-bottom: 20px;
   justify-content: space-between;
   flex-wrap: wrap;
   padding: 12px 8px;
-  min-height: 80px; /* păstrează înălțimea la fel cu containerul */
-  /* border-radius: 4px; */
+  min-height: 80px;
   transition: transform 0.25s ease;
 }
 
@@ -635,23 +543,25 @@ margin-bottom: 20px;
   font-size: 1rem;
   cursor: pointer;
 }
+
 .cart-separator {
   border: none;
   border-bottom: 1px solid #ccc;
   margin: 0px 0px;
   margin-bottom: 10px;
-  /* margin: 20px 0; aici controlezi distanța de sus și jos */
 }
+
 .cart-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20px;
 }
+
 .add-more-products {
   display: flex;
   align-items: center;
-  gap: 8px; /* distanță între text și butonul + */
+  gap: 8px;
 }
 
 .plus-btn {
@@ -660,12 +570,13 @@ margin-bottom: 20px;
   align-items: center;
   width: 22px;
   height: 22px;
-  border: 2px solid #28a745; /* verde */
-  border-radius: 50%;        /* cerc */
-  color: #28a745;            /* plus-ul verde */
+  border: 2px solid #28a745;
+  border-radius: 50%;
+  color: #28a745;
   font-size: 12px;
   cursor: pointer;
 }
+
 .cart-back-btn, .cart-clear-btn {
   background: none;
   border: none;
@@ -676,8 +587,8 @@ margin-bottom: 20px;
 }
 
 .arrow-left-icon {
-  font-size: 1.2rem; /* mai mic decât textul normal */
-  font-weight: 300;  /* subțire */
+  font-size: 1.2rem;
+  font-weight: 300;
 }
 
 .order-summary {
@@ -687,6 +598,7 @@ margin-bottom: 20px;
   text-align: center;
   flex-grow: 1;
 }
+
 .empty-cart {
   display: flex;
   flex-direction: column;
@@ -707,6 +619,7 @@ margin-bottom: 20px;
   font-size: 1rem;
   cursor: pointer;
 }
+
 .cart-empty {
   position: absolute;
   top: 50%;
@@ -720,7 +633,6 @@ margin-bottom: 20px;
   gap: 20px;
 }
 
-
 .cart-empty h2 {
   font-size: 1.5rem;
 }
@@ -730,50 +642,49 @@ margin-bottom: 20px;
   font-size: 1rem;
 }
 
-
 .cart-empty .add-more-products {
- background: transparent;
-    font-size: 16px;
-    color: #49557e;
-    border: 2px solid tomato;
-    padding: 10px 30px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s;
+  background: transparent;
+  font-size: 16px;
+  color: #49557e;
+  border: 2px solid tomato;
+  padding: 10px 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
-
 .payment-security-note {
-    font-size: 0.75rem;
-    color: #777;
-    text-align: center;
-    margin-top: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  font-size: 0.75rem;
+  color: #777;
+  text-align: center;
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .payment-security-note img {
-    width: 45px; 
-    height: 25px; 
-    object-fit: contain;
+  width: 45px;
+  height: 25px;
+  object-fit: contain;
 }
 
 .payment-options {
-    display: flex;
-    justify-content: center;  /* Aliniază imaginile pe orizontală */
-    align-items: center;      /* Aliniază imaginile vertical */
-    gap: 10px;                /* Adaugă un spațiu între imagini */
-    margin-bottom: 10px;      /* Un mic spațiu sub imagini */
-    margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  margin-top: 10px;
 }
 
 .payment-option {
-    width: 30px;  /* Dimensiune mică pentru fiecare imagine de plată */
-    height: 30px; /* Dimensiune mică pentru fiecare imagine de plată */
-    object-fit: contain;  /* Asigură-te că imaginea rămâne proporționată */
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
 }
- .confirm-modal-overlay {
+
+.confirm-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -819,167 +730,6 @@ margin-bottom: 20px;
   cursor: pointer;
 }
 
-
-/* Adaugă aceste stiluri în fișierul Cart.css */
-
-.floating-checkout {
-  /* Păstrează stilurile tale existente */
-  position: fixed;
-  bottom: 10vh;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  background-color: #e86514;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  overflow: hidden;
-}
-
-/* Pseudo-element pentru animația de slide */
-.floating-checkout::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-              rgba(46, 204, 113, 0.5) 0%, 
-              rgba(46, 204, 113, 0.8) 50%, 
-              rgba(46, 204, 113, 0.5) 100%);
-  z-index: -1;
-  transition: left 0.5s ease;
-}
-
-/* Stiluri pentru animația activă */
-.floating-checkout.placing-order {
-  background-color: #2ecc71;
-  color: white;
-}
-
-.floating-checkout.placing-order::after {
-  left: 100%;
-  transition: left 1.5s ease-in-out;
-}
-
-/* Stil pentru textul de confirmare */
-.floating-checkout .order-confirmation {
-  display: none;
-  font-weight: bold;
-}
-
-.floating-checkout.placing-order .floating-checkout-cta,
-.floating-checkout.placing-order .floating-checkout-count,
-.floating-checkout.placing-order .floating-checkout-total {
-  display: none;
-}
-
-.floating-checkout.placing-order .order-confirmation {
-  display: inline;
-  animation: fadeIn 0.5s ease forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Add these styles to your existing CSS */
-
-.floating-checkout {
-  position: fixed;
-  bottom: 10vh;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  background-color: #e86514; /* Orange base color */
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  overflow: hidden;
-}
-
-/* Pseudo-element for the sliding animation */
-.floating-checkout::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-              transparent 0%, 
-              rgba(46, 204, 113, 0.6) 50%, 
-              transparent 100%);
-  z-index: 0;
-  transition: left 1.2s ease-in-out;
-}
-
-.floating-checkout > * {
-  position: relative;
-  z-index: 1;
-}
-
-/* Active animation state */
-.floating-checkout.placing-order {
-  background-color: #2ecc71; /* Green color */
-}
-
-.floating-checkout.placing-order::before {
-  left: 100%;
-}
-
-/* Order confirmation text */
-.floating-checkout .order-confirmation {
-  display: none;
-  font-weight: bold;
-}
-
-.floating-checkout.placing-order .floating-checkout-cta,
-.floating-checkout.placing-order .floating-checkout-count,
-.floating-checkout.placing-order .floating-checkout-total {
-  display: none;
-}
-
-.floating-checkout.placing-order .order-confirmation {
-  display: inline;
-  animation: fadeIn 0.5s ease forwards;
-  width: 100%;
-  text-align: center;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Additional styles for the sliding effect */
-.floating-checkout.placing-order {
-  transition: background-color 1.5s ease;
-}
-
-
-
-
 .cart-swipe-background .swipe-trash-icon {
   font-size: 20px;
   margin-bottom: 5px;
@@ -1002,9 +752,7 @@ margin-bottom: 20px;
   background: white;
   z-index: 1;
 }
- 
 
-/* Adăugăm un mic text sub iconiță */
 .cart-swipe-background .swipe-trash-icon {
   font-size: 20px;
   margin-bottom: 5px;
@@ -1031,19 +779,16 @@ margin-bottom: 20px;
   flex-wrap: wrap;
   padding: 12px 8px;
   min-height: 90px;
-  /* border-radius: 4px; */
   transition: transform 0.25s ease;
 }
 
-/* Asigurăm că elementul poate fi glisat */
 .cart-summary-item.swipeable {
   touch-action: pan-y;
   user-select: none;
 }
 
- 
 .cart-swipe-container.swiping .cart-swipe-background {
-  opacity: 1; /* fundalul devine vizibil doar în timpul swipe-ului */
+  opacity: 1;
 }
 
 .cart-summary-item {
@@ -1052,6 +797,7 @@ margin-bottom: 20px;
   background: white;
   transition: transform 0.25s ease;
 }
+
 .cart-swipe-background .swipe-trash-icon {
   font-size: 20px;
   margin-bottom: 5px;
@@ -1061,23 +807,19 @@ margin-bottom: 20px;
   font-size: 12px;
   font-weight: bold;
 }
-/* Adaugă tranziție smooth pentru resetarea swipe-ului */
+
 .cart-summary-item {
   transition: transform 0.3s ease;
 }
-
 
 .cart-swipe-container {
   position: relative;
   overflow: hidden;
   min-height: 90px;
-  /* Previne mișcarea neintenționată a containerului */
   touch-action: pan-y;
   -webkit-user-select: none;
   user-select: none;
 }
-
- 
 
 .cart-swipe-background {
   position: absolute;
@@ -1093,26 +835,262 @@ margin-bottom: 20px;
   padding-right: 20px;
   color: white;
   z-index: 0;
-  /* Ascunde fundalul în afara limitelor containerului */
   overflow: hidden;
 }
 
-/* Asigură-te că animația este aplicată corect */
 .cart-summary-item {
   transform: translateX(0);
   transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Stiluri pentru a preveni flash-uri pe iOS */
 .cart-summary-item {
   -webkit-backface-visibility: hidden;
   -webkit-perspective: 1000;
   -webkit-transform: translate3d(0,0,0);
   -webkit-transform-style: preserve-3d;
 }
+
 .empty-cart-img {
   max-width: 250px;
   margin-bottom: 30px;
   width: 100%;
   height: auto;
+}
+
+/* ✅ FLOATING CHECKOUT ORDER - MODERN DESIGN */
+.floating-checkout-order {
+  position: fixed;
+  bottom: 10vh;
+  left: 50%;
+  transform: translate(-50%) translateY(100%);
+  width: 90%;
+  background-color: #e86514;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px #00000026;
+  z-index: 1000;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .3s ease;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.floating-checkout-order.visible {
+  transform: translate(-50%) translateY(0);
+  opacity: 1;
+}
+
+.floating-checkout-order-left {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.floating-checkout-order-count {
+  background-color: #ffffff3b;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: .9rem;
+  font-weight: 700;
+  min-width: 30px;
+  text-align: center;
+}
+
+.floating-checkout-order-cta {
+  font-weight: 500;
+  font-size: 1rem;
+  flex-grow: 1;
+  text-align: center;
+}
+
+.floating-checkout-order-total {
+  font-weight: 600;
+  font-size: 1rem;
+  min-width: 80px;
+  text-align: right;
+}
+
+/* Stiluri pentru animația de plasare a comenzii */
+.floating-checkout-order.placing-order {
+  background-color: #2ecc71;
+}
+
+.floating-checkout-order:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(46, 204, 113, 0.6) 50%, transparent 100%);
+  z-index: 0;
+  transition: left 1.2s ease-in-out;
+}
+
+.floating-checkout-order>* {
+  position: relative;
+  z-index: 1;
+}
+
+.floating-checkout-order.placing-order:before {
+  left: 100%;
+}
+
+.floating-checkout-order .order-confirmation {
+  display: none;
+  font-weight: 700;
+  width: 100%;
+  text-align: center;
+  animation: fadeIn .5s ease forwards;
+}
+
+.floating-checkout-order.placing-order .floating-checkout-order-cta,
+.floating-checkout-order.placing-order .floating-checkout-order-count,
+.floating-checkout-order.placing-order .floating-checkout-order-total {
+  display: none;
+}
+
+.floating-checkout-order.placing-order .order-confirmation {
+  display: inline;
+}
+
+.floating-checkout-order.placing-order {
+  transition: background-color 1.5s ease;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Stiluri responsive */
+@media (max-width: 768px) {
+  .floating-checkout-order {
+    width: 95%;
+    padding: 12px 15px;
+    font-size: 0.9rem;
+  }
+  
+  .floating-checkout-order-count {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    min-width: 25px;
+  }
+  
+  .floating-checkout-order-cta {
+    font-size: 0.9rem;
+  }
+  
+  .floating-checkout-order-total {
+    font-size: 0.9rem;
+    min-width: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .floating-checkout-order {
+    width: 92%;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+  
+  .floating-checkout-order-count {
+    padding: 3px 6px;
+    font-size: 0.75rem;
+    min-width: 22px;
+  }
+  
+  .floating-checkout-order-cta {
+    font-size: 0.85rem;
+  }
+  
+  .floating-checkout-order-total {
+    font-size: 0.85rem;
+    min-width: 60px;
+  }
+}
+
+/* ✅ ASCUNDERE BUTON NORMAL PLACE ORDER */
+.place-order {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.place-order.hide,
+.place-order.show {
+  display: none !important;
+}
+
+/* Efect subtil la click */
+.floating-checkout-order:active {
+  transform: translate(-50%) scale(0.98);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .floating-checkout-order {
+    width: 95%;
+    padding: 14px 20px;
+    bottom: 9vh;
+  }
+  
+  .floating-checkout-order-cta {
+    font-size: 0.95rem;
+  }
+  
+  .floating-checkout-order-total {
+    font-size: 0.95rem;
+  }
+  
+  .floating-checkout-order-count {
+    padding: 5px 10px;
+    min-width: 28px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .floating-checkout-order {
+    padding: 12px 16px;
+    border-radius: 10px;
+  }
+  
+  .floating-checkout-order-cta {
+    font-size: 0.9rem;
+  }
+  
+  .floating-checkout-order-total {
+    font-size: 0.9rem;
+  }
+  
+  .floating-checkout-order-left {
+    gap: 8px;
+  }
+}
+
+/* ✅ ASCUNDERE BUTON NORMAL PLACE ORDER */
+.place-order {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.place-order.hide,
+.place-order.show {
+  display: none !important;
 }

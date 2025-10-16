@@ -49,7 +49,22 @@ export const waiterPatternsRO = [
   /ajuta.*ma/i, /ma.*ajuti/i, /nevoie.*de.*ajutor/i,
   /cheama.*un.*ospatar/i, /cheama.*un.*chelner/i,
   /am.*o.*problema/i, /am.*o.*problemă/i, /nu.*functioneaza/i,
-  /nu.*merge/i, /ati.*putea.*sa.*ma.*ajutati/i
+  /nu.*merge/i, /ati.*putea.*sa.*ma.*ajutati/i,
+  
+  // ADAUGĂ ACESTE PATTERN-URI NOI pentru "plată"
+  /^plata$/i, /^plăt/i, /^platesc$/i, /^plătesc$/i,
+  /plată/i, /plata/i, /sa.*platesc/i, /să.*plătesc/i,
+  /doresc.*sa.*platesc/i, /doresc.*să.*plătesc/i,
+  /vreau.*plata/i, /vreau.*plată/i, /nota.*de.*plata/i,
+  /nota.*de.*plată/i, /scoate.*nota/i, /scoate.*nota/i,
+  /factura/i, /chitanta/i, /chitanță/i, /bon.*fiscal/i,
+  /vreau.*sa.*achit/i, /doresc.*sa.*achit/i,
+  /termin.*comanda/i, /finalizez.*comanda/i,
+  /gata.*de.*plata/i, /gata.*de.*plată/i,
+  /pot.*plati/i, /pot.*plăti/i, /as.*plati/i, /aș.*plăti/i,
+  /cheama.*pentru.*plata/i, /cheama.*pentru.*plată/i,
+  /ospatar.*plata/i, /ospătar.*plată/i,
+  /ajutor.*plata/i, /ajutor.*plată/i
 ];
 
 export const waiterPatternsEN = [
@@ -218,7 +233,24 @@ export const paymentPatternsRO = [
   /taxă.*serviciu|service.*charge|bacșiș|tip/i,
   /divizare.*plata|split.*bill|pay.*separately/i,
   /voucher|discount|reducere|cupon|promoție/i,
-  /tva|tax|invoic|invoice/i
+  /tva|tax|invoic|invoice/i,
+  
+  // ADAUGĂ ACESTE PATTERN-URI NOI
+  /^plata$/i, /^plăt/i, /^platesc$/i, /^plătesc$/i,
+  /plată/i, /plata/i, /sa.*platesc/i, /să.*plătesc/i,
+  /doresc.*sa.*platesc/i, /doresc.*să.*plătesc/i,
+  /vreau.*plata/i, /vreau.*plată/i, /nota.*de.*plata/i,
+  /nota.*de.*plată/i, /scoate.*nota/i, /scoate.*nota/i,
+  /factura/i, /chitanta/i, /chitanță/i, /bon.*fiscal/i,
+  /vreau.*sa.*achit/i, /doresc.*sa.*achit/i,
+  /termin.*comanda/i, /finalizez.*comanda/i,
+  /gata.*de.*plata/i, /gata.*de.*plată/i,
+  /pot.*plati/i, /pot.*plăti/i, /as.*plati/i, /aș.*plăti/i,
+  /cheama.*pentru.*plata/i, /cheama.*pentru.*plată/i,
+  /ospatar.*plata/i, /ospătar.*plată/i,
+  /ajutor.*plata/i, /ajutor.*plată/i,
+  /metoda.*plata/i, /metodă.*plată/i,
+  /modalitate.*plata/i, /modalitate.*plată/i
 ];
 
 export const paymentPatternsEN = [
@@ -247,8 +279,6 @@ export const specialRequestsPatternsEN = [
   /special.*diet|diabetic|no.*sugar/i,
   /large.*portion|small.*portion|portion.*size/i
 ];
-
-// Adaugă aceste pattern-uri în fișierul ChatPatterns.js
 
 export const greetingPatternsRO = [
   /^bună$/i, /^salut$/i, /^ciao$/i, /^hei$/i, /^hey$/i, /^hi$/i, /^hello$/i,
@@ -399,12 +429,173 @@ export const smallTalkPatternsEN = [
   /what makes you happy/i, /what do you think about/i
 ];
 
-// Actualizează obiectul patterns să includă noile categorii
+export const restaurantNamePatternsRO = [
+  /cum.*v.*a.*numi/i, /ce.*nume.*ave/i, /de.*ce.*v.*a.*numi/i,
+  /care.*e.*numele.*restaurant/i, /numele.*local/i, /semnifica.*nume/i,
+  /de.*ce.*diana/i, /cine.*e.*diana/i, /de.*unde.*numele/i,
+  /what.*name/i, /why.*name/i, /what.*called/i, /restaurant.*name/i,
+  /meaning.*name/i, /story.*behind.*name/i, /how.*get.*name/i,
+  /nume.*restaurant/i, /denumire/i, /cum.*se.*cheama.*localul/i,
+  /de.*ce.*v.*a.*cheama/i, /explica.*numele/i, /poveste.*nume/i
+];
+
+export const restaurantNamePatternsEN = [
+  /what.*name/i, /what.*are.*you.*called/i, /why.*name/i,
+  /what.*is.*the.*name/i, /restaurant.*name/i, /what.*called/i,
+  /meaning.*of.*name/i, /story.*behind.*name/i, /how.*get.*name/i,
+  /why.*diana/i, /who.*is.*diana/i, /where.*name.*from/i,
+  /what.*does.*name.*mean/i, /name.*significance/i,
+  /tell.*about.*name/i, /explain.*name/i, /name.*story/i
+];
+
+export const conceptPatternsRO = [
+  /ce.*fel.*de.*restaurant/i, /care.*e.*conceptul/i, /ce.*stil.*ave/i,
+  /cum.*e.*restaurantul/i, /ce.*tip.*de.*local/i, /atmosfer/i,
+  /ce.*faci/i, /ce.*ofe/i, /specialitate/i, /ce.*va.*diferenti/i,
+  /concept/i, /stil/i, /tip/i, /filosofie/i, /abordare/i,
+  /what.*kind.*restaurant/i, /what.*concept/i, /what.*style/i,
+  /what.*type/i, /atmosphere/i, /vibe/i, /theme/i
+];
+
+export const conceptPatternsEN = [
+  /what.*kind.*of.*restaurant/i, /what.*concept/i, /what.*style/i,
+  /what.*type.*of.*place/i, /atmosphere/i, /vibe/i, /theme/i,
+  /what.*do.*you.*do/i, /what.*do.*you.*offer/i, /specialty/i,
+  /what.*makes.*you.*different/i, /concept/i, /style/i,
+  /type/i, /philosophy/i, /approach/i
+];
+
+export const ownershipPatternsRO = [
+  /cine.*detine/i, /cine.*e.*proprietar/i, /cine.*e.*sef/i,
+  /cine.*v.*a.*deschis/i, /fondator/i, /proprietar/i, /detinator/i,
+  /who.*owns/i, /who.*is.*owner/i, /who.*is.*boss/i,
+  /who.*started/i, /founder/i, /owner/i, /proprietor/i,
+  /cine.*conduce/i, /management/i, /administratie/i
+];
+
+export const ownershipPatternsEN = [
+  /who.*owns/i, /who.*is.*the.*owner/i, /who.*is.*in.*charge/i,
+  /who.*started/i, /founder/i, /owner/i, /proprietor/i,
+  /who.*runs/i, /management/i, /administration/i
+];
+
+export const historyPatternsRO = [
+  /cand.*v.*a.*deschis/i, /de.*cand.*exista/i, /istoric/i,
+  /istorie/i, /cati.*ani/i, /vechime/i, /an.*infiintare/i,
+  /when.*open/i, /how.*long/i, /history/i, /since.*when/i,
+  /years.*open/i, /age.*restaurant/i, /established/i,
+  /poveste/i, /evolutie/i, /cum.*a.*inceput/i
+];
+
+export const historyPatternsEN = [
+  /when.*did.*you.*open/i, /how.*long.*have.*you.*been.*open/i,
+  /history/i, /since.*when/i, /years.*open/i, /age.*restaurant/i,
+  /established/i, /story/i, /evolution/i, /how.*did.*you.*start/i
+];
+
+export const sustainabilityPatternsRO = [
+  /sustenabil/i, /eco/i, /verde/i, /mediu/i, /reciclare/i,
+  /zero.*deseuri/i, /plastic/i, /biodegradabil/i, /organic/i,
+  /local/i, /furnizor/i, /energie.*regenerabil/i,
+  /sustainability/i, /eco.*friendly/i, /green/i, /environment/i,
+  /recycling/i, /zero.*waste/i, /biodegradable/i
+];
+
+export const sustainabilityPatternsEN = [
+  /sustainability/i, /eco.*friendly/i, /green/i, /environment/i,
+  /recycling/i, /zero.*waste/i, /plastic/i, /biodegradable/i,
+  /organic/i, /local/i, /supplier/i, /renewable.*energy/i
+];
+
+export const dietaryOptionsPatternsRO = [
+  /vegetarian/i, /vegan/i, /gluten/i, /lactoza/i, /alergie/i,
+  /intoleranta/i, /dieta/i, /regim/i, /restrictie/i,
+  /opțiuni.*special/i, /nevoi.*special/i, /fara.*gluten/i,
+  /fara.*lactoza/i, /keto/i, /paleo/i,
+  /vegetarian/i, /vegan/i, /gluten.*free/i, /lactose.*free/i,
+  /allergy/i, /intolerance/i, /diet/i, /restriction/i
+];
+
+export const dietaryOptionsPatternsEN = [
+  /vegetarian/i, /vegan/i, /gluten.*free/i, /lactose.*free/i,
+  /allergy/i, /intolerance/i, /diet/i, /restriction/i,
+  /special.*options/i, /special.*needs/i, /keto/i, /paleo/i
+];
+
+export const kidsPatternsRO = [
+  /copii/i, /children/i, /kids/i, /familie/i, /family/i,
+  /meniu.*copii/i, /kids.*menu/i, /scaun.*inalt/i, /high.*chair/i,
+  /activitat.*copii/i, /kids.*activities/i, /family.*friendly/i,
+  /bebelus/i, /baby/i, /toddler/i, /jucarii/i, /toys/i
+];
+
+export const kidsPatternsEN = [
+  /children/i, /kids/i, /family/i, /kids.*menu/i,
+  /high.*chair/i, /kids.*activities/i, /family.*friendly/i,
+  /baby/i, /toddler/i, /toys/i
+];
+
+export const eventsPatternsRO = [
+  /eveniment/i, /event/i, /nunta/i, /wedding/i, /botez/i,
+  /christening/i, /corporate/i, /aniversare/i, /birthday/i,
+  /petrecere/i, /party/i, /rezervare/i, /reservation/i,
+  /grup.*mare/i, /large.*group/i, /muzica.*live/i, /live.*music/i
+];
+
+export const eventsPatternsEN = [
+  /event/i, /wedding/i, /christening/i, /corporate/i,
+  /birthday/i, /party/i, /reservation/i, /large.*group/i,
+  /live.*music/i
+];
+
+export const technicalPatternsRO = [
+  /wifi/i, /wi.*fi/i, /internet/i, /parola/i, /password/i,
+  /priza/i, /outlet/i, /incarcator/i, /charger/i,
+  /aplicatie/i, /app/i, /site/i, /website/i, /online/i,
+  /contact/i, /telefon/i, /phone/i, /email/i, /adresa/i
+];
+
+export const technicalPatternsEN = [
+  /wifi/i, /wi.*fi/i, /internet/i, /password/i, /outlet/i,
+  /charger/i, /app/i, /website/i, /online/i, /contact/i,
+  /phone/i, /email/i, /address/i
+];
+
+export const feedbackPatternsRO = [
+  /feedback/i, /parere/i, /opinie/i, /sugestie/i,
+  /suggestion/i, /reclamatie/i, /complaint/i, /problema/i,
+  /problem/i, /manager/i, /seful/i, /boss/i, /review/i,
+  /recenzie/i, /rating/i, /nota/i, /grade/i
+];
+
+export const feedbackPatternsEN = [
+  /feedback/i, /opinion/i, /suggestion/i, /complaint/i,
+  /problem/i, /manager/i, /boss/i, /review/i, /rating/i,
+  /grade/i
+];
+
+export const bestSellerPatternsRO = [
+  /best.*seller/i, /cel.*mai.*vandut/i, /cel.*mai.*popular/i,
+  /top.*produs/i, /ce.*se.*cumpără.*mai.*mult/i, /ce.*se.*comanda.*mai.*mult/i,
+  /cele.*mai.*vandute/i, /produse.*populare/i, /preferinte.*clienti/i,
+  /ce.*mananca.*lumea/i, /ce.*comanda.*lumea/i, /trend.*culinar/i,
+  /cele.*mai.*comandate/i, /top.*vanzari/i, /statistici.*produse/i
+];
+
+export const bestSellerPatternsEN = [
+  /best.*seller/i, /most.*popular/i, /top.*product/i,
+  /what.*sells.*most/i, /what.*do.*people.*order/i,
+  /popular.*items/i, /customer.*favorites/i, /trending.*dishes/i,
+  /most.*ordered/i, /sales.*statistics/i, /top.*selling/i,
+  /what.*is.*trending/i, /customer.*preferences/i
+];
+
 export const patterns = {
   ro: {
     language: languagePatternsRO,
     waiter: waiterPatternsRO,
     recommendation: recommendationPatternsRO,
+    best_seller: bestSellerPatternsRO,
     menu: menuPatternsRO,
     ingredients: ingredientsPatternsRO,
     hours_location: hoursLocationPatternsRO,
@@ -419,12 +610,23 @@ export const patterns = {
     weather: weatherPatternsRO,
     thanks: thanksPatternsRO,
     compliment: complimentPatternsRO,
-    small_talk: smallTalkPatternsRO
+    small_talk: smallTalkPatternsRO,
+    restaurant_name: restaurantNamePatternsRO,
+    concept: conceptPatternsRO,
+    ownership: ownershipPatternsRO,
+    history: historyPatternsRO,
+    sustainability: sustainabilityPatternsRO,
+    dietary_options: dietaryOptionsPatternsRO,
+    kids: kidsPatternsRO,
+    events: eventsPatternsRO,
+    technical: technicalPatternsRO,
+    feedback: feedbackPatternsRO
   },
   en: {
     language: languagePatternsEN,
     waiter: waiterPatternsEN,
     recommendation: recommendationPatternsEN,
+    best_seller: bestSellerPatternsEN,
     menu: menuPatternsEN,
     ingredients: ingredientsPatternsEN,
     hours_location: hoursLocationPatternsEN,
@@ -439,6 +641,16 @@ export const patterns = {
     weather: weatherPatternsEN,
     thanks: thanksPatternsEN,
     compliment: complimentPatternsEN,
-    small_talk: smallTalkPatternsEN
+    small_talk: smallTalkPatternsEN,
+    restaurant_name: restaurantNamePatternsEN,
+    concept: conceptPatternsEN,
+    ownership: ownershipPatternsEN,
+    history: historyPatternsEN,
+    sustainability: sustainabilityPatternsEN,
+    dietary_options: dietaryOptionsPatternsEN,
+    kids: kidsPatternsEN,
+    events: eventsPatternsEN,
+    technical: technicalPatternsEN,
+    feedback: feedbackPatternsEN
   }
 };

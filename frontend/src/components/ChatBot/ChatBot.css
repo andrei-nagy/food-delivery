@@ -456,8 +456,9 @@
   }
 }
 
-/* Mobile Optimizations */
-/* Mobile Optimizations */
+.message-content {
+  white-space: pre-line;
+}/* Mobile Optimizations */
 @media (max-width: 768px) {
   .modal-overlay-diana {
     padding: 0;

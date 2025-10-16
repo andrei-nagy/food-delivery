@@ -1,219 +1,1367 @@
-.category-menu {
-    display: flex;
-    /* gap: 15px; */
-    overflow-x: auto;
-    max-width: 100%;
-    padding-bottom: 8px;
-    -ms-overflow-style: none;  /* IE și Edge */
-    scrollbar-width: none;     /* Firefox */
-    scroll-behavior: smooth;
-  }
-  
-  .category-menu::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-  }
-  
-  /* Linkuri */
-  .category-menu a {
-    white-space: nowrap;
-    text-decoration: none;
-    color: #333;
-    font-weight: 400; /* default: 400 pentru toate */
-    padding: 5px 10px;
-    border-radius: 5px;
-    flex-shrink: 0;
-    transition: background-color 0.3s, font-weight 0.3s;
-    
-  }
-  
-  .food-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-  }
-  .category-menu a.active {
-    font-weight: 700; /* doar activul este bold */
+:root {
+  --primary: #ff6b35;
+  --primary-dark: #e85a2b;
+  --secondary: #2ec4b6;
+  --surface: #ffffff;
+  --background: #f8fafc;
+  --text: #1e293b;
+  --text-light: #64748b;
+  --border: #e2e8f0;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --radius: 12px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Reset pentru scroll natural */
+/* html, body {
+  overflow-x: hidden;
+  height: 100%;
+  -webkit-overflow-scrolling: touch;
+} */
+
+.category-explorer {
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Header Section */
+.category-explorer__header {
+  padding-top: 1.5rem;
+  padding-bottom: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.category-explorer__header.hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.category-explorer__header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto 1.5rem;
+}
+
+.category-explorer__back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.category-explorer__back-btn:hover {
+  background: var(--primary-dark);
+  transform: translateX(-2px);
+}
+
+.category-explorer__controls {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.category-explorer__view-btn,
+.category-explorer__filter-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-light);
+  font-size: 1rem;
+  position: relative;
+}
+
+.category-explorer__view-btn--active,
+.category-explorer__view-btn:hover,
+.category-explorer__filter-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(255, 107, 53, 0.1);
+}
+
+/* Filter Badge */
+.category-explorer__filter-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Search Section */
+.category-explorer__search-section {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.category-explorer__search-container {
+  position: relative;
+}
+
+.category-explorer__search-wrapper {
+  position: relative;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  transition: var(--transition);
+}
+
+.category-explorer__search-wrapper--focused {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.category-explorer__search-input-container {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  min-height: 56px;
+}
+
+.category-explorer__search-icon {
+  font-size: 1.1rem;
+  color: var(--text-light);
+  margin-right: 0.75rem;
+  transition: var(--transition);
+}
+
+.category-explorer__search-wrapper--focused .category-explorer__search-icon {
+  color: var(--primary);
+}
+
+.category-explorer__search-input {
+  flex: 1;
+  padding: 1rem 0;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  color: var(--text);
+  background: transparent;
+  -webkit-appearance: none;
+}
+
+.category-explorer__search-input::placeholder {
+  color: var(--text-light);
+}
+
+.category-explorer__search-actions {
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+}
+
+.category-explorer__clear-search {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  color: var(--text-light);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.category-explorer__clear-search:hover {
+  background: var(--background);
+  color: var(--primary);
+}
+
+/* Search Suggestions */
+.category-explorer__search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+  border: 1px solid var(--border);
+  -webkit-overflow-scrolling: touch;
+}
+
+.category-explorer__suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+  border-bottom: 1px solid var(--border);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.category-explorer__suggestion-item:hover {
+  background: var(--background);
+}
+
+.category-explorer__suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.category-explorer__suggestion-image {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-right: 1rem;
+  border: 1px solid var(--border);
+}
+
+.category-explorer__suggestion-content {
+  flex: 1;
+}
+
+.category-explorer__suggestion-name {
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+
+.category-explorer__suggestion-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.category-explorer__suggestion-price {
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.category-explorer__suggestion-category {
+  background: var(--background);
+  color: var(--text-light);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+}
+
+.category-explorer__suggestion-desc {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-top: 0.25rem;
+  line-height: 1.3;
+}
+
+/* Mobile Filter */
+.category-explorer__mobile-filter {
+  display: none;
+  padding: 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 99;
+}
+
+.category-explorer__mobile-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 600;
+  width: 100%;
+  justify-content: center;
+}
+
+.category-explorer__mobile-filter-btn:hover {
+  background: var(--primary-dark);
+}
+
+/* Main Content */
+.category-explorer__main {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  /* padding: 2rem 1rem; */
+  gap: 2rem;
+  min-height: calc(100vh - 200px);
+  overflow: visible;
+}
+
+/* Sidebar */
+.category-explorer__sidebar {
+  flex: 0 0 280px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  height: fit-content;
+  position: sticky;
+  top: 140px;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.category-explorer__sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+
+.category-explorer__sidebar-header h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.25rem;
+}
+
+.category-explorer__sidebar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.category-explorer__clear-filters {
+  background: var(--background);
+  color: var(--text-light);
+  border: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.9rem;
+}
+
+.category-explorer__clear-filters:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.category-explorer__sidebar-close {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: var(--text-light);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: var(--transition);
+}
+
+.category-explorer__sidebar-close:hover {
+  background: var(--background);
+  color: var(--primary);
+}
+
+/* Filter Sections */
+.category-explorer__filter-section {
+  margin-bottom: 2rem;
+}
+
+.category-explorer__filter-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Sort Options */
+.category-explorer__sort-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.category-explorer__sort-option {
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.category-explorer__sort-option:hover {
+  border-color: var(--primary);
+  background: rgba(255, 107, 53, 0.05);
+}
+
+.category-explorer__sort-option--active {
+  background: rgba(255, 107, 53, 0.1);
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Price Range - Varianta ultra-subțire (5-6px) cu thumb-uri centrate */
+.category-explorer__price-range {
+  position: relative;
+  height: 6px;
+  margin: 1.5rem 0 1rem 0;
+  background: linear-gradient(
+    to right,
+    var(--border) 0%,
+    var(--border) var(--range-min, 0%),
+    var(--primary) var(--range-min, 0%),
+    var(--primary) var(--range-max, 100%),
+    var(--border) var(--range-max, 100%),
+    var(--border) 100%
+  );
+  border-radius: 3px;
+}
+
+.category-explorer__range-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+  z-index: 2;
+}
+
+.category-explorer__range-input::-webkit-slider-thumb {
+  pointer-events: all;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  border: 2px solid white;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  z-index: 3;
+  /* Centrare pentru Webkit */
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.category-explorer__range-input::-webkit-slider-thumb:hover {
+  transform: translateY(-50%) scale(1.2);
+  background: var(--primary-dark);
+}
+
+.category-explorer__range-input::-moz-range-thumb {
+  pointer-events: all;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  /* Ajustare pentru Firefox - ridică thumb-ul cu 2px */
+  position: relative;
+  top: -2px;
+}
+
+.category-explorer__range-input::-moz-range-thumb:hover {
+  transform: scale(1.2);
+  background: var(--primary-dark);
+}
+
+.category-explorer__range-input::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  height: 100%;
+}
+
+.category-explorer__range-input::-moz-range-track {
+  background: transparent;
+  height: 100%;
+  border: none;
+}
+
+.category-explorer__price-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-top: 1rem;
+}
+
+/* Dietary Filters */
+.category-explorer__dietary-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.category-explorer__dietary-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.category-explorer__dietary-filter:hover {
+  border-color: var(--primary);
+  background: rgba(255, 107, 53, 0.05);
+}
+
+.category-explorer__dietary-filter--active {
+  background: rgba(255, 107, 53, 0.1);
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* Category Filters */
+.category-explorer__category-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.category-explorer__category-filter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.category-explorer__category-filter:hover {
+  border-color: var(--primary);
+  background: rgba(255, 107, 53, 0.05);
+}
+
+.category-explorer__category-filter--active {
+  background: rgba(255, 107, 53, 0.1);
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.category-explorer__category-count {
+  background: var(--background);
+  color: var(--text-light);
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.category-explorer__category-filter--active .category-explorer__category-count {
+  background: var(--primary);
+  color: white;
+}
+
+/* Active Filters Indicator */
+.category-explorer__active-filters {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+/* Content Area */
+.category-explorer__content {
+  flex: 1;
+  min-height: 500px;
+  overflow: visible;
+}
+
+.category-explorer__content--with-sidebar {
+  margin-left: 0;
+}
+
+.category-explorer__food-header {
+  margin-bottom: 1rem;
+}
+
+.category-explorer__grid-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* === STILURI PENTRU GRUPAREA PE CATEGORII === */
+
+.category-explorer__food-grid-grouped {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.category-explorer__category-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.category-explorer__food-subgrid {
+  width: 100%;
+}
+
+/* GRID VIEW pentru subgrid-uri */
+.category-explorer__food-subgrid--double .category-explorer__food-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* LIST VIEW pentru subgrid-uri */
+.category-explorer__food-subgrid--single .category-explorer__food-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+/* Stiluri pentru titlul categoriei grupate */
+.category-explorer__category-group .category-explorer__food-header {
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--primary);
+}
+
+.category-explorer__category-group .category-explorer__grid-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+/* FOOD CONTAINER STYLES */
+.category-explorer__food-container {
+  width: 100%;
+}
+
+/* GRID VIEW - 2-3 columns desktop */
+.category-explorer__food-container--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* LIST VIEW - 1 column */
+.category-explorer__food-container--list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.category-explorer__food-grid {
+  display: contents;
+}
+
+/* Doar pentru modul double */
+.category-explorer__food-container--double .category-explorer__food-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* Pentru modul single (o singură coloană) */
+.category-explorer__food-container--single .category-explorer__food-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+/* Food Item Wrapper */
+.category-explorer__food-item-wrapper {
+  width: 100%;
+}
+
+/* Stiluri specifice pentru Grid View */
+.category-explorer__food-container--grid .category-explorer__food-item-wrapper {
+  min-height: 200px;
+}
+
+/* Stiluri specifice pentru List View */
+.category-explorer__food-container--list .category-explorer__food-item-wrapper {
+  min-height: 120px;
+}
+
+/* No Results State */
+.category-explorer__no-results {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin: 2rem 0;
+}
+
+.category-explorer__no-results-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.7;
+}
+
+.category-explorer__no-results-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+
+.category-explorer__no-results-message {
+  color: var(--text-light);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.category-explorer__no-results-action {
+  padding: 0.75rem 1.5rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.category-explorer__no-results-action:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+/* Responsive pentru grupări */
+@media (max-width: 768px) {
+  .category-explorer__food-grid-grouped {
+    gap: 2rem;
   }
 
-  .modal-overlay {
+  .category-explorer__category-group .category-explorer__grid-title {
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+  }
+}
+
+/* Floating Checkout Button */
+.floating-checkout-menu {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--primary);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  z-index: 1000;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.floating-checkout-menu.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.floating-checkout-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.floating-checkout-cta {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.floating-checkout-total {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+  .category-explorer__main {
+    flex-direction: column;
+    gap: 1.5rem;
+    /* padding: 1rem; */
+    overflow: visible;
+  }
+
+  .category-explorer__sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 300px;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    box-shadow: var(--shadow-lg);
+    max-height: 100vh;
+    overflow-y: auto;
+    border-radius: 0;
+  }
+
+  .category-explorer__sidebar[style*="opacity: 1"] {
+    transform: translateX(0);
+  }
+
+  .category-explorer__sidebar-close {
+    display: block;
+  }
+
+  .category-explorer__mobile-filter {
+    display: block;
+  }
+
+  .category-explorer__content--with-sidebar::before {
+    content: "";
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    pointer-events: all;
+  }
+
+  .category-explorer__content {
+    overflow: visible;
+  }
+
+  /* On tablet, use 2 columns for grid view */
+  .category-explorer__food-container--grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
 }
 
-.modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 500px;
-    position: relative;
-    display: flex;
+@media (max-width: 768px) {
+  .category-explorer__header-top {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .category-explorer__controls {
+    margin-left: auto;
+  }
+
+  .category-explorer__sidebar-actions {
     flex-direction: column;
-    gap: 15px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
+    gap: 0.5rem;
+  }
 
-.modal-close-button {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 20px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #333;
-}
-
-.quantity-selector {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.quantity-selector button {
-    background-color: #eee;
-    border: none;
-    padding: 5px 10px;
-    font-size: 18px;
-    cursor: pointer;
-    border-radius: 5px;
-}
-
-textarea {
+  .category-explorer__clear-filters {
+    order: 2;
     width: 100%;
-    min-height: 60px;
-    resize: vertical;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
+    text-align: center;
+  }
 
-.add-to-order-button {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 10px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 5px;
-}
+  .category-explorer__sidebar-close {
+    order: 1;
+    align-self: flex-end;
+  }
 
-.add-to-order-button:hover {
-    background-color: #218838;
-}
-.back-button {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-bottom: 20px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    color: #333;
+  .category-explorer__dietary-filters {
+    flex-direction: row;
+    flex-wrap: wrap;
   }
-  
-  .category-menu {
-    margin-bottom: 20px;
-    overflow-x: auto;
-    white-space: nowrap;
-    display: flex;
-    scroll-behavior: smooth;
+
+  .category-explorer__dietary-filter {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+    gap: 0.5rem;
   }
-  
-  .category-link {
-    margin-right: 15px;
-    text-decoration: none;
-    color: #333;
-    font-weight: normal;
+
+  /* On mobile, always use single column for both views */
+  .category-explorer__food-container--grid,
+  .category-explorer__food-container--list {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
-  
-  .category-link.active {
-    font-weight: bold;
-  }
-  
-  .category-label {
-    display: inline-block;
-    padding: 5px 10px;
-    border-bottom: none;
-  }
-  
-  .category-link.active .category-label {
-    border-bottom: 2px solid #333;
-  }
-  
-  
-/* Tablete (min-width: 768px) */
-@media (min-width: 768px) {
-  .food-list {
-    grid-template-columns: repeat(3, 1fr);
+
+  /* .category-explorer__main {
+    padding: 1rem;
+  } */
+
+  .category-explorer__food-container--grid,
+  .category-explorer__food-container--list {
+    overflow: visible;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
-/* Desktop (min-width: 1024px) */
-@media (min-width: 1024px) {
-  .food-list {
-    grid-template-columns: repeat(4, 1fr);
+@media (max-width: 480px) {
+  /* .category-explorer__header {
+    padding: 1rem;
+  } */
+
+  .category-explorer__search-input-container {
+    min-height: 48px;
+    padding: 0 0.75rem;
+  }
+
+  .category-explorer__search-input {
+    padding: 0.75rem 0;
+    font-size: 0.9rem;
+  }
+
+  .category-explorer__grid-title {
+    font-size: 1.25rem;
+  }
+
+  .category-explorer__nav-link,
+  .category-explorer__view-btn,
+  .category-explorer__filter-btn,
+  .category-explorer__back-btn {
+    min-height: 44px;
+  }
+
+  .category-explorer__filter-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .category-explorer__dietary-filter {
+    min-width: 100px;
+    font-size: 0.8rem;
+    padding: 0.5rem;
+  }
+
+  .category-explorer__category-filter {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
   }
 }
-.floating-checkout-home {
-  transform: translateX(-50%) translateY(100%);
-  opacity: 0;
-  transition: transform 0.4s ease, opacity 0.4s ease;
+
+/* Fix specific pentru touchpad și scroll smooth */
+.category-explorer__food-container--grid,
+.category-explorer__food-container--list,
+.category-explorer__sidebar,
+.category-explorer__search-suggestions {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Elimină orice overflow hidden care ar putea bloca scroll-ul */
+.category-explorer * {
+  box-sizing: border-box;
+}
+
+.category-explorer__main,
+.category-explorer__content,
+.category-explorer__food-container--grid,
+.category-explorer__food-container--list {
+  overflow: visible !important;
+}
+
+/* ✅ FLOATING CART CIRCLE - ACELAȘI DESIGN CA ÎN FOODDISPLAY */
+.floating-cart-circle {
   position: fixed;
-  bottom: 10vh;
-  left: 50%;
-  width: 90%;
-  background-color: #e86514;
-  color: white;
+  bottom: 20px;
+  right: 20px;
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #e86514, #ff8c42);
+  border-radius: 50%;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 10px 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1;
-  font-size: 1rem;
-  font-weight: 500;
+  justify-content: center;
+  box-shadow: 0 8px 25px rgba(232, 101, 20, 0.4);
   cursor: pointer;
-  /* animation: pulseGlow 2.5s infinite; */
+  z-index: 1000;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(100px) scale(0.5);
+  border: 3px solid white;
 }
 
+.floating-cart-circle.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
 
-.floating-checkout-home.visible {
-  transform: translateX(-50%) translateY(0);
+.floating-cart-circle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 12px 35px rgba(232, 101, 20, 0.6);
+}
+
+.cart-circle-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.cart-icon {
+  font-size: 24px;
+  color: white;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.cart-count-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ffffff;
+  color: #e86514;
+  border: 2px solid #e86514;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  animation: pulse 2s infinite;
+}
+
+.cart-total-price {
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.floating-cart-circle:hover .cart-total-price {
   opacity: 1;
 }
 
-
-.floating-checkout-left {
-  display: flex;
-  /* align-items: center;
-  justify-content: center; */
+.cart-pulse-effect {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  gap: 12px;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e86514, #ff8c42);
+  animation: continuousPulse 2s ease-in-out infinite;
+  z-index: -1;
+  opacity: 0.6;
 }
 
-.floating-checkout-count {
-  background-color: #ffffff3b;
-  color: white;
-  padding: 6px 12px;
-  border-radius: 999px;
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+@keyframes continuousPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.3;
+  }
+}
+
+/* Responsive pentru mobile */
+@media (max-width: 768px) {
+  .floating-cart-circle {
+    width: 65px;
+    height: 65px;
+    right: 15px;
+    bottom: 15px;
+  }
+
+  .cart-icon {
+    font-size: 22px;
+  }
+
+  .cart-count-badge {
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+  }
+
+  .cart-total-price {
+    font-size: 0.75rem;
+    top: -32px;
+  }
+}
+
+/* ✅ MOBILE HORIZONTAL CATEGORIES SCROLL - VARIANTĂ OPTIMIZATĂ */
+.category-explorer__mobile-categories-scroll {
+  display: none;
+  /* padding: 1.5rem 1rem; */
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  background: rgba(255, 255, 255, 0.95); /* Mai opac pentru performanță */
+  backdrop-filter: blur(10px); /* Redus de la 20px la 10px */
+  -webkit-backdrop-filter: blur(10px); /* Pentru Safari */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  position: sticky;
+  top: 0;
+  z-index: 98;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  will-change: transform; /* Optimizare pentru performanță */
+  transform: translateZ(0); /* Forțează hardware acceleration */
+}
+.category-explorer__mobile-categories-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.category-explorer__mobile-categories-container {
+  display: flex;
+  gap: 0.6rem;
+  min-width: max-content;
+  padding: 0.5rem;
+  align-items: center;
+}
+
+.category-explorer__mobile-category-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.6rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   font-size: 0.9rem;
-  font-weight: bold;
-  min-width: 30px;
-  text-align: center;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+  flex-shrink: 0;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(255, 255, 255, 0.4);
+  position: relative;
+  overflow: hidden;
 }
 
-.floating-checkout-cta {
-  font-weight: 500;
-  font-size: 1rem;
+.category-explorer__mobile-category-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05)); */
+  border-radius: 16px;
+  z-index: -1;
 }
+
+/* .category-explorer__mobile-category-btn:hover {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(255, 107, 53, 0.4);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 8px 30px rgba(255, 107, 53, 0.15),
+    0 2px 4px rgba(255, 255, 255, 0.6);
+  color: #ff6b35;
+} */
+
+/* ✅ FIX pentru butoanele din meniul orizontal - elimină efectul de zoom pentru butoanele active care nu sunt curente */
+.category-explorer__mobile-category-btn--active {
+  transform: none !important;
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  color: #475569 !important;
+  border-color: rgba(255, 107, 53, 0.3) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ✅ Butonul categoriei curente (cea din URL) are prioritate și poate avea zoom */
+.category-explorer__mobile-category-btn--current {
+  transform: scale(1.05);
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 2;
+}
+
+/* ✅ Când un buton este atât activ (selectat) cât și curent (din URL) */
+.category-explorer__mobile-category-btn--current.category-explorer__mobile-category-btn--active {
+  background: linear-gradient(
+    135deg,
+    var(--primary),
+    var(--secondary)
+  ) !important;
+  color: white !important;
+  transform: scale(1.08) !important;
+  box-shadow: 0 6px 16px rgba(var(--primary-color-rgb), 0.3) !important;
+}
+
+/* ✅ Asigură-te că butonul "All" nu are efect de zoom când este selectat dar nu este curent */
+.category-explorer__mobile-category-btn--active:not(
+    .category-explorer__mobile-category-btn--current
+  ) {
+  background-color: rgba(255, 107, 53, 0.1) !important;
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+.category-explorer__mobile-category-count {
+  background: rgba(255, 255, 255, 0.9);
+  color: #64748b;
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 24px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.category-explorer__mobile-category-btn--active
+  .category-explorer__mobile-category-count,
+.category-explorer__mobile-category-btn--current
+  .category-explorer__mobile-category-count {
+  background: rgba(255, 255, 255, 0.95);
+  color: #ff6b35;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+@media (max-width: 768px) {
+  .category-explorer__mobile-categories-scroll {
+    display: block;
+  }
+}
+
+@media (max-width: 480px) {
+  .category-explorer__mobile-categories-scroll {
+    padding-top: 0.75rem;
+    padding-bottom: 1.2rem;
+  }
+
+  .category-explorer__mobile-category-btn {
+    padding: 0.7rem 1.4rem;
+    font-size: 0.85rem;
+    border-radius: 14px;
+  }
+
+  .category-explorer__mobile-category-count {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+    min-width: 22px;
+  }
+
+  .category-explorer__mobile-categories-container {
+    gap: 0.5rem;
+    padding: 0.25rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .category-explorer__mobile-categories-scroll {
+    display: none !important;
+  }
+}
+
+/* ✅ FIX pentru hover - butoanele active care nu sunt curente nu ar trebui să aibă hover effects */
+.category-explorer__mobile-category-btn--active:not(
+    .category-explorer__mobile-category-btn--current
+  ):hover {
+  transform: none !important;
+  background-color: rgba(255, 107, 53, 0.1) !important;
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ✅ Butoanele normale (neactive) păstrează hover effects */
+/* .category-explorer__mobile-category-btn:not(.category-explorer__mobile-category-btn--active):not(.category-explorer__mobile-category-btn--current):hover {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(255, 107, 53, 0.4);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 8px 30px rgba(255, 107, 53, 0.15),
+    0 2px 4px rgba(255, 255, 255, 0.6);
+  color: #ff6b35;
+} */

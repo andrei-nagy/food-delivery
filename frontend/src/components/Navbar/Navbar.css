@@ -157,24 +157,179 @@ object-fit: cover;
   cursor: pointer;
 }
 
+
+/* Înlocuiește secțiunea .navbar-cart .dot și .mobile-footer-item .dot cu: */
+
+/* === ANIMAȚII ȘI STILURI MODERNE PENTRU CART INDICATOR === */
+
+/* Indicator pentru desktop */
 .navbar-cart .dot {
   position: absolute;
-  min-width: 10px;
-  min-height: 10px;
-  background-color: tomato;
-  border-radius: 5px;
+  min-width: 20px;
+  min-height: 20px;
+  background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+  border-radius: 50%;
   top: -8px;
   right: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  border: 2px solid white;
+  box-shadow: 0 3px 8px rgba(255, 107, 107, 0.4);
+  animation: dotPulse 0.6s ease-out;
+  transform-origin: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Indicator pentru mobile footer */
 .mobile-footer-item .dot {
   position: absolute;
-  min-width: 10px;
-  min-height: 10px;
-  background-color: tomato;
-  border-radius: 50%; /* Face punctul să fie perfect rotund */
-  top: -8px;
-  right: -8px;
+  min-width: 20px;
+  min-height: 20px;
+  background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+  border-radius: 50%;
+  top: -5px;
+  right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  border: 2px solid white;
+  box-shadow: 0 3px 8px rgba(255, 107, 107, 0.4);
+  animation: dotPulse 0.6s ease-out;
+  transform-origin: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animatie pentru cand apare un nou produs */
+@keyframes dotPulse {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Animatie pentru hover */
+.navbar-cart:hover .dot,
+.mobile-footer-item:hover .dot {
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.6);
+}
+
+/* Varianta mai mare pentru numere mai mari */
+.navbar-cart .dot.large-number,
+.mobile-footer-item .dot.large-number {
+  min-width: 20px;
+  min-height: 20px;
+  font-size: 10px;
+}
+
+/* Varianta foarte mare pentru numere foarte mari */
+.navbar-cart .dot.xlarge-number,
+.mobile-footer-item .dot.xlarge-number {
+  min-width: 22px;
+  min-height: 22px;
+  font-size: 9px;
+}
+
+/* Stil special pentru 0 - ascuns elegant */
+.navbar-cart .dot.zero,
+.mobile-footer-item .dot.zero {
+  transform: scale(0);
+  opacity: 0;
+}
+
+/* === STILURI PENTRU DOTPRODUCTS (cea din partea de pay) === */
+.mobile-footer-item .dotProducts {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  color: white;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid white;
+  box-shadow: 0 3px 8px rgba(78, 205, 196, 0.4);
+  animation: dotSlideIn 0.5s ease-out;
+  transform-origin: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes dotSlideIn {
+  0% {
+    transform: translateY(-10px) scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: translateY(2px) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.mobile-footer-item:hover .dotProducts {
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(78, 205, 196, 0.6);
+}
+
+/* Variante pentru numere mai mari */
+.mobile-footer-item .dotProducts.large-number {
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+}
+
+.mobile-footer-item .dotProducts.xlarge-number {
+  width: 22px;
+  height: 22px;
+  font-size: 9px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .navbar-cart .dot {
+    min-width: 20px;
+    min-height: 20px;
+    font-size: 10px;
+    top: -5px;
+    right: -5px;
+  }
+  
+  .mobile-footer-item .dot {
+    min-width: 20px;
+    min-height: 20px;
+    font-size: 12px;
+    top: -3px;
+    right: 12px;
+  }
+  
+  .mobile-footer-item .dotProducts {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+  }
 }
 
 
@@ -463,15 +618,15 @@ object-fit: cover;
   .navbar-cart .dot {
     top: -4px;
     right: -4px;
-    min-width: 8px;
-    min-height: 8px;
+    min-width: 20px;
+    min-height: 20px;
   }
 
   .mobile-footer-item .dot {
     top: -4px;
     right: -4px;
-    min-width: 8px;
-    min-height: 8px;
+    min-width: 20px;
+    min-height: 20px;
   }
 
   .navbar-waiter {
@@ -502,15 +657,15 @@ object-fit: cover;
   .navbar-waiter .dot {
     top: -4px;
     right: -4px;
-    min-width: 8px;
-    min-height: 8px;
+    min-width: 20px;
+    min-height: 20px;
   }
 
   .mobile-footer-item .dot {
     top: -4px;
     right: -4px;
-    min-width: 8px;
-    min-height: 8px;
+    min-width: 20px;
+    min-height: 20px;
   }
 }
 

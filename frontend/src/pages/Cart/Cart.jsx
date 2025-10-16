@@ -33,6 +33,8 @@ const Cart = () => {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [showFloatingCheckout, setShowFloatingCheckout] = useState(false);
+  const [shouldShowOrderConfirmation, setShouldShowOrderConfirmation] = useState(false);
 
   const swipeData = useRef({});
   const [swipeOffsets, setSwipeOffsets] = useState({});
@@ -48,11 +50,18 @@ const Cart = () => {
 
   useEffect(() => {
     setData((data) => ({ ...data, tableNo: tableNumber }));
+    setShowFloatingCheckout(!isCartEmpty);
 
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }, 50);
   }, []);
+
+  const isCartEmpty = Object.values(cartItems).reduce((a, b) => a + b, 0) === 0;
+
+  useEffect(() => {
+    setShowFloatingCheckout(!isCartEmpty);
+  }, [isCartEmpty]);
 
   const applyPromoCode = () => {
     if (promoCodes[promoCode]) {
@@ -70,91 +79,106 @@ const Cart = () => {
     if (paymentError) setPaymentError("");
   };
 
-const placeOrder = async (event) => {
-  console.log('am apelat place order ')
-  if (event) event.preventDefault();
+  const placeOrder = async (event) => {
+    console.log('am apelat place order')
+    if (event) event.preventDefault();
 
-  if (orderPlaced) return;
+    if (orderPlaced) return;
 
-  if (!paymentMethod) {
-    setPaymentError("Please select a payment method.");
-    setTimeout(() => {
-      window.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: "smooth",
-      });
-    }, 100);
-    return;
-  } else setPaymentError("");
-
-  setIsPlacingOrder(true);
-
-  // CORECTARE: Construim corect array-ul items cu toate câmpurile necesare
-  let orderItems = [];
-  food_list.forEach((item) => {
-    if (cartItems[item._id] > 0) {
-      const quantity = cartItems[item._id];
-      orderItems.push({
-        foodId: item._id, // Câmp obligatoriu
-        name: item.name,
-        price: item.price,
-        quantity: quantity,
-        itemTotal: (item.price * quantity).toFixed(2), // Câmp obligatoriu
-        image: item.image // IMPORTANT: PĂSTRĂM imaginea
-      });
-    }
-  });
-
-  const totalAmount = getTotalCartAmount() - discount;
-
-  const orderData = {
-    userId: token, // Asigură-te că token-ul tău conține userId sau folosește alt mod de a obține userId
-    items: orderItems,
-    amount: totalAmount,
-    tableNo: tableNumber,
-    userData: data,
-    specialInstructions: specialInstructions
-  };
-
-  console.log('Order Data to send:', orderData); // Pentru debugging
-
-  try {
-    if (paymentMethod === "creditCard") {
-      const response = await axios.post(url + "/api/order/place", orderData, {
-        headers: { token },
-      });
-      if (response.data.success)
-        window.location.replace(response.data.session_url);
-      else alert("Error processing payment.");
-    } else if (paymentMethod === "cashPOS") {
-      const response = await axios.post(
-        url + "/api/order/place-cash",
-        orderData,
-        { headers: { token } }
-      );
-      if (response.data.success) {
-        setOrderPlaced(true);
-
-        setTimeout(() => {
-          navigate("/thank-you", {
-            state: {
-              tableNo: orderData.tableNo,
-              orderId: response.data.orderId,
-            },
+    if (!paymentMethod) {
+      setPaymentError("Please select a payment method.");
+      
+      // Scroll la secțiunea de metode de plată
+      setTimeout(() => {
+        const paymentSection = document.getElementById('payment-method-section');
+        if (paymentSection) {
+          paymentSection.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
           });
-          localStorage.setItem("isReloadNeeded", "true");
-        }, 1500);
-      } else {
-        alert("Error placing order.");
-        setIsPlacingOrder(false);
-      }
+        }
+      }, 100);
+      return;
+    } else {
+      setPaymentError("");
     }
-  } catch (error) {
-    console.error("Order placement error:", error);
-    alert("Error placing order.");
-    setIsPlacingOrder(false);
-  }
-};
+
+    setIsPlacingOrder(true);
+
+    let orderItems = [];
+    food_list.forEach((item) => {
+      if (cartItems[item._id] > 0) {
+        const quantity = cartItems[item._id];
+        orderItems.push({
+          foodId: item._id,
+          name: item.name,
+          price: item.price,
+          quantity: quantity,
+          itemTotal: (item.price * quantity).toFixed(2),
+          image: item.image
+        });
+      }
+    });
+
+    const totalAmount = getTotalCartAmount() - discount;
+
+    const orderData = {
+      userId: token,
+      items: orderItems,
+      amount: totalAmount,
+      tableNo: tableNumber,
+      userData: data,
+      specialInstructions: specialInstructions
+    };
+
+    console.log('Order Data to send:', orderData);
+
+    try {
+      if (paymentMethod === "creditCard") {
+        const response = await axios.post(url + "/api/order/place", orderData, {
+          headers: { token },
+        });
+        if (response.data.success)
+          window.location.replace(response.data.session_url);
+        else {
+          alert("Error processing payment.");
+          setIsPlacingOrder(false);
+        }
+      } else if (paymentMethod === "cashPOS") {
+        const response = await axios.post(
+          url + "/api/order/place-cash",
+          orderData,
+          { headers: { token } }
+        );
+       if (response.data.success) {
+  setOrderPlaced(true);
+  setShouldShowOrderConfirmation(true);
+  
+  // Așteaptă 2 secunde pentru animația completă înainte de navigare
+  setTimeout(() => {
+    setShowFloatingCheckout(false);
+    // Mic delay suplimentar pentru tranziție smooth
+    setTimeout(() => {
+      navigate("/thank-you", {
+        state: {
+          tableNo: orderData.tableNo,
+          orderId: response.data.orderId,
+        },
+      });
+      localStorage.setItem("isReloadNeeded", "true");
+    }, 300);
+  }, 2000);
+}else {
+          alert("Error placing order.");
+          setIsPlacingOrder(false);
+        }
+      }
+    } catch (error) {
+      console.error("Order placement error:", error);
+      alert("Error placing order.");
+      setIsPlacingOrder(false);
+    }
+  };
 
   const startHideTimer = () => {
     if (hideTimer.current) clearTimeout(hideTimer.current);
@@ -236,8 +260,6 @@ const placeOrder = async (event) => {
   const resetSwipe = (id) => {
     setSwipeOffsets((prev) => ({ ...prev, [id]: 0 }));
   };
-
-  const isCartEmpty = Object.values(cartItems).reduce((a, b) => a + b, 0) === 0;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -450,65 +472,70 @@ const placeOrder = async (event) => {
                   </div>
                 </div>
 
-                <h3 className="payment-method-title">
-                  Select your payment method:
-                </h3>
-                {paymentError && (
-                  <p className="payment-error-message">{paymentError}</p>
-                )}
+                {/* Secțiunea de metode de plată cu ID pentru scroll */}
+                <div id="payment-method-section">
+                  <h3 className="payment-method-title">
+                    Select your payment method:
+                  </h3>
+                  {paymentError && (
+                    <p className="payment-error-message">{paymentError}</p>
+                  )}
 
-                <label className="label-payment-method">
-                  <input
-                    className="payment-method"
-                    type="radio"
-                    name="paymentMethod"
-                    value="creditCard"
-                    onChange={handlePaymentMethodChange}
-                    checked={paymentMethod === "creditCard"}
-                  />
-                  Pay online by credit card
-                </label>
-                <label className="label-payment-method">
-                  <input
-                    className="payment-method"
-                    type="radio"
-                    name="paymentMethod"
-                    value="cashPOS"
-                    onChange={handlePaymentMethodChange}
-                    checked={paymentMethod === "cashPOS"}
-                  />
-                  Pay cash / POS
-                </label>
-                <div className="payment-options">
-                  <img
-                    src={assets.visa_logo}
-                    alt="Visa"
-                    className="payment-option"
-                  />
-                  <img
-                    src={assets.mastercard_logo}
-                    alt="Mastercard"
-                    className="payment-option"
-                  />
-                  <img
-                    src={assets.apple_pay}
-                    alt="Apple Pay"
-                    className="payment-option"
-                  />
-                  <img
-                    src={assets.google_pay}
-                    alt="Google Pay"
-                    className="payment-option"
-                  />
+                  <label className="label-payment-method">
+                    <input
+                      className="payment-method"
+                      type="radio"
+                      name="paymentMethod"
+                      value="creditCard"
+                      onChange={handlePaymentMethodChange}
+                      checked={paymentMethod === "creditCard"}
+                    />
+                    Pay online by credit card
+                  </label>
+                  <label className="label-payment-method">
+                    <input
+                      className="payment-method"
+                      type="radio"
+                      name="paymentMethod"
+                      value="cashPOS"
+                      onChange={handlePaymentMethodChange}
+                      checked={paymentMethod === "cashPOS"}
+                    />
+                    Pay cash / POS
+                  </label>
+                  <div className="payment-options">
+                    <img
+                      src={assets.visa_logo}
+                      alt="Visa"
+                      className="payment-option"
+                    />
+                    <img
+                      src={assets.mastercard_logo}
+                      alt="Mastercard"
+                      className="payment-option"
+                    />
+                    <img
+                      src={assets.apple_pay}
+                      alt="Apple Pay"
+                      className="payment-option"
+                    />
+                    <img
+                      src={assets.google_pay}
+                      alt="Google Pay"
+                      className="payment-option"
+                    />
+                  </div>
+                  <p className="payment-security-note">
+                    Secured payments powered by
+                    <img
+                      src={assets.stripe_logo}
+                      alt="Stripe Logo"
+                      className="stripe-logo"
+                    />
+                  </p>
                 </div>
-                <p className="payment-security-note">
-                  Secured payments powered by
-                  <img
-                    src={assets.stripe_logo}
-                    alt="Stripe Logo"
-                    className="stripe-logo"
-                  />
-                </p>
+
+                {/* Butonul ascuns pentru compatibilitate */}
                 <form
                   onSubmit={placeOrder}
                   className={`place-order ${showFloating ? "hide" : "show"}`}
@@ -543,29 +570,35 @@ const placeOrder = async (event) => {
           </>
         )}
 
-        {!isCartEmpty && (
-          <div
-            className={`floating-checkout ${
-              isPlacingOrder ? "placing-order" : ""
-            }`}
-            onClick={placeOrder}
-          >
-            <div className="floating-checkout-left">
-              <span className="floating-checkout-count">
-                {Object.values(cartItems).reduce((a, b) => a + b, 0)}
-              </span>{" "}
-              <span className="floating-checkout-cta">
-                {paymentMethod === "creditCard"
-                  ? "Proceed to Payment"
-                  : "Place Order"}
-              </span>
-              <span className="floating-checkout-total">
-                {(getTotalCartAmount() - discount).toFixed(2)} €
-              </span>
-              <span className="order-confirmation">Order Placed!</span>
-            </div>
-          </div>
-        )}
+        {/* Floating Checkout cu logica corectată */}
+{showFloatingCheckout && (
+  <div
+    className={`floating-checkout-order ${
+      (isPlacingOrder || orderPlaced) ? "placing-order visible" : "visible"
+    }`}
+    onClick={!(isPlacingOrder || orderPlaced) ? placeOrder : undefined}
+  >
+    <div className="floating-checkout-order-left">
+      {!(isPlacingOrder || orderPlaced) ? (
+        <>
+          <span className="floating-checkout-order-count">
+            {Object.values(cartItems).reduce((a, b) => a + b, 0)}
+          </span>
+          <span className="floating-checkout-order-cta">
+            {paymentMethod === "creditCard" ? "Proceed to Payment" : "Place Order"}
+          </span>
+          <span className="floating-checkout-order-total">
+            {(getTotalCartAmount() - discount).toFixed(2)} €
+          </span>
+        </>
+      ) : (
+        <span className="order-confirmation">
+        Order Placed!
+        </span>
+      )}
+    </div>
+  </div>
+)}
       </div>
 
       <AnimatePresence>

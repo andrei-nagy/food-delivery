@@ -1,10 +1,9 @@
-// ❌ eliminăm importurile slick
 import React, { useContext, useState, useEffect, useRef } from "react";
 import "./FoodDisplay.css";
 import { StoreContext } from "../../context/StoreContext";
 import FoodItem from "../FoodItem/FoodItem";
 import { useTranslation } from "react-i18next";
-import { FaArrowRight } from "react-icons/fa";
+import { FaArrowRight, FaShoppingBag } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import FoodModal from "../FoodItem/FoodModal";
 import { motion } from "framer-motion";
@@ -26,40 +25,83 @@ const FoodDisplay = ({ category }) => {
   const [bestSellers, setBestSellers] = useState([]);
   const [selectedFood, setSelectedFood] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(window.scrollY);
 
+  const lastScrollY = useRef(0);
   const swiperRef = useRef(null);
+  const scrollTimeoutRef = useRef(null);
 
   const { t } = useTranslation();
 
-  // ✅ Buton floating
+  // ✅ Funcție pentru a afișa butonul smooth
+  const showFloatingButton = () => {
+    setIsVisible(true);
+  };
+
+  // ✅ Funcție pentru a ascunde butonul smooth
+  const hideFloatingButton = () => {
+    setIsVisible(false);
+  };
+
+  // ✅ Gestionează afișarea/ascunderea pe baza produselor din coș
   useEffect(() => {
     if (cartItemCount > 0) {
       setShouldRender(true);
-      setIsVisible(true);
-      const timer = setTimeout(() => setIsVisible(false), 4000);
-      return () => clearTimeout(timer);
+      // Mic delay pentru a permite render-ului să se actualizeze
+      setTimeout(() => {
+        showFloatingButton();
+      }, 100);
     } else {
-      setShouldRender(false);
+      hideFloatingButton();
+      // Așteaptă ca animația să se termine înainte de a seta shouldRender pe false
+      setTimeout(() => {
+        setShouldRender(false);
+      }, 400);
     }
   }, [cartItemCount]);
 
-  // ✅ Scroll handler floating button
+  // ✅ Scroll handler cu debounce pentru performanță
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      if (currentScrollY < lastScrollY && cartItemCount > 0) {
-        setIsVisible(true);
-      } else if (currentScrollY > lastScrollY) {
-        setIsVisible(false);
-      }
-      setLastScrollY(currentScrollY);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY, cartItemCount]);
 
-  // ✅ Grupare categorii și Best Sellers
+      // Curăță timeout-ul anterior
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      // Setează un nou timeout pentru a evita prea multe actualizări
+      scrollTimeoutRef.current = setTimeout(() => {
+        if (currentScrollY < lastScrollY.current - 50 && shouldRender) {
+          // scroll în sus cu cel puțin 50px - afișează butonul
+          showFloatingButton();
+        } else if (currentScrollY > lastScrollY.current + 50 && isVisible) {
+          // scroll în jos cu cel puțin 50px - ascunde butonul
+          hideFloatingButton();
+        }
+
+        lastScrollY.current = currentScrollY;
+      }, 50);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [shouldRender, isVisible]);
+
+  // ✅ Curăță timeout-urile la unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // ✅ Grupare categorii + best sellers
   useEffect(() => {
     if (food_list.length > 0) {
       const groups = food_list.reduce((acc, item) => {
@@ -118,7 +160,7 @@ const FoodDisplay = ({ category }) => {
                     <FoodItemBestSeller
                       key={item._id}
                       {...item}
-                      swiperRef={swiperRef} // 🔑 transmitem swiperRef
+                      swiperRef={swiperRef}
                       openModal={(food) => {
                         setSelectedFood(food);
                         setIsModalOpen(true);
@@ -168,29 +210,31 @@ const FoodDisplay = ({ category }) => {
           })}
 
         {isModalOpen && selectedFood && (
-          <FoodModal 
-  food={selectedFood} 
-  closeModal={() => setIsModalOpen(false)} 
-  isOpen={isModalOpen} 
-/>
+          <FoodModal
+            food={selectedFood}
+            closeModal={() => setIsModalOpen(false)}
+            isOpen={isModalOpen}
+          />
         )}
       </div>
 
       {shouldRender && (
         <div
-          className={`floating-checkout-home ${isVisible ? "visible" : ""}`}
+          className={`floating-cart-circle ${isVisible ? "visible" : ""}`}
           onClick={() => {
             navigate("/cart");
             window.scrollTo(0, 0);
           }}
+          onMouseEnter={showFloatingButton}
         >
-          <div className="floating-checkout-left column">
-            <span className="floating-checkout-count">{cartItemCount}</span>
-            <span className="floating-checkout-cta">View Order</span>
-            <span className="floating-checkout-total">
-              {getTotalCartAmount().toFixed(2)} €
-            </span>
+          <div className="cart-circle-content">
+            <FaShoppingBag className="cart-icon" />
+            <span className="cart-count-badge">{cartItemCount}</span>
           </div>
+          <div className="cart-total-price">
+            {getTotalCartAmount().toFixed(2)} €
+          </div>
+          <div className="cart-pulse-effect"></div>
         </div>
       )}
     </motion.div>
