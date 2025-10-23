@@ -24,14 +24,11 @@ const Navbar = ({ setShowLogin }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isWaiterModalOpen, setIsWaiterModalOpen] = useState(false);
   const [isModalMyOrdersOpen, setIsModalMyOrdersOpen] = useState(false);
-  const [totalProducts, setTotalProducts] = useState(0); // Variabila de stare pentru totalul de produse
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Stare pentru dropdown
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { t, i18n } = useTranslation();
 
-  // MUTĂ ACESTE LINII ÎNAINTE de isWelcomePage
   const location = useLocation();
-
-  // ACUM poți folosi location
   const isWelcomePage = location.pathname === "/welcome";
   const isCartPage = location.pathname === "/cart";
   const isHomePage = location.pathname === "/";
@@ -40,15 +37,35 @@ const Navbar = ({ setShowLogin }) => {
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
-  // Funcția pentru schimbarea limbii
+
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
-    sessionStorage.setItem("language", lng); // Salvăm limba în sessionStorage
+    sessionStorage.setItem("language", lng);
   };
 
-  // Scroll detection for fab-wrapper
   const [isVisible, setIsVisible] = useState(false);
   const fabRef = useRef(null);
+
+  // Funcția corectată pentru a calcula totalul produselor din coș
+  const getTotalCartItems = () => {
+    return Object.values(cartItems).reduce((total, item) => {
+      return total + (item.quantity || 0);
+    }, 0);
+  };
+
+  const getDotClass = (count) => {
+    if (count === 0) return "dot zero";
+    if (count > 9 && count <= 99) return "dot large-number";
+    if (count > 99) return "dot xlarge-number";
+    return "dot";
+  };
+
+  const getDotProductsClass = (count) => {
+    if (count === 0) return "dotProducts empty";
+    if (count > 9 && count <= 99) return "dotProducts large-number";
+    if (count > 99) return "dotProducts xlarge-number";
+    return "dotProducts";
+  };
 
   const fetchOrders = async () => {
     try {
@@ -58,7 +75,7 @@ const Navbar = ({ setShowLogin }) => {
         { headers: { token }, timeout: 5000 }
       );
 
-      const unpaidOrders = response.data.data.filter((order) => !order.payment); // Filtrăm comenzile neplătite
+      const unpaidOrders = response.data.data.filter((order) => !order.payment);
 
       if (response.data && Array.isArray(response.data.data)) {
         const total = unpaidOrders.reduce((sum, order) => {
@@ -74,10 +91,7 @@ const Navbar = ({ setShowLogin }) => {
           return sum;
         }, 0);
 
-        setTotalProducts(total); // Stocăm totalul în starea totalProducts
-      } else {
-        // Logăm structura invalidă
-        // console.error("Invalid data structure:", response.data);
+        setTotalProducts(total);
       }
     } catch (error) {
       // console.error("Error fetching orders", error);
@@ -87,7 +101,7 @@ const Navbar = ({ setShowLogin }) => {
   useEffect(() => {
     const savedLanguage = sessionStorage.getItem("language");
     if (savedLanguage) {
-      i18n.changeLanguage(savedLanguage); // Setează limba salvată
+      i18n.changeLanguage(savedLanguage);
     }
 
     if (token) {
@@ -97,7 +111,7 @@ const Navbar = ({ setShowLogin }) => {
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        setIsVisible(entry.isIntersecting); // Setare stare la vizibilitate
+        setIsVisible(entry.isIntersecting);
       },
       { threshold: 0.1 }
     );
@@ -124,15 +138,19 @@ const Navbar = ({ setShowLogin }) => {
   const handleOpenModal = () => {
     setIsModalOpen(true);
   };
+
   const handleOpenModalMyOrders = () => {
     setIsModalMyOrdersOpen(true);
   };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
+
   const handleCloseModalMyOrders = () => {
     setIsModalMyOrdersOpen(false);
   };
+
   const navigate = useNavigate();
 
   const handleCheckout = () => {
@@ -146,23 +164,6 @@ const Navbar = ({ setShowLogin }) => {
     setToken("");
     navigate("/");
   };
-const getTotalCartItems = () => {
-  return Object.values(cartItems).reduce((a, b) => a + b, 0);
-};
-
-const getDotClass = (count) => {
-  if (count === 0) return "dot zero";
-  if (count > 9 && count <= 99) return "dot large-number";
-  if (count > 99) return "dot xlarge-number";
-  return "dot";
-};
-
-const getDotProductsClass = (count) => {
-  if (count === 0) return "dotProducts empty";
-  if (count > 9 && count <= 99) return "dotProducts large-number";
-  if (count > 99) return "dotProducts xlarge-number";
-  return "dotProducts";
-};
 
   return (
     <div className={`navbar ${isWelcomePage ? "welcome-navbar" : ""}`}>
@@ -198,33 +199,32 @@ const getDotProductsClass = (count) => {
         </a>
       </ul>
 
-      {/* Secțiunea de schimbare limbă */}
-
       <div className={`navbar-right ${isWelcomePage ? "hide-menu" : ""}`}>
         <div className="navbar-waiter desktop" onClick={handleOpenWaiterModal}>
           <img src={assets.icon_waiter_blue} alt="Waiter Icon" />
         </div>
-      <div className="navbar-cart desktop" onClick={handleOpenModal}>
-  <img src={assets.basket_icon} alt="Cart Icon" />
-  <div className={getDotClass(getTotalCartItems())}>
-    {getTotalCartItems() > 0 && getTotalCartItems()}
-  </div>
-</div>
+
+        <div className="navbar-cart desktop" onClick={() => navigate("/cart")}>
+          <img src={assets.basket_icon} alt="Cart Icon" />
+          <div className={getDotClass(getTotalCartItems())}>
+            {getTotalCartItems() > 0 && getTotalCartItems()}
+          </div>
+        </div>
 
         <div
           className="navbar-myorders desktop"
           onClick={handleOpenModalMyOrders}
         >
           <img src={assets.profile_icon} alt="My Orders Icon" />
-          <div className={getTotalCartAmount() === 0 ? "" : "dot"}></div>
+          <div className={getTotalCartItems() === 0 ? "" : "dot"}></div>
         </div>
+
         {!token ? (
           <button onClick={() => setShowLogin(true)} hidden>
             Sign in
           </button>
         ) : (
           <div className="navbar-profile">
-            {/* <img src={assets.profile_icon} alt="" /> */}
             <ul className="nav-profile-dropdown">
               <li onClick={() => navigate("/myorders")}>
                 <img src={assets.bag_icon} alt="" />
@@ -234,6 +234,7 @@ const getDotProductsClass = (count) => {
             </ul>
           </div>
         )}
+
         <div className="language-switcher">
           <div className="language-dropdown" onClick={toggleDropdown}>
             <span className="language-selected">
@@ -258,7 +259,6 @@ const getDotProductsClass = (count) => {
               />
             </span>
 
-            {/* Animated dropdown */}
             <AnimatePresence>
               {isDropdownOpen && (
                 <motion.div
@@ -294,6 +294,7 @@ const getDotProductsClass = (count) => {
           </div>
         </div>
       </div>
+
       {!isWelcomePage && (
         <div className="mobile-footer mobile">
           <div className="mobile-footer-item" onClick={() => navigate("/")}>
@@ -319,47 +320,46 @@ const getDotProductsClass = (count) => {
               }
               alt="Menu Icon"
             />
-  <span> {t("menu")}</span>
+            <span> {t("menu")}</span>
           </div>
 
-        <div 
-  className={
-    getTotalCartAmount() === 0
-      ? "mobile-footer-item"
-      : "mobile-footer-item dot"
-  }
-  onClick={() => {
-    navigate("/cart");
-    window.scrollTo(0, 0);
-  }}
->
-  <img
-    src={
-      isCartPage ? assets.new_cart_selected : assets.new_cart_normal
-    }
-    alt="Order Icon"
-  />
-  <div className={getDotClass(getTotalCartItems())}>
-    {getTotalCartItems() > 0 && getTotalCartItems()}
-  </div>
-  <span> {t("view_order")}</span>
-</div>
+          <div 
+            className={
+              getTotalCartItems() === 0
+                ? "mobile-footer-item"
+                : "mobile-footer-item dot"
+            }
+            onClick={() => {
+              navigate("/cart");
+              window.scrollTo(0, 0);
+            }}
+          >
+            <img
+              src={
+                isCartPage ? assets.new_cart_selected : assets.new_cart_normal
+              }
+              alt="Order Icon"
+            />
+            <div className={getDotClass(getTotalCartItems())}>
+              {getTotalCartItems() > 0 && getTotalCartItems()}
+            </div>
+            <span> {t("view_order")}</span>
+          </div>
 
-{/* Pentru dotProducts (pay section) */}
-<div
-  className={
-    getTotalCartAmount() === 0 && totalProducts === 0
-      ? "mobile-footer-item"
-      : "mobile-footer-item dot"
-  }
-  onClick={handleOpenModalMyOrders}
->
-  <img src={assets.new_pay} alt="Pay Icon" />
-  <span> {t("pay")}</span>
-  <div className={getDotProductsClass(totalProducts)}>
-    {totalProducts > 0 && totalProducts}
-  </div>
-</div>
+          <div
+            className={
+              getTotalCartItems() === 0 && totalProducts === 0
+                ? "mobile-footer-item"
+                : "mobile-footer-item dot"
+            }
+            onClick={handleOpenModalMyOrders}
+          >
+            <img src={assets.new_pay} alt="Pay Icon" />
+            <span> {t("pay")}</span>
+            <div className={getDotProductsClass(totalProducts)}>
+              {totalProducts > 0 && totalProducts}
+            </div>
+          </div>
 
           <div className="mobile-footer-item" onClick={handleOpenWaiterModal}>
             <img src={assets.new_ai} alt="Actions Icon" />

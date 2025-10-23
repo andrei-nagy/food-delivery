@@ -17,8 +17,15 @@ import "swiper/css";
 const FoodDisplay = ({ category }) => {
   const { food_list, getTotalCartAmount, cartItems } = useContext(StoreContext);
   const navigate = useNavigate();
-  const cartItemCount = Object.values(cartItems).reduce((a, b) => a + b, 0);
+  
+  // ✅ Funcția corectată pentru a calcula numărul total de produse din coș
+  const getTotalCartItems = () => {
+    return Object.values(cartItems).reduce((total, item) => {
+      return total + (item.quantity || 0);
+    }, 0);
+  };
 
+  const cartItemCount = getTotalCartItems();
   const [shouldRender, setShouldRender] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [groupedFood, setGroupedFood] = useState({});

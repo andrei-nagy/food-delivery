@@ -3,37 +3,28 @@ import userModel from "../models/userModel.js";
 import OrderCounter from "../models/orderCounter.js";
 import Stripe from "stripe";
 
-
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-
-
 const placeOrder = async (req, res) => {
+  const getFrontendUrl = () => {
+        const origin = req.get('origin') || req.get('referer') || '';
+        
+        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            return "http://localhost:3000";
+        }
+        return "https://orderly-app.com"; // SAU domeniul tău real de frontend
+    };
 
-    // const currentUrl = window.location.href;
-    // const wordToCheck = 'localhost'; 
-
-    // if (currentUrl.includes(wordToCheck)) {
-    //     const frontend_url = "https://localhost:5173";
-    // } else {
-    const frontend_url = "https://api.orderly-app.com";
-    // }
-
-
-
-
+    const frontend_url = getFrontendUrl();
     try {
         let counter = await OrderCounter.findOne();
 
-        // Dacă nu există un document pentru contor, îl creăm
         if (!counter) {
             counter = new OrderCounter({ counter: 1 });
             await counter.save();
         }
 
-        // Incrementează contorul și setează orderNumber pentru comanda curentă
         const orderNumber = counter.counter;
-
 
         const newOrder = new orderModel({
             userId: req.body.userId,
@@ -44,15 +35,17 @@ const placeOrder = async (req, res) => {
             orderNumber: orderNumber,
             paymentMethod: 'Online card',
             specialInstructions: req.body.specialInstructions
-
-        })
+        });
 
         await newOrder.save();
-        // Actualizăm contorul pentru următoarea comandă
+        
         counter.counter += 1;
         await counter.save();
 
-        await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} })
+        // ✅ ȘTERGE cartItems după salvarea comenzii
+        if (req.body.userId) {
+            await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} });
+        }
 
         const line_items = req.body.items.map((item) => ({
             price_data: {
@@ -63,94 +56,89 @@ const placeOrder = async (req, res) => {
                 unit_amount: req.body.amount * 100 * 4.5
             },
             quantity: 1
-        }))
+        }));
 
         const session = await stripe.checkout.sessions.create({
             line_items: line_items,
             mode: "payment",
             success_url: `${frontend_url}/verify?success=true&orderId=${newOrder._id}`,
             cancel_url: `${frontend_url}/verify?success=false&orderId=${newOrder._id}`,
-        })
-
+        });
 
         res.json({
             success: true,
             session_url: session.url
-        })
+        });
     } catch (error) {
         console.log(error);
         res.json({
             success: false,
-            message: error
-        })
+            message: "Error placing order"
+        });
     }
+};
 
-}
 const payOrder = async (req, res) => {
+    // ✅ Folosește aceeași logică ca în frontend
+    const getFrontendUrl = () => {
+        const origin = req.get('origin') || req.get('referer') || '';
+        
+        // Dacă e localhost, folosește localhost:3000 (frontend)
+        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            return "http://localhost:3000";
+        }
+        // Altfol folosește domeniul de producție
+        return "https://orderly-app.com"; // SAU "https://api.orderly-app.com" dacă asta e frontend-ul tău
+    };
 
-    // const currentUrl = window.location.href;
-    // const wordToCheck = 'localhost'; 
-
-    // if (currentUrl.includes(wordToCheck)) {
-    //     const frontend_url = "https://localhost:5173";
-    // } else {
-    const frontend_url = "https://api.orderly-app.com";
-    // }
-
-
-
+    const frontend_url = getFrontendUrl();
 
     try {
-
-        const { orders, amount } = req.body; // Primește lista de comenzi și suma totală
+        const { orders, amount, userId } = req.body;
 
         if (!orders || orders.length === 0) {
             return res.status(400).json({ success: false, message: "No orders provided." });
         }
-        await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} })
 
+        // ✅ ȘTERGE cartItems pentru utilizator
+        if (userId) {
+            await userModel.findByIdAndUpdate(userId, { cartData: {} });
+        }
 
-
-        const line_items = req.body.items.map((item) => ({
+        const line_items = [{
             price_data: {
                 currency: "ron",
                 product_data: {
                     name: `Total for orders: ${orders.join(", ")}`,
-
                 },
-                unit_amount: req.body.amount * 100 * 4.5
+                unit_amount: Math.round(amount * 100 * 4.5) // ✅ Adaugă Math.round
             },
             quantity: 1
-        }))
+        }];
 
         const session = await stripe.checkout.sessions.create({
             line_items: line_items,
             mode: "payment",
             success_url: `${frontend_url}/verify?success=true&orderIds=${orders.join(",")}`,
             cancel_url: `${frontend_url}/verify?success=false`,
-        })
+        });
 
-        // Dacă plata are succes, actualizăm fiecare orderId
-  
-            for (const orderId of orders) {
-                await orderModel.findByIdAndUpdate(orderId, { payment: true, status: "Delivered" });
-            }
+        console.log("🟢 [payOrder] Stripe session created for:", frontend_url);
         
         res.json({
             success: true,
             session_url: session.url
-        })
+        });
     } catch (error) {
-        console.log(error);
+        console.log("🔴 [payOrder] Error:", error);
         res.json({
             success: false,
-            message: error
-        })
+            message: "Error processing payment"
+        });
     }
+};
 
-}
 const placeOrderCash = async (req, res) => {
-      
     try {
         let counter = await OrderCounter.findOne();
 
@@ -177,7 +165,10 @@ const placeOrderCash = async (req, res) => {
         counter.counter += 1;
         await counter.save();
 
-        await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} })
+        // ✅ ȘTERGE cartItems după salvarea comenzii
+        if (req.body.userId) {
+            await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} });
+        }
 
         res.json({
             success: true,
@@ -185,24 +176,18 @@ const placeOrderCash = async (req, res) => {
             orderId: newOrder._id
         });
     } catch (error) {
-    console.log("=== ERROR IN PLACE ORDER CASH ===");
-    console.log("Error name:", error.name);
-    console.log("Error message:", error.message);
-    
-    // Returnează eroarea reală temporar pentru debugging
-    res.json({
-        success: false,
-        message: error.message, // ← Schimbă asta temporar
-        errorType: error.name   // ← Și adaugă asta
-    });
-}
+        console.log("Error in placeOrderCash:", error);
+        res.json({
+            success: false,
+            message: "Error placing order"
+        });
+    }
 };
+
 const getOrderRating = async (req, res) => {
-    const { orderId } = req.params; // Asigură-te că extragi din params
-    console.log("Received orderId:", orderId); // Verifică ce ID primești
+    const { orderId } = req.params;
     try {
         const order = await orderModel.findById(orderId);
-        console.log("Fetched order:", order); // Verifică ce obiect este returnat
         if (order) {
             res.json({ success: true, rating: order.orderRating || 0 });
         } else {
@@ -210,13 +195,14 @@ const getOrderRating = async (req, res) => {
         }
     } catch (error) {
         console.error("Error fetching order:", error);
-        res.json({ success: false, message: error.message });
+        res.json({ success: false, message: "Error fetching order" });
     }
 };
+
 const updateOrderRating = async (req, res) => {
-    const { orderId, rating } = req.body; // Primim orderId și ratingul
+    const { orderId, rating } = req.body;
     try {
-        if (rating >= 1 && rating <= 5) { // Validăm ratingul să fie între 1 și 5
+        if (rating >= 1 && rating <= 5) {
             await orderModel.findByIdAndUpdate(orderId, { orderRating: rating });
             res.json({ success: true, message: "Order rating updated successfully!" });
         } else {
@@ -233,64 +219,66 @@ const verifyOrder = async (req, res) => {
     try {
         if (success == "true") {
             await orderModel.findByIdAndUpdate(orderId, { payment: true });
-            res.json({ success: true, message: "Paid" })
+            res.json({ success: true, message: "Paid" });
         } else {
             await orderModel.findByIdAndDelete(orderId);
-            res.json({ success: false, message: "Not Paid" })
+            res.json({ success: false, message: "Not Paid" });
         }
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: error })
+        res.json({ success: false, message: "Error verifying order" });
     }
-}
+};
 
-// user orders for frontend
 const userOrders = async (req, res) => {
     try {
         const orders = await orderModel.find({ userId: req.body.userId });
-        res.json({ success: true, data: orders })
+        res.json({ success: true, data: orders });
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: "Error" })
+        res.json({ success: false, message: "Error fetching user orders" });
     }
-}
+};
 
-
-
-//listing orders for admin panel
 const listOrders = async (req, res) => {
     try {
         const orders = await orderModel.find({});
-        res.json({ success: true, data: orders })
+        res.json({ success: true, data: orders });
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: "Error" })
+        res.json({ success: false, message: "Error fetching orders" });
     }
-}
-
-
-
-//api for updating order status 
+};
 
 const updateStatus = async (req, res) => {
     try {
         await orderModel.findByIdAndUpdate(req.body.orderId, { status: req.body.status });
-        res.json({ success: true, message: "Status updated" })
+        res.json({ success: true, message: "Status updated" });
     } catch (error) {
-        console.log(error)
-        res.json({ success: false, message: "Error" })
+        console.log(error);
+        res.json({ success: false, message: "Error updating status" });
     }
-}
+};
+
 const updatePaymentStatus = async (req, res) => {
     try {
-        // Update the payment field, not status
         await orderModel.findByIdAndUpdate(req.body.orderId, { payment: req.body.payment });
         res.json({ success: true, message: "Payment status updated" });
     } catch (error) {
         console.log(error);
-        res.json({ success: false, message: "Error" });
+        res.json({ success: false, message: "Error updating payment status" });
     }
 };
 
-
-export { placeOrderCash, placeOrder, verifyOrder, userOrders, listOrders, updateStatus, updateOrderRating, getOrderRating, updatePaymentStatus, payOrder }
+export { 
+    placeOrderCash, 
+    placeOrder, 
+    verifyOrder, 
+    userOrders, 
+    listOrders, 
+    updateStatus, 
+    updateOrderRating, 
+    getOrderRating, 
+    updatePaymentStatus, 
+    payOrder 
+};

@@ -58,6 +58,7 @@
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
 }
 
 .food-item-modal-overlay.active .food-item-modal-container {

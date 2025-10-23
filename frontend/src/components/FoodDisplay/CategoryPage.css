@@ -27,16 +27,16 @@
   position: relative;
 }
 
-/* Header Section */
+/* Header Section - CU ANIMAȚIE DE DISPARIȚIE */
 .category-explorer__header {
-  padding-top: 1.5rem;
-  padding-bottom: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
   position: sticky;
   top: 0;
   z-index: 100;
   backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.95);
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
   transform: translateY(0);
   opacity: 1;
 }
@@ -45,6 +45,7 @@
   transform: translateY(-100%);
   opacity: 0;
   pointer-events: none;
+  box-shadow: none;
 }
 
 .category-explorer__header-top {
@@ -53,7 +54,7 @@
   justify-content: space-between;
   margin-bottom: 1.5rem;
   max-width: 1200px;
-  margin: 0 auto 1.5rem;
+  margin: 0 auto 1rem;
 }
 
 .category-explorer__back-btn {
@@ -987,7 +988,7 @@
   .category-explorer__view-btn,
   .category-explorer__filter-btn,
   .category-explorer__back-btn {
-    min-height: 44px;
+    min-height: 35px;
   }
 
   .category-explorer__filter-section {
@@ -1173,15 +1174,13 @@
   }
 }
 
-/* ✅ MOBILE HORIZONTAL CATEGORIES SCROLL - VARIANTĂ OPTIMIZATĂ */
 .category-explorer__mobile-categories-scroll {
   display: none;
-  /* padding: 1.5rem 1rem; */
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
-  background: rgba(255, 255, 255, 0.95); /* Mai opac pentru performanță */
-  backdrop-filter: blur(10px); /* Redus de la 20px la 10px */
-  -webkit-backdrop-filter: blur(10px); /* Pentru Safari */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.3);
   position: sticky;
   top: 0;
@@ -1190,9 +1189,20 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  will-change: transform; /* Optimizare pentru performanță */
-  transform: translateZ(0); /* Forțează hardware acceleration */
+  will-change: transform;
+  transform: translateZ(0);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0);
+  opacity: 1;
 }
+
+.category-explorer__mobile-categories-scroll.hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
 .category-explorer__mobile-categories-scroll::-webkit-scrollbar {
   display: none;
 }
@@ -1321,7 +1331,7 @@
   }
 
   .category-explorer__mobile-category-btn {
-    padding: 0.7rem 1.4rem;
+    padding: 0.75rem 0.75rem;
     font-size: 0.85rem;
     border-radius: 14px;
   }
@@ -1354,14 +1364,3 @@
   border-color: var(--primary) !important;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
 }
-
-/* ✅ Butoanele normale (neactive) păstrează hover effects */
-/* .category-explorer__mobile-category-btn:not(.category-explorer__mobile-category-btn--active):not(.category-explorer__mobile-category-btn--current):hover {
-  background: rgba(255, 255, 255, 0.8);
-  border-color: rgba(255, 107, 53, 0.4);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 
-    0 8px 30px rgba(255, 107, 53, 0.15),
-    0 2px 4px rgba(255, 255, 255, 0.6);
-  color: #ff6b35;
-} */

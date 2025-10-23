@@ -15,7 +15,26 @@ import { deactivateExpiredUsers } from "./controllers/userController.js"
 import cron from "node-cron"
 import dotenv from "dotenv"
 
-dotenv.config() // Load .env before anything else
+// 🔥 ADAUGĂ ACEST COD PENTRU A FORȚA RELOAD
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+
+// Funcție pentru a șterge cache-ul modulelor
+const clearModuleCache = () => {
+  console.log("🧹 Clearing module cache...");
+  Object.keys(require.cache).forEach((key) => {
+    // Șterge cache doar pentru fișierele noastre, nu node_modules
+    if (key.includes('/controllers/') || key.includes('/routes/')) {
+      delete require.cache[key];
+      console.log(`🗑️  Cleared cache for: ${key.split('/').pop()}`);
+    }
+  });
+};
+
+// Apelează imediat la start
+clearModuleCache();
+
+dotenv.config()
 
 const app = express()
 const port = process.env.PORT || 4000
@@ -36,7 +55,11 @@ app.use(express.json())
 // CORS Config
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin) {
+      return callback(null, true)
+    }
+    
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true)
     } else {
       console.log(`❌ CORS blocked request from: ${origin}`)
@@ -44,20 +67,33 @@ const corsOptions = {
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true
+  allowedHeaders: ['*'],
+  credentials: true,
+  optionsSuccessStatus: 204
 }
 
 app.use(cors(corsOptions))
-app.options('*', cors(corsOptions)) // Also applies to preflight requests
 
 // DB Connection
 connectDB()
 
 // Cron Job
-cron.schedule('*/10 * * * *', async () => {
+cron.schedule('*/1 * * * *', async () => {
   console.log('🕓 Verificare utilizatori cu token-uri expirate...')
   await deactivateExpiredUsers()
 })
+
+// 🔥 ENDPOINT PENTRU RELOAD MANUAL (development)
+app.post("/api/reload", (req, res) => {
+  clearModuleCache();
+  
+  // Reimportează modulele pentru a forța reîncărcarea
+  import('./routes/cartRoute.js')
+    .then(() => console.log("✅ Cart routes reloaded"))
+    .catch(err => console.error("❌ Error reloading cart routes:", err));
+    
+  res.json({ success: true, message: "Server modules reloaded" });
+});
 
 // API Endpoints
 app.use("/api/food", foodRouter)
@@ -75,10 +111,11 @@ app.use("/images", express.static("uploads"))
 
 // Health Check
 app.get("/", (req, res) => {
-  res.send("API Working")
+  res.send("API Working - CART CONTROLLER UPDATED!")
 })
 
 // Start Server
 app.listen(port, '0.0.0.0', () => {
+  console.log(`🚀🚀🚀 SERVER STARTED WITH UPDATED CART CONTROLLER! 🚀🚀🚀`)
   console.log(`🚀 Server started on http://0.0.0.0:${port}`)
 })

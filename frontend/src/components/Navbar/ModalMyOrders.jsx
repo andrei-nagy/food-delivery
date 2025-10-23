@@ -166,24 +166,27 @@ const ModalMyOrders = ({ show, onClose }) => {
       </div>
     ));
   };
-  const placeOrder = async (event) => {
-    event.preventDefault();
+ const placeOrder = async (event) => {
+  event.preventDefault();
 
+  console.log("🟡 [ModalMyOrders] Starting placeOrder function");
+
+  try {
     let orderItems = [];
     orders.forEach((order) => {
       order.items.forEach((item) => {
         let existingItem = orderItems.find((i) => i._id === item._id);
         if (existingItem) {
-          // Dacă produsul există deja, actualizăm cantitatea
           existingItem.quantity += item.quantity;
         } else {
-          // Adăugăm produsul cu toate detaliile
           orderItems.push({ ...item, quantity: item.quantity });
         }
       });
     });
 
-    const totalAmount = calculateTotalWithTip(); // Totalul cu discount aplicat
+    const totalAmount = calculateTotalWithTip();
+    console.log("🟡 [ModalMyOrders] Total amount:", totalAmount);
+    console.log("🟡 [ModalMyOrders] Order IDs:", orderIds);
 
     let orderData = {
       tableNo: tableNumber,
@@ -193,21 +196,33 @@ const ModalMyOrders = ({ show, onClose }) => {
       specialInstructions: null,
       orders: orderIds,
     };
-    console.log(JSON.stringify(orderData, null, 2));
+
+    console.log("🟡 [ModalMyOrders] Sending order data:", JSON.stringify(orderData, null, 2));
 
     // Plată online prin Stripe
+    console.log("🟡 [ModalMyOrders] Making API call to:", url + "/api/order/pay-order");
+    
     let response = await axios.post(url + "/api/order/pay-order", orderData, {
       headers: { token },
     });
 
-    console.log(response);
+    console.log("🟢 [ModalMyOrders] API Response:", response.data);
+
     if (response.data.success) {
       const { session_url } = response.data;
+      console.log("🟢 [ModalMyOrders] Redirecting to:", session_url);
       window.location.replace(session_url);
     } else {
+      console.log("🔴 [ModalMyOrders] API returned success: false");
       alert("Error processing payment.");
     }
-  };
+
+  } catch (error) {
+    console.error("🔴 [ModalMyOrders] Catch error:", error);
+    console.error("🔴 [ModalMyOrders] Error response:", error.response?.data);
+    alert("Error processing payment. Check console for details.");
+  }
+};
 
   // const renderOrderItems = () => {
   //     const aggregatedProducts = aggregateProducts();

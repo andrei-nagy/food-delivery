@@ -12,31 +12,28 @@ const addFood = async (req, res) => {
   try {
     const { name, description, price, category, isBestSeller, isNewAdded, isVegan, extras } = req.body;
     
-    // DEBUG: Log all request body keys
-    console.log("All body keys:", Object.keys(req.body));
-    console.log("Extras field type:", typeof extras);
-    console.log("Extras field value:", extras);
+    console.log("📦 RAW Extras received:", extras);
+    console.log("📦 Extras type:", typeof extras);
     
-    // PROCESEAZĂ EXTRASELE - VARIANTĂ SIMPLIFICATĂ
+    // PARSE EXTRAS DIRECT IN CONTROLLER
     let parsedExtras = [];
-    
-    try {
-      if (typeof extras === 'string') {
+    if (extras && typeof extras === 'string') {
+      try {
         parsedExtras = JSON.parse(extras);
-      } else if (Array.isArray(extras)) {
-        parsedExtras = extras;
+        console.log("✅ Successfully parsed extras:", parsedExtras);
+      } catch (error) {
+        console.error("❌ Error parsing extras JSON:", error);
+        parsedExtras = [];
       }
-      console.log("Parsed extras:", parsedExtras);
-    } catch (error) {
-      console.error("Error parsing extras:", error);
+    } else if (Array.isArray(extras)) {
+      parsedExtras = extras;
+      console.log("✅ Extras already array:", parsedExtras);
+    } else {
+      console.log("ℹ️ No extras provided or invalid format");
+      parsedExtras = [];
     }
     
-    // Dacă tot nu avem extrase, folosește cele default din model
-    if (!parsedExtras || parsedExtras.length === 0) {
-      console.log("Using default extras from model");
-      // Lăsăm modelul să aplice extrasele default
-      parsedExtras = undefined; // Sau [] pentru array gol
-    }
+    console.log("🎯 Final extras to save:", parsedExtras);
     
     // Validate required fields
     if (!name || !description || !price || !category) {
@@ -55,7 +52,7 @@ const addFood = async (req, res) => {
       });
     }
 
-    console.log("Creating new food object");
+    console.log("Creating new food object with extras:", parsedExtras);
     const newFood = new foodModel({
       name,
       description,
@@ -65,16 +62,17 @@ const addFood = async (req, res) => {
       isBestSeller: isBestSeller === 'true' || isBestSeller === true,
       isNewAdded: isNewAdded === 'true' || isNewAdded === true,
       isVegan: isVegan === 'true' || isVegan === true,
-      extras: parsedExtras // Poate fi undefined pentru a folosi default-ul
+      extras: parsedExtras
     });
 
-    console.log("Food object to save:", newFood);
-    await newFood.save();
-    console.log("Food saved successfully with extras:", newFood.extras);
+    console.log("Food object before save:", newFood);
+    const savedFood = await newFood.save();
+    console.log("✅ Food saved successfully!");
+    console.log("✅ Final saved food:", savedFood);
     
-    res.json({ success: true, message: "Food added successfully", data: newFood });
+    res.json({ success: true, message: "Food added successfully", data: savedFood });
   } catch (error) {
-    console.error("Error in addFood:", error);
+    console.error("❌ Error in addFood:", error);
     res.status(500).json({ success: false, message: "Error adding food: " + error.message });
   }
 };
@@ -118,82 +116,111 @@ const removeFood = async (req, res) => {
 
 // update food item
 const updateFood = async (req, res) => {
-    console.log("🔥  4 addFood function");
+  console.log("=== START updateFood ===");
+  console.log("Request body:", req.body);
+  console.log("Request file:", req.file ? req.file.filename : "No file");
 
-    try {
-        const { id, name, description, category, price, isBestSeller, isNewAdded, isVegan, extras } = req.body;
-        
-        let parsedExtras = [];
-        
-        // Parse extras if provided
-        if (extras) {
-            try {
-                parsedExtras = typeof extras === 'string' ? JSON.parse(extras) : extras;
-                
-                // Validate extras structure
-                if (Array.isArray(parsedExtras)) {
-                    parsedExtras = parsedExtras.map(extra => ({
-                        name: extra.name || '',
-                        price: parseFloat(extra.price) || 0
-                    })).filter(extra => extra.name.trim() !== ''); // Remove extras with empty names
-                } else {
-                    parsedExtras = [];
-                }
-            } catch (error) {
-                console.error("Error parsing extras:", error);
-                parsedExtras = [];
-            }
-        }
-        
-        const updateData = {
-            name,
-            description,
-            category,
-            price: parseFloat(price),
-            isBestSeller: isBestSeller === 'true' || isBestSeller === true,
-            isNewAdded: isNewAdded === 'true' || isNewAdded === true,
-            isVegan: isVegan === 'true' || isVegan === true,
-            extras: parsedExtras
-        };
-        
-        // Add image to update data if a new image was uploaded
-        if (req.file) {
-            // Delete old image if exists
-            const oldFood = await foodModel.findById(id);
-            if (oldFood && oldFood.image) {
-                fs.unlink(`uploads/${oldFood.image}`, (err) => {
-                    if (err) console.error("Error deleting old image:", err);
-                });
-            }
-            
-            updateData.image = req.file.filename;
-        }
-
-        const product = await foodModel.findByIdAndUpdate(id, updateData, {
-            new: true, // Return the updated document
-            runValidators: true // Run model validators on update
-        });
-
-        if (!product) {
-            return res.status(404).json({ 
-                success: false, 
-                message: "Product not found" 
-            });
-        }
-
-        res.json({
-            success: true,
-            message: "Product updated successfully!",
-            data: product
-        });
-    } catch (error) {
-        console.error("Error updating product:", error);
-        res.status(500).json({ 
-            success: false, 
-            message: "Error updating product.", 
-            error: error.message 
-        });
+  try {
+    const { id, name, description, category, price, isBestSeller, isNewAdded, isVegan, extras } = req.body;
+    
+    console.log("📦 RAW Extras received in update:", extras);
+    console.log("📦 Extras type:", typeof extras);
+    
+    // PARSE EXTRAS DIRECT IN CONTROLLER
+    let parsedExtras = [];
+    if (extras && typeof extras === 'string') {
+      try {
+        parsedExtras = JSON.parse(extras);
+        console.log("✅ Successfully parsed extras in update:", parsedExtras);
+      } catch (error) {
+        console.error("❌ Error parsing extras JSON in update:", error);
+        parsedExtras = [];
+      }
+    } else if (Array.isArray(extras)) {
+      parsedExtras = extras;
+      console.log("✅ Extras already array in update:", parsedExtras);
+    } else {
+      console.log("ℹ️ No extras provided or invalid format in update");
+      parsedExtras = [];
     }
+    
+    console.log("🎯 Final extras to save in update:", parsedExtras);
+    
+    // Validare câmpuri obligatorii
+    if (!id || !name || !description || !price || !category) {
+      console.log("Missing required fields for update");
+      return res.status(400).json({ 
+        success: false, 
+        message: "Missing required fields: id, name, description, price, or category" 
+      });
+    }
+
+    const updateData = {
+      name,
+      description,
+      category,
+      price: parseFloat(price),
+      isBestSeller: isBestSeller === 'true' || isBestSeller === true,
+      isNewAdded: isNewAdded === 'true' || isNewAdded === true,
+      isVegan: isVegan === 'true' || isVegan === true,
+      extras: parsedExtras
+    };
+    
+    // Adaugă imaginea în datele de update dacă a fost încărcată o imagine nouă
+    if (req.file) {
+      console.log("New image uploaded:", req.file.filename);
+      
+      // Șterge imaginea veche dacă există
+      const oldFood = await foodModel.findById(id);
+      if (oldFood && oldFood.image) {
+        const oldImagePath = `uploads/${oldFood.image}`;
+        fs.unlink(oldImagePath, (err) => {
+          if (err) {
+            console.error("Error deleting old image:", err);
+          } else {
+            console.log("✅ Old image deleted:", oldFood.image);
+          }
+        });
+      }
+      
+      updateData.image = req.file.filename;
+    } else {
+      console.log("No new image provided, keeping existing image");
+    }
+
+    console.log("Update data:", updateData);
+
+    const product = await foodModel.findByIdAndUpdate(
+      id, 
+      updateData, 
+      {
+        new: true, // Returnează documentul actualizat
+        runValidators: true // Rulează validatori pe update
+      }
+    );
+
+    if (!product) {
+      console.log("❌ Product not found with id:", id);
+      return res.status(404).json({ 
+        success: false, 
+        message: "Product not found" 
+      });
+    }
+
+    console.log("✅ Product updated successfully:", product);
+    res.json({
+      success: true,
+      message: "Product updated successfully!",
+      data: product
+    });
+  } catch (error) {
+    console.error("❌ Error updating product:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Error updating product.", 
+      error: error.message 
+    });
+  }
 };
 
 export { addFood, listFood, removeFood, updateFood };

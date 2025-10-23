@@ -16,10 +16,7 @@ const foodSchema = new mongoose.Schema({
         price: { type: Number, required: true }
       }
     ],
-    default: [
-      { name: "Extra Cheese", price: 1.50 },
-      { name: "Extra Sauce", price: 0.75 }
-    ]
+    default: [] // Asigură-te că este array gol, nu array cu valori default
   }
 });
 

@@ -49,6 +49,7 @@ const CategoryPage = () => {
   // Floating button state
   const [shouldRender, setShouldRender] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  
   const lastScrollY = useRef(0);
   const scrollTimeoutRef = useRef(null);
 
@@ -58,6 +59,47 @@ const CategoryPage = () => {
     (total, count) => total + count,
     0
   );
+
+  // ✅ LOGICĂ NOUĂ - Scroll progresiv pentru header și categorii mobile
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const scrollThreshold = 50;
+
+      // Calculează opacitatea și transformarea pe baza scroll-ului
+      let opacity = 1;
+      let translateY = 0;
+
+      if (currentScrollY > scrollThreshold) {
+        // Scade opacitatea și translate progresiv
+        const progress = Math.min((currentScrollY - scrollThreshold) / 100, 1);
+        opacity = 1 - progress;
+        translateY = -progress * 100; // Se mișcă în sus progresiv
+      }
+
+      // Aplică transformările elementelor
+      const header = document.querySelector('.category-explorer__header');
+      const mobileCategories = document.querySelector('.category-explorer__mobile-categories-scroll');
+      
+      if (header) {
+        header.style.opacity = opacity;
+        header.style.transform = `translateY(${translateY}px)`;
+      }
+      
+      if (mobileCategories) {
+        mobileCategories.style.opacity = opacity;
+        mobileCategories.style.transform = `translateY(${translateY}px)`;
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   // ✅ Funcție pentru a afișa butonul smooth
   const showFloatingButton = () => {
@@ -86,39 +128,38 @@ const CategoryPage = () => {
     }
   }, [cartItemCount]);
 
-  // ✅ Scroll handler cu debounce pentru performanță
-useEffect(() => {
-  const handleScroll = () => {
-    const currentScrollY = window.scrollY;
+  // ✅ Scroll handler cu debounce pentru performanță - PENTRU FLOATING BUTTON
+  useEffect(() => {
+    const handleScrollFloating = () => {
+      const currentScrollY = window.scrollY;
 
-    // Curăță timeout-ul anterior
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-
-    // Setează un nou timeout pentru a evita prea multe actualizări
-    scrollTimeoutRef.current = setTimeout(() => {
-      if (currentScrollY < lastScrollY.current - 50 && shouldRender) {
-        // scroll în sus cu cel puțin 50px - afișează butonul
-        showFloatingButton();
-      } else if (currentScrollY > lastScrollY.current + 50 && isVisible) {
-        // scroll în jos cu cel puțin 50px - ascunde butonul
-        hideFloatingButton();
+      // Curăță timeout-ul anterior
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
       }
 
-      lastScrollY.current = currentScrollY;
-    }, 50);
-  };
+      // Setează un nou timeout pentru a evita prea multe actualizări
+      scrollTimeoutRef.current = setTimeout(() => {
+        if (currentScrollY < lastScrollY.current - 50 && shouldRender) {
+          // scroll în sus cu cel puțin 50px - afișează butonul
+          showFloatingButton();
+        } else if (currentScrollY > lastScrollY.current + 50 && isVisible) {
+          // scroll în jos cu cel puțin 50px - ascunde butonul
+          hideFloatingButton();
+        }
 
-  window.addEventListener("scroll", handleScroll, { passive: true });
-  return () => {
-    window.removeEventListener("scroll", handleScroll);
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-  };
-}, [shouldRender, isVisible]); 
+        lastScrollY.current = currentScrollY;
+      }, 50);
+    };
 
+    window.addEventListener("scroll", handleScrollFloating, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScrollFloating);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [shouldRender, isVisible]); 
 
   // ✅ Curăță timeout-urile la unmount
   useEffect(() => {
@@ -335,15 +376,13 @@ useEffect(() => {
 
   return (
     <div className="category-explorer">
-      {/* Header Section */}
+      {/* Header Section - FĂRĂ CLASA CONDITIONALĂ */}
       <div className="category-explorer__header">
         <div className="category-explorer__header-top">
-          <button
-            onClick={() => navigate("/")}
-            className="category-explorer__back-btn"
-          >
-            <FaArrowLeft />
-          </button>
+         <button className="back-button" onClick={() => navigate(-1)}>
+                  <FaArrowLeft />
+                  <span>Back</span>
+                </button>
 
           <div className="category-explorer__controls">
             <button
@@ -426,7 +465,7 @@ useEffect(() => {
             </div>
 
             {/* Search Suggestions */}
-            {/* <AnimatePresence>
+            <AnimatePresence>
               {showSuggestions && searchSuggestions.length > 0 && (
                 <motion.div
                   className="category-explorer__search-suggestions"
@@ -467,23 +506,12 @@ useEffect(() => {
                   ))}
                 </motion.div>
               )}
-            </AnimatePresence> */}
+            </AnimatePresence>
           </div>
         </div>
       </div>
 
-          {/* Mobile Filter Toggle */}
-      {/* <div className="category-explorer__mobile-filter">
-        <button
-          className="category-explorer__mobile-filter-btn"
-          onClick={() => setShowFilters(!showFilters)}
-        >
-          <FaFilter />
-          Filters {activeFilterCount > 0 && `(${activeFilterCount})`}
-        </button>
-      </div> */}
-
-           {/* ✅ Mobile Horizontal Categories Scroll - DOAR PE TELEFON */}
+      {/* ✅ Mobile Horizontal Categories Scroll - FĂRĂ CLASA CONDITIONALĂ */}
       <div className="category-explorer__mobile-categories-scroll">
         <div className="category-explorer__mobile-categories-container">
           {categories
@@ -519,7 +547,6 @@ useEffect(() => {
             ))}
         </div>
       </div>
-
 
       {/* Main Content */}
       <div className="category-explorer__main">

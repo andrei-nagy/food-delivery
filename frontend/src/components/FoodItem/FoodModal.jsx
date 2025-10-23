@@ -177,35 +177,77 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     const increase = () => setSelectedQuantity(q => q + 1);
     const decrease = () => setSelectedQuantity(q => Math.max(1, q - 1));
     
-    const add = () => {
-        if (selectedOptions.length === 0) {
-            setValidationError("Selectați cel puțin o opțiune");
-            scrollToOptions();
-            return;
-        }
+// ✅ CORECT: Generează ID compatibil cu backend
+const generateCartItemId = () => {
+    // ✅ FOLOSEȘTE food._id care este ID-ul real din MongoDB
+    const baseId = food._id; // ← SCHIMBĂ ASTA!
+    const extrasString = selectedOptions.sort().join(',');
+    
+    // ✅ INCLUDE specialInstructions în ID pentru a crea item-uri separate
+    const instructionsHash = specialInstructions 
+        ? btoa(specialInstructions).substring(0, 8).replace(/=/g, '')
+        : '';
+    
+    if (extrasString && instructionsHash) {
+        return `${baseId}__${btoa(extrasString).replace(/=/g, '')}__${instructionsHash}`;
+    } else if (extrasString) {
+        return `${baseId}__${btoa(extrasString).replace(/=/g, '')}`;
+    } else if (instructionsHash) {
+        return `${baseId}____${instructionsHash}`;
+    } else {
+        return `${baseId}__`;
+    }
+};
+
+    // Calculează prețul total cu extrasele selectate
+    const calculateTotalPrice = () => {
+        let total = food.price * selectedQuantity;
         
+        // Adaugă prețul extraselor selectate
+        selectedOptions.forEach(optionName => {
+            const extra = food.extras?.find(extra => extra.name === optionName);
+            if (extra) {
+                total += extra.price * selectedQuantity;
+            }
+        });
+        
+        return total;
+    };
+
+    // ✅ CORECTAT: Funcție cu debugging extins
+    const handleAddToCart = () => {
         if (!food) {
             console.error("Food object is undefined!");
             closeModal();
             return;
         }
         
-        const foodId = food.id || food._id;
+
+        const cartItemId = generateCartItemId();
+        // Pregătește datele pentru coș
+      const cartItemData = {
+    baseFoodId: food._id, // ← SCHIMBĂ ȘI AICIA!
+    quantity: selectedQuantity,
+    specialInstructions: specialInstructions,
+    selectedOptions: selectedOptions,
+    unitPrice: food.price,
+    extrasPrice: selectedOptions.reduce((total, optionName) => {
+        const extra = food.extras?.find(extra => extra.name === optionName);
+        return total + (extra?.price || 0);
+    }, 0)
+};
         
-        if (!foodId) {
-            console.error("Food ID is undefined!", food);
-            closeModal();
-            return;
-        }
         
-        addToCart(foodId, selectedQuantity, specialInstructions, selectedOptions);
+        // ✅ Trimite specialInstructions către addToCart
+        addToCart(cartItemId, selectedQuantity, specialInstructions, selectedOptions, cartItemData);
         closeModal();
     };
+
 
     const handleAddButton = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        add();
+        handleAddToCart();
     };
 
     const handleQtyButton = (action) => (e) => {
@@ -283,30 +325,30 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                         <p className="food-item-modal-section-content">Orez (120g), creveți tempura (produs decongelat) (45g), castravete (20g), cremă de brânză (25g), iree tobiko (produs decongelat) (10g), mango (15g), sos sriracha (5g), sos de ananas (5g), alge nori (1g) - 246g.</p>
                     </div>
                     
-                    <div className="food-item-modal-remove-section" ref={optionsRef}>
-                        <h3 className="food-item-modal-section-title">Adaugă extra (selectați cel puțin o opțiune)</h3>
-                        <div className="food-item-modal-remove-options">
-                            <label className="food-item-modal-remove-option">
-                                <input 
-                                    type="checkbox" 
-                                    checked={selectedOptions.includes("Creveți tempura")}
-                                    onChange={() => handleOptionChange("Creveți tempura")}
-                                />
-                                <span>Creveți tempura</span>
-                            </label>
-                            <label className="food-item-modal-remove-option">
-                                <input 
-                                    type="checkbox" 
-                                    checked={selectedOptions.includes("Sos sriracha")}
-                                    onChange={() => handleOptionChange("Sos sriracha")}
-                                />
-                                <span>Sos sriracha</span>
-                            </label>
+                    {/* SECȚIUNEA EXTRASELOR DIN BAZA DE DATE */}
+                    {food.extras && food.extras.length > 0 && (
+                        <div className="food-item-modal-remove-section" ref={optionsRef}>
+                            <h3 className="food-item-modal-section-title">Extra opțiuni (opțional)</h3>
+                            <div className="food-item-modal-remove-options">
+                                {food.extras.map((extra) => (
+                                    <label key={extra._id || extra.name} className="food-item-modal-remove-option">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={selectedOptions.includes(extra.name)}
+                                            onChange={() => handleOptionChange(extra.name)}
+                                        />
+                                        <span className="food-item-modal-option-text">
+                                            {extra.name}
+                                            <span className="food-item-modal-option-price">+{extra.price.toFixed(2)} €</span>
+                                        </span>
+                                    </label>
+                                ))}
+                            </div>
+                            {validationError && (
+                                <div className="food-item-modal-error">{validationError}</div>
+                            )}
                         </div>
-                        {validationError && (
-                            <div className="food-item-modal-error">{validationError}</div>
-                        )}
-                    </div>
+                    )}
                     
                     <textarea
                         className="food-item-modal-textarea"
@@ -334,7 +376,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                             onClick={handleAddButton}
                             onTouchEnd={handleAddButton}
                         >
-                            Adaugă {(food.price * selectedQuantity).toFixed(2)} €
+                            Adaugă {calculateTotalPrice().toFixed(2)} €
                         </button>
                     </div>
                 </div>
