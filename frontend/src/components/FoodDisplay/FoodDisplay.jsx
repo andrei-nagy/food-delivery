@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 import FoodModal from "../FoodItem/FoodModal";
 import { motion } from "framer-motion";
 import FoodItemBestSeller from "../FoodItem/FoodItemBestSeller";
+import { assets } from '../../assets/assets'
 
 // ✅ Swiper imports
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -39,6 +40,27 @@ const FoodDisplay = ({ category }) => {
 
   const { t } = useTranslation();
 
+  // Funcție pentru placeholder-uri bazate pe categorie
+const getFoodPlaceholder = (category) => {
+  const placeholders = {
+    'Pizza': '🍕',
+    'Burger': '🍔', 
+    'Salad': '🥗',
+    'Pasta': '🍝',
+    'Dessert': '🍰',
+    'Drink': '🥤',
+    'Soup': '🍲',
+    'Breakfast': '🥞',
+    'Asian': '🍜',
+    'Mexican': '🌮'
+  };
+  
+  const emoji = placeholders[category] || '🍽️';
+  return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='150' viewBox='0 0 200 150'><rect width='200' height='150' fill='%23f8f9fa'/><text x='100' y='75' font-family='Arial' font-size='40' text-anchor='middle' dominant-baseline='middle'>${emoji}</text></svg>`;
+};
+
+// Sau folosește acest URL pentru o imagine generică
+const GENERIC_FOOD_PLACEHOLDER = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop";
   // ✅ Funcție pentru a afișa butonul smooth
   const showFloatingButton = () => {
     setIsVisible(true);
@@ -172,6 +194,7 @@ const FoodDisplay = ({ category }) => {
                         setSelectedFood(food);
                         setIsModalOpen(true);
                       }}
+                     
                     />
                   </div>
                 </SwiperSlide>

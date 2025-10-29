@@ -1,29 +1,35 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search } from "lucide-react";
+import { Search, Filter } from "lucide-react";
 import axios from "axios";
-import { toast } from "react-toastify"; // Ensure you have react-toastify installed
+import { toast } from "react-toastify";
 import { useUrl } from "../context/UrlContext";
 import { useNavigate } from "react-router-dom";
 
 const OrdersToCloseTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [columnFilters, setColumnFilters] = useState({
+    tableNo: "",
+    paymentMethod: "",
+    status: "",
+    date: "",
+    tableStatus: ""
+  });
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [combinedOrders, setCombinedOrders] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [showNotification, setShowNotification] = useState(false); // State pentru notificare
-  const [isModalOpen, setIsModalOpen] = useState(false); // Stare pentru a deschide/inchide modalul
-  const [selectedOrderItems, setSelectedOrderItems] = useState([]); // Stare pentru a stoca produsele selectate
-  const [selectedOrder, setSelectedOrder] = useState(null); // Adaugă această linie
-  const [relatedOrders, setRelatedOrders] = useState([]); // Stare pentru comenzile legate de tableNo
+  const [showNotification, setShowNotification] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOrderItems, setSelectedOrderItems] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [relatedOrders, setRelatedOrders] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedTableNo, setSelectedTableNo] = useState(null);
   const [selectedToken, setSelectedToken] = useState(null);
 
   const navigate = useNavigate();
-
   const { url } = useUrl();
-  const ordersPerPage = 10; // Number of orders per page
+  const ordersPerPage = 10;
 
   // Fetch orders and users from the API
   const fetchData = async () => {
@@ -57,7 +63,6 @@ const OrdersToCloseTable = () => {
         );
 
         setCombinedOrders(sortedCombined);
-        setFilteredOrders(sortedCombined);
         // Apelarea lui getUniqueUsers aici
         const uniqueUsers = getUniqueUsers(sortedCombined);
         setFilteredOrders(uniqueUsers);
@@ -76,33 +81,97 @@ const OrdersToCloseTable = () => {
       fetchData();
     }, 5000);
     return () => clearInterval(intervalId);
-  }, []); // Schimbă dependențele aici
+  }, []);
 
-  // Handle Search
+  // Handle Global Search
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
-    setCurrentPage(1);
+    applyFilters(term, columnFilters);
+  };
 
-    const filtered = combinedOrders.filter((order) => {
-      const orderNumber = order.orderNumber ? String(order.orderNumber) : "";
-      const tableNo = order.tableNo ? String(order.tableNo) : "";
-      const status = order.status ? String(order.status) : "";
-      const date = order.date
-        ? new Date(order.date).toLocaleDateString("ro-RO")
-        : "";
-      const userName = order.user?.name?.toLowerCase() || "";
+  // Handle Column Filtering
+  const handleColumnFilter = (column, value) => {
+    const newFilters = {
+      ...columnFilters,
+      [column]: value.toLowerCase()
+    };
+    setColumnFilters(newFilters);
+    applyFilters(searchTerm, newFilters);
+  };
 
-      return (
-        orderNumber.toLowerCase().includes(term) ||
-        tableNo.toLowerCase().includes(term) ||
-        status.toLowerCase().includes(term) ||
-        date.includes(term) ||
-        userName.includes(term)
+  // Function to apply all filters
+  const applyFilters = (globalSearch, columnFilters) => {
+    let filtered = getUniqueUsers(combinedOrders);
+
+    // Global search
+    if (globalSearch) {
+      filtered = filtered.filter((userOrder) => {
+        const tableNo = userOrder.tableNo ? String(userOrder.tableNo) : "";
+        const paymentMethod = userOrder.paymentMethod ? String(userOrder.paymentMethod) : "";
+        const status = userOrder.status ? String(userOrder.status) : "";
+        const date = userOrder.date ? new Date(userOrder.date).toLocaleDateString("ro-RO") : "";
+        const tableStatus = userOrder.user?.isActive ? "in service" : "closed";
+
+        return (
+          tableNo.toLowerCase().includes(globalSearch) ||
+          paymentMethod.toLowerCase().includes(globalSearch) ||
+          status.toLowerCase().includes(globalSearch) ||
+          date.includes(globalSearch) ||
+          tableStatus.includes(globalSearch)
+        );
+      });
+    }
+
+    // Column filters
+    if (columnFilters.tableNo) {
+      filtered = filtered.filter(userOrder => 
+        userOrder.tableNo?.toString().toLowerCase().includes(columnFilters.tableNo)
       );
-    });
+    }
+
+    if (columnFilters.paymentMethod) {
+      filtered = filtered.filter(userOrder => 
+        userOrder.paymentMethod?.toLowerCase().includes(columnFilters.paymentMethod)
+      );
+    }
+
+    if (columnFilters.status) {
+      filtered = filtered.filter(userOrder => 
+        userOrder.status?.toLowerCase().includes(columnFilters.status)
+      );
+    }
+
+    if (columnFilters.date) {
+      filtered = filtered.filter(userOrder => 
+        new Date(userOrder.date).toLocaleDateString("ro-RO").includes(columnFilters.date)
+      );
+    }
+
+    if (columnFilters.tableStatus) {
+      filtered = filtered.filter(userOrder => {
+        const tableStatus = userOrder.user?.isActive ? "in service" : "closed";
+        return tableStatus.includes(columnFilters.tableStatus);
+      });
+    }
 
     setFilteredOrders(filtered);
+    setCurrentPage(1);
+  };
+
+  // Reset all filters
+  const resetFilters = () => {
+    setSearchTerm("");
+    setColumnFilters({
+      tableNo: "",
+      paymentMethod: "",
+      status: "",
+      date: "",
+      tableStatus: ""
+    });
+    const uniqueUsers = getUniqueUsers(combinedOrders);
+    setFilteredOrders(uniqueUsers);
+    setCurrentPage(1);
   };
 
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
@@ -110,11 +179,11 @@ const OrdersToCloseTable = () => {
   // Get CSS class for status
   const getStatusClass = (isActive) => {
     if (isActive === true) {
-      return "bg-green-500"; // Verde pentru utilizatorii activi
+      return "bg-green-500";
     } else if (isActive === false) {
-      return "bg-red-500"; // Roșu pentru utilizatorii inactivi
+      return "bg-red-500";
     } else {
-      return "bg-gray-500"; // Gri pentru statusuri necunoscute
+      return "bg-gray-500";
     }
   };
 
@@ -126,10 +195,9 @@ const OrdersToCloseTable = () => {
       if (order.userId && !userMap.has(order.userId)) {
         userMap.set(order.userId, {
           ...order,
-          orderCount: 1, // Track number of orders per user if needed
+          orderCount: 1,
         });
       } else if (userMap.has(order.userId)) {
-        // If user already exists, just increment count or do any other logic
         userMap.get(order.userId).orderCount++;
       }
     });
@@ -149,7 +217,7 @@ const OrdersToCloseTable = () => {
 
       if (response.data.success) {
         toast.success("User status updated successfully.", { theme: "dark" });
-        fetchData(); // Refresh data after update
+        fetchData();
       } else {
         toast.error("Failed to update user status.", { theme: "dark" });
       }
@@ -163,7 +231,6 @@ const OrdersToCloseTable = () => {
     userId,
     newIsActiveStatus
   ) => {
-    // 1. Actualizează statusul de plată pentru toate comenzile
     const promises = relatedOrders.map((order) =>
       axios.post(`${url}/api/order/payment-status`, {
         orderId: order._id,
@@ -175,20 +242,16 @@ const OrdersToCloseTable = () => {
       const results = await Promise.all(promises);
       const success = results.every((result) => result.data.success);
 
-      // 2. Dacă actualizarea statusului de plată a fost un succes
       if (success) {
         toast.success("Payment status updated successfully for all orders.", {
           theme: "dark",
         });
 
-        // 3. Apelează funcția pentru a actualiza statusul utilizatorului
         await handleIsActiveChange(userId, newIsActiveStatus);
-
-        // 4. Refresh data after update
-        fetchData(); // Refresh data after update
+        fetchData();
         setRelatedOrders(
           (prevOrders) =>
-            prevOrders.map((order) => ({ ...order, payment: paymentStatus })) // Actualizează statusul plății în starea locală
+            prevOrders.map((order) => ({ ...order, payment: paymentStatus }))
         );
       } else {
         toast.error("Failed to update payment status for some orders.", {
@@ -209,7 +272,6 @@ const OrdersToCloseTable = () => {
       });
 
       if (response.data.success) {
-        // Update the related orders in local state
         setRelatedOrders((prevOrders) =>
           prevOrders.map((order) =>
             order._id === orderId ? { ...order, payment: paymentStatus } : order
@@ -218,7 +280,7 @@ const OrdersToCloseTable = () => {
         toast.success("Payment status updated successfully.", {
           theme: "dark",
         });
-        fetchData(); // Refresh data after update, if necessary
+        fetchData();
       } else {
         toast.error("Failed to update payment status.", { theme: "dark" });
       }
@@ -228,19 +290,16 @@ const OrdersToCloseTable = () => {
   };
 
   // Function to handle opening the modal and setting the selected order items
-
   const handleCheckOrderClick = (userOrder) => {
     console.log("User order object:", userOrder);
 
     setSelectedUserId(userOrder.userId);
     setSelectedTableNo(userOrder.tableNo);
 
-    // Verifică mai întâi dacă userOrder.user există
     if (userOrder.user && userOrder.user.token) {
       setSelectedToken(userOrder.user.token);
       console.log("Token set from user object:", userOrder.user.token);
     } else {
-      // Fallback: ia token-ul din localStorage dacă nu există în user object
       const fallbackToken = localStorage.getItem("token");
       setSelectedToken(fallbackToken);
       console.log("Using fallback token from localStorage:", fallbackToken);
@@ -252,6 +311,7 @@ const OrdersToCloseTable = () => {
     setRelatedOrders(ordersForUser);
     setIsModalOpen(true);
   };
+
   // Function to close modal
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -280,7 +340,7 @@ const OrdersToCloseTable = () => {
         <div className="relative">
           <input
             type="text"
-            placeholder="Search orders..."
+            placeholder="Search all orders..."
             className="bg-gray-700 text-white placeholder-gray-400 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={searchTerm}
             onChange={handleSearch}
@@ -289,32 +349,84 @@ const OrdersToCloseTable = () => {
         </div>
       </div>
 
+      {/* Reset filters button */}
+      {(searchTerm || Object.values(columnFilters).some(filter => filter !== "")) && (
+        <div className="mb-4">
+          <button
+            onClick={resetFilters}
+            className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-500 transition-colors"
+          >
+            Reset All Filters
+          </button>
+        </div>
+      )}
+
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-700">
           <thead>
             <tr>
-              {/* <th className='px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>
-                                Order Number
-                            </th> */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Table No.
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1">
+                    <Filter size={14} />
+                    Table No.
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Filter table..."
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={columnFilters.tableNo}
+                    onChange={(e) => handleColumnFilter('tableNo', e.target.value)}
+                  />
+                </div>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Payment Method
+                <div className="space-y-2">
+                  <div>Payment Method</div>
+                  <input
+                    type="text"
+                    placeholder="Filter method..."
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={columnFilters.paymentMethod}
+                    onChange={(e) => handleColumnFilter('paymentMethod', e.target.value)}
+                  />
+                </div>
               </th>
-              {/* <th className='px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>
-                                Payment
-                            </th> */}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Status
+                <div className="space-y-2">
+                  <div>Status</div>
+                  <input
+                    type="text"
+                    placeholder="Filter status..."
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={columnFilters.status}
+                    onChange={(e) => handleColumnFilter('status', e.target.value)}
+                  />
+                </div>
               </th>
-
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Date
+                <div className="space-y-2">
+                  <div>Date</div>
+                  <input
+                    type="text"
+                    placeholder="Filter date..."
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={columnFilters.date}
+                    onChange={(e) => handleColumnFilter('date', e.target.value)}
+                  />
+                </div>
               </th>
-
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Table status
+                <div className="space-y-2">
+                  <div>Table status</div>
+                  <input
+                    type="text"
+                    placeholder="Type 'in service' or 'closed'"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={columnFilters.tableStatus}
+                    onChange={(e) => handleColumnFilter('tableStatus', e.target.value)}
+                  />
+                </div>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                 Items
@@ -329,52 +441,33 @@ const OrdersToCloseTable = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
-                className="border-b border-gray-700" // Adaugă un border între rânduri
+                className="border-b border-gray-700"
               >
-                {/* <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>
-                                    {order.orderNumber || "Unknown"}
-                                </td> */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
-                  <div className="h-10 w-10 rounded-lg border-2 border-gray-700  flex items-center justify-center text-white font-semibold hover:bg-gray-700 focus:ring-2 focus:ring-blue-100 focus:outline-none">
-                    {userOrder.tableNo} {/* Display tableNo */}
+                  <div className="h-10 w-10 rounded-lg border-2 border-gray-700 flex items-center justify-center text-white font-semibold hover:bg-gray-700 focus:ring-2 focus:ring-blue-100 focus:outline-none">
+                    {userOrder.tableNo}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
-                  {userOrder.paymentMethod || "Unknown"}{" "}
-                  {/* Display paymentMethod */}
+                  {userOrder.paymentMethod || "Unknown"}
                 </td>
-                {/* <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>
-
-
-                                    <select
-                                        onChange={(e) => handlePaymentStatusChange(order._id, e.target.value === "true")} // Trimite orderId și noul status de plată
-                                        value={order.payment ? "true" : "false"} // Valoarea actuală a statusului plății
-                                        className={`text-white rounded-lg p-2 ${getStatusClass(order.payment)}`} // Stilizare în funcție de status
-                                    >
-                                        <option value="true">Successfull</option>
-                                        <option value="false">Not paid</option>
-                                    </select>
-                                </td> */}
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
                   {userOrder.status}
                 </td>
-
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
-                  {new Date(userOrder.date).toLocaleDateString("ro-RO")}{" "}
-                  {/* Display date in format day/month/year */}
+                  {new Date(userOrder.date).toLocaleDateString("ro-RO")}
                 </td>
-
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
                   {userOrder.user?.isActive ? (
-                    <span className="text-green-500">In service</span> // If payment is true, show green text
+                    <span className="text-green-500">In service</span>
                   ) : (
-                    <span className="text-red-500">Closed</span> // If payment is false, show red text
+                    <span className="text-red-500">Closed</span>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                   <button
                     className="bg-gray-800 text-white font-semibold rounded-md px-6 py-3 border-2 border-gray-700 hover:bg-gray-700 focus:ring-2 focus:ring-blue-100 focus:outline-none"
-                    onClick={() => handleCheckOrderClick(userOrder)} // Pass order items to the function
+                    onClick={() => handleCheckOrderClick(userOrder)}
                   >
                     Close order
                   </button>
@@ -383,29 +476,38 @@ const OrdersToCloseTable = () => {
             ))}
           </tbody>
         </table>
+
+        {/* No results message */}
+        {currentUsers.length === 0 && (
+          <div className="text-center py-8 text-gray-400">
+            No orders found matching your filters.
+          </div>
+        )}
       </div>
+
       {/* Pagination */}
-      <div className="flex justify-center mt-4">
-        {Array.from({ length: totalPages }, (_, index) => (
-          <button
-            key={index + 1}
-            onClick={() => paginate(index + 1)}
-            className={`mx-1 px-3 py-1 rounded ${
-              currentPage === index + 1
-                ? "bg-blue-600 text-white"
-                : "bg-gray-700 text-gray-300"
-            }`}
-          >
-            {index + 1}
-          </button>
-        ))}
-      </div>
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-4">
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index + 1}
+              onClick={() => paginate(index + 1)}
+              className={`mx-1 px-3 py-1 rounded ${
+                currentPage === index + 1
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Modal for related orders */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-gray-800 rounded-lg p-6 relative">
-            {" "}
-            {/* Adăugat relative pentru a poziționa butonul Close */}
+          <div className="bg-gray-800 rounded-lg p-6 relative max-w-6xl max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-semibold text-gray-100 mb-4">
               Related Orders for Table {selectedTableNo}
             </h2>
@@ -460,18 +562,10 @@ const OrdersToCloseTable = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
                       {order.payment ? (
-                        <span className="text-green-500">Successful</span> // If payment is true, show green text
+                        <span className="text-green-500">Successful</span>
                       ) : (
-                        <span className="text-red-500">Not paid</span> // If payment is false, show red text
+                        <span className="text-red-500">Not paid</span>
                       )}
-                      {/* <select
-                                                onChange={(e) => handlePaymentStatusChange(order._id, e.target.value === "true")}
-                                                value={order.payment ? "true" : "false"}
-                                                className={`text-white rounded-lg p-2 ${getStatusClass(order.payment)}`}
-                                            >
-                                                <option value="true">Successfull</option>
-                                                <option value="false">Not paid</option>
-                                            </select> */}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
                       {order.status || "Unknown"}
@@ -485,12 +579,12 @@ const OrdersToCloseTable = () => {
               </tbody>
             </table>
             <button
-              className="absolute top-4 right-4 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-700 border-2 border-red-500" // Buton Close
+              className="absolute top-4 right-4 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-700 border-2 border-red-500"
               onClick={handleCloseModal}
-              aria-label="Close" // Adaugă un atribut pentru accesibilitate
+              aria-label="Close"
             >
               <svg
-                className="w-5 h-5" // Dimensiunea icon-ului
+                className="w-5 h-5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -508,7 +602,6 @@ const OrdersToCloseTable = () => {
               <button
                 className="bg-gray-800 text-white font-semibold rounded-md px-6 py-3 border-2 border-gray-700 hover:bg-gray-700 focus:ring-2 focus:ring-blue-100 focus:outline-none"
                 onClick={() => {
-                  // Folosește selectedToken dacă este disponibil
                   const tokenToUse =
                     selectedToken || localStorage.getItem("token");
                   navigate(
@@ -519,7 +612,7 @@ const OrdersToCloseTable = () => {
                 Add more products
               </button>
               <button
-                className="bg-green-600 text-white font-semibold rounded-md px-6 py-3 border-2 border-gray-700 hover:bg-green-700 focus:ring-2 focus:ring-blue-100 focus:outline-none " // Buton Order completed
+                className="bg-green-600 text-white font-semibold rounded-md px-6 py-3 border-2 border-gray-700 hover:bg-green-700 focus:ring-2 focus:ring-blue-100 focus:outline-none"
                 onClick={() =>
                   handleAllPaymentStatusChange(true, selectedUserId, false)
                 }
@@ -533,4 +626,5 @@ const OrdersToCloseTable = () => {
     </motion.div>
   );
 };
+
 export default OrdersToCloseTable;

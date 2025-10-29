@@ -2,20 +2,36 @@ import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
 import OrderCounter from "../models/orderCounter.js";
 import Stripe from "stripe";
+import dotenv from 'dotenv';
+import { clearUserCart } from "./cartHelper.js";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+dotenv.config();
+
+const stripeKey = process.env.STRIPE_SECRET_KEY;
+const stripe = new Stripe(stripeKey);
+
+// ✅ Funcție helper care primește req ca parametru
+const getBaseUrl = (req) => {
+    const origin = req.headers.origin;
+    
+    if (origin) {
+        return origin;
+    }
+    
+    const host = req.headers.host;
+    if (host) {
+        const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
+        const protocol = isLocalhost ? 'http' : 'https';
+        return `${protocol}://${host}`;
+    }
+    
+    return "http://localhost:5173";
+};
 
 const placeOrder = async (req, res) => {
-  const getFrontendUrl = () => {
-        const origin = req.get('origin') || req.get('referer') || '';
-        
-        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-            return "http://localhost:3000";
-        }
-        return "https://orderly-app.com"; // SAU domeniul tău real de frontend
-    };
-
-    const frontend_url = getFrontendUrl();
+    // ✅ Folosește funcția cu req ca parametru
+    const frontend_url = getBaseUrl(req);
+    
     try {
         let counter = await OrderCounter.findOne();
 
@@ -42,10 +58,7 @@ const placeOrder = async (req, res) => {
         counter.counter += 1;
         await counter.save();
 
-        // ✅ ȘTERGE cartItems după salvarea comenzii
-        if (req.body.userId) {
-            await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} });
-        }
+        // ✅ NU se șterge coșul aici pentru card - se va șterge doar după plată cu succes
 
         const line_items = req.body.items.map((item) => ({
             price_data: {
@@ -53,7 +66,7 @@ const placeOrder = async (req, res) => {
                 product_data: {
                     name: 'Total Amount'
                 },
-                unit_amount: req.body.amount * 100 * 4.5
+                unit_amount: Math.round(req.body.amount * 100 * 5.08)
             },
             quantity: 1
         }));
@@ -70,7 +83,7 @@ const placeOrder = async (req, res) => {
             session_url: session.url
         });
     } catch (error) {
-        console.log(error);
+        console.log("🔴 Error in placeOrder:", error);
         res.json({
             success: false,
             message: "Error placing order"
@@ -79,19 +92,8 @@ const placeOrder = async (req, res) => {
 };
 
 const payOrder = async (req, res) => {
-    // ✅ Folosește aceeași logică ca în frontend
-    const getFrontendUrl = () => {
-        const origin = req.get('origin') || req.get('referer') || '';
-        
-        // Dacă e localhost, folosește localhost:3000 (frontend)
-        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-            return "http://localhost:3000";
-        }
-        // Altfol folosește domeniul de producție
-        return "https://orderly-app.com"; // SAU "https://api.orderly-app.com" dacă asta e frontend-ul tău
-    };
-
-    const frontend_url = getFrontendUrl();
+    // ✅ Folosește funcția cu req ca parametru
+    const frontend_url = getBaseUrl(req);
 
     try {
         const { orders, amount, userId } = req.body;
@@ -100,10 +102,7 @@ const payOrder = async (req, res) => {
             return res.status(400).json({ success: false, message: "No orders provided." });
         }
 
-        // ✅ ȘTERGE cartItems pentru utilizator
-        if (userId) {
-            await userModel.findByIdAndUpdate(userId, { cartData: {} });
-        }
+        // ✅ NU se șterge coșul aici pentru card
 
         const line_items = [{
             price_data: {
@@ -111,7 +110,7 @@ const payOrder = async (req, res) => {
                 product_data: {
                     name: `Total for orders: ${orders.join(", ")}`,
                 },
-                unit_amount: Math.round(amount * 100 * 4.5) // ✅ Adaugă Math.round
+                unit_amount: Math.round(amount * 100 * 5.08)
             },
             quantity: 1
         }];
@@ -123,12 +122,12 @@ const payOrder = async (req, res) => {
             cancel_url: `${frontend_url}/verify?success=false`,
         });
 
-        console.log("🟢 [payOrder] Stripe session created for:", frontend_url);
-        
         res.json({
             success: true,
             session_url: session.url
         });
+        const result = await clearUserCart(userId);
+
     } catch (error) {
         console.log("🔴 [payOrder] Error:", error);
         res.json({
@@ -165,7 +164,7 @@ const placeOrderCash = async (req, res) => {
         counter.counter += 1;
         await counter.save();
 
-        // ✅ ȘTERGE cartItems după salvarea comenzii
+        // ✅ ȘTERGE cartItems după salvarea comenzii - pentru cash
         if (req.body.userId) {
             await userModel.findByIdAndUpdate(req.body.userId, { cartData: {} });
         }
@@ -181,6 +180,56 @@ const placeOrderCash = async (req, res) => {
             success: false,
             message: "Error placing order"
         });
+    }
+};
+
+const verifyOrder = async (req, res) => {
+    const { orderId, success, orderIds } = req.body;
+    try {
+        if (success == "true") {
+            // Procesează un singur orderId
+            if (orderId) {
+                await orderModel.findByIdAndUpdate(orderId, { payment: true });
+                const order = await orderModel.findById(orderId);
+                
+                // Șterge cart-ul pentru utilizatorul comenzii
+                if (order && order.userId) {
+                    const result = await clearUserCart(order.userId);
+                    console.log(`✅ Cart cleared for user ${order.userId}:`, result);
+                }
+            }
+            
+            // Procesează multiple orderIds (pentru payOrder)
+            if (orderIds) {
+                const orderIdArray = orderIds.split(',');
+                for (const id of orderIdArray) {
+                    await orderModel.findByIdAndUpdate(id, { payment: true });
+                    const order = await orderModel.findById(id);
+                    
+                    if (order && order.userId) {
+                        const result = await clearUserCart(order.userId);
+                        console.log(`✅ Cart cleared for user ${order.userId}:`, result);
+                    }
+                }
+            }
+            
+            res.json({ success: true, message: "Paid" });
+        } else {
+            // Șterge comenziile dacă plata a eșuat
+            if (orderId) {
+                await orderModel.findByIdAndDelete(orderId);
+            }
+            if (orderIds) {
+                const orderIdArray = orderIds.split(',');
+                for (const id of orderIdArray) {
+                    await orderModel.findByIdAndDelete(id);
+                }
+            }
+            res.json({ success: false, message: "Not Paid" });
+        }
+    } catch (error) {
+        console.log("🔴 Error in verifyOrder:", error);
+        res.json({ success: false, message: "Error verifying order" });
     }
 };
 
@@ -211,22 +260,6 @@ const updateOrderRating = async (req, res) => {
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: "Error updating rating" });
-    }
-};
-
-const verifyOrder = async (req, res) => {
-    const { orderId, success } = req.body;
-    try {
-        if (success == "true") {
-            await orderModel.findByIdAndUpdate(orderId, { payment: true });
-            res.json({ success: true, message: "Paid" });
-        } else {
-            await orderModel.findByIdAndDelete(orderId);
-            res.json({ success: false, message: "Not Paid" });
-        }
-    } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error verifying order" });
     }
 };
 

@@ -1,44 +1,5 @@
- 
-  .thank-you-container h1 {
-    color: #38a169;
-    font-size: 2.2rem;
-  }
-  
-  .thank-you-container p {
-    color: #333;
-    font-size: 1.2rem;
-  }
-  
+/* ThankYou.css - Simplified Compact Version */
 
-  .thank-you-buttons {
-    margin-top: 20px;
-  }
-  
-  .thank-you-buttons button {
-    color: white;
-    background-color: tomato;
-    font-size: 16px;
-    border: 2px solid tomato;
-    padding: 10px 30px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  
-  .thank-you-buttons button:hover {
-    background-color: #0056b3;
-  }
- 
-  
-  .star.filled {
-    color: #ffc107;
-  }
-  
-  .star:hover {
-    color: #ff9800;
-  }
-  
-/* ThankYou.css - Only affects the ThankYou component */
 .thank-you-fullscreen {
   position: fixed;
   top: 0;
@@ -48,102 +9,255 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(255, 255, 255, 0.95);
   z-index: 1000;
-  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  background: #ffffff;
+  padding: 20px;
 }
 
 .thank-you-container {
-  background: white;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  max-width: 380px;
+  width: 100%;
   text-align: center;
-  max-width: 550px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  margin: 20px;
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+/* Success Header */
+.success-header {
+  margin-bottom: 2rem;
+}
+
+.success-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin: 1rem 0 0.5rem 0;
+  line-height: 1.1;
+  color: #1d1d1f;
+}
+
+.success-header p {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #86868b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Success Icon */
+.success-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+/* Success Content */
+.success-content {
+  margin-bottom: 1.5rem;
+}
+
+.success-message p {
+  font-size: 1.1rem;
+  color: #515154;
+  margin: 0.5rem 0;
+  line-height: 1.5;
+}
+
+.bon-appetit {
+  font-size: 1.2rem !important;
+  font-weight: 600;
+  color: #e86514 !important;
+  margin: 0.5rem 0 !important;
+}
+
+/* Countdown Section */
+.countdown-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.countdown-circle {
+  width: 48px;
+  height: 48px;
+  border: 1.5px solid rgba(232, 101, 20, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e86514;
+  background: rgba(232, 101, 20, 0.05);
+}
+
+.countdown-section p {
+  font-size: 0.85rem;
+  color: #86868b;
+  margin: 0;
+}
+
+/* Rating Section */
+.rating-section {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  background: rgba(232, 101, 20, 0.03);
+  border-radius: 16px;
+  border: 1px solid rgba(232, 101, 20, 0.1);
+}
+
+.rating-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin: 0 0 1rem 0;
 }
 
 .star-rating {
   display: flex;
   justify-content: center;
-  gap: 8px;
-  margin: 15px 0;
+  gap: 0.4rem;
+  margin: 1rem 0;
 }
 
 .star {
-  font-size: 2.2rem;
-  color: #ddd;
-  transition: color 0.2s ease;
+  font-size: 2rem;
+  color: #e5e5e7;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  cursor: pointer;
 }
 
 .star.filled {
-  color: #FFD700;
+  color: #e86514;
 }
 
-.thank-you-buttons button {
+.star:hover:not(.filled) {
+  color: #ffa726;
+  transform: scale(1.1);
+}
+
+.rating-thank-you {
+  font-size: 0.9rem;
+  color: #e86514;
+  font-weight: 600;
+  margin: 0.5rem 0 0 0;
+}
+
+/* Action Section */
+.action-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.home-button {
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   background: #38a169;
   color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.loading-spinner {
-  display: flex;
-  justify-content: center;
+  display: inline-flex;
   align-items: center;
-  height: 150px;
-  font-size: 1.2rem;
-  color: #666;
+  justify-content: center;
 }
 
-/* Responsive adjustments */
-@media (max-height: 700px) {
-  .thank-you-container {
-    padding: 20px;
-    max-height: 95vh;
-  }
-  
-  .star {
-    font-size: 1.8rem;
-  }
+.home-button:hover {
+  background: #30b352;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
 }
 
+/* Footer */
+.footer {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.footer p {
+  color: #86868b;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* Loading State */
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  border-top: 2px solid #38a169;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-content p {
+  color: #86868b;
+  font-size: 1rem;
+  margin: 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
 @media (max-width: 480px) {
   .thank-you-container {
-    padding: 15px;
+    padding: 1.5rem;
+    border-radius: 16px;
+    max-width: 320px;
   }
   
-  .thank-you-container h1 {
-    font-size: 1.5rem;
+  .success-header h1 {
+    font-size: 1.75rem;
+  }
+  
+  .success-header p {
+    font-size: 1rem;
+  }
+  
+  .home-button {
+    padding: 0.875rem 1.25rem;
+    font-size: 0.95rem;
+  }
+  
+  .countdown-circle {
+    width: 42px;
+    height: 42px;
+    font-size: 0.9rem;
+  }
+  
+  .rating-section {
+    padding: 1.25rem;
+    margin: 1.25rem 0;
   }
   
   .star {
-    font-size: 1.6rem;
-  }
-  
-  .thank-you-buttons button {
-    padding: 10px 20px;
-    font-size: 0.9rem;
+    font-size: 1.75rem;
   }
 }
 
-.countdown-message {
-  margin: 15px 0;
-  padding: 10px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  border-left: 4px solid #4CAF50;
-}
-
-.countdown-message p {
-  margin: 0;
-  color: #495057;
-  font-size: 0.95rem;
+/* Ensure no body scroll */
+body.thank-you-open {
+  overflow: hidden;
 }

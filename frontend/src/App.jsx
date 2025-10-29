@@ -9,7 +9,7 @@ import PlaceOrder from "./pages/PlaceOrder/PlaceOrder";
 import LoginPopup from "./components/LoginPopup/LoginPopup";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Verify from "./pages/Verify/Verify";
+import Verify from "./pages/VerifyPayment/Verify";
 import MyOrders from "./pages/MyOrders/MyOrders";
 import ThankYou from "./pages/ThankYou/ThankYou";
 import Loading from "./components/Loading/Loading";

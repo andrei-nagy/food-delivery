@@ -64,8 +64,6 @@ const getCartByTable = async (req, res) => {
     try {
         const { tableNumber } = req.body;
         
-        console.log("🔍 [getCartByTable] START - Table:", tableNumber);
-
         // ✅ CAUTĂ DOAR USERII ACTIVI pentru această masă
         const user = await userModel.findOne({ 
             tableNumber: tableNumber, 
@@ -73,15 +71,8 @@ const getCartByTable = async (req, res) => {
         });
         
         if (!user) {
-            console.log("❌ [getCartByTable] No ACTIVE user found for table:", tableNumber);
             return res.json({ success: true, cartData: {} });
         }
-
-        console.log("✅ [getCartByTable] Active user found:", {
-            id: user._id,
-            cartItemsCount: Object.keys(user.cartData || {}).length
-        });
-
         res.json({ 
             success: true, 
             cartData: user.cartData || {},
@@ -90,7 +81,6 @@ const getCartByTable = async (req, res) => {
         });
         
     } catch (error) {
-        console.log("❌ [getCartByTable] ERROR:", error);
         res.status(500).json({ success: false, message: "Error" });
     }
 };
@@ -99,10 +89,8 @@ const addToCartByTable = async (req, res) => {
   try {
     const { tableNumber, itemId, quantity, specialInstructions, selectedOptions, itemData } = req.body;
     
-    console.log("🛒 [addToCartByTable] START - Table:", tableNumber, "Item:", itemId);
 
     if (!tableNumber || !itemId) {
-      console.log("❌ [addToCartByTable] Missing tableNumber or itemId");
       return res.json({ success: false, message: "Table number and item ID are required" });
     }
 
@@ -112,10 +100,9 @@ const addToCartByTable = async (req, res) => {
       isActive: true 
     });
     
-    console.log("👤 [addToCartByTable] Active user found:", user ? user._id : "NONE");
 
+    
     if (!user) {
-      console.log("✅ [addToCartByTable] No active user, creating new one...");
       const randomEmail = Math.random().toString(36).substring(2, 10) + "@table.com";
       const randomPassword = Math.random().toString(36).substring(2);
       
@@ -130,12 +117,10 @@ const addToCartByTable = async (req, res) => {
       });
       
       await user.save();
-      console.log("✅ [addToCartByTable] New active user created:", user._id);
     }
 
     let cartData = user.cartData || {};
     
-    console.log("📦 [addToCartByTable] BEFORE - Cart items:", Object.keys(cartData).length);
 
     const newItemData = {
       quantity: quantity || 1,
@@ -158,7 +143,6 @@ const addToCartByTable = async (req, res) => {
       };
     }
 
-    console.log("📦 [addToCartByTable] AFTER - Cart items:", Object.keys(cartData).length);
 
     const updatedUser = await userModel.findByIdAndUpdate(
       user._id,
@@ -166,7 +150,6 @@ const addToCartByTable = async (req, res) => {
       { new: true }
     );
     
-    console.log("💾 [addToCartByTable] Database saved successfully");
     
     res.json({ 
       success: true, 
@@ -176,7 +159,6 @@ const addToCartByTable = async (req, res) => {
     });
     
   } catch (error) {
-    console.log("❌ [addToCartByTable] ERROR:", error);
     res.json({ success: false, message: "Error" });
   }
 };
@@ -272,15 +254,11 @@ const getCart = async (req, res) => {
 
 const clearCart = async (req, res) => {
   try {
-    console.log("🔥 [CART_CONTROLLER] START clearCart");
-    console.log("🔥 [CART_CONTROLLER] Request body:", req.body);
-    
+
     const { userId } = req.body;
     
-    console.log("🔥 [CART_CONTROLLER] UserID:", userId);
     
     if (!userId) {
-      console.log("❌ [CART_CONTROLLER] No user ID provided");
       return res.json({ success: false, message: "User ID is required" });
     }
     
@@ -288,36 +266,27 @@ const clearCart = async (req, res) => {
 
     if (userId.startsWith('table_')) {
       const tableNumber = userId.replace('table_', '');
-      console.log("🍽️ [CART_CONTROLLER] Table user - tableNumber:", tableNumber);
       // ✅ ADAUGĂ isActive: true
       userData = await userModel.findOne({ 
         tableNumber: tableNumber, 
         isActive: true 
       });
     } else {
-      console.log("👤 [CART_CONTROLLER] Normal user - finding by ID:", userId);
       userData = await userModel.findById(userId);
     }
     
     if (!userData) {
-      console.log("❌ [CART_CONTROLLER] USER NOT FOUND");
       return res.json({ success: false, message: "User not found" });
     }
 
-    console.log("📦 [CART_CONTROLLER] User found - ID:", userData._id);
-    console.log("📦 [CART_CONTROLLER] BEFORE CLEAR - Cart items:", Object.keys(userData.cartData || {}));
-
     // ✅ GOLESTE COMPLET cartData
-    console.log("🗑️ [CART_CONTROLLER] Clearing cartData...");
     const updatedUser = await userModel.findByIdAndUpdate(
       userData._id,
       { cartData: {} }, // ✅ SETEAZĂ CARTDATA CA OBIECT GOL
       { new: true }
     );
 
-    console.log("📦 [CART_CONTROLLER] AFTER CLEAR - Cart items:", Object.keys(updatedUser.cartData || {}));
-    console.log("✅ [CART_CONTROLLER] CART CLEARED SUCCESSFULLY");
-
+  
     res.json({ 
       success: true, 
       message: "Cart cleared successfully",
@@ -325,7 +294,6 @@ const clearCart = async (req, res) => {
     });
     
   } catch (error) {
-    console.log("❌ [CART_CONTROLLER] ERROR in clearCart:", error);
     res.json({ success: false, message: "Error clearing cart" });
   }
 };
@@ -334,7 +302,6 @@ const removeFromCart = async (req, res) => {
   try {
     const { userId, itemId, quantity = 1 } = req.body;
     
-    console.log("🗑️ REMOVE FROM CART:", { userId, itemId, quantity });
     
     let userData;
 
@@ -342,7 +309,6 @@ const removeFromCart = async (req, res) => {
     if (userId.startsWith('table_')) {
       // Este table user - folosește tableNumber
       const tableNumber = userId.replace('table_', '');
-      console.log("🍽️ Table user - tableNumber:", tableNumber);
       // ✅ ADAUGĂ isActive: true
       userData = await userModel.findOne({ 
         tableNumber: tableNumber, 
@@ -350,18 +316,15 @@ const removeFromCart = async (req, res) => {
       });
     } else {
       // Este user normal - folosește _id
-      console.log("👤 Normal user - userId:", userId);
       userData = await userModel.findById(userId);
     }
     
     if (!userData) {
-      console.log("❌ User not found for userId:", userId);
       return res.json({ success: false, message: "User not found" });
     }
 
     let cartData = userData.cartData || {};
     
-    console.log("📦 BEFORE REMOVAL:", cartData[itemId]);
     
     if (cartData[itemId]) {
       if (typeof cartData[itemId] === 'object') {
@@ -369,18 +332,15 @@ const removeFromCart = async (req, res) => {
         
         if (newQuantity <= 0) {
           delete cartData[itemId];
-          console.log("✅ Item completely removed");
         } else {
           cartData[itemId] = {
             ...cartData[itemId],
             quantity: newQuantity
           };
-          console.log("✅ Item quantity updated to:", newQuantity);
         }
       }
     }
 
-    console.log("📦 AFTER REMOVAL:", cartData[itemId]);
     
     // ✅ SALVEAZĂ în baza de date
     const updatedUser = await userModel.findByIdAndUpdate(
@@ -389,7 +349,6 @@ const removeFromCart = async (req, res) => {
       { new: true }
     );
 
-    console.log("💾 DATABASE SAVED - Item exists:", !!updatedUser.cartData[itemId]);
     
     res.json({ 
       success: true, 
@@ -397,7 +356,6 @@ const removeFromCart = async (req, res) => {
       cartData: cartData
     });
   } catch (error) {
-    console.log("❌ ERROR in removeFromCart:", error);
     res.json({ success: false, message: "Error" });
   }
 }
@@ -405,11 +363,7 @@ const removeFromCart = async (req, res) => {
 const removeItemCompletely = async (req, res) => {
   try {
     const { userId, itemId } = req.body;
-    
-    console.log("🔥 REMOVE COMPLETELY - START");
-    console.log("UserID:", userId);
-    console.log("ItemID:", itemId);
-    
+
     let userData;
 
     if (userId.startsWith('table_')) {
@@ -424,24 +378,16 @@ const removeItemCompletely = async (req, res) => {
     }
     
     if (!userData) {
-      console.log("❌ USER NOT FOUND");
       return res.json({ success: false, message: "User not found" });
     }
 
     let cartData = userData.cartData || {};
 
-    console.log("📦 BEFORE DELETE - Item exists:", !!cartData[itemId]);
-    console.log("📦 ALL ITEMS BEFORE:", Object.keys(cartData));
-
     // ✅ FORȚEAZĂ ȘTERGEREA
     if (cartData[itemId]) {
       delete cartData[itemId];
-      console.log("✅ ITEM DELETED FROM CARTDATA");
     }
 
-    console.log("📦 AFTER DELETE - Item exists:", !!cartData[itemId]);
-    console.log("📦 ALL ITEMS AFTER:", Object.keys(cartData));
-    
     // ✅ SALVEAZĂ ÎN BAZA DE DATE
     const updatedUser = await userModel.findByIdAndUpdate(
       userData._id,
@@ -449,7 +395,6 @@ const removeItemCompletely = async (req, res) => {
       { new: true }
     );
 
-    console.log("💾 DATABASE SAVED - Item in DB:", !!updatedUser.cartData[itemId]);
 
     // ✅ RETURNEAZĂ CARTDATA ACTUALIZAT
     res.json({ 
@@ -458,7 +403,6 @@ const removeItemCompletely = async (req, res) => {
       cartData: cartData // ✅ ACESTA ESTE CÂMPUL IMPORTANT!
     });
   } catch (error) {
-    console.log("❌ ERROR in removeItemCompletely:", error);
     res.json({ success: false, message: "Error removing item completely" });
   }
 };
@@ -472,14 +416,12 @@ const updateCart = async (req, res) => {
     // ✅ ADAUGĂ: Suport pentru table users (la fel ca în celelalte funcții)
     if (userId.startsWith('table_')) {
       const tableNumber = userId.replace('table_', '');
-      console.log("🍽️ Table user - tableNumber:", tableNumber);
       // ✅ ADAUGĂ isActive: true
       userData = await userModel.findOne({ 
         tableNumber: tableNumber, 
         isActive: true 
       });
     } else {
-      console.log("👤 Normal user - userId:", userId);
       userData = await userModel.findById(userId);
     }
 
@@ -531,7 +473,6 @@ const updateCart = async (req, res) => {
     });
 
   } catch (error) {
-    console.log("❌ ERROR in updateCart:", error);
     res.status(500).json({ 
       success: false,
       message: "Server error" 

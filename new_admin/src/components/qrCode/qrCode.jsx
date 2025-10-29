@@ -7,15 +7,26 @@ import { toast } from 'react-toastify';
 import './QrCodes.css'
 import { assets } from '../../../../frontend/src/assets/assets';
 
-
 const QRCodeGenerator = () => {
     const [tableNo, setTableNo] = useState('');
     const [createdByUserName, setCreatedByUserName] = useState('');
     const [qrImage, setQrImage] = useState(null);
     const { url } = useUrl();
     const adminUserName = localStorage.getItem("userName");
-    const [image, setImage] = useState(null); // State for storing logo image
-    const [data, setData] = useState(null); // State for storing logo image
+    const [image, setImage] = useState(null);
+    const [data, setData] = useState(null);
+    const [baseUrl, setBaseUrl] = useState('');
+
+    // Funcție simplă pentru a obține URL-ul de bază
+    const getBaseUrl = () => {
+        return window.location.origin;
+    };
+
+    // Funcție pentru a obține URL-ul complet pentru register
+    const getRegisterUrl = (tableNumber) => {
+        const base = getBaseUrl();
+        return `${base}/register?table=${tableNumber}`;
+    };
 
     // Function to fetch existing customization
     const fetchCustomization = async () => {
@@ -23,9 +34,8 @@ const QRCodeGenerator = () => {
             const response = await axios.get(`${url}/admin/personalization/get`);
             if (response.data.success && response.data.data) {
                 const customizationData = response.data.data;
-                setImage(customizationData.image); // Set the logo image
+                setImage(customizationData.image);
                 setData(customizationData);
-                // Other code remains unchanged...
             }
         } catch (error) {
             toast.error('Error fetching customization data:', error);
@@ -33,6 +43,8 @@ const QRCodeGenerator = () => {
     };
 
     useEffect(() => {
+        // Setează URL-ul de bază la montarea componentei
+        setBaseUrl(getBaseUrl());
         setCreatedByUserName(adminUserName);
         fetchCustomization();
     }, [adminUserName]);
@@ -85,11 +97,10 @@ const QRCodeGenerator = () => {
                         type="text"
                         placeholder="User Name"
                         value={createdByUserName}
-                        onChange={(e) => setCreatedByUserNameId(e.target.value)}
+                        onChange={(e) => setCreatedByUserName(e.target.value)}
                         disabled
                         hidden
                         className="w-full p-3 bg-gray-700 text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
-
                     />
                 </div>
 
@@ -104,74 +115,61 @@ const QRCodeGenerator = () => {
                 {tableNo && (
                     <div
                         id="qr-container"
-                        className="mt-8 bg-white p-6 rounded-lg shadow-md flex flex-col items-center transition-transform transform hover:scale-105 border border-gray-300" // Adaugă o bordură
+                        className="mt-8 bg-white p-6 rounded-lg shadow-md flex flex-col items-center transition-transform transform hover:scale-105 border border-gray-300"
                         style={{
-                            backgroundImage: `url(` + assets.BannerBackground + `)`, // Replace with your actual image path
-                            backgroundSize: 'cover', // Adjusts the image to cover the entire div
-                            backgroundPosition: 'center', // Centers the image
-                            backgroundRepeat: 'no-repeat', // Prevents the image from repeating
+                            backgroundImage: `url(` + assets.BannerBackground + `)`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat',
                             opacity: 0.9,
                             borderRadius: "10px"
                         }}
-                   >
+                    >
                         {/* Logo-ul restaurantului */}
                         <div className="mb-4">
                             <img
-                                src={image ? `${url}/images/` + image : assets.original_logo} // Asigură-te că folosești un path corect
+                                src={image ? `${url}/images/` + image : assets.original_logo}
                                 alt="Restaurant Logo"
                                 className="h-16 w-auto"
                                 style={{
                                     borderRadius: "10px"
                                 }}
                             />
-                            
                         </div>
-                        <p className=" font-semibold text-white restaurant_name text-[24px] font-raleway" >
-                               {data.restaurantName}
-                            </p>
+                        <p className="font-semibold text-white restaurant_name text-[24px] font-raleway">
+                            {data?.restaurantName}
+                        </p>
+                        
                         {/* QR Code */}
-
                         <QRCode
-                            value={`http://localhost:5174/register?tableNo=${tableNo}`} // Modificare aici pentru a include linkul
-                            // logoImage={assets.o_logo}
+                            value={getRegisterUrl(tableNo)} // Folosim URL-ul dinamic aici
                             size={180}
                             logoWidth={60}
                             logoHeight={40}
-                            logoClassName="qr-logo" // Aplică stilul CSS
-                            border={4} // Grosimea marginii
-
+                            logoClassName="qr-logo"
+                            border={4}
                         />
+                        
                         <p className="mt-4 font-semibold text-gray-700 text-lg font-raleway">
-                            QR Code for <span className="text-white font-bold">Table no. {tableNo}</span> {/* Evidențiază Table No */}
+                            QR Code for <span className="text-white font-bold">Table no. {tableNo}</span>
                         </p>
                         <p className="text-gray-500 text-sm mt-2 text-center font-raleway">
                             Scan to register your table and enjoy our services!
                         </p>
 
-                        {/* Linia de separare */}
-                        <hr className="my-4 border-gray-300 w-full" /> {/* O linie orizontală pentru separare */}
+                        <hr className="my-4 border-gray-300 w-full" />
 
                         <p className="mt-2 text-gray-600 text-center italic font-raleway font-semibold font-tangerine text-[30px]">
                             Thank you for choosing us!
                         </p>
-                        <br></br>
-                        <br></br>
+                        <br />
+                        <br />
                     </div>
                 )}
-
-
 
                 {/* Display saved QR code image */}
                 {qrImage && (
                     <div className="mt-8">
-                        {/* <h3 className="text-lg font-semibold">Saved QR Code Image</h3>
-                        <img
-                            src={qrImage}
-                            alt="QR Code"
-                            className="mt-4 rounded-lg"
-                            style={{ width: '250px', height: 'auto' }} // Adjust size here for better visibility
-
-                        /> */}
                         <button
                             onClick={handleDownloadImage}
                             className="mt-4 w-full py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition duration-200"

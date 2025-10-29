@@ -3,6 +3,7 @@ import "./Cart.css";
 import { StoreContext } from "../../context/StoreContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import FoodModal from "../../components/FoodItem/FoodModal";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -27,7 +28,7 @@ const Cart = () => {
     updateCartItemQuantity,
     removeItemCompletely,
     getTotalItemCount,
-    clearCart
+    clearCart,
   } = useContext(StoreContext);
 
   const [promoCode, setPromoCode] = useState("");
@@ -42,6 +43,10 @@ const Cart = () => {
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [showFloatingCheckout, setShowFloatingCheckout] = useState(false);
+  const [selectedFood, setSelectedFood] = useState(null);
+  const [isFoodModalOpen, setIsFoodModalOpen] = useState(false);
+  const [selectedFoodQuantity, setSelectedFoodQuantity] = useState(1);
+  const [selectedFoodInstructions, setSelectedFoodInstructions] = useState("");
 
   const swipeData = useRef({});
   const [swipeOffsets, setSwipeOffsets] = useState({});
@@ -78,27 +83,44 @@ const Cart = () => {
 
   const findFoodItem = (itemId, cartItem) => {
     let baseFoodId = "";
-    
+
     if (itemId) {
-      const parts = itemId.split('__');
+      const parts = itemId.split("__");
       baseFoodId = parts[0];
     }
-    
-    const foodItem = food_list.find(item => item._id === baseFoodId);
-    
+
+    const foodItem = food_list.find((item) => item._id === baseFoodId);
+
     if (!foodItem && baseFoodId) {
-      const alternativeItem = food_list.find(item => 
-        item._id.includes(baseFoodId) || baseFoodId.includes(item._id)
+      const alternativeItem = food_list.find(
+        (item) => item._id.includes(baseFoodId) || baseFoodId.includes(item._id)
       );
       return alternativeItem || null;
     }
-    
+
     return foodItem || null;
   };
 
   const getItemInstructions = (itemId) => {
     const cartItem = cartItems[itemId];
     return cartItem?.specialInstructions || "";
+  };
+
+  const openFoodModal = (itemId, cartItem) => {
+    const foodItem = findFoodItem(itemId, cartItem);
+    if (foodItem) {
+      setSelectedFood(foodItem);
+      setSelectedFoodQuantity(cartItem.quantity);
+      setSelectedFoodInstructions(cartItem.specialInstructions || "");
+      setIsFoodModalOpen(true);
+    }
+  };
+
+  const closeFoodModal = () => {
+    setIsFoodModalOpen(false);
+    setSelectedFood(null);
+    setSelectedFoodQuantity(1);
+    setSelectedFoodInstructions("");
   };
 
   const applyPromoCode = () => {
@@ -120,122 +142,118 @@ const Cart = () => {
 
   const handleClearCart = async () => {
     try {
-
       if (!clearCart) {
         toast.error("Clear cart function not available");
         return;
       }
 
       await clearCart();
-      
+
       console.log("🔥 [CART.JSX] clearCart() completed");
       setShowConfirmClear(false);
-      
     } catch (error) {
       console.error("❌ [CART.JSX] Error in handleClearCart:", error);
       toast.error("Error clearing cart");
     }
   };
 
-const placeOrder = async (event) => {
-  if (event) event.preventDefault();
+  const placeOrder = async (event) => {
+    if (event) event.preventDefault();
 
-  if (orderPlaced) return;
+    if (orderPlaced) return;
 
-  if (!paymentMethod) {
-    setPaymentError("Please select a payment method.");
-    setTimeout(() => {
-      const paymentSection = document.getElementById("payment-method-section");
-      if (paymentSection) {
-        paymentSection.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }
-    }, 100);
-    return;
-  } else {
-    setPaymentError("");
-  }
-
-  setIsPlacingOrder(true);
-
-  let orderItems = [];
-  Object.keys(cartItems).forEach((itemId) => {
-    const cartItem = cartItems[itemId];
-    if (cartItem && cartItem.quantity > 0) {
-      const foodItem = findFoodItem(itemId, cartItem);
-      const itemInstructions = getItemInstructions(itemId);
-      
-      if (foodItem) {
-        orderItems.push({
-          foodId: itemId,
-          baseFoodId: foodItem._id,
-          name: foodItem.name,
-          price: foodItem.price,
-          quantity: cartItem.quantity,
-          itemTotal: (foodItem.price * cartItem.quantity).toFixed(2),
-          image: foodItem.image,
-          specialInstructions: itemInstructions,
-          selectedOptions: cartItem.selectedOptions || [],
-          extrasPrice: cartItem.itemData?.extrasPrice || 0
-        });
-      } else {
-        orderItems.push({
-          foodId: itemId,
-          baseFoodId: itemId.split('_')[0],
-          name: "Product",
-          price: 0,
-          quantity: cartItem.quantity,
-          itemTotal: "0.00",
-          image: "",
-          specialInstructions: itemInstructions,
-          selectedOptions: cartItem.selectedOptions || [],
-          extrasPrice: cartItem.itemData?.extrasPrice || 0
-        });
-      }
+    if (!paymentMethod) {
+      setPaymentError("Please select a payment method.");
+      setTimeout(() => {
+        const paymentSection = document.getElementById(
+          "payment-method-section"
+        );
+        if (paymentSection) {
+          paymentSection.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }
+      }, 100);
+      return;
+    } else {
+      setPaymentError("");
     }
-  });
 
-  const totalAmount = getTotalCartAmount() - discount;
+    setIsPlacingOrder(true);
 
-  const orderData = {
-    userId: token,
-    items: orderItems,
-    amount: totalAmount,
-    tableNo: tableNumber,
-    userData: data,
-    specialInstructions: specialInstructions,
-  };
+    let orderItems = [];
+    Object.keys(cartItems).forEach((itemId) => {
+      const cartItem = cartItems[itemId];
+      if (cartItem && cartItem.quantity > 0) {
+        const foodItem = findFoodItem(itemId, cartItem);
+        const itemInstructions = getItemInstructions(itemId);
 
-  try {
-    if (paymentMethod === "creditCard") {
-      const response = await axios.post(url + "/api/order/place", orderData, {
-        headers: { token },
-      });
-      
-      if (response.data.success) {
-        // ✅ Șterge item-urile înainte de redirect
-        await clearCart();
-        window.location.replace(response.data.session_url);
-      } else {
-        alert("Error processing payment.");
-        setIsPlacingOrder(false);
+        if (foodItem) {
+          orderItems.push({
+            foodId: itemId,
+            baseFoodId: foodItem._id,
+            name: foodItem.name,
+            price: foodItem.price,
+            quantity: cartItem.quantity,
+            itemTotal: (foodItem.price * cartItem.quantity).toFixed(2),
+            image: foodItem.image,
+            specialInstructions: itemInstructions,
+            selectedOptions: cartItem.selectedOptions || [],
+            extrasPrice: cartItem.itemData?.extrasPrice || 0,
+          });
+        } else {
+          orderItems.push({
+            foodId: itemId,
+            baseFoodId: itemId.split("_")[0],
+            name: "Product",
+            price: 0,
+            quantity: cartItem.quantity,
+            itemTotal: "0.00",
+            image: "",
+            specialInstructions: itemInstructions,
+            selectedOptions: cartItem.selectedOptions || [],
+            extrasPrice: cartItem.itemData?.extrasPrice || 0,
+          });
+        }
       }
-    } else if (paymentMethod === "cashPOS") {
-      const response = await axios.post(
-        url + "/api/order/place-cash",
-        orderData,
-        { headers: { token } }
-      );
-      
-      if (response.data.success) {
-        setOrderPlaced(true);
-        setTimeout(async () => {
+    });
+
+    const totalAmount = getTotalCartAmount() - discount;
+
+    const orderData = {
+      userId: token,
+      items: orderItems,
+      amount: totalAmount,
+      tableNo: tableNumber,
+      userData: data,
+      specialInstructions: specialInstructions,
+    };
+
+    try {
+      if (paymentMethod === "creditCard") {
+        const response = await axios.post(url + "/api/order/place", orderData, {
+          headers: { token },
+        });
+
+        if (response.data.success) {
+          window.location.replace(response.data.session_url);
+        } else {
+          alert("Error processing payment.");
+          setIsPlacingOrder(false);
+        }
+      } else if (paymentMethod === "cashPOS") {
+        const response = await axios.post(
+          url + "/api/order/place-cash",
+          orderData,
+          { headers: { token } }
+        );
+
+        if (response.data.success) {
+          setOrderPlaced(true);
           setShowFloatingCheckout(false);
-          setTimeout(async () => {
-            // ✅ Șterge item-urile înainte de navigare
-            await clearCart();
+          
+          setTimeout(() => {
             navigate("/thank-you", {
               state: {
                 tableNo: orderData.tableNo,
@@ -243,19 +261,18 @@ const placeOrder = async (event) => {
               },
             });
             localStorage.setItem("isReloadNeeded", "true");
-          }, 300);
-        }, 2000);
-      } else {
-        alert("Error placing order.");
-        setIsPlacingOrder(false);
+          }, 1500);
+        } else {
+          alert("Error placing order.");
+          setIsPlacingOrder(false);
+        }
       }
+    } catch (error) {
+      console.error("Order placement error:", error);
+      alert("Error placing order.");
+      setIsPlacingOrder(false);
     }
-  } catch (error) {
-    console.error("Order placement error:", error);
-    alert("Error placing order.");
-    setIsPlacingOrder(false);
-  }
-};
+  };
 
   const handleTouchStart = (e, id) => {
     swipeData.current[id] = {
@@ -312,15 +329,13 @@ const placeOrder = async (event) => {
     delete swipeData.current[id];
   };
 
-  // ✅ SCHIMBAT: Folosește removeItemCompletely pentru swipe delete
   const handleDeleteClick = (id) => {
     setItemToDelete(id);
   };
 
-  // ✅ SCHIMBAT: confirmDelete folosește removeItemCompletely
   const confirmDelete = () => {
     if (itemToDelete) {
-      removeItemCompletely(itemToDelete); // ✅ Șterge COMPLET item-ul
+      removeItemCompletely(itemToDelete);
       setSwipeOffsets((prev) => ({ ...prev, [itemToDelete]: 0 }));
       setItemToDelete(null);
     }
@@ -328,7 +343,7 @@ const placeOrder = async (event) => {
 
   const cancelDelete = () => {
     setSwipeOffsets((prev) => ({ ...prev, [itemToDelete]: 0 }));
-    setItemToDelete(null);
+      setItemToDelete(null);
   };
 
   const resetSwipe = (id) => {
@@ -343,31 +358,30 @@ const placeOrder = async (event) => {
       transition={{ duration: 0.4 }}
       className="cart-container"
     >
-    {/* Header Section */}
-<div className="cart-header-section">
-  <button className="back-button" onClick={() => navigate(-1)}>
-    <FaArrowLeft />
-    <span>Back</span>
-  </button>
-  
-  <h1 className="cart-title">Your Order</h1>
-  
-  {/* ✅ SCHIMBARE: Folosește un div placeholder când coșul este gol */}
-  {!isCartEmpty ? (
-    <button
-      className="clear-cart-button"
-      onClick={() => setShowConfirmClear(true)}
-      aria-label="Clear cart"
-    >
-      <FaTrash />
-    </button>
-  ) : (
-    <div className="clear-cart-placeholder"></div>
-  )}
-</div>
+      {/* Header Section */}
+      <div className="cart-header-section">
+        <button className="back-button" onClick={() => navigate(-1)}>
+          <FaArrowLeft />
+          <span>Back</span>
+        </button>
 
-      {/* Empty Cart State */}
-      {isCartEmpty ? (
+        <h1 className="cart-title">Your Order</h1>
+
+        {!isCartEmpty ? (
+          <button
+            className="clear-cart-button"
+            onClick={() => setShowConfirmClear(true)}
+            aria-label="Clear cart"
+          >
+            <FaTrash />
+          </button>
+        ) : (
+          <div className="clear-cart-placeholder"></div>
+        )}
+      </div>
+
+      {/* Empty Cart State - SE AFIȘEAZĂ DOAR DACĂ NU E PLASATĂ COMANDA */}
+      {isCartEmpty && !orderPlaced ? (
         <motion.div
           className="empty-cart-state"
           initial={{ opacity: 0, y: 30 }}
@@ -383,7 +397,7 @@ const placeOrder = async (event) => {
               animate={{ scale: 1, rotate: 0 }}
               transition={{ duration: 0.7, delay: 0.1 }}
             />
-            <motion.div 
+            <motion.div
               className="empty-cart-decoration"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -394,7 +408,7 @@ const placeOrder = async (event) => {
               <div className="decoration-circle circle-3"></div>
             </motion.div>
           </div>
-          
+
           <motion.h2
             className="empty-cart-title"
             initial={{ opacity: 0 }}
@@ -403,23 +417,23 @@ const placeOrder = async (event) => {
           >
             Your cart feels lonely
           </motion.h2>
-          
+
           <motion.p
             className="empty-cart-description"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            It looks like you haven't added any items to your cart yet. 
-            Explore our menu and discover delicious options!
+            It looks like you haven't added any items to your cart yet. Explore
+            our menu and discover delicious options!
           </motion.p>
-          
+
           <motion.button
             className="browse-menu-button"
             onClick={() => navigate("/category/All")}
-            whileHover={{ 
+            whileHover={{
               scale: 1.05,
-              boxShadow: "0 10px 25px rgba(40, 167, 69, 0.3)"
+              boxShadow: "0 10px 25px rgba(40, 167, 69, 0.3)",
             }}
             whileTap={{ scale: 0.95 }}
             initial={{ opacity: 0, y: 20 }}
@@ -427,8 +441,20 @@ const placeOrder = async (event) => {
             transition={{ duration: 0.5, delay: 0.6 }}
           >
             <span>Browse Menu</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M5 12H19M19 12L12 5M19 12L12 19"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </motion.button>
         </motion.div>
@@ -470,7 +496,6 @@ const placeOrder = async (event) => {
                               </p>
                             </div>
                             <div className="quantity-controls">
-                              {/* ✅ Butonul "-" folosește removeFromCart */}
                               <button
                                 onClick={() => removeFromCart(itemId, 1)}
                                 className="quantity-button decrease"
@@ -482,11 +507,13 @@ const placeOrder = async (event) => {
                                 {cartItem.quantity}
                               </span>
                               <button
-                                onClick={() => updateCartItemQuantity(
-                                  itemId,
-                                  cartItem.quantity + 1,
-                                  itemInstructions
-                                )}
+                                onClick={() =>
+                                  updateCartItemQuantity(
+                                    itemId,
+                                    cartItem.quantity + 1,
+                                    itemInstructions
+                                  )
+                                }
                                 className="quantity-button increase"
                                 aria-label="Increase quantity"
                               >
@@ -510,7 +537,6 @@ const placeOrder = async (event) => {
                         transition={{ duration: 0.3 }}
                         layout
                       >
-                        {/* ✅ Swipe background folosește removeItemCompletely */}
                         <div
                           className="cart-item-swipe-background"
                           onClick={() => handleDeleteClick(itemId)}
@@ -525,50 +551,75 @@ const placeOrder = async (event) => {
                           onTouchEnd={() => handleTouchEnd(itemId)}
                           onClick={() => resetSwipe(itemId)}
                           style={{
-                            transform: `translateX(${swipeOffsets[itemId] || 0}px)`,
+                            transform: `translateX(${
+                              swipeOffsets[itemId] || 0
+                            }px)`,
                             transition: "transform 0.3s ease",
                           }}
                         >
-                          <img
-                            src={url + "/images/" + foodItem.image}
-                            alt={foodItem.name}
-                            className="item-image"
-                            onError={(e) => {
-                              e.target.src = assets.placeholder_food;
-                            }}
-                          />
+                          <button
+                            className="item-image-button"
+                            onClick={() => openFoodModal(itemId, cartItem)}
+                          >
+                            <img
+                              src={url + "/images/" + foodItem.image}
+                              alt={foodItem.name}
+                              className="item-image"
+                              onError={(e) => {
+                                e.target.src = assets.placeholder_food;
+                              }}
+                            />
+                          </button>
                           <div className="item-details">
-                            <h3 className="item-name">{foodItem.name}</h3>
-
+                            <button
+                              className="item-name-button"
+                              onClick={() => openFoodModal(itemId, cartItem)}
+                            >
+                              <h3 className="item-name">{foodItem.name}</h3>
+                            </button>
                             {itemInstructions && (
                               <div className="item-special-instructions">
-                                <span className="instructions-label">Note: </span>
+                                <span className="instructions-label">
+                                  Note:{" "}
+                                </span>
                                 {itemInstructions}
                               </div>
                             )}
 
-                            {cartItem.selectedOptions && cartItem.selectedOptions.length > 0 && (
-                              <div className="item-extras">
-                                <span className="extras-label">Extras: </span>
-                                {cartItem.selectedOptions.join(', ')}
-                                <span className="extras-price">
-                                  (+{(cartItem.itemData?.extrasPrice || 0).toFixed(2)} €)
-                                </span>
-                              </div>
-                            )}
-                            
-                            <p className="item-description">
-                              {foodItem.description}
-                            </p>
+                            {cartItem.selectedOptions &&
+                              cartItem.selectedOptions.length > 0 && (
+                                <div className="item-extras">
+                                  <span className="extras-label">Extras: </span>
+                                  {cartItem.selectedOptions.join(", ")}
+                                  <span className="extras-price">
+                                    (+
+                                    {(
+                                      cartItem.itemData?.extrasPrice || 0
+                                    ).toFixed(2)}{" "}
+                                    €)
+                                  </span>
+                                </div>
+                              )}
+
+                            <button
+                              className="item-description-button"
+                              onClick={() => openFoodModal(itemId, cartItem)}
+                            >
+                              <p className="item-description">
+                                {foodItem.description}
+                              </p>
+                            </button>
+
                             <p className="item-price">
                               {(
-                                (foodItem.price + (cartItem.itemData?.extrasPrice || 0)) * 
+                                (foodItem.price +
+                                  (cartItem.itemData?.extrasPrice || 0)) *
                                 cartItem.quantity
-                              ).toFixed(2)} €
+                              ).toFixed(2)}{" "}
+                              €
                             </p>
                           </div>
                           <div className="quantity-controls">
-                            {/* ✅ Butonul "-" folosește removeFromCart */}
                             <button
                               onClick={() => removeFromCart(itemId, 1)}
                               className="quantity-button decrease"
@@ -580,14 +631,16 @@ const placeOrder = async (event) => {
                               {cartItem.quantity}
                             </span>
                             <button
-                              onClick={() => updateCartItemQuantity(
-                                itemId,
-                                cartItem.quantity + 1,
-                                itemInstructions
-                              )}
+                              onClick={() =>
+                                updateCartItemQuantity(
+                                  itemId,
+                                  cartItem.quantity + 1,
+                                  itemInstructions
+                                )
+                              }
                               className="quantity-button increase"
                               aria-label="Increase quantity"
-                              >
+                            >
                               <FaPlus />
                             </button>
                           </div>
@@ -611,7 +664,9 @@ const placeOrder = async (event) => {
 
           {/* Special Instructions globale */}
           <div className="special-instructions-section">
-            <h2 className="section-title">Special Instructions for Entire Order</h2>
+            <h2 className="section-title">
+              Special Instructions for Entire Order
+            </h2>
             <div className="instructions-input-container">
               <textarea
                 value={specialInstructions}
@@ -779,9 +834,7 @@ const placeOrder = async (event) => {
           <div className="checkout-content">
             {!(isPlacingOrder || orderPlaced) ? (
               <>
-                <div className="item-count">
-                  {getTotalItemCount()}
-                </div>
+                <div className="item-count">{getTotalItemCount()}</div>
                 <div className="checkout-text">
                   {paymentMethod === "creditCard"
                     ? "Proceed to Payment"
@@ -829,7 +882,6 @@ const placeOrder = async (event) => {
                 <button className="cancel-button" onClick={cancelDelete}>
                   Cancel
                 </button>
-                {/* ✅ SCHIMBAT: confirmButton folosește removeItemCompletely */}
                 <button className="confirm-button" onClick={confirmDelete}>
                   Remove
                 </button>
@@ -863,10 +915,7 @@ const placeOrder = async (event) => {
                 >
                   Cancel
                 </button>
-                <button
-                  className="confirm-button"
-                  onClick={handleClearCart}
-                >
+                <button className="confirm-button" onClick={handleClearCart}>
                   Clear All
                 </button>
               </div>
@@ -874,6 +923,18 @@ const placeOrder = async (event) => {
           </motion.div>
         )}
       </AnimatePresence>
+      <FoodModal
+        food={selectedFood}
+        closeModal={closeFoodModal}
+        isOpen={isFoodModalOpen}
+        initialQuantity={selectedFoodQuantity}
+        initialInstructions={selectedFoodInstructions}
+        cartItemId={Object.keys(cartItems).find((id) => {
+          const item = cartItems[id];
+          const foodItem = findFoodItem(id, item);
+          return foodItem && foodItem._id === selectedFood?._id;
+        })}
+      />
     </motion.div>
   );
 };

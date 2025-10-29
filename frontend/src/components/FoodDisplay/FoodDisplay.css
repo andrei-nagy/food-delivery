@@ -39,7 +39,7 @@
     justify-content: space-between;
     align-items: baseline;
     padding: 10px 5px;
-    margin-top: 20px;
+    /* margin-top: 20px; */
     margin-bottom: 5px;
 }
 
@@ -147,7 +147,7 @@
         0 10px 30px rgba(232, 101, 20, 0.5),
         0 0 0 0 rgba(232, 101, 20, 0.7) !important;
     cursor: pointer !important;
-    z-index: 9999 !important;
+    /* z-index: 9999 !important; */
     transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
     opacity: 0 !important;
     transform: translateY(100px) scale(0.3) rotate(-180deg) !important;
@@ -417,3 +417,25 @@
         font-size: 0.75rem !important;
     }
 }
+
+
+/* Adaugă în CSS */
+.food-image-placeholder {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.food-image-placeholder::before {
+  content: "🍽️";
+  font-size: 2rem;
+  opacity: 0.7;
+}
+
+/* Sau cu un icon mai specific */
+.food-image-placeholder.pizza::before { content: "🍕"; }
+.food-image-placeholder.burger::before { content: "🍔"; }
+.food-image-placeholder.salad::before { content: "🥗"; }
+.food-image-placeholder.drink::before { content: "🥤"; }

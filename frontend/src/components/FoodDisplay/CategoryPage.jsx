@@ -21,7 +21,7 @@ import "./CategoryPage.css";
 
 const CategoryPage = () => {
   const { categoryName } = useParams();
-  const { food_list, cartItems, url, getTotalCartAmount } =
+  const { food_list, cartItems, url, getTotalCartAmount, foodCategory_list } =
     useContext(StoreContext);
   const navigate = useNavigate();
 
@@ -59,7 +59,23 @@ const CategoryPage = () => {
     (total, count) => total + count,
     0
   );
+  useEffect(() => {
+    const activeCategories = foodCategory_list
+      .filter(item => item.isActive)
+      .map(item => item.menu_name);
+    
+    const uniqueCategories = ["All", ...activeCategories];
+    setCategories(uniqueCategories);
+    
+    // Set price range based on actual food prices
+    if (food_list.length > 0) {
+      const prices = food_list.map((item) => item.price);
+      const maxPrice = Math.ceil(Math.max(...prices));
+      setPriceRange([0, maxPrice]);
+    }
+  }, [food_list, foodCategory_list]);
 
+  
   // ✅ LOGICĂ NOUĂ - Scroll progresiv pentru header și categorii mobile
   useEffect(() => {
     const handleScroll = () => {
@@ -189,7 +205,6 @@ const CategoryPage = () => {
       ...new Set(food_list.map((item) => item.category)),
     ];
     setCategories(uniqueCategories);
-
     // Set price range based on actual food prices
     if (food_list.length > 0) {
       const prices = food_list.map((item) => item.price);
@@ -465,7 +480,7 @@ const CategoryPage = () => {
             </div>
 
             {/* Search Suggestions */}
-            <AnimatePresence>
+            {/* <AnimatePresence>
               {showSuggestions && searchSuggestions.length > 0 && (
                 <motion.div
                   className="category-explorer__search-suggestions"
@@ -506,7 +521,7 @@ const CategoryPage = () => {
                   ))}
                 </motion.div>
               )}
-            </AnimatePresence>
+            </AnimatePresence> */}
           </div>
         </div>
       </div>

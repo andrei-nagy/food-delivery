@@ -129,6 +129,7 @@ import new_home_selected from './new_home_selected.png'
 import new_menu_normal from './new_menu_normal.png'
 import new_menu_selected from './new_menu_selected.png'
 import empty_cart3 from './empty_cart3.png'
+import no_image from './no_image.png'
 
 export const assets = {
     logo,
@@ -217,7 +218,8 @@ export const assets = {
     new_home_selected,
     new_menu_normal,
     new_menu_selected,
-    empty_cart3
+    empty_cart3,
+    no_image
 }
 
 export const menu_list = [

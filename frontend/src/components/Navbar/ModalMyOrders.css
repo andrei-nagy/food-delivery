@@ -253,7 +253,12 @@
 }
 
 .checkout-section{
-    border-top: 2px solid #f9f9f9
+    border-top: 2px solid #f9f9f9;
+    padding-top: 15px;
+    background-color: #ffffff;
+    margin-top: auto; /* Aceasta este cheia - împinge secțiunea în jos */
+    flex-shrink: 0; /* Previne comprimarea secțiunii */
+    width: 100%;
 }
 
 .payment-security-note {

@@ -130,42 +130,42 @@ const ModalMyOrders = ({ show, onClose }) => {
     return <>{statusElements.reduce((prev, curr) => [prev, " / ", curr])}</>;
   };
 
-  const renderOrdersByCommand = () => {
-    return orders.map((order, orderIndex) => (
-      <div key={order._id || orderIndex} className="order-section">
-        {/* Afișăm data comenzii */}
-        <div className="order-date">
-          <p>{formatDateTime(order.date)}</p>
-        </div>
+ const renderOrdersByCommand = () => {
+  return orders.map((order, orderIndex) => (
+    <div key={order._id || `order-${orderIndex}`} className="order-section">
+      {/* Afișăm data comenzii */}
+      <div className="order-date">
+        <p>{formatDateTime(order.date)}</p>
+      </div>
 
-        {/* Afișăm produsele pentru această comandă */}
-        {order.items.map((item) => (
-          <div key={item._id} className="order-item">
-            <img
-              className="order-image"
-              src={`${url}/images/${item.image}`}
-              alt={item.name}
-            />
-            <div className="order-details">
-              <p className="order-name">
-                {item.name}{" "}
-                <span className="order-quantity">x {item.quantity}</span>
-              </p>
-              <p className="order-status">
-                {getStatusText(
-                  { [order.status]: item.quantity },
-                  item.quantity
-                )}
-              </p>
-            </div>
-            <p className="order-price">
-              {(item.price * item.quantity).toFixed(2)} €
+      {/* Afișăm produsele pentru această comandă */}
+      {order.items.map((item, itemIndex) => (
+        <div key={item._id || `item-${orderIndex}-${itemIndex}`} className="order-item">
+          <img
+            className="order-image"
+            src={`${url}/images/${item.image}`}
+            alt={item.name}
+          />
+          <div className="order-details">
+            <p className="order-name">
+              {item.name}{" "}
+              <span className="order-quantity">x {item.quantity}</span>
+            </p>
+            <p className="order-status">
+              {getStatusText(
+                { [order.status]: item.quantity },
+                item.quantity
+              )}
             </p>
           </div>
-        ))}
-      </div>
-    ));
-  };
+          <p className="order-price">
+            {(item.price * item.quantity).toFixed(2)} €
+          </p>
+        </div>
+      ))}
+    </div>
+  ));
+};
  const placeOrder = async (event) => {
   event.preventDefault();
 

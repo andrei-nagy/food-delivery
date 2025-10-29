@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useContext } from 'react';
-import './Home.css';
-import Header from '../../components/Header/Header';
-import ExploreMenu from '../../components/ExploreMenu/ExploreMenu';
-import FoodDisplay from '../../components/FoodDisplay/FoodDisplay';
-import Loader from '../../components/Loader/Loader';
-import { motion } from 'framer-motion';
-import { StoreContext } from '../../context/StoreContext';
+import React, { useState, useEffect, useContext } from "react";
+import "./Home.css";
+import Header from "../../components/Header/Header";
+import ExploreMenu from "../../components/ExploreMenu/ExploreMenu";
+import FoodDisplay from "../../components/FoodDisplay/FoodDisplay";
+import Loader from "../../components/Loader/Loader";
+import { motion } from "framer-motion";
+import { StoreContext } from "../../context/StoreContext";
+import RepeatOrder from "../../components/RepeatOrder/RepeatOrder";
 
 const Home = () => {
   const [category, setCategory] = useState("All");
@@ -30,6 +31,8 @@ const Home = () => {
       ) : (
         <>
           <Header />
+          {/* ✅ RepeatOrder se va auto-ascunde dacă nu are date */}
+          <RepeatOrder />
           <ExploreMenu category={category} setCategory={setCategory} />
           <FoodDisplay category={category} />
         </>

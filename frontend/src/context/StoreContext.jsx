@@ -15,6 +15,7 @@ const [isUpdatingCart, setIsUpdatingCart] = useState(false);
   const [userOrders, setUserOrders] = useState([]);
   const intervalRef = useRef(null);
   const previousOrderStatusRef = useRef({});
+  const ordersIntervalRef = useRef(null); // ✅ ADAUGĂ ACESTA
 
   const getApiUrl = () => {
     // Dacă suntem pe localhost în browser, folosim localhost
@@ -84,25 +85,20 @@ const [isUpdatingCart, setIsUpdatingCart] = useState(false);
 
 // StoreContext.jsx - CORECT
 const getUserId = () => {
-  console.log("🔍 DEBUG GETUSERID");
   
   // ✅ DIRECT din localStorage.userId
   const userId = localStorage.getItem('userId');
-  console.log("🆔 UserId from localStorage.userId:", userId);
   
   if (userId) {
-    console.log("✅ Found user ID:", userId);
     return userId;
   }
 
   // ✅ Fallback pentru table users
   const tableNumber = localStorage.getItem('tableNumber');
   if (tableNumber) {
-    console.log("🍽️ Table user detected:", tableNumber);
     return "table_" + tableNumber;
   }
 
-  console.log("❌ No user ID found");
   return null;
 };
 
@@ -142,7 +138,11 @@ const getUserId = () => {
   //     }
   //   }
   // };
-
+const startOrdersPolling = () => {
+  console.log("⏰ [DEBUG] Starting orders polling");
+  fetchUserOrders();
+  ordersIntervalRef.current = setInterval(fetchUserOrders, 5000); // La 5 secunde ca în OrdersTable
+};
 const startCartPolling = () => {
   // ✅ NU PORNII POLLING DACĂ SE FAC UPDATE-URI
   if (isUpdatingCart || intervalRef.current) {
@@ -193,148 +193,198 @@ const startCartPolling = () => {
     localStorage.removeItem("cartItems");
   };
 
-  const fetchUserOrders = async () => {
-    if (!token) return;
+ const fetchUserOrders = async () => {
+  if (!token) return;
 
-    try {
-      const response = await axios.post(
-        url + "/api/order/userOrders",
-        {},
-        { headers: { token } }
+  console.log("🔍 [DEBUG] fetchUserOrders called");
+
+  try {
+    const response = await axios.post(
+      url + "/api/order/userOrders",
+      {},
+      { headers: { token } }
+    );
+
+    console.log("📦 [DEBUG] User orders response:", response.data);
+
+    if (response.data && response.data.data) {
+      const unpaidOrders = response.data.data.filter(
+        (order) => !order.payment
       );
-
-      if (response.data && response.data.data) {
-        const unpaidOrders = response.data.data.filter(
-          (order) => !order.payment
-        );
-        setUserOrders(unpaidOrders);
-        checkStatusChanges(unpaidOrders);
-      }
-    } catch (error) {
-      if (error.response?.data?.clearCart) {
-        clearLocalCartAndLogout();
-      }
+      console.log("💰 [DEBUG] Unpaid orders:", unpaidOrders.length);
+      setUserOrders(unpaidOrders);
+      checkStatusChanges(unpaidOrders);
     }
-  };
+  } catch (error) {
+    console.error("❌ [DEBUG] Error in fetchUserOrders:", error);
+    if (error.response?.data?.clearCart) {
+      clearLocalCartAndLogout();
+    }
+  }
+};
+const checkStatusChanges = (newOrders) => {
+  console.log("🔄 [DEBUG] checkStatusChanges - new orders:", newOrders.length);
+  
+  const newStatusMap = {};
+  newOrders.forEach((order) => {
+    if (order && order._id) {
+      newStatusMap[order._id] = order.status;
+      console.log(`   Order ${order._id}: ${order.status}`);
+    }
+  });
 
-  const checkStatusChanges = (newOrders) => {
-    const newStatusMap = {};
-    newOrders.forEach((order) => {
-      if (order && order._id) {
-        newStatusMap[order._id] = order.status;
-      }
-    });
+  console.log("📊 [DEBUG] Previous status ref:", previousOrderStatusRef.current);
+  console.log("📊 [DEBUG] New status map:", newStatusMap);
 
-    let hasChanges = false;
+  let hasChanges = false;
 
-    Object.keys(previousOrderStatusRef.current).forEach((orderId) => {
-      if (
-        newStatusMap[orderId] &&
-        previousOrderStatusRef.current[orderId] !== newStatusMap[orderId]
-      ) {
-        showStatusNotification(newStatusMap[orderId]);
-        hasChanges = true;
-      }
-    });
-
+  // ✅ MODIFICARE: Dacă previousStatusRef este gol, îl inițializăm dar nu arătăm notificări
+  if (Object.keys(previousOrderStatusRef.current).length === 0) {
+    console.log("🆕 [DEBUG] First time initialization - no notifications");
     previousOrderStatusRef.current = newStatusMap;
     setPreviousOrderStatus(newStatusMap);
+    return;
+  }
+
+  Object.keys(previousOrderStatusRef.current).forEach((orderId) => {
+    if (
+      newStatusMap[orderId] &&
+      previousOrderStatusRef.current[orderId] !== newStatusMap[orderId]
+    ) {
+      console.log("🎯 [DEBUG] STATUS CHANGE DETECTED!");
+      console.log(`   Order ${orderId}: ${previousOrderStatusRef.current[orderId]} -> ${newStatusMap[orderId]}`);
+      showStatusNotification(newStatusMap[orderId]);
+      hasChanges = true;
+    }
+  });
+
+  previousOrderStatusRef.current = newStatusMap;
+  setPreviousOrderStatus(newStatusMap);
+  
+  console.log("✅ [DEBUG] Status check completed. Changes found:", hasChanges);
+};
+
+const showStatusNotification = (status) => {
+  let message = "";
+
+  switch (status) {
+    case "Food processing":
+      message = "Comanda dumneavoastră a fost preluată și este în preparare";
+      break;
+    case "Out for delivery":
+      message = "Comanda dumneavoastră este în curs de livrare";
+      break;
+    case "Delivered":
+      message = "Comanda dumneavoastră a fost livrată";
+      break;
+    default:
+      message = `Statusul comenzii s-a actualizat: ${status}`;
+  }
+
+  const notificationObj = { id: Date.now(), message };
+  console.log("📢 [DEBUG] showStatusNotification:", notificationObj);
+
+  setNotification(notificationObj);
+
+  setTimeout(() => {
+    setNotification(null);
+  }, 10000);
+};
+
+
+useEffect(() => {
+  if (token) {
+    startCartPolling();
+    startOrdersPolling(); // ✅ ADAUGĂ ACEASTA LINIE
+  }
+
+  return () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    if (ordersIntervalRef.current) {
+      clearInterval(ordersIntervalRef.current); // ✅ ȘI ACEASTA
+    }
   };
+}, [token]);
 
-  const showStatusNotification = (status) => {
-    let message = "";
+// În StoreContext.jsx - MODIFICAȚI funcția addToCart
+const addToCart = async (
+  itemId,
+  quantity = 1,
+  specialInstructions = "",
+  selectedOptions = [],
+  itemData = null
+) => {
+  const tableNumber = localStorage.getItem("tableNumber");
 
-    switch (status) {
-      case "Food processing":
-        message = "Comanda dumneavoastră a fost preluată și este în preparare";
-        break;
-      case "Out for delivery":
-        message = "Comanda dumneavoastră este în curs de livrare";
-        break;
-      case "Delivered":
-        message = "Comanda dumneavoastră a fost livrată";
-        break;
-      default:
-        message = `Statusul comenzii s-a actualizat: ${status}`;
-    }
+  if (!tableNumber) {
+    console.error("❌ No table number found");
+    return;
+  }
 
-    setNotification(message);
-    setTimeout(() => {
-      setNotification(null);
-    }, 10000);
-  };
+  // ✅ 1. OPRIM TEMPORAR POLLING-UL
+  setIsUpdatingCart(true);
+  if (intervalRef.current) {
+    clearInterval(intervalRef.current);
+    intervalRef.current = null;
+  }
 
-  useEffect(() => {
-    if (token) {
-      // loadCachedCart();
-      // // ✅ COMENTAT TEMPORAR pentru debugging
-      startCartPolling();
-      fetchUserOrders();
-    }
+  // ✅ 2. UPDATE IMEDIAT LOCAL (pentru feedback instant)
+  setCartItems((prev) => {
+    const newCart = { ...prev };
 
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [token]);
-
-  const addToCart = async (
-    itemId,
-    quantity,
-    specialInstructions,
-    selectedOptions,
-    itemData
-  ) => {
-    const tableNumber = localStorage.getItem("tableNumber");
-
-    if (!tableNumber) {
-      return;
-    }
-
-    // ✅ UPDATE LOCAL FIRST
-    setCartItems((prev) => {
-      const newCart = { ...prev };
-
-      if (!newCart[itemId]) {
-        newCart[itemId] = {
-          quantity: quantity,
-          specialInstructions: specialInstructions || "",
-          selectedOptions: selectedOptions || [],
-          itemData: itemData || {
-            baseFoodId: itemId.split("_")[0],
-            unitPrice: 0,
-            extrasPrice: 0,
-          },
-        };
-      } else {
-        newCart[itemId] = {
-          ...newCart[itemId],
-          quantity: newCart[itemId].quantity + quantity,
-          specialInstructions:
-            specialInstructions || newCart[itemId].specialInstructions,
-          selectedOptions: selectedOptions || newCart[itemId].selectedOptions,
-        };
-      }
-
-      // localStorage.setItem("cartItems", JSON.stringify(newCart));
-      return newCart;
-    });
-
-    // ✅ SYNC TO SERVER BY TABLE NUMBER
-    try {
-      const response = await axios.post(url + "/api/cart/add-by-table", {
-        tableNumber: parseInt(tableNumber),
-        itemId: itemId,
+    if (!newCart[itemId]) {
+      newCart[itemId] = {
         quantity: quantity,
         specialInstructions: specialInstructions,
         selectedOptions: selectedOptions,
-        itemData: itemData,
-      });
-    } catch (error) {
-      console.error("❌ TABLE CART SYNC ERROR:", error);
+        itemData: itemData || {
+          baseFoodId: itemId.split("__")[0],
+          unitPrice: 0,
+          extrasPrice: 0,
+        },
+      };
+    } else {
+      newCart[itemId] = {
+        ...newCart[itemId],
+        quantity: newCart[itemId].quantity + quantity,
+        specialInstructions: specialInstructions || newCart[itemId].specialInstructions,
+        selectedOptions: selectedOptions || newCart[itemId].selectedOptions,
+      };
     }
-  };
+
+    return newCart;
+  });
+
+  // ✅ 3. TRIMITE LA SERVER (în background)
+  try {
+    const response = await axios.post(url + "/api/cart/add-by-table", {
+      tableNumber: parseInt(tableNumber),
+      itemId: itemId,
+      quantity: quantity,
+      specialInstructions: specialInstructions,
+      selectedOptions: selectedOptions,
+      itemData: itemData,
+    });
+    
+    
+    // ✅ 4. ACTUALIZEAZĂ CU RĂSPUNSUL SERVERULUI (doar dacă e necesar)
+    if (response.data.success && response.data.cartData) {
+      const validatedCart = validateCartStructure(response.data.cartData);
+      setCartItems(validatedCart);
+    }
+    
+  } catch (error) {
+    console.error("❌ TABLE CART SYNC ERROR:", error);
+  } finally {
+    // ✅ 5. RESTARTEAZĂ POLLING-UL DUPĂ 1.5 SECUNDE (mai scurt)
+    setTimeout(() => {
+      setIsUpdatingCart(false);
+      startCartPolling();
+    }, 1500);
+  }
+};
 
 
 // StoreContext.jsx - CORECTAT
@@ -396,7 +446,6 @@ const removeItemCompletely = async (itemId) => {
     setCartItems(prev => {
       const newCart = { ...prev };
       delete newCart[itemId];
-      console.log("🔥 IMMEDIATE REMOVE from local state");
       return newCart;
     });
 
@@ -418,49 +467,37 @@ const removeItemCompletely = async (itemId) => {
 // ✅ clearCart - șterge TOT coșul (folosește tableNumber pentru coșul shared)
 const clearCart = async () => {
   try {
-    console.log("🔥 [STORECONTEXT] START clearCart");
     
     const tableNumber = localStorage.getItem("tableNumber");
-    console.log("🔥 [STORECONTEXT] TableNumber:", tableNumber);
     
     if (!tableNumber) {
-      console.log("❌ [STORECONTEXT] No table number found");
       toast.error("Please select a table first");
       return;
     }
 
     // ✅ OPREȘTE POLLING-UL TEMPORAR
     if (intervalRef.current) {
-      console.log("🛑 [STORECONTEXT] Stopping polling");
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
 
     // ✅ ȘTERGE IMEDIAT DIN STATE-UL LOCAL
-    console.log("🗑️ [STORECONTEXT] Clearing local state");
     setCartItems({});
     localStorage.removeItem("cartItems");
     
-    console.log("🔥 [STORECONTEXT] Local cart cleared");
 
     // ✅ TRIMITE TABLE NUMBER CA "table_15"
-    console.log("🌐 [STORECONTEXT] Sending request to backend...");
     const response = await axios.post(url + "/api/cart/clear", {
       userId: "table_" + tableNumber  // ✅ "table_15"
     });
 
-    console.log("🔥 [STORECONTEXT] Backend response:", response.data);
 
     if (response.data.success) {
-      console.log("✅ [STORECONTEXT] Table cart cleared successfully in database");
       setCartItems(response.data.cartData || {});
-    } else {
-      console.log("❌ [STORECONTEXT] Backend failed:", response.data.message);
-    }
+    } 
 
     // ✅ RESTARTEAZĂ POLLING DUPĂ 3 SECUNDE
     setTimeout(() => {
-      console.log("🔄 [STORECONTEXT] Restarting polling");
       startCartPolling();
     }, 3000);
 
@@ -479,67 +516,94 @@ const updateCartItemQuantity = async (
   newQuantity,
   specialInstructions = ""
 ) => {
-  // ✅ OPREȘTE POLLING-UL TEMPORAR
-  setIsUpdatingCart(true);
-  if (intervalRef.current) {
-    clearInterval(intervalRef.current);
-    intervalRef.current = null;
-  }
-
-  const tableNumber = localStorage.getItem("tableNumber"); // ✅ IA TABLE NUMBER
-  if (!tableNumber) {
-    toast.error("Please select a table first");
-    setIsUpdatingCart(false);
-    return;
-  }
-
-  const updatedCart = { ...cartItems };
-
-  if (newQuantity <= 0) {
-    delete updatedCart[itemId];
-  } else {
-    updatedCart[itemId] = {
-      ...updatedCart[itemId],
-      quantity: newQuantity,
-      specialInstructions: specialInstructions,
-    };
-  }
-
-  setCartItems(updatedCart);
-  localStorage.setItem("cartItems", JSON.stringify(updatedCart));
-
-  // if (specialInstructions && specialInstructions.trim() !== "") {
-  //   await forceSyncInstructions(itemId, specialInstructions);
-  // }
-
-  // ✅ TRIMITE TABLE NUMBER ÎN LOC DE USER ID
   try {
-    const response = await axios.post(
-      url + "/api/cart/update",
-      {
-        userId: "table_" + tableNumber, // ✅ "table_15"
-        itemId,
-        newQuantity,
-        specialInstructions,
+    
+    const tableNumber = localStorage.getItem("tableNumber");
+    if (!tableNumber) {
+      toast.error("Please select a table first");
+      return;
+    }
+
+
+    // ✅ OPREȘTE POLLING-UL TEMPORAR (ca în addToCart)
+    setIsUpdatingCart(true);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    // ✅ 1. UPDATE IMEDIAT LOCAL FIRST (ca în addToCart)
+    setCartItems((prev) => {
+      const updatedCart = { ...prev };
+
+      if (newQuantity <= 0) {
+        delete updatedCart[itemId];
+      } else {
+        updatedCart[itemId] = {
+          ...updatedCart[itemId],
+          quantity: newQuantity,
+          specialInstructions: specialInstructions,
+        };
       }
-    );
 
-    if (response.data.success && response.data.cartData) {
-      const validatedCart = validateCartStructure(response.data.cartData);
-      setCartItems(validatedCart);
-      localStorage.setItem("cartItems", JSON.stringify(validatedCart));
+      return updatedCart;
+    });
+
+    const currentCartItem = cartItems[itemId];
+    if (!currentCartItem) {
+      console.error("❌ [UPDATE] Item not found in cart");
+      return;
     }
+
+    // Calculează diferența față de cantitatea anterioară
+    const currentQuantity = currentCartItem.quantity || 0;
+    const quantityDifference = newQuantity - currentQuantity;
+
+
+    if (quantityDifference === 0) {
+      return;
+    }
+
+    if (quantityDifference > 0) {
+      // Adaugă diferența folosind ACELAȘI ENDPOINT ca în addToCart
+      await axios.post(url + "/api/cart/add-by-table", {
+        tableNumber: parseInt(tableNumber),
+        itemId: itemId,
+        quantity: quantityDifference,
+        specialInstructions: specialInstructions,
+        selectedOptions: currentCartItem.selectedOptions || [],
+        itemData: currentCartItem.itemData || {
+          baseFoodId: itemId.split("__")[0],
+          unitPrice: 0,
+          extrasPrice: 0,
+        },
+      });
+    } else {
+      // Elimină diferența folosind ACELAȘI ENDPOINT ca în removeFromCart
+      const removeQuantity = Math.abs(quantityDifference);
+      await axios.post(url + "/api/cart/remove", {
+        userId: "table_" + tableNumber,
+        itemId: itemId,
+        quantity: removeQuantity
+      });
+    }
+
   } catch (error) {
-    if (error.response?.data?.clearCart) {
-      clearLocalCartAndLogout();
+    console.error("❌ [UPDATE] Error updating cart item:", error);
+    
+    if (error.response) {
+      console.error("❌ [UPDATE] Server error:", error.response.data);
+      toast.error("Failed to update quantity");
+    } else {
+      toast.error("Network error - please try again");
     }
+  } finally {
+    // ✅ RESTARTEAZĂ POLLING-UL (ca în addToCart)
+    setTimeout(() => {
+      setIsUpdatingCart(false);
+      startCartPolling();
+    }, 3000);
   }
-
-  // ✅ RESTARTEAZĂ POLLING-UL DUPĂ 5 SECUNDE
-  setTimeout(() => {
-    setIsUpdatingCart(false);
-    startCartPolling();
-  }, 5000);
 };
 
   const getTotalCartAmount = () => {

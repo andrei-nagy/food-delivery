@@ -19,10 +19,17 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     const currentY = useRef(0);
     const isDragging = useRef(false);
 
+    // Safe access to food properties
+    const foodDescription = food?.description || "";
+    const foodName = food?.name || "";
+    const foodPrice = food?.price || 0;
+    const foodImage = food?.image || "";
+    const foodExtras = food?.extras || [];
+    const foodId = food?._id || "";
+
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && food) {
             document.body.style.overflow = 'hidden';
-            // Forțează recalcularea layout-ului
             setTimeout(() => {
                 window.dispatchEvent(new Event('resize'));
             }, 100);
@@ -42,10 +49,10 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         return () => {
             document.body.style.overflow = '';
         };
-    }, [isOpen]);
+    }, [isOpen, food]);
 
     useEffect(() => {
-        if (descriptionRef.current) {
+        if (descriptionRef.current && food) {
             if (isDescriptionExpanded) {
                 setDescriptionHeight(`${descriptionRef.current.scrollHeight}px`);
             } else {
@@ -54,7 +61,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                 });
             }
         }
-    }, [isDescriptionExpanded, food.description]);
+    }, [isDescriptionExpanded, foodDescription, food]);
 
     const handleOptionChange = (option) => {
         setValidationError("");
@@ -69,11 +76,13 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     const handleDragStart = (e) => {
         isDragging.current = true;
         dragStartY.current = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-        modalRef.current.style.transition = 'none';
+        if (modalRef.current) {
+            modalRef.current.style.transition = 'none';
+        }
     };
 
     const handleDrag = (e) => {
-        if (!isDragging.current) return;
+        if (!isDragging.current || !modalRef.current) return;
         
         const y = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
         const deltaY = y - dragStartY.current;
@@ -86,6 +95,8 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
 
     const handleDragEnd = () => {
         isDragging.current = false;
+        if (!modalRef.current) return;
+        
         modalRef.current.style.transition = 'transform 0.3s ease';
         
         if (currentY.current > 100) {
@@ -143,7 +154,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
             const y = e.touches[0].clientY;
             const deltaY = y - dragStartY.current;
             
-            if (deltaY > 0) {
+            if (deltaY > 0 && modalRef.current) {
                 currentY.current = deltaY;
                 modalRef.current.style.transform = `translateY(${deltaY}px)`;
             }
@@ -177,35 +188,34 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     const increase = () => setSelectedQuantity(q => q + 1);
     const decrease = () => setSelectedQuantity(q => Math.max(1, q - 1));
     
-// ✅ CORECT: Generează ID compatibil cu backend
-const generateCartItemId = () => {
-    // ✅ FOLOSEȘTE food._id care este ID-ul real din MongoDB
-    const baseId = food._id; // ← SCHIMBĂ ASTA!
-    const extrasString = selectedOptions.sort().join(',');
-    
-    // ✅ INCLUDE specialInstructions în ID pentru a crea item-uri separate
-    const instructionsHash = specialInstructions 
-        ? btoa(specialInstructions).substring(0, 8).replace(/=/g, '')
-        : '';
-    
-    if (extrasString && instructionsHash) {
-        return `${baseId}__${btoa(extrasString).replace(/=/g, '')}__${instructionsHash}`;
-    } else if (extrasString) {
-        return `${baseId}__${btoa(extrasString).replace(/=/g, '')}`;
-    } else if (instructionsHash) {
-        return `${baseId}____${instructionsHash}`;
-    } else {
-        return `${baseId}__`;
-    }
-};
-
-    // Calculează prețul total cu extrasele selectate
-    const calculateTotalPrice = () => {
-        let total = food.price * selectedQuantity;
+    const generateCartItemId = () => {
+        if (!foodId) return "";
         
-        // Adaugă prețul extraselor selectate
+        const baseId = foodId;
+        const extrasString = selectedOptions.sort().join(',');
+        
+        const instructionsHash = specialInstructions 
+            ? btoa(specialInstructions).substring(0, 8).replace(/=/g, '')
+            : '';
+        
+        if (extrasString && instructionsHash) {
+            return `${baseId}__${btoa(extrasString).replace(/=/g, '')}__${instructionsHash}`;
+        } else if (extrasString) {
+            return `${baseId}__${btoa(extrasString).replace(/=/g, '')}`;
+        } else if (instructionsHash) {
+            return `${baseId}____${instructionsHash}`;
+        } else {
+            return `${baseId}__`;
+        }
+    };
+
+    const calculateTotalPrice = () => {
+        if (!food) return 0;
+        
+        let total = foodPrice * selectedQuantity;
+        
         selectedOptions.forEach(optionName => {
-            const extra = food.extras?.find(extra => extra.name === optionName);
+            const extra = foodExtras.find(extra => extra.name === optionName);
             if (extra) {
                 total += extra.price * selectedQuantity;
             }
@@ -214,35 +224,29 @@ const generateCartItemId = () => {
         return total;
     };
 
-    // ✅ CORECTAT: Funcție cu debugging extins
     const handleAddToCart = () => {
         if (!food) {
             console.error("Food object is undefined!");
             closeModal();
             return;
         }
-        
 
         const cartItemId = generateCartItemId();
-        // Pregătește datele pentru coș
-      const cartItemData = {
-    baseFoodId: food._id, // ← SCHIMBĂ ȘI AICIA!
-    quantity: selectedQuantity,
-    specialInstructions: specialInstructions,
-    selectedOptions: selectedOptions,
-    unitPrice: food.price,
-    extrasPrice: selectedOptions.reduce((total, optionName) => {
-        const extra = food.extras?.find(extra => extra.name === optionName);
-        return total + (extra?.price || 0);
-    }, 0)
-};
+        const cartItemData = {
+            baseFoodId: foodId,
+            quantity: selectedQuantity,
+            specialInstructions: specialInstructions,
+            selectedOptions: selectedOptions,
+            unitPrice: foodPrice,
+            extrasPrice: selectedOptions.reduce((total, optionName) => {
+                const extra = foodExtras.find(extra => extra.name === optionName);
+                return total + (extra?.price || 0);
+            }, 0)
+        };
         
-        
-        // ✅ Trimite specialInstructions către addToCart
         addToCart(cartItemId, selectedQuantity, specialInstructions, selectedOptions, cartItemData);
         closeModal();
     };
-
 
     const handleAddButton = (e) => {
         e.preventDefault();
@@ -257,10 +261,11 @@ const generateCartItemId = () => {
     };
 
     const truncateDescription = (text, maxLength) => {
-        if (text.length <= maxLength) return text;
+        if (!text || text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
     };
 
+    // Early return if no food or not open
     if (!isOpen || !food) return null;
 
     return (
@@ -277,13 +282,20 @@ const generateCartItemId = () => {
                         onTouchStart={handleDragStart}
                     ></div>
                     <div className="food-item-modal-header">
-                        <h2 className="food-item-modal-title">{food.name}</h2>
+                        <h2 className="food-item-modal-title">{foodName}</h2>
                         <button className="food-item-modal-close-btn" onClick={closeModal}>✕</button>
                     </div>
                 </div>
                 
                 <div className="food-item-modal-body">
-                    <img src={url + "/images/" + food.image} alt={food.name} className="food-item-modal-image" />
+                    <img 
+                        src={url + "/images/" + foodImage} 
+                        alt={foodName} 
+                        className="food-item-modal-image" 
+                        onError={(e) => {
+                            e.target.style.display = 'none';
+                        }}
+                    />
                     
                     <div className="food-item-modal-description-wrapper">
                         <div 
@@ -293,13 +305,13 @@ const generateCartItemId = () => {
                         >
                             <div className="food-item-modal-description-content">
                                 {isDescriptionExpanded 
-                                    ? food.description
-                                    : truncateDescription(food.description, 200)
+                                    ? foodDescription
+                                    : truncateDescription(foodDescription, 200)
                                 }
                             </div>
                         </div>
                         
-                        {food.description.length > 200 && (
+                        {foodDescription.length > 200 && (
                             <button 
                                 className="food-item-modal-view-more"
                                 onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
@@ -314,7 +326,7 @@ const generateCartItemId = () => {
                     </div>
                     
                     <div className="food-item-modal-price-section">
-                        <span className="food-item-modal-current-price">{food.price.toFixed(2)} €</span>
+                        <span className="food-item-modal-current-price">{foodPrice.toFixed(2)} €</span>
                         {food.originalPrice && (
                             <span className="food-item-modal-original-price">{food.originalPrice.toFixed(2)} €</span>
                         )}
@@ -322,15 +334,16 @@ const generateCartItemId = () => {
                     
                     <div className="food-item-modal-ingredients">
                         <h3 className="food-item-modal-section-title">Ingrediente</h3>
-                        <p className="food-item-modal-section-content">Orez (120g), creveți tempura (produs decongelat) (45g), castravete (20g), cremă de brânză (25g), iree tobiko (produs decongelat) (10g), mango (15g), sos sriracha (5g), sos de ananas (5g), alge nori (1g) - 246g.</p>
+                        <p className="food-item-modal-section-content">
+                            {foodDescription || "Ingredientele nu sunt disponibile momentan."}
+                        </p>
                     </div>
                     
-                    {/* SECȚIUNEA EXTRASELOR DIN BAZA DE DATE */}
-                    {food.extras && food.extras.length > 0 && (
+                    {foodExtras.length > 0 && (
                         <div className="food-item-modal-remove-section" ref={optionsRef}>
                             <h3 className="food-item-modal-section-title">Extra opțiuni (opțional)</h3>
                             <div className="food-item-modal-remove-options">
-                                {food.extras.map((extra) => (
+                                {foodExtras.map((extra) => (
                                     <label key={extra._id || extra.name} className="food-item-modal-remove-option">
                                         <input 
                                             type="checkbox" 
@@ -376,7 +389,7 @@ const generateCartItemId = () => {
                             onClick={handleAddButton}
                             onTouchEnd={handleAddButton}
                         >
-                            Adaugă {calculateTotalPrice().toFixed(2)} €
+                            Add {calculateTotalPrice().toFixed(2)} €
                         </button>
                     </div>
                 </div>

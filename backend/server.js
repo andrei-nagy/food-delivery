@@ -116,6 +116,5 @@ app.get("/", (req, res) => {
 
 // Start Server
 app.listen(port, '0.0.0.0', () => {
-  console.log(`🚀🚀🚀 SERVER STARTED WITH UPDATED CART CONTROLLER! 🚀🚀🚀`)
   console.log(`🚀 Server started on http://0.0.0.0:${port}`)
 })

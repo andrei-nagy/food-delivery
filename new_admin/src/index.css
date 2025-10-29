@@ -2,20 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @layer base {
     .dark {
-        @apply bg-gray-900 text-white; /* Fundal întunecat și text alb */
+        @apply bg-gray-900 text-white;
     }
   
-    
     .dark .sidebar {
-        @apply bg-gray-800; /* Fundalul sidebar-ului în dark mode */
+        @apply bg-gray-800;
     }
     
     .dark .button {
-        @apply bg-gray-600; /* Fundalul butoanelor în dark mode */
+        @apply bg-gray-600;
     }
-
-    /* Poți adăuga și alte stiluri specifice pentru dark mode aici */
 }
