@@ -202,18 +202,7 @@ const OrdersHistoryTable = () => {
                 </div>
             </div>
 
-            {/* Reset filters button */}
-            {(searchTerm || Object.values(columnFilters).some(filter => filter !== "")) && (
-                <div className="mb-4">
-                    <button
-                        onClick={resetFilters}
-                        className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-500 transition-colors"
-                    >
-                        Reset All Filters
-                    </button>
-                </div>
-            )}
-
+    
             <div className='overflow-x-auto'>
                 <table className='min-w-full divide-y divide-gray-700'>
                     <thead>
@@ -393,20 +382,91 @@ const OrdersHistoryTable = () => {
                 )}
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-                <div className='flex justify-center mt-4'>
-                    {Array.from({ length: totalPages }, (_, index) => (
-                        <button
-                            key={index + 1}
-                            onClick={() => paginate(index + 1)}
-                            className={`mx-1 px-3 py-1 rounded ${currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
-                        >
-                            {index + 1}
-                        </button>
-                    ))}
-                </div>
-            )}
+
+{/* Pagination */}
+{totalPages > 1 && (
+  <div className="flex justify-center items-center mt-6 space-x-2">
+    {/* Buton Previous */}
+    <button
+      onClick={() => paginate(Math.max(1, currentPage - 1))}
+      disabled={currentPage === 1}
+      className={`px-3 py-2 rounded-lg ${
+        currentPage === 1
+          ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+      }`}
+    >
+      ←
+    </button>
+
+    {/* Prima pagină */}
+    {currentPage > 3 && (
+      <>
+        <button
+          onClick={() => paginate(1)}
+          className="px-3 py-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600"
+        >
+          1
+        </button>
+        {currentPage > 4 && <span className="px-2 text-gray-400">...</span>}
+      </>
+    )}
+
+    {/* Paginile din mijloc */}
+    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+      let pageNum;
+      if (currentPage <= 3) {
+        pageNum = i + 1;
+      } else if (currentPage >= totalPages - 2) {
+        pageNum = totalPages - 4 + i;
+      } else {
+        pageNum = currentPage - 2 + i;
+      }
+
+      if (pageNum < 1 || pageNum > totalPages) return null;
+
+      return (
+        <button
+          key={pageNum}
+          onClick={() => paginate(pageNum)}
+          className={`px-3 py-2 rounded-lg ${
+            currentPage === pageNum
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+          }`}
+        >
+          {pageNum}
+        </button>
+      );
+    })}
+
+    {/* Ultima pagină */}
+    {currentPage < totalPages - 2 && (
+      <>
+        {currentPage < totalPages - 3 && <span className="px-2 text-gray-400">...</span>}
+        <button
+          onClick={() => paginate(totalPages)}
+          className="px-3 py-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600"
+        >
+          {totalPages}
+        </button>
+      </>
+    )}
+
+    {/* Buton Next */}
+    <button
+      onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+      disabled={currentPage === totalPages}
+      className={`px-3 py-2 rounded-lg ${
+        currentPage === totalPages
+          ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+      }`}
+    >
+      →
+    </button>
+  </div>
+)}
         </motion.div>
     );
 };

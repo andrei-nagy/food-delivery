@@ -295,3 +295,133 @@
     height: 25px;
   }
 }
+
+/* Stiluri pentru modalul de opțiuni de plată */
+.payment-options-modal {
+  max-width: 450px;
+}
+
+.payment-options-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.payment-option-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 25px 20px;
+  border: 2px solid #f1f3f5;
+  border-radius: 16px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.payment-option-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.payment-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 15px;
+  border-radius: 15px;
+  background: #f8f9fa;
+}
+
+.payment-icon {
+  font-size: 28px;
+}
+
+.payment-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3436;
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+.payment-description {
+  font-size: 0.85rem;
+  color: #636e72;
+  text-align: center;
+}
+
+/* Culori specifice pentru fiecare opțiune de plată */
+.card-payment:hover {
+  border-color: #74b9ff;
+  background-color: rgba(116, 185, 255, 0.05);
+}
+
+.card-payment .payment-icon-wrapper {
+  background-color: rgba(116, 185, 255, 0.15);
+}
+
+.card-payment .payment-icon {
+  color: #0984e3;
+}
+
+.cash-payment:hover {
+  border-color: #00b894;
+  background-color: rgba(0, 184, 148, 0.05);
+}
+
+.cash-payment .payment-icon-wrapper {
+  background-color: rgba(0, 184, 148, 0.15);
+}
+
+.cash-payment .payment-icon {
+  color: #00b894;
+}
+
+/* Responsivitate pentru opțiunile de plată */
+@media (max-width: 600px) {
+  .payment-options-modal {
+    max-width: 400px;
+  }
+  
+  .payment-option-btn {
+    padding: 20px 15px;
+  }
+  
+  .payment-icon-wrapper {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .payment-icon {
+    font-size: 24px;
+  }
+  
+  .payment-label {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .payment-options-modal {
+    max-width: 350px;
+  }
+  
+  .payment-option-btn {
+    padding: 18px 12px;
+  }
+  
+  .payment-icon-wrapper {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .payment-icon {
+    font-size: 22px;
+  }
+}

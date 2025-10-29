@@ -139,7 +139,6 @@ const getUserId = () => {
   //   }
   // };
 const startOrdersPolling = () => {
-  console.log("⏰ [DEBUG] Starting orders polling");
   fetchUserOrders();
   ordersIntervalRef.current = setInterval(fetchUserOrders, 5000); // La 5 secunde ca în OrdersTable
 };
@@ -196,7 +195,6 @@ const startCartPolling = () => {
  const fetchUserOrders = async () => {
   if (!token) return;
 
-  console.log("🔍 [DEBUG] fetchUserOrders called");
 
   try {
     const response = await axios.post(
@@ -205,13 +203,11 @@ const startCartPolling = () => {
       { headers: { token } }
     );
 
-    console.log("📦 [DEBUG] User orders response:", response.data);
 
     if (response.data && response.data.data) {
       const unpaidOrders = response.data.data.filter(
         (order) => !order.payment
       );
-      console.log("💰 [DEBUG] Unpaid orders:", unpaidOrders.length);
       setUserOrders(unpaidOrders);
       checkStatusChanges(unpaidOrders);
     }
@@ -223,24 +219,19 @@ const startCartPolling = () => {
   }
 };
 const checkStatusChanges = (newOrders) => {
-  console.log("🔄 [DEBUG] checkStatusChanges - new orders:", newOrders.length);
   
   const newStatusMap = {};
   newOrders.forEach((order) => {
     if (order && order._id) {
       newStatusMap[order._id] = order.status;
-      console.log(`   Order ${order._id}: ${order.status}`);
     }
   });
 
-  console.log("📊 [DEBUG] Previous status ref:", previousOrderStatusRef.current);
-  console.log("📊 [DEBUG] New status map:", newStatusMap);
 
   let hasChanges = false;
 
   // ✅ MODIFICARE: Dacă previousStatusRef este gol, îl inițializăm dar nu arătăm notificări
   if (Object.keys(previousOrderStatusRef.current).length === 0) {
-    console.log("🆕 [DEBUG] First time initialization - no notifications");
     previousOrderStatusRef.current = newStatusMap;
     setPreviousOrderStatus(newStatusMap);
     return;
@@ -251,8 +242,7 @@ const checkStatusChanges = (newOrders) => {
       newStatusMap[orderId] &&
       previousOrderStatusRef.current[orderId] !== newStatusMap[orderId]
     ) {
-      console.log("🎯 [DEBUG] STATUS CHANGE DETECTED!");
-      console.log(`   Order ${orderId}: ${previousOrderStatusRef.current[orderId]} -> ${newStatusMap[orderId]}`);
+   
       showStatusNotification(newStatusMap[orderId]);
       hasChanges = true;
     }
@@ -261,7 +251,6 @@ const checkStatusChanges = (newOrders) => {
   previousOrderStatusRef.current = newStatusMap;
   setPreviousOrderStatus(newStatusMap);
   
-  console.log("✅ [DEBUG] Status check completed. Changes found:", hasChanges);
 };
 
 const showStatusNotification = (status) => {
@@ -282,7 +271,6 @@ const showStatusNotification = (status) => {
   }
 
   const notificationObj = { id: Date.now(), message };
-  console.log("📢 [DEBUG] showStatusNotification:", notificationObj);
 
   setNotification(notificationObj);
 
