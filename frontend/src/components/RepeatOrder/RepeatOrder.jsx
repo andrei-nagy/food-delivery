@@ -17,6 +17,7 @@ const RepeatOrder = () => {
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasOrders, setHasOrders] = useState(false);
+  const [hasUnpaidOrders, setHasUnpaidOrders] = useState(false);
   const [quantities, setQuantities] = useState({});
   const navigate = useNavigate();
   const swiperRef = useRef(null);
@@ -44,12 +45,24 @@ const RepeatOrder = () => {
         const sortedOrders = allOrders.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
         setRecentOrders(sortedOrders);
         setHasOrders(true);
+        
+        // Verifică dacă există comenzi neplătite
+        const hasUnpaid = sortedOrders.some(order => 
+          order.payment === false || 
+          order.payment === null || 
+          order.payment === undefined ||
+          order.status === 'pending' ||
+          order.status === 'processing'
+        );
+        setHasUnpaidOrders(hasUnpaid);
       } else {
         setHasOrders(false);
+        setHasUnpaidOrders(false);
       }
     } catch (error) {
       console.error("Error fetching recent orders", error);
       setHasOrders(false);
+      setHasUnpaidOrders(false);
     } finally {
       setLoading(false);
     }
@@ -71,43 +84,44 @@ const RepeatOrder = () => {
     }
   };
 
-const handleRepeatSingleItem = async (item) => {
-  try {
-    pauseAutoplayTemporarily();
+  const handleRepeatSingleItem = async (item) => {
+    try {
+      pauseAutoplayTemporarily();
 
-    const itemId = item.foodId || item._id;
-    const quantity = quantities[itemId] || 1;
-    
-    if (!itemId) {
-      console.error("❌ Invalid item data - no item ID found");
-      return;
-    }
+      const itemId = item.foodId || item._id;
+      const quantity = quantities[itemId] || 1;
+      
+      if (!itemId) {
+        console.error("❌ Invalid item data - no item ID found");
+        return;
+      }
 
-    if (!addToCart) {
-      console.error("❌ addToCart function is not available");
-      return;
-    }
+      if (!addToCart) {
+        console.error("❌ addToCart function is not available");
+        return;
+      }
 
-    // ✅ SOLUȚIA: Folosește direct parametrul quantity
-    addToCart(itemId, quantity);
-  toast.success(`${item.name} x${quantity} added!`, {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });    
-    const button = document.querySelector(`[data-item-id="${itemId}"]`);
-    if (button) {
-      button.classList.add('added');
-      setTimeout(() => button.classList.remove('added'), 500);
+      // ✅ SOLUȚIA: Folosește direct parametrul quantity
+      addToCart(itemId, quantity);
+      toast.success(`${item.name} x${quantity} added!`, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });    
+      
+      const button = document.querySelector(`[data-item-id="${itemId}"]`);
+      if (button) {
+        button.classList.add('added');
+        setTimeout(() => button.classList.remove('added'), 500);
+      }
+      
+    } catch (error) {
+      console.error("❌ Error adding item to cart:", error);
     }
-    
-  } catch (error) {
-    console.error("❌ Error adding item to cart:", error);
-  }
-};
+  };
 
   const handleQuantityChange = (itemId, change) => {
     pauseAutoplayTemporarily();
@@ -135,25 +149,38 @@ const handleRepeatSingleItem = async (item) => {
     const allProducts = [];
     
     recentOrders.forEach(order => {
-      order.items.forEach(item => {
-        const existingIndex = allProducts.findIndex(
-          prod => (prod.foodId || prod._id) === (item.foodId || item._id)
-        );
+      // Include doar produse din comenzi neplătite
+      if (order.payment === false || 
+          order.payment === null || 
+          order.payment === undefined ||
+          order.status === 'pending' ||
+          order.status === 'processing') {
         
-        if (existingIndex === -1) {
-          allProducts.push({
-            ...item,
-            orderDate: order.date,
-            orderStatus: order.payment ? 'completed' : 'pending'
-          });
-        }
-      });
+        order.items.forEach(item => {
+          const existingIndex = allProducts.findIndex(
+            prod => (prod.foodId || prod._id) === (item.foodId || item._id)
+          );
+          
+          if (existingIndex === -1) {
+            allProducts.push({
+              ...item,
+              orderDate: order.date,
+              orderStatus: order.payment ? 'completed' : 'pending'
+            });
+          }
+        });
+      }
     });
     
     return allProducts;
   };
 
   const uniqueProducts = getAllUniqueProducts();
+
+  // Dacă toate comenzile sunt plătite, nu afișa componenta
+  if (!hasUnpaidOrders) {
+    return null;
+  }
 
   if (loading) {
     return (
@@ -191,7 +218,7 @@ const handleRepeatSingleItem = async (item) => {
     );
   }
 
-  if (!hasOrders || recentOrders.length === 0) {
+  if (!hasOrders || recentOrders.length === 0 || uniqueProducts.length === 0) {
     return null;
   }
 
@@ -201,23 +228,12 @@ const handleRepeatSingleItem = async (item) => {
         <div className="repeat-order-header-left">
           <span className="repeat-order-title">Repeat Your Order</span>
           <small className="repeat-order-subtitle">
-            Quick reorder from your history
+            Quick reorder from unpaid orders
           </small>
         </div>
-        
-        {/* {uniqueProducts.length > 5 && (
-          <Link to="/order-history" className="repeat-order-view-more">
-            View All
-            <FaArrowRight className="repeat-order-arrow-icon" />
-          </Link>
-        )} */}
       </div>
 
       <div className="repeat-order-swiper-container">
-        {/* <button className="swiper-custom-button swiper-custom-prev">
-          <FaChevronLeft />
-        </button> */}
-        
         <Swiper
           modules={[Autoplay, Navigation, Pagination]}
           spaceBetween={16}
@@ -229,14 +245,11 @@ const handleRepeatSingleItem = async (item) => {
             pauseOnMouseEnter: true
           }}
           speed={600}
-        //   navigation={{
-        //     nextEl: '.swiper-custom-next',
-        //     prevEl: '.swiper-custom-prev',
-        //   }}
           pagination={{
             clickable: true,
             type: 'bullets',
- el: '.swiper-pagination-medium',          }}
+            el: '.swiper-pagination-medium',
+          }}
           onSwiper={(swiper) => {
             swiperRef.current = swiper;
           }}
@@ -280,9 +293,6 @@ const handleRepeatSingleItem = async (item) => {
                           e.target.src = '/images/placeholder-food.jpg';
                         }}
                       />
-                      {/* <div className="repeat-product-badge-medium">
-                        {item.orderStatus === 'completed' ? '✅ Completed' : '⏳ Pending'}
-                      </div> */}
                     </div>
                   </div>
 
@@ -294,9 +304,6 @@ const handleRepeatSingleItem = async (item) => {
                         <div className="repeat-product-price-medium">
                           {item.price} €
                         </div>
-                        {/* <div className="repeat-product-date-medium">
-                          {formatDate(item.orderDate)}
-                        </div> */}
                       </div>
                     </div>
 
@@ -323,7 +330,6 @@ const handleRepeatSingleItem = async (item) => {
                         title={`Add ${quantity} ${item.name} to cart`}
                         data-item-id={itemId}
                       >
-                        {/* <FaPlus className="add-icon-medium" /> */}
                         Add
                       </button>
                     </div>
@@ -333,10 +339,6 @@ const handleRepeatSingleItem = async (item) => {
             );
           })}
         </Swiper>
-
-        {/* <button className="swiper-custom-button swiper-custom-next">
-          <FaChevronRight />
-        </button> */}
 
         <div className="swiper-pagination-medium"></div>
       </div>

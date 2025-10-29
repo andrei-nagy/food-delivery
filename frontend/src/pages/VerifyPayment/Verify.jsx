@@ -54,13 +54,12 @@ const Verify = () => {
     verifyPayment();
   }, [url]);
 
+  // Efect separat pentru countdown
   useEffect(() => {
     if (!isLoading && verificationStatus === 'success') {
       const timer = setInterval(() => {
         setCountdown((prevCountdown) => {
           if (prevCountdown <= 1) {
-            clearInterval(timer);
-            navigate("/");
             return 0;
           }
           return prevCountdown - 1;
@@ -69,7 +68,14 @@ const Verify = () => {
 
       return () => clearInterval(timer);
     }
-  }, [isLoading, verificationStatus, navigate]);
+  }, [isLoading, verificationStatus]);
+
+  // Efect separat pentru navigare - acesta rezolvă eroarea
+  useEffect(() => {
+    if (countdown === 0 && verificationStatus === 'success') {
+      navigate("/");
+    }
+  }, [countdown, verificationStatus, navigate]);
 
   if (isLoading) {
     return (

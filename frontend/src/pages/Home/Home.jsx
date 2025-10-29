@@ -31,7 +31,6 @@ const Home = () => {
       ) : (
         <>
           <Header />
-          {/* ✅ RepeatOrder se va auto-ascunde dacă nu are date */}
           <RepeatOrder />
           <ExploreMenu category={category} setCategory={setCategory} />
           <FoodDisplay category={category} />
