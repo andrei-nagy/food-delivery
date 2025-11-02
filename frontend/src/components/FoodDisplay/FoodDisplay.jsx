@@ -190,8 +190,8 @@ const GENERIC_FOOD_PLACEHOLDER = "https://images.unsplash.com/photo-1546069901-b
                       key={item._id}
                       {...item}
                       swiperRef={swiperRef}
-                      openModal={(food) => {
-                        setSelectedFood(food);
+                      openModal={() => {
+                        setSelectedFood(item);
                         setIsModalOpen(true);
                       }}
                      
@@ -226,8 +226,8 @@ const GENERIC_FOOD_PLACEHOLDER = "https://images.unsplash.com/photo-1546069901-b
                       <FoodItem
                         key={item._id}
                         {...item}
-                        openModal={(food) => {
-                          setSelectedFood(food);
+                        openModal={() => {
+                          setSelectedFood(item);
                           setIsModalOpen(true);
                         }}
                       />

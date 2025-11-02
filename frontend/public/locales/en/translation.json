@@ -29,5 +29,25 @@
   "order_placed": "Your order has been placed successfully.",
   "order_placed_description_first": "We are preparing your delicious meal, and it will be served at your table shortly.",
   "order_placed_description_2": "If you have any questions or need further assistance, feel free to let us know.",
-  "rate_out_application": "Rate our application:"
+  "rate_out_application": "Rate our application:",
+  "place_order": "Place order",
+  "processing_order": "Processing order",
+  "your_order": "Your order",
+  "add_more_items": "Add more items",
+  "other_products": "What others also ordered",
+  "popular_choices": "Popular choices you might like",
+  "ordered_times": "Ordered {{count}} times",
+    "special_instructions": "Special instructions for entire order",
+      "special_instructions_placeholder": "Any special requests or dietary requirements for the entire order?",
+        "order_summary": "Order summary",
+  "subtotal": "Subtotal",
+  "total": "Total",
+  "remove_item": "Remove item",
+  "remove_confirmation": "Are you sure you want to remove this item from your cart?",
+  "cancel": "Cancel", 
+  "remove": "Remove",
+  "clear_cart": "Clear cart",
+  "clear_cart_confirmation": "Are you sure you want to remove all items from your cart?",
+  "clear_all": "Clear all"
+
 }

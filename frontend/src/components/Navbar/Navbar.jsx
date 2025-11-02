@@ -352,7 +352,11 @@ const Navbar = ({ setShowLogin }) => {
                 ? "mobile-footer-item"
                 : "mobile-footer-item dot"
             }
-            onClick={handleOpenModalMyOrders}
+            // onClick={handleOpenModalMyOrders}
+             onClick={() => {
+              navigate("/myorders");
+              window.scrollTo(0, 0);
+            }}
           >
             <img src={assets.new_pay} alt="Pay Icon" />
             <span> {t("pay")}</span>

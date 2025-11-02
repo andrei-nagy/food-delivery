@@ -1,4 +1,4 @@
-/* Cart.css - Modern Redesign cu descrieri limitate */
+/* Cart.css - Modern Redesign cu descrieri sub titlu și note/extras sub descriere */
 
 /* Stiluri specifice doar pentru pagina Cart */
 body.cart-page .app {
@@ -72,8 +72,8 @@ body.cart-page header > div:first-child {
   align-items: center;
   justify-content: space-between;
   padding: 16px 0 16px;
-  margin-bottom: 16px;
-  border-bottom: 1px solid #e9ecef;
+  /* margin-bottom: 16px;
+  border-bottom: 1px solid #e9ecef; */
 }
 
 .cart-header-section .back-button {
@@ -188,10 +188,10 @@ body.cart-page header > div:first-child {
 }
 
 /* Cart Content */
-.cart-content {
+.cart-content-content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  /* gap: 24px; */
 }
 
 .section-title {
@@ -271,21 +271,27 @@ body.cart-page header > div:first-child {
 .item-details {
   flex: 1;
   min-width: 0; /* Essential for text overflow */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .item-name {
   font-size: 16px;
   font-weight: 600;
   color: #212529;
-  margin-bottom: 6px;
+  margin: 0;
   line-height: 1.3;
+  text-align: left;
 }
 
+/* DESCRIEREA SUB TITLU */
 .item-description {
   font-size: 14px;
   color: #6c757d;
-  margin-bottom: 8px;
+  margin: 0;
   line-height: 1.4;
+  text-align: left;
 
   /* Limit description to 2 lines with ellipsis */
   display: -webkit-box;
@@ -298,11 +304,49 @@ body.cart-page header > div:first-child {
   max-height: 2.8em; /* line-height (1.4) * number of lines (2) */
 }
 
+/* NOTE + EXTRAS SUB DESCRIERE */
+.item-special-instructions {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.instructions-label {
+  font-weight: 600;
+  color: #856404;
+}
+
+.item-extras {
+  background: #e3f2fd;
+  border: 1px solid #bbdefb;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.extras-label {
+  font-weight: 600;
+  color: #1565c0;
+}
+
+.extras-price {
+  font-weight: 600;
+  color: #2e7d32;
+  margin-left: 4px;
+}
+
 .item-price {
   font-size: 16px;
   font-weight: 600;
   color: #e86514;
   margin-top: 4px;
+  text-align: left;
 }
 
 .quantity-controls {
@@ -316,7 +360,7 @@ body.cart-page header > div:first-child {
   margin-top: 8px;
 }
 
-.quantity-button {
+.quantity-button-order-order {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -332,15 +376,15 @@ body.cart-page header > div:first-child {
   flex-shrink: 0;
 }
 
-.quantity-button:hover {
+.quantity-button-order:hover {
   background: #e9ecef;
 }
 
-.quantity-button.decrease {
+.quantity-button-order.decrease {
   color: #dc3545;
 }
 
-.quantity-button.increase {
+.quantity-button-order.increase {
   color: #e86514;
 }
 
@@ -410,6 +454,7 @@ body.cart-page header > div:first-child {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 50px;
 }
 
 .summary-details {
@@ -914,7 +959,10 @@ body.cart-page header > div:first-child {
     font-size: 18px;
     margin-bottom: 16px;
   }
-
+ .cart-items-list .item-image {
+    width: 55px;
+    height: 55px;
+  }
   .cart-payment-option-content {
     padding: 14px;
   }
@@ -1424,11 +1472,11 @@ body.cart-page header > div:first-child {
 }
 
 /* Efect de hover smooth pentru butoane */
-.quantity-button {
+.quantity-button-order {
   transition: all 0.2s ease;
 }
 
-.quantity-button:hover {
+.quantity-button-order:hover {
   transform: scale(1.1);
   background: #f8f9fa;
 }
@@ -1483,4 +1531,608 @@ body.cart-page header > div:first-child {
   margin: 0;
   color: #666;
   line-height: 1.4;
+}
+
+/* Popular Products Section */
+.popular-products-section {
+  /* margin: 2rem 0; */
+  /* padding: 1.5rem; */
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 16px;
+  /* border: 1px solid rgba(255, 255, 255, 0.8); */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.popular-products-section .section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.popular-products-section .section-subtitle {
+  text-align: center;
+  color: #718096;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.popular-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.popular-product-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.popular-product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.popular-product-image {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.popular-product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.add-popular-product-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #48bb78, #38a169);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(72, 187, 120, 0.4);
+}
+
+.add-popular-product-btn:hover {
+  transform: scale(1.1);
+  background: linear-gradient(135deg, #38a169, #2f855a);
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.6);
+}
+
+.popular-product-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.popular-product-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.popular-product-price {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #48bb78;
+  margin-bottom: 0.5rem;
+}
+
+.popular-product-stats {
+  margin-top: auto;
+}
+
+.order-count {
+  font-size: 0.75rem;
+  color: #718096;
+  background: #f7fafc;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  display: inline-block;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .popular-products-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+  }
+  
+  .popular-product-card {
+    padding: 0.75rem;
+  }
+  
+  .popular-product-image {
+    height: 100px;
+  }
+  
+  .popular-products-section {
+    /* margin: 1.5rem 0; */
+    padding-top: 1rem;
+  }
+  
+  .popular-products-section .section-title {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .popular-products-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
+
+.popular-products-section .section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.popular-products-section .section-subtitle {
+  text-align: center;
+  color: #718096;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.popular-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.popular-product-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  cursor: pointer;
+}
+
+.popular-product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.popular-product-image {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+}
+
+.popular-product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+
+.popular-product-card:hover .popular-product-image img {
+  transform: scale(1.05);
+}
+
+.add-popular-product-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #48bb78, #38a169);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(72, 187, 120, 0.4);
+}
+
+.add-popular-product-btn:hover {
+  transform: scale(1.1);
+  background: linear-gradient(135deg, #38a169, #2f855a);
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.6);
+}
+
+/* Badge pentru cantitate - DESIGN PREMIUM */
+.popular-product-quantity-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 25px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  box-shadow: 
+    0 4px 15px rgba(102, 126, 234, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  /* z-index: 2; */
+  min-width: 20px;
+  max-width: 40px;
+  justify-content: center;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* .popular-product-quantity-badge:hover {
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 
+    0 6px 20px rgba(102, 126, 234, 0.5),
+    0 3px 6px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+} */
+
+.quantity-number {
+  font-size: 1rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff, #f0f4ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  min-width: 18px;
+  text-align: center;
+}
+
+.quantity-text {
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 0.95;
+  letter-spacing: -0.2px;
+  background: linear-gradient(135deg, #e2e8ff, #f0f4ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Efect de glow pentru badge */
+/* .popular-product-quantity-badge::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+  border-radius: 18px;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+} */
+
+.popular-product-quantity-badge:hover::before {
+  opacity: 0.3;
+}
+
+/* Icon pentru badge - varianta cu icon */
+.popular-product-quantity-badge.has-icon {
+  padding: 8px 10px 8px 8px;
+}
+
+.quantity-icon {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+}
+
+/* Variante alternative de culori pentru badge */
+.popular-product-quantity-badge.gold {
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+  box-shadow: 
+    0 4px 15px rgba(253, 160, 133, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.popular-product-quantity-badge.emerald {
+  background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%);
+  box-shadow: 
+    0 4px 15px rgba(59, 186, 146, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.popular-product-quantity-badge.rose {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+  box-shadow: 
+    0 4px 15px rgba(255, 107, 107, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive adjustments pentru design-ul premium */
+@media (max-width: 768px) {
+  .popular-product-quantity-badge {
+    padding: 6px 10px;
+    min-width: 30px;
+    font-size: 0.75rem;
+    border-radius: 30px;
+  }
+
+  .quantity-number {
+    font-size: 0.9rem;
+    min-width: 16px;
+  }
+
+  .quantity-text {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .popular-product-quantity-badge {
+    padding: 5px 8px;
+    min-width: 30px;
+    font-size: 0.7rem;
+    border-radius: 30px;
+    gap: 4px;
+  }
+
+  .quantity-number {
+    font-size: 0.85rem;
+  }
+
+  .quantity-text {
+    font-size: 0.6rem;
+  }
+}
+
+/* Container principal pentru item details */
+.item-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Info principală (titlu, descriere, note, extras) */
+.item-main-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Randul de jos cu preț și quantity controls */
+.item-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Quantity controls - acum în dreapta */
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8f9fa;
+  border-radius: 20px;
+  padding: 4px;
+  flex-shrink: 0;
+}
+
+.quantity-button-order {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: white;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.quantity-button-order:hover {
+  background: #e9ecef;
+}
+
+.quantity-button-order.decrease {
+  color: #dc3545;
+}
+
+.quantity-button-order.increase {
+  color: #e86514;
+}
+
+.quantity-display {
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Prețul în stânga */
+.item-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #e86514;
+  margin: 0;
+}
+
+/* Stiluri pentru item name și description */
+.item-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #212529;
+  margin: 0;
+  line-height: 1.3;
+  text-align: left;
+}
+
+.item-description {
+  font-size: 14px;
+  color: #6c757d;
+  margin: 0;
+  line-height: 1.4;
+  text-align: left;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 2.8em;
+}
+
+/* Stiluri pentru note și extras */
+.item-special-instructions {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.item-extras {
+  background: #e3f2fd;
+  border: 1px solid #bbdefb;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+/* Butoane pentru imagine și text */
+.item-image-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.item-image-button:hover {
+  transform: scale(1.05);
+}
+
+.item-name-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+.item-description-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: opacity 0.2s ease;
+}
+
+.item-description-button:hover {
+  opacity: 0.7;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .item-bottom-row {
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+  
+  .quantity-controls {
+    gap: 6px;
+    padding: 3px;
+  }
+  
+  .quantity-button-order {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .quantity-display {
+    font-size: 13px;
+    min-width: 18px;
+  }
+  
+  .item-price {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .item-bottom-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .quantity-controls {
+    align-self: flex-end;
+  }
+  
+  .item-price {
+    font-size: 14px;
+  }
 }

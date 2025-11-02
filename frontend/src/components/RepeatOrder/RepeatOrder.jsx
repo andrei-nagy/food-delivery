@@ -2,10 +2,17 @@ import React, { useContext, useState, useEffect, useRef } from "react";
 import { StoreContext } from "../../context/StoreContext";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FaPlus, FaMinus, FaArrowRight, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import {
+  FaPlus,
+  FaMinus,
+  FaArrowRight,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
+import { FaHeart } from "react-icons/fa";
 
 import "swiper/css";
 import "swiper/css/navigation";
@@ -39,20 +46,23 @@ const RepeatOrder = () => {
         {},
         { headers: { token } }
       );
-      
+
       const allOrders = response.data.data;
       if (allOrders && allOrders.length > 0) {
-        const sortedOrders = allOrders.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
+        const sortedOrders = allOrders
+          .sort((a, b) => new Date(b.date) - new Date(a.date))
+          .slice(0, 8);
         setRecentOrders(sortedOrders);
         setHasOrders(true);
-        
+
         // Verifică dacă există comenzi neplătite
-        const hasUnpaid = sortedOrders.some(order => 
-          order.payment === false || 
-          order.payment === null || 
-          order.payment === undefined ||
-          order.status === 'pending' ||
-          order.status === 'processing'
+        const hasUnpaid = sortedOrders.some(
+          (order) =>
+            order.payment === false ||
+            order.payment === null ||
+            order.payment === undefined ||
+            order.status === "pending" ||
+            order.status === "processing"
         );
         setHasUnpaidOrders(hasUnpaid);
       } else {
@@ -71,11 +81,11 @@ const RepeatOrder = () => {
   const pauseAutoplayTemporarily = () => {
     if (swiperRef.current && swiperRef.current.autoplay) {
       swiperRef.current.autoplay.stop();
-      
+
       if (autoplayTimeoutRef.current) {
         clearTimeout(autoplayTimeoutRef.current);
       }
-      
+
       autoplayTimeoutRef.current = setTimeout(() => {
         if (swiperRef.current && swiperRef.current.autoplay) {
           swiperRef.current.autoplay.start();
@@ -90,7 +100,7 @@ const RepeatOrder = () => {
 
       const itemId = item.foodId || item._id;
       const quantity = quantities[itemId] || 1;
-      
+
       if (!itemId) {
         console.error("❌ Invalid item data - no item ID found");
         return;
@@ -110,14 +120,13 @@ const RepeatOrder = () => {
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
-      });    
-      
+      });
+
       const button = document.querySelector(`[data-item-id="${itemId}"]`);
       if (button) {
-        button.classList.add('added');
-        setTimeout(() => button.classList.remove('added'), 500);
+        button.classList.add("added");
+        setTimeout(() => button.classList.remove("added"), 500);
       }
-      
     } catch (error) {
       console.error("❌ Error adding item to cart:", error);
     }
@@ -126,13 +135,13 @@ const RepeatOrder = () => {
   const handleQuantityChange = (itemId, change) => {
     pauseAutoplayTemporarily();
 
-    setQuantities(prev => {
+    setQuantities((prev) => {
       const currentQuantity = prev[itemId] || 1;
       const newQuantity = Math.max(1, currentQuantity + change);
-      
+
       return {
         ...prev,
-        [itemId]: newQuantity
+        [itemId]: newQuantity,
       };
     });
   };
@@ -141,37 +150,38 @@ const RepeatOrder = () => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-GB", {
       day: "numeric",
-      month: "short"
+      month: "short",
     });
   };
 
   const getAllUniqueProducts = () => {
     const allProducts = [];
-    
-    recentOrders.forEach(order => {
+
+    recentOrders.forEach((order) => {
       // Include doar produse din comenzi neplătite
-      if (order.payment === false || 
-          order.payment === null || 
-          order.payment === undefined ||
-          order.status === 'pending' ||
-          order.status === 'processing') {
-        
-        order.items.forEach(item => {
+      if (
+        order.payment === false ||
+        order.payment === null ||
+        order.payment === undefined ||
+        order.status === "pending" ||
+        order.status === "processing"
+      ) {
+        order.items.forEach((item) => {
           const existingIndex = allProducts.findIndex(
-            prod => (prod.foodId || prod._id) === (item.foodId || item._id)
+            (prod) => (prod.foodId || prod._id) === (item.foodId || item._id)
           );
-          
+
           if (existingIndex === -1) {
             allProducts.push({
               ...item,
               orderDate: order.date,
-              orderStatus: order.payment ? 'completed' : 'pending'
+              orderStatus: order.payment ? "completed" : "pending",
             });
           }
         });
       }
     });
-    
+
     return allProducts;
   };
 
@@ -187,13 +197,16 @@ const RepeatOrder = () => {
       <div className="repeat-order">
         <div className="repeat-order-header">
           <div className="repeat-order-header-left">
-            <span className="repeat-order-title">Repeat Your Order</span>
+            <span className="repeat-order-title">
+              Repeat Your Order{" "}
+            <FaHeart style={{ color: "orange", top: "3px", position: "relative" }} />
+            </span>
             <small className="repeat-order-subtitle">
               Quick reorder from your history
             </small>
           </div>
         </div>
-        
+
         <div className="repeat-order-swiper-container">
           <div className="repeat-order-swiper-loading">
             {[1, 2, 3, 4].map((item) => (
@@ -226,7 +239,10 @@ const RepeatOrder = () => {
     <div className="repeat-order">
       <div className="repeat-order-header">
         <div className="repeat-order-header-left">
-          <span className="repeat-order-title">Repeat Your Order</span>
+          <span className="repeat-order-title">
+            Repeat Your Order{" "}
+            <FaHeart style={{ color: "orange", top: "3px", position: "relative" }} />
+          </span>{" "}
           <small className="repeat-order-subtitle">
             Quick reorder from unpaid orders
           </small>
@@ -239,16 +255,16 @@ const RepeatOrder = () => {
           spaceBetween={16}
           slidesPerView={1.8}
           loop={uniqueProducts.length > 3}
-          autoplay={{ 
-            delay: 4000, 
+          autoplay={{
+            delay: 4000,
             disableOnInteraction: false,
-            pauseOnMouseEnter: true
+            pauseOnMouseEnter: true,
           }}
           speed={600}
           pagination={{
             clickable: true,
-            type: 'bullets',
-            el: '.swiper-pagination-medium',
+            type: "bullets",
+            el: ".swiper-pagination-medium",
           }}
           onSwiper={(swiper) => {
             swiperRef.current = swiper;
@@ -257,40 +273,40 @@ const RepeatOrder = () => {
             380: { slidesPerView: 2.0 },
             480: { slidesPerView: 2.3 },
             640: { slidesPerView: 2.8 },
-            768: { 
+            768: {
               slidesPerView: 3.3,
-              spaceBetween: 18
+              spaceBetween: 18,
             },
-            1024: { 
+            1024: {
               slidesPerView: 3.8,
-              spaceBetween: 20
+              spaceBetween: 20,
             },
-            1200: { 
+            1200: {
               slidesPerView: 4.3,
-              spaceBetween: 20
+              spaceBetween: 20,
             },
-            1400: { 
+            1400: {
               slidesPerView: 4.8,
-              spaceBetween: 22
-            }
+              spaceBetween: 22,
+            },
           }}
           className="repeat-order-swiper-medium"
         >
           {uniqueProducts.map((item, index) => {
             const itemId = item.foodId || item._id;
             const quantity = quantities[itemId] || 1;
-            
+
             return (
               <SwiperSlide key={itemId || index}>
                 <div className="repeat-product-card-medium">
                   <div className="repeat-product-image-section-medium">
                     <div className="repeat-product-image-container-medium">
-                      <img 
-                        src={`${url}/images/${item.image}`} 
+                      <img
+                        src={`${url}/images/${item.image}`}
                         alt={item.name}
                         className="repeat-product-image-medium"
                         onError={(e) => {
-                          e.target.src = '/images/placeholder-food.jpg';
+                          e.target.src = "/images/placeholder-food.jpg";
                         }}
                       />
                     </div>
@@ -298,8 +314,10 @@ const RepeatOrder = () => {
 
                   <div className="repeat-product-content-medium">
                     <div className="repeat-product-info-medium">
-                      <h3 className="repeat-product-name-medium">{item.name}</h3>
-                      
+                      <h3 className="repeat-product-name-medium">
+                        {item.name}
+                      </h3>
+
                       <div className="repeat-product-meta-medium">
                         <div className="repeat-product-price-medium">
                           {item.price} €
@@ -309,22 +327,22 @@ const RepeatOrder = () => {
 
                     <div className="repeat-product-actions-medium">
                       <div className="quantity-selector-medium">
-                        <button 
+                        <button
                           className="qty-btn-medium qty-minus-medium"
                           onClick={() => handleQuantityChange(itemId, -1)}
                         >
                           <FaMinus />
                         </button>
                         <span className="qty-value-medium">{quantity}</span>
-                        <button 
+                        <button
                           className="qty-btn-medium qty-plus-medium"
                           onClick={() => handleQuantityChange(itemId, 1)}
                         >
                           <FaPlus />
                         </button>
                       </div>
-                      
-                      <button 
+
+                      <button
                         className="repeat-add-btn-medium"
                         onClick={() => handleRepeatSingleItem(item)}
                         title={`Add ${quantity} ${item.name} to cart`}

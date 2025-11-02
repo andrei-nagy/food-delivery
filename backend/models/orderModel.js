@@ -11,7 +11,7 @@ const orderSchema = new mongoose.Schema({
     payment:{type:Boolean, default: false},
     userData:{type:Object, required: true},
     orderNumber: { type: Number, unique: true},
-    paymentMethod: {type: String, required: true},
+    paymentMethod: {type: String, required: false},
     orderRating: { type: Number, default: 0 },
     specialInstructions: {type: String} 
 
