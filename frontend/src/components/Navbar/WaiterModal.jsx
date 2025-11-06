@@ -6,14 +6,15 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { assets } from '../../assets/assets';
 import { useTranslation } from 'react-i18next';
-import { FaArrowLeft, FaTimes, FaComments, FaMoneyBillWave, FaCreditCard, FaMoneyBill } from 'react-icons/fa';
+import { FaArrowLeft, FaTimes, FaComments, FaMoneyBillWave, FaCreditCard, FaMoneyBill, FaUtensils, FaQuestion, FaWater, FaWineGlass, FaReceipt, FaClock, FaConciergeBell } from 'react-icons/fa';
 import ChatBot from '../ChatBot/ChatBot';
 
 const WaiterModalCart = ({ show, onClose }) => {
   const { url, setToken, token } = useContext(StoreContext);
   const [actionName, setActionName] = useState('');
   const [showDianaAI, setShowDianaAI] = useState(false);
-  const [showPaymentOptions, setShowPaymentOptions] = useState(false); // Stare pentru opțiunile de plată
+  const [showPaymentOptions, setShowPaymentOptions] = useState(false);
+  const [showWaiterReasons, setShowWaiterReasons] = useState(false); // Stare pentru motivele de chemare ospătar
   const tableNumber = localStorage.getItem("tableNumber");
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -59,8 +60,9 @@ const WaiterModalCart = ({ show, onClose }) => {
 
   const handleActionClick = (action) => {
     if (action === 'I want to pay') {
-      // Arată opțiunile de plată în loc să trimită direct
       setShowPaymentOptions(true);
+    } else if (action === 'Call a waiter') {
+      setShowWaiterReasons(true);
     } else {
       setActionName(action);
       submitAction(action);
@@ -77,8 +79,96 @@ const WaiterModalCart = ({ show, onClose }) => {
     
     setActionName(action);
     submitAction(action);
-    setShowPaymentOptions(false); // Închide modalul de opțiuni de plată
+    setShowPaymentOptions(false);
   };
+
+  const handleWaiterReason = (reason) => {
+    let action = '';
+    switch (reason) {
+      case 'order':
+        action = 'Call waiter - Need to order';
+        break;
+      case 'menu':
+        action = 'Call waiter - Need menu explanation';
+        break;
+      case 'water':
+        action = 'Call waiter - Need water';
+        break;
+      case 'drinks':
+        action = 'Call waiter - Need drinks';
+        break;
+      case 'bill':
+        action = 'Call waiter - Need bill';
+        break;
+      case 'cutlery':
+        action = 'Call waiter - Need cutlery';
+        break;
+      case 'assistance':
+        action = 'Call waiter - Need assistance';
+        break;
+      case 'other':
+        action = 'Call waiter - Other reason';
+        break;
+      default:
+        action = 'Call a waiter';
+    }
+    
+    setActionName(action);
+    submitAction(action);
+    setShowWaiterReasons(false);
+  };
+
+  // Lista de motive pentru chemarea ospătarului
+  const waiterReasons = [
+    {
+      id: 'order',
+      icon: FaUtensils,
+      label: 'I want to order',
+      description: 'Place a new order'
+    },
+    {
+      id: 'menu',
+      icon: FaQuestion,
+      label: 'Menu explanation',
+      description: 'Need help with the menu'
+    },
+    {
+      id: 'water',
+      icon: FaWater,
+      label: 'Need water',
+      description: 'Request water service'
+    },
+    {
+      id: 'drinks',
+      icon: FaWineGlass,
+      label: 'Need drinks',
+      description: 'Order beverages'
+    },
+    {
+      id: 'bill',
+      icon: FaReceipt,
+      label: 'Ask for bill',
+      description: 'Request the check'
+    },
+    {
+      id: 'cutlery',
+      icon: FaConciergeBell,
+      label: 'Need cutlery',
+      description: 'Request utensils'
+    },
+    {
+      id: 'assistance',
+      icon: FaQuestion,
+      label: 'General assistance',
+      description: 'Need help with something'
+    },
+    {
+      id: 'other',
+      icon: FaClock,
+      label: 'Other reason',
+      description: 'Something else'
+    }
+  ];
 
   return (
     <>
@@ -151,8 +241,10 @@ const WaiterModalCart = ({ show, onClose }) => {
                 <div className="payment-icon-wrapper">
                   <FaCreditCard className="payment-icon" />
                 </div>
-                <span className="payment-label">Pay by Card</span>
-                <span className="payment-description">POS terminal</span>
+                <div className="payment-text-content">
+                  <span className="payment-option-label">Pay by Card</span>
+                  <span className="payment-option-description">POS terminal</span>
+                </div>
               </button>
               
               <button 
@@ -163,9 +255,51 @@ const WaiterModalCart = ({ show, onClose }) => {
                 <div className="payment-icon-wrapper">
                   <FaMoneyBill className="payment-icon" />
                 </div>
-                <span className="payment-label">Pay by Cash</span>
-                <span className="payment-description">Cash payment</span>
+                <div className="payment-text-content">
+                  <span className="payment-option-label">Pay by Cash</span>
+                  <span className="payment-option-description">Cash payment</span>
+                </div>
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modalul pentru motivele de chemare ospătar */}
+      {showWaiterReasons && (
+        <div className="modal-overlay-waiter" onClick={() => setShowWaiterReasons(false)}>
+          <div className="modal-content-waiter waiter-reasons-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="header-myorders">
+              <div className="menu-button-myorders" onClick={() => setShowWaiterReasons(false)}>
+                <FaArrowLeft />
+              </div>
+              <h2 className="modal-title">Call Waiter</h2>
+              <div className="close-menu-button-myorders" onClick={() => setShowWaiterReasons(false)}>
+                <FaTimes />
+              </div>
+            </div>
+
+            <div className="assistance-message">
+              <p>Why do you need a waiter?</p>
+            </div>
+
+            <div className="waiter-reasons-buttons">
+              {waiterReasons.map((reason) => (
+                <button 
+                  key={reason.id}
+                  type="button" 
+                  className="waiter-reason-btn" 
+                  onClick={() => handleWaiterReason(reason.id)}
+                >
+                  <div className="waiter-reason-icon-wrapper">
+                    <reason.icon className="waiter-reason-icon" />
+                  </div>
+                  <div className="waiter-reason-text-content">
+                    <span className="waiter-reason-label">{reason.label}</span>
+                    <span className="waiter-reason-description">{reason.description}</span>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         </div>

@@ -1,12 +1,8 @@
 .navbar {
-  /* padding: 15px 0px; */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* padding-bottom: 10px; */
 }
-
-
 
 .logo .navbar {
   width: 150px;
@@ -23,31 +19,28 @@
   color: #49557e;
   font-size: 18px;
 }
+
 .navbar-menu a {
-  position: relative; /* Necesită pentru poziționarea liniei */
-  padding: 10px 15px; /* Ajustează spațierea */
-  display: inline-block; /* Asigură aplicarea corectă a efectului */
-  transition: color 0.3s ease; /* Tranziție pentru culoarea textului */
+  position: relative;
+  padding: 10px 15px;
+  display: inline-block;
+  transition: color 0.3s ease;
 }
 
 .navbar-menu a::after {
-  content: ""; /* Creează un element vizual */
+  content: "";
   position: absolute;
-  bottom: 0; /* Poziționează linia sub text */
-  left: 50%; /* Pornim de la mijloc */
-  width: 0; /* Inițial linia este invizibilă */
-  height: 2px; /* Grosimea liniei */
-  background: #000; /* Culoarea liniei */
-  transition: width 0.3s ease, left 0.3s ease; /* Animație lină */
-}
-
-.navbar-menu a:hover {
-  /* color: #007BFF; Schimbă culoarea textului la hover */
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #000;
+  transition: width 0.3s ease, left 0.3s ease;
 }
 
 .navbar-menu a:hover::after {
-  width: 100%; /* Lărgește linia pe întreaga lungime */
-  left: 0; /* Realiniază linia la început */
+  width: 100%;
+  left: 0;
 }
 
 .navbar-right {
@@ -67,25 +60,21 @@
   transition: 0.3s;
 }
 
-
-/* .navbar .active {
-  padding-bottom: 2px;
-  border-bottom: 2px solid #49557e;
-} */
 .language-switcher {
   position: relative;
   cursor: pointer;
 }
+
 .arrow_down_language{
   width: 12px;
   margin: 5px;
 }
+
 .language-dropdown {
   display: flex;
   align-items: center;
   padding: 5px 8px;
   background-color: transparent;
-  /* border: 1px solid #e2e2e2; */
   font-size: 15px;
   border-radius: 5px;
 }
@@ -100,9 +89,11 @@
   height: 20px;
   margin-right: 5px;
 }
+
 .language-selected img {
-object-fit: cover;
+  object-fit: cover;
 }
+
 .dropdown-options {
   position: absolute;
   top: 100%;
@@ -115,6 +106,7 @@ object-fit: cover;
   flex-direction: column;
   padding: 5px 0;
 }
+
 .arrow_down_language {
   width: 12px;
   margin: 5px;
@@ -125,10 +117,10 @@ object-fit: cover;
   transform: rotate(180deg);
 }
 
-/* pentru dropdown - e deja bine, dar poți adăuga efect mai lin (dacă nu foloseai framer-motion) */
 .dropdown-options {
   overflow: hidden;
 }
+
 .dropdown-option {
   display: flex;
   align-items: center;
@@ -156,9 +148,6 @@ object-fit: cover;
   position: relative;
   cursor: pointer;
 }
-
-
-/* Înlocuiește secțiunea .navbar-cart .dot și .mobile-footer-item .dot cu: */
 
 /* === ANIMAȚII ȘI STILURI MODERNE PENTRU CART INDICATOR === */
 
@@ -332,11 +321,8 @@ object-fit: cover;
   }
 }
 
-
-
 .navbar-profile {
   position: relative;
-
 }
 
 .nav-profile-dropdown {
@@ -345,7 +331,6 @@ object-fit: cover;
   right: 0;
   z-index: 1;
 }
-
 
 .navbar-profile:hover .nav-profile-dropdown {
   display: flex;
@@ -379,27 +364,21 @@ object-fit: cover;
   height: 30px;
 }
 
+/* === MOBILE FOOTER CU EFECTE DE ACTIVE === */
 
-
-
-/* Secțiunea de footer vizibilă doar pe mobil */
 .mobile-footer {
   display: none;
-  /* Ascunsă implicit */
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   background-color: #fff;
-  /* Fundal alb, poate fi personalizat */
   display: flex;
   justify-content: space-around;
   align-items: center;
   border-top: 1px solid #ccc;
-  /* O mică linie de separare */
-  padding: 10px 10px;
+  /* padding: 10px 10px; */
   z-index: 1000;
-  /* Să fie deasupra altor elemente */
 }
 
 .mobile-footer-item {
@@ -408,29 +387,67 @@ object-fit: cover;
   align-items: center;
   justify-content: center;
   position: relative;
-  
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 8px 12px;
+  border-radius: 12px;
+}
+
+/* Efectul de active pentru item-urile mobile */
+.mobile-footer-item.active {
+  transform: scale(1.1);
+  background: linear-gradient(135deg, rgba(255, 87, 34, 0.1), rgba(255, 87, 34, 0.05));
+  box-shadow: 0 4px 12px rgba(255, 87, 34, 0.15);
+}
+
+.mobile-footer-item.active img {
+  transform: scale(1.15);
+  filter: drop-shadow(0 2px 4px rgba(255, 87, 34, 0.3));
+}
+
+.mobile-footer-item.active span {
+  color: #ff5722;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(255, 87, 34, 0.2);
 }
 
 .mobile-footer-item img {
   height: 25px;
   margin-bottom: 5px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .mobile-footer-item span {
   font-size: 15px;
   color: #333;
+  transition: all 0.3s ease;
+}
+
+/* Efect de hover pentru item-urile neactive */
+.mobile-footer-item:not(.active):hover {
+  transform: translateY(-2px);
+  background: rgba(255, 87, 34, 0.05);
+}
+
+.mobile-footer-item:not(.active):hover img {
+  transform: scale(1.08);
+}
+
+.mobile-footer-item:not(.active):hover span {
+  color: #ff5722;
 }
 
 .navbar-waiter img{
   width: 32px;
 }
+
 /* Default (Desktop) */
 .mobile {
-  display: none; /* Ascunde .mobile pe desktop */
+  display: none;
 }
 
 .desktop {
-  display: block; /* Arată .desktop pe desktop */
+  display: block;
 }
 
 /* Vizibilitatea doar pe ecrane mici, sub 1024px */
@@ -440,23 +457,19 @@ object-fit: cover;
     align-items: center;
     padding: 3px 4px;
     background-color: transparent;
-    /* border: 1px solid #e2e2e2; */
     font-size: 15px;
     border-radius: 5px;
   }
   .mobile-footer {
     display: flex;
-    /* Afișează doar pe mobile și tablete */
   }
   .desktop{
     display: none;
   }
-  
 }
 
 /* Ascunde secțiunea pe ecrane mai mari */
 @media only screen and (min-width: 1025px) {
-
   .mobile-footer {
     display: none;
     justify-content: space-around;
@@ -502,7 +515,6 @@ object-fit: cover;
 
   .mobile-footer-item:hover span {
     color: #ff5722;
-    /* Accent color on hover */
   }
 
   /* Specific for larger screens */
@@ -521,10 +533,7 @@ object-fit: cover;
       font-size: 18px;
     }
   }
-
 }
-
-
 
 @media (max-width: 1050px) {
   .navbar .logo {
@@ -548,7 +557,6 @@ object-fit: cover;
 
   .navbar-right button {
     padding: 8px 25px;
-
   }
 }
 
@@ -579,39 +587,27 @@ object-fit: cover;
 }
 
 @media (max-width: 750px) {
-
   .navbar-menu {
     display: none;
   }
-
 }
-
-
 
 /* Stiluri pentru dispozitive mobile (sub 768px lățime) */
 @media (max-width: 768px) {
   .navbar-cart {
     position: fixed;
     bottom: 20px;
-    /* Spațierea de jos față de ecran */
     right: 20px;
-    /* Spațierea din dreapta față de ecran */
     z-index: 1000;
-    /* Pentru a te asigura că va fi deasupra altor elemente */
     background-color: white;
-    /* Opțional, pentru un fundal vizibil */
     padding: 10px;
-    /* Pentru a face icon-ul mai ușor de apăsat pe mobil */
     border-radius: 20%;
-    /* Pentru a-i da un aspect rotunjit */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    /* O umbră pentru efect vizual */
     border: 1px solid #ff634759;
   }
 
   .navbar-cart img {
     width: 24px;
-    /* Ajustează dimensiunea icon-ului pe mobil */
     height: 24px;
   }
 
@@ -632,25 +628,17 @@ object-fit: cover;
   .navbar-waiter {
     position: fixed;
     bottom: 80px;
-    /* Spațierea de jos față de ecran */
     right: 20px;
-    /* Spațierea din dreapta față de ecran */
     z-index: 1000;
-    /* Pentru a te asigura că va fi deasupra altor elemente */
     background-color: white;
-    /* Opțional, pentru un fundal vizibil */
     padding: 10px;
-    /* Pentru a face icon-ul mai ușor de apăsat pe mobil */
     border-radius: 20%;
-    /* Pentru a-i da un aspect rotunjit */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    /* O umbră pentru efect vizual */
     border: 1px solid #ff634759;
   }
 
   .navbar-waiter img {
     width: 24px;
-    /* Ajustează dimensiunea icon-ului pe mobil */
     height: 24px;
   }
 
@@ -662,18 +650,17 @@ object-fit: cover;
   }
 
   .mobile-footer-item .dot {
-    top: -4px;
-    right: -4px;
+    top: 5px;
+    right: 10px;
     min-width: 20px;
     min-height: 20px;
   }
 }
 
-
 .mobile-footer-item .dotProducts {
   position: absolute;
-  top: -5px;
-  right: -15px;
+  top: 5px;
+  right: 5px;
   width: 20px;
   height: 20px;
   background-color: tomato;
@@ -686,7 +673,7 @@ object-fit: cover;
 }
 
 .mobile-footer-item .dotProducts.empty {
-  display: none;  /* Dacă totalProducts este 0, nu afișăm dot-ul */
+  display: none;
 }
 
 .navbar-waiter, .navbar-myorders{
@@ -704,7 +691,3 @@ object-fit: cover;
   height: 100%;         
   width: 100%;    
 }
-
-
-
-

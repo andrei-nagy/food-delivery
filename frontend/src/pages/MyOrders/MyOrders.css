@@ -469,9 +469,9 @@ body.cart-page .navbar {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.cart-items-list {
+/* .cart-items-list {
   margin-bottom: 20px;
-}
+} */
 
 .cart-item-container {
   position: relative;

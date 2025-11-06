@@ -13,6 +13,7 @@
   z-index: 9999;
   animation: fadeIn 0.3s ease;
   padding: 20px;
+  overflow: hidden;
 }
 
 @keyframes fadeIn {
@@ -25,14 +26,15 @@
   background-color: #fff;
   padding: 25px;
   border-radius: 20px;
-  width: 100%;
-  max-width: 500px;
+  width: 90%;
+  max-width: 400px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   z-index: 1001;
   position: relative;
   max-height: 85vh;
   overflow-y: auto;
   animation: slideUp 0.4s cubic-bezier(0.18, 1.25, 0.4, 1);
+  margin: 0 auto;
 }
 
 @keyframes slideUp {
@@ -195,19 +197,6 @@
   color: #00b894;
 }
 
-.need-help:hover {
-  border-color: #fdcb6e;
-  background-color: rgba(253, 203, 110, 0.05);
-}
-
-.need-help .action-icon-wrapper {
-  background-color: rgba(253, 203, 110, 0.15);
-}
-
-.need-help .action-icon {
-  color: #fdcb6e;
-}
-
 .live-chat:hover {
   border-color: #a29bfe;
   background-color: rgba(162, 155, 254, 0.05);
@@ -250,9 +239,311 @@
   color: #d63031;
 }
 
-/* Responsivitate */
+/* ==================== PAYMENT OPTIONS MODAL ==================== */
+.payment-options-modal {
+  max-width: 500px;
+  width: 90%;
+}
+
+.payment-options-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 25px;
+}
+
+.payment-option-btn {
+  display: flex;
+  align-items: center;
+  padding: 24px 20px;
+  border: 2px solid #f8f9fa;
+  border-radius: 18px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  width: 100%;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+}
+
+.payment-option-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.6s ease;
+}
+
+.payment-option-btn:hover::before {
+  left: 100%;
+}
+
+.payment-option-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  border-color: #e9ecef;
+}
+
+.payment-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  margin-right: 20px;
+  border-radius: 16px;
+  flex-shrink: 0;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.payment-option-btn:hover .payment-icon-wrapper {
+  transform: scale(1.08) rotate(5deg);
+}
+
+.payment-icon {
+  font-size: 26px;
+  color: white;
+  transition: transform 0.3s ease;
+}
+
+.payment-option-btn:hover .payment-icon {
+  transform: scale(1.1);
+}
+
+.payment-text-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.payment-option-label {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #2d3436;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.payment-option-description {
+  font-size: 0.95rem;
+  color: #636e72;
+  line-height: 1.4;
+}
+
+/* Culori specifice pentru plăți */
+.card-payment .payment-icon-wrapper {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.cash-payment .payment-icon-wrapper {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+}
+
+.card-payment:hover {
+  border-color: #667eea;
+  background-color: rgba(102, 126, 234, 0.03);
+}
+
+.cash-payment:hover {
+  border-color: #f093fb;
+  background-color: rgba(240, 147, 251, 0.03);
+}
+
+/* Indicator de selecție smooth */
+.payment-option-btn::after {
+  content: '→';
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%) scale(0.8);
+  font-size: 1.3rem;
+  color: #adb5bd;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  opacity: 0;
+}
+
+.payment-option-btn:hover::after {
+  opacity: 1;
+  transform: translateY(-50%) scale(1) translateX(3px);
+}
+
+/* ==================== WAITER REASONS MODAL ==================== */
+.waiter-reasons-modal {
+  max-width: 500px;
+  width: 90%;
+}
+
+.waiter-reasons-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.waiter-reason-btn {
+  display: flex;
+  align-items: flex-start;
+  padding: 20px;
+  border: 2px solid #f8f9fa;
+  border-radius: 16px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  width: 100%;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+}
+
+.waiter-reason-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.6s ease;
+}
+
+.waiter-reason-btn:hover::before {
+  left: 100%;
+}
+
+.waiter-reason-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  border-color: #e9ecef;
+}
+
+.waiter-reason-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-right: 16px;
+  border-radius: 14px;
+  flex-shrink: 0;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.waiter-reason-btn:hover .waiter-reason-icon-wrapper {
+  transform: scale(1.08) rotate(5deg);
+}
+
+.waiter-reason-icon {
+  font-size: 22px;
+  color: white;
+  transition: transform 0.3s ease;
+}
+
+.waiter-reason-btn:hover .waiter-reason-icon {
+  transform: scale(1.1);
+}
+
+.waiter-reason-text-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.waiter-reason-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3436;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.waiter-reason-description {
+  font-size: 0.9rem;
+  color: #636e72;
+  line-height: 1.4;
+}
+
+/* Culori pentru waiter options */
+.waiter-reason-btn:nth-child(1) .waiter-reason-icon-wrapper { background: linear-gradient(135deg, #ff6b6b, #ff8e8e); }
+.waiter-reason-btn:nth-child(2) .waiter-reason-icon-wrapper { background: linear-gradient(135deg, #4ecdc4, #44a08d); }
+.waiter-reason-btn:nth-child(3) .waiter-reason-icon-wrapper { background: linear-gradient(135deg, #45b7d1, #96c93d); }
+.waiter-reason-btn:nth-child(4) .waiter-reason-icon-wrapper { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.waiter-reason-btn:nth-child(5) .waiter-reason-icon-wrapper { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.waiter-reason-btn:nth-child(6) .waiter-reason-icon-wrapper { background: linear-gradient(135deg, #a8edea, #fed6e3); }
+.waiter-reason-btn:nth-child(7) .waiter-reason-icon-wrapper { background: linear-gradient(135deg, #ffd89b, #19547b); }
+.waiter-reason-btn:nth-child(8) .waiter-reason-icon-wrapper { background: linear-gradient(135deg, #c2e9fb, #a1c4fd); }
+
+.waiter-reason-btn:nth-child(1):hover { border-color: #ff6b6b; }
+.waiter-reason-btn:nth-child(2):hover { border-color: #4ecdc4; }
+.waiter-reason-btn:nth-child(3):hover { border-color: #45b7d1; }
+.waiter-reason-btn:nth-child(4):hover { border-color: #f093fb; }
+.waiter-reason-btn:nth-child(5):hover { border-color: #4facfe; }
+.waiter-reason-btn:nth-child(6):hover { border-color: #a8edea; }
+.waiter-reason-btn:nth-child(7):hover { border-color: #ffd89b; }
+.waiter-reason-btn:nth-child(8):hover { border-color: #c2e9fb; }
+
+/* Indicator de selecție pentru waiter */
+.waiter-reason-btn::after {
+  content: '→';
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%) scale(0.8);
+  font-size: 1.2rem;
+  color: #adb5bd;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  opacity: 0;
+}
+
+.waiter-reason-btn:hover::after {
+  opacity: 1;
+  transform: translateY(-50%) scale(1) translateX(3px);
+}
+
+/* Animații de intrare pentru ambele modale */
+@keyframes gentleSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.payment-option-btn,
+.waiter-reason-btn {
+  animation: gentleSlideIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Delay pentru animații */
+.payment-option-btn:nth-child(1) { animation-delay: 0.1s; }
+.payment-option-btn:nth-child(2) { animation-delay: 0.2s; }
+
+.waiter-reason-btn:nth-child(1) { animation-delay: 0.05s; }
+.waiter-reason-btn:nth-child(2) { animation-delay: 0.1s; }
+.waiter-reason-btn:nth-child(3) { animation-delay: 0.15s; }
+.waiter-reason-btn:nth-child(4) { animation-delay: 0.2s; }
+.waiter-reason-btn:nth-child(5) { animation-delay: 0.25s; }
+.waiter-reason-btn:nth-child(6) { animation-delay: 0.3s; }
+.waiter-reason-btn:nth-child(7) { animation-delay: 0.35s; }
+.waiter-reason-btn:nth-child(8) { animation-delay: 0.4s; }
+
+/* Responsivitate generală */
 @media (max-width: 600px) {
   .modal-content-waiter {
+    width: 95%;
+    max-width: 95%;
     padding: 20px;
     border-radius: 16px;
   }
@@ -270,6 +561,58 @@
   .modal-title {
     font-size: 1.2rem;
   }
+  
+  .payment-options-modal,
+  .waiter-reasons-modal {
+    width: 95%;
+    max-width: 95%;
+  }
+  
+  .payment-option-btn {
+    padding: 20px 16px;
+    animation-duration: 0.5s;
+  }
+  
+  .payment-icon-wrapper {
+    width: 54px;
+    height: 54px;
+    margin-right: 16px;
+  }
+  
+  .payment-icon {
+    font-size: 24px;
+  }
+  
+  .payment-option-label {
+    font-size: 1.1rem;
+  }
+  
+  .payment-option-description {
+    font-size: 0.9rem;
+  }
+  
+  .waiter-reason-btn {
+    padding: 18px 16px;
+    animation-duration: 0.5s;
+  }
+  
+  .waiter-reason-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    margin-right: 14px;
+  }
+  
+  .waiter-reason-icon {
+    font-size: 20px;
+  }
+  
+  .waiter-reason-label {
+    font-size: 1rem;
+  }
+  
+  .waiter-reason-description {
+    font-size: 0.85rem;
+  }
 }
 
 @media (max-width: 400px) {
@@ -278,6 +621,8 @@
   }
   
   .modal-content-waiter {
+    width: 98%;
+    max-width: 98%;
     padding: 15px;
   }
   
@@ -294,134 +639,106 @@
     width: 25px;
     height: 25px;
   }
-}
-
-/* Stiluri pentru modalul de opțiuni de plată */
-.payment-options-modal {
-  max-width: 450px;
-}
-
-.payment-options-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-bottom: 25px;
-}
-
-.payment-option-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 25px 20px;
-  border: 2px solid #f1f3f5;
-  border-radius: 16px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-}
-
-.payment-option-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-
-.payment-icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-  margin-bottom: 15px;
-  border-radius: 15px;
-  background: #f8f9fa;
-}
-
-.payment-icon {
-  font-size: 28px;
-}
-
-.payment-label {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #2d3436;
-  text-align: center;
-  margin-bottom: 5px;
-}
-
-.payment-description {
-  font-size: 0.85rem;
-  color: #636e72;
-  text-align: center;
-}
-
-/* Culori specifice pentru fiecare opțiune de plată */
-.card-payment:hover {
-  border-color: #74b9ff;
-  background-color: rgba(116, 185, 255, 0.05);
-}
-
-.card-payment .payment-icon-wrapper {
-  background-color: rgba(116, 185, 255, 0.15);
-}
-
-.card-payment .payment-icon {
-  color: #0984e3;
-}
-
-.cash-payment:hover {
-  border-color: #00b894;
-  background-color: rgba(0, 184, 148, 0.05);
-}
-
-.cash-payment .payment-icon-wrapper {
-  background-color: rgba(0, 184, 148, 0.15);
-}
-
-.cash-payment .payment-icon {
-  color: #00b894;
-}
-
-/* Responsivitate pentru opțiunile de plată */
-@media (max-width: 600px) {
-  .payment-options-modal {
-    max-width: 400px;
+  
+  .payment-options-modal,
+  .waiter-reasons-modal {
+    width: 98%;
+    max-width: 98%;
   }
   
   .payment-option-btn {
-    padding: 20px 15px;
+    padding: 18px 14px;
+    animation-duration: 0.4s;
   }
   
   .payment-icon-wrapper {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .payment-icon {
-    font-size: 24px;
-  }
-  
-  .payment-label {
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 400px) {
-  .payment-options-modal {
-    max-width: 350px;
-  }
-  
-  .payment-option-btn {
-    padding: 18px 12px;
-  }
-  
-  .payment-icon-wrapper {
-    width: 45px;
-    height: 45px;
+    width: 48px;
+    height: 48px;
+    margin-right: 14px;
   }
   
   .payment-icon {
     font-size: 22px;
   }
+  
+  .payment-option-label {
+    font-size: 1rem;
+  }
+  
+  .payment-option-description {
+    font-size: 0.85rem;
+  }
+  
+  .payment-option-btn::after {
+    right: 16px;
+    font-size: 1.2rem;
+  }
+  
+  .waiter-reason-btn {
+    padding: 16px 14px;
+    animation-duration: 0.4s;
+  }
+  
+  .waiter-reason-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    margin-right: 12px;
+  }
+  
+  .waiter-reason-icon {
+    font-size: 18px;
+  }
+  
+  .waiter-reason-label {
+    font-size: 0.95rem;
+  }
+  
+  .waiter-reason-description {
+    font-size: 0.8rem;
+  }
+  
+  .waiter-reason-btn::after {
+    right: 14px;
+    font-size: 1.1rem;
+  }
+}
+
+/* Stiluri pentru scrollbar în interiorul modalului */
+.modal-content-waiter::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-content-waiter::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.modal-content-waiter::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+
+.modal-content-waiter::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Pentru Firefox */
+.modal-content-waiter {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+/* Stiluri pentru header-ul modalului de plăți */
+.payment-options-modal .header-myorders {
+  margin-bottom: 30px;
+}
+
+.payment-options-modal .assistance-message {
+  margin-bottom: 25px;
+}
+
+.payment-options-modal .assistance-message p {
+  font-size: 1.15rem;
+  color: #2d3436;
+  font-weight: 600;
 }

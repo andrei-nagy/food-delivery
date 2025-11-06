@@ -543,13 +543,13 @@ const MyOrders = () => {
               </AnimatePresence>
             </div>
 
-            <button
+            {/* <button
               className="add-more-button"
               onClick={() => navigate("/category/All")}
             >
               <FaPlus />
               <span>Add More Items</span>
-            </button>
+            </button> */}
           </div>
 
           {/* Order Summary */}

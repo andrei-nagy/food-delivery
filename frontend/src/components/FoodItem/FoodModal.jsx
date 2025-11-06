@@ -26,6 +26,9 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     const foodImage = food?.image || "";
     const foodExtras = food?.extras || [];
     const foodId = food?._id || "";
+    const isVegan = food?.isVegan || false;
+    const isBestSeller = food?.isBestSeller || false;
+    const isNewAdded = food?.isNewAdded || false;
 
     useEffect(() => {
         if (isOpen && food) {
@@ -338,6 +341,30 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                             {foodDescription || "Ingredientele nu sunt disponibile momentan."}
                         </p>
                     </div>
+
+                    {/* Badge-uri pentru Vegan, Best Seller și New */}
+                    {(isVegan || isBestSeller || isNewAdded) && (
+                        <div className="food-item-modal-badges">
+                            <h3 className="food-item-modal-section-title">Caracteristici</h3>
+                            <div className="food-item-modal-badges-container">
+                                {isNewAdded && (
+                                    <span className="food-item-modal-badge food-item-modal-badge-new">
+                                        🆕 New
+                                    </span>
+                                )}
+                                {isVegan && (
+                                    <span className="food-item-modal-badge food-item-modal-badge-vegan">
+                                        🌱 Vegan
+                                    </span>
+                                )}
+                                {isBestSeller && (
+                                    <span className="food-item-modal-badge food-item-modal-badge-bestseller">
+                                        ⭐ Best Seller
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    )}
                     
                     {foodExtras.length > 0 && (
                         <div className="food-item-modal-remove-section" ref={optionsRef}>

@@ -21,19 +21,29 @@ const FoodItemBestSeller = ({
   const [showCounterControls, setShowCounterControls] = useState(false);
   const timerRef = useRef(null);
 
-  // Funcție pentru a deschide modalul când se apasă pe counter
   const handleCounterClick = (e) => {
     e.stopPropagation();
-    openModal({ _id, name, price, description, image }); // Schimbat: acum deschide modalul
+    setShowCounterControls(true);
+
+    // 🔑 resetăm timerul la fiecare click
+    if (timerRef.current) clearTimeout(timerRef.current);
+
+    timerRef.current = setTimeout(() => {
+      setShowCounterControls(false);
+    }, 3500);
+  };
+
+  // 🔑 helper ca să oprești sliderul când user-ul adaugă în coș
+  const pauseSwiper = () => {
+    if (swiperRef?.current?.autoplay) {
+      swiperRef.current.autoplay.stop();
+      setTimeout(() => {
+        swiperRef.current?.autoplay?.start();
+      }, 5000); // după 5s îl pornim iar
+    }
   };
 
   const handleClick = () => {
-    openModal({ _id, name, price, description, image });
-  };
-
-  // Funcție nouă pentru a deschide modalul când se apasă pe iconița Add
-  const handleAddIconClick = (e) => {
-    e.stopPropagation();
     openModal({ _id, name, price, description, image });
   };
 
@@ -65,23 +75,60 @@ const FoodItemBestSeller = ({
 
         {cartItems && cartItems[_id] > 0 ? (
           <AnimatePresence>
-            {/* Eliminat controalele de +/- și lăsat doar counter-ul care deschide modalul */}
-            <motion.div
-              key="cart"
-              className="food-item-counter-cart"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              onClick={handleCounterClick} // Acum deschide modalul
-            >
-              {cartItems[_id]}
-            </motion.div>
+            {showCounterControls ? (
+ <motion.div
+  key="counter"
+  className="food-item-counter"
+  initial={{ opacity: 0, y: 15 }}
+  animate={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0, y: 15 }}
+  transition={{ duration: 0.12, ease: "easeOut" }}
+>
+                <img
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeFromCart(_id, 1);
+                    pauseSwiper();
+                    handleCounterClick(e);
+                  }}
+                  src={assets.remove_icon_red}
+                  alt="Remove"
+                />
+                <p>{cartItems[_id]}</p>
+                <img
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addToCart(_id, 1);
+                    pauseSwiper();
+                    handleCounterClick(e);
+                  }}
+                  src={assets.add_icon_green}
+                  alt="Add"
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="cart"
+                className="food-item-counter-cart"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                onClick={handleCounterClick}
+              >
+                {cartItems[_id]}
+              </motion.div>
+            )}
           </AnimatePresence>
         ) : (
           <img
             className="add"
-            onClick={handleAddIconClick}
+            onClick={(e) => {
+              e.stopPropagation();
+              addToCart(_id, 1);
+              pauseSwiper();
+              handleCounterClick(e);
+            }}
             src={assets.add_icon_white}
             alt="Add"
           />

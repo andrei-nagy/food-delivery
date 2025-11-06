@@ -802,13 +802,15 @@ const Cart = () => {
               </AnimatePresence>
             </div>
 
-            <button
-              className="add-more-button"
-              onClick={() => navigate("/category/All")}
-            >
-              <FaPlus />
-              <span>{t("add_more_items")}</span>
-            </button>
+             <div className="add-more-button-container">
+      <button
+        className="add-more-button-cart"
+        onClick={() => navigate("/category/All")}
+      >
+        <FaPlus />
+        <span>{t("add_more_items")}</span>
+      </button>
+    </div>
           </div>
 
           {/* Popular Products Section - DOAR DACĂ COȘUL NU ESTE GOL */}
