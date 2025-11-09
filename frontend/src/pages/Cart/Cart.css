@@ -2144,3 +2144,91 @@ body.cart-page header > div:first-child {
     font-size: 14px;
   }
 }
+
+/* Cart.css - ADAUGĂ aceste stiluri */
+
+/* Bill Requested Warning Banner */
+.cart-bill-warning {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  color: white;
+  padding: 12px 16px;
+  margin: 0 0 16px 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+.cart-bill-warning-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cart-bill-warning-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.cart-bill-warning-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cart-bill-warning-text strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cart-bill-warning-text span {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* Stiluri pentru item-uri dezactivate */
+.cart-item.bill-requested-item {
+  opacity: 0.7;
+}
+
+.cart-item.bill-requested-item .item-image-button:disabled,
+.cart-item.bill-requested-item .item-name-button:disabled,
+.cart-item.bill-requested-item .item-description-button:disabled {
+  cursor: not-allowed;
+}
+
+.disabled-text {
+  color: #7f8c8d !important;
+}
+
+.quantity-controls.disabled-controls {
+  opacity: 0.5;
+}
+
+.quantity-controls.disabled-controls .quantity-button-order {
+  cursor: not-allowed;
+  background-color: #bdc3c7 !important;
+  color: #7f8c8d !important;
+}
+
+.quantity-button-order:disabled {
+  cursor: not-allowed;
+  background-color: #e9ecef !important;
+  color: #6c757d !important;
+}
+
+/* Ascunde swipe background când nota este cerută */
+.cart-item-container .cart-item-swipe-background:disabled {
+  display: none;
+}
+
+/* Stil pentru imaginea de fallback */
+.item-image[src*="coming_soon"] {
+  object-fit: contain !important;
+  background-color: #f8f9fa;
+  border: 1px dashed #dee2e6;
+}
+
+.popular-product-image img[src*="coming_soon"] {
+  object-fit: contain !important;
+  background-color: #f8f9fa;
+  border: 1px dashed #dee2e6;
+}

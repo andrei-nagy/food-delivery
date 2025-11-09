@@ -1,7 +1,6 @@
 import foodModel from "../models/foodModel.js";
 import fs from "fs";
 
-
 console.log("🔥 addFood file loaded");
 
 const addFood = async (req, res) => {
@@ -10,7 +9,7 @@ const addFood = async (req, res) => {
   console.log("Request file:", req.file ? req.file.filename : "No file");
   
   try {
-    const { name, description, price, category, isBestSeller, isNewAdded, isVegan, extras } = req.body;
+    const { name, description, ingredients, price, category, isBestSeller, isNewAdded, isVegan, extras } = req.body;
     
     console.log("📦 RAW Extras received:", extras);
     console.log("📦 Extras type:", typeof extras);
@@ -56,6 +55,7 @@ const addFood = async (req, res) => {
     const newFood = new foodModel({
       name,
       description,
+      ingredients: ingredients || "", // ✅ NOU CÂMP
       price: parseFloat(price),
       category,
       image: req.file.filename,
@@ -76,6 +76,7 @@ const addFood = async (req, res) => {
     res.status(500).json({ success: false, message: "Error adding food: " + error.message });
   }
 };
+
 // all food list
 const listFood = async (req, res) => {
     console.log("🔥  2 addFood function");
@@ -121,7 +122,7 @@ const updateFood = async (req, res) => {
   console.log("Request file:", req.file ? req.file.filename : "No file");
 
   try {
-    const { id, name, description, category, price, isBestSeller, isNewAdded, isVegan, extras } = req.body;
+    const { id, name, description, ingredients, category, price, isBestSeller, isNewAdded, isVegan, extras } = req.body;
     
     console.log("📦 RAW Extras received in update:", extras);
     console.log("📦 Extras type:", typeof extras);
@@ -158,6 +159,7 @@ const updateFood = async (req, res) => {
     const updateData = {
       name,
       description,
+      ingredients: ingredients || "", // ✅ NOU CÂMP
       category,
       price: parseFloat(price),
       isBestSeller: isBestSeller === 'true' || isBestSeller === true,

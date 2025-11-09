@@ -32,6 +32,8 @@ const Cart = () => {
     getTotalItemCount,
     clearCart,
     addToCart,
+    canAddToCart,
+    billRequested
   } = useContext(StoreContext);
 
   const { t, i18n } = useTranslation();
@@ -76,7 +78,7 @@ const Cart = () => {
 
   useEffect(() => {
     setData((data) => ({ ...data, tableNo: tableNumber }));
-    setShowFloatingCheckout(!isCartEmpty);
+    setShowFloatingCheckout(!isCartEmpty && !billRequested);
 
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -84,8 +86,8 @@ const Cart = () => {
   }, []);
 
   useEffect(() => {
-    setShowFloatingCheckout(!isCartEmpty);
-  }, [isCartEmpty, cartItems]);
+    setShowFloatingCheckout(!isCartEmpty && !billRequested);
+  }, [isCartEmpty, cartItems, billRequested]);
 
   // Fetch popular products
   useEffect(() => {
@@ -152,22 +154,27 @@ const Cart = () => {
       }
     };
 
-    if (!isCartEmpty) {
+    if (!isCartEmpty && !billRequested) {
       fetchPopularProducts();
     }
-  }, [url, isCartEmpty]);
+  }, [url, isCartEmpty, billRequested]);
 
   // Select 6 random products from popular products
   useEffect(() => {
-    if (popularProducts.length > 0) {
+    if (popularProducts.length > 0 && !billRequested) {
       const shuffled = [...popularProducts].sort(() => 0.5 - Math.random());
       const selected = shuffled.slice(0, 6);
       setDisplayedPopularProducts(selected);
     }
-  }, [popularProducts]);
+  }, [popularProducts, billRequested]);
 
   // Function to handle adding popular product to cart
   const handleAddPopularProduct = (product) => {
+    // ✅ Verifică dacă nota a fost cerută înainte de a adăuga în coș
+    if (!canAddToCart()) {
+      return;
+    }
+
     try {
       // Verificări extinse
       if (!product || typeof product !== "object") {
@@ -245,6 +252,11 @@ const Cart = () => {
   };
 
   const openFoodModal = (itemId, cartItem) => {
+    // ✅ Verifică dacă nota a fost cerută înainte de a deschide modalul
+    if (!canAddToCart()) {
+      return;
+    }
+
     const foodItem = findFoodItem(itemId, cartItem);
     if (foodItem) {
       setSelectedFood(foodItem);
@@ -315,6 +327,12 @@ const Cart = () => {
 
   const placeOrder = async (event) => {
     if (event) event.preventDefault();
+
+    // ✅ Verifică dacă nota a fost cerută înainte de a plasa comanda
+    if (billRequested) {
+      toast.error("Cannot place order - bill has been requested");
+      return;
+    }
 
     if (orderPlaced) return;
 
@@ -416,6 +434,9 @@ const Cart = () => {
   };
 
   const handleTouchStart = (e, id) => {
+    // ✅ Verifică dacă nota a fost cerută înainte de a permite swipe
+    if (billRequested) return;
+    
     swipeData.current[id] = {
       startX: e.touches[0].clientX,
       currentX: e.touches[0].clientX,
@@ -424,6 +445,9 @@ const Cart = () => {
   };
 
   const handleTouchMove = (e, id) => {
+    // ✅ Verifică dacă nota a fost cerută
+    if (billRequested) return;
+    
     const current = swipeData.current[id];
     if (!current) return;
     current.currentX = e.touches[0].clientX;
@@ -446,6 +470,9 @@ const Cart = () => {
   };
 
   const handleTouchEnd = (id) => {
+    // ✅ Verifică dacă nota a fost cerută
+    if (billRequested) return;
+    
     const current = swipeData.current[id];
     if (!current) return;
 
@@ -471,6 +498,11 @@ const Cart = () => {
   };
 
   const handleDeleteClick = (id) => {
+    // ✅ Verifică dacă nota a fost cerută
+    if (billRequested) {
+      toast.error("Cannot modify cart - bill has been requested");
+      return;
+    }
     setItemToDelete(id);
   };
 
@@ -499,6 +531,24 @@ const Cart = () => {
       transition={{ duration: 0.4 }}
       className="cart-container"
     >
+      {/* Bill Requested Warning Banner */}
+      {billRequested && (
+        <motion.div
+          className="cart-bill-warning"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="cart-bill-warning-content">
+            <span className="cart-bill-warning-icon">⚠️</span>
+            <div className="cart-bill-warning-text">
+              <strong>Bill Requested</strong>
+              <span>Cannot add new items or modify cart. Please cancel the bill request first.</span>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Header Section */}
       <div className="cart-header-section">
         <button className="back-button" onClick={() => navigate(-1)}>
@@ -508,7 +558,7 @@ const Cart = () => {
 
         <h1 className="cart-title">{t("your_order")}</h1>
 
-        {!isCartEmpty ? (
+        {!isCartEmpty && !billRequested ? (
           <button
             className="clear-cart-button"
             onClick={() => setShowConfirmClear(true)}
@@ -639,11 +689,12 @@ const Cart = () => {
                                 <p className="item-price">
                                   {cartItem.quantity} x ? €
                                 </p>
-                                <div className="quantity-controls">
+                                <div className={`quantity-controls ${billRequested ? 'disabled-controls' : ''}`}>
                                   <button
                                     onClick={() => removeFromCart(itemId, 1)}
                                     className="quantity-button-order decrease"
                                     aria-label="Decrease quantity"
+                                    disabled={billRequested}
                                   >
                                     <FaMinus />
                                   </button>
@@ -660,6 +711,7 @@ const Cart = () => {
                                     }
                                     className="quantity-button-order increase"
                                     aria-label="Increase quantity"
+                                    disabled={billRequested}
                                   >
                                     <FaPlus />
                                   </button>
@@ -683,15 +735,17 @@ const Cart = () => {
                         transition={{ duration: 0.3 }}
                         layout
                       >
-                        <div
-                          className="cart-item-swipe-background"
-                          onClick={() => handleDeleteClick(itemId)}
-                        >
-                          <FaTrash className="swipe-trash-icon" />
-                        </div>
+                        {!billRequested && (
+                          <div
+                            className="cart-item-swipe-background"
+                            onClick={() => handleDeleteClick(itemId)}
+                          >
+                            <FaTrash className="swipe-trash-icon" />
+                          </div>
+                        )}
 
                         <div
-                          className="cart-item"
+                          className={`cart-item ${billRequested ? 'bill-requested-item' : ''}`}
                           onTouchStart={(e) => handleTouchStart(e, itemId)}
                           onTouchMove={(e) => handleTouchMove(e, itemId)}
                           onTouchEnd={() => handleTouchEnd(itemId)}
@@ -706,13 +760,15 @@ const Cart = () => {
                           <button
                             className="item-image-button"
                             onClick={() => openFoodModal(itemId, cartItem)}
+                            disabled={billRequested}
                           >
                             <img
                               src={url + "/images/" + foodItem.image}
                               alt={foodItem.name}
                               className="item-image"
                               onError={(e) => {
-                                e.target.src = assets.placeholder_food;
+                                e.target.src = assets.image_coming_soon;
+                                e.target.style.objectFit = "cover";
                               }}
                             />
                           </button>
@@ -720,16 +776,18 @@ const Cart = () => {
                             <button
                               className="item-name-button"
                               onClick={() => openFoodModal(itemId, cartItem)}
+                              disabled={billRequested}
                             >
-                              <h3 className="item-name">{foodItem.name}</h3>
+                              <h3 className={`item-name ${billRequested ? 'disabled-text' : ''}`}>{foodItem.name}</h3>
                             </button>
 
                             {/* DESCRIEREA SUB TITLU */}
                             <button
                               className="item-description-button"
                               onClick={() => openFoodModal(itemId, cartItem)}
+                              disabled={billRequested}
                             >
-                              <p className="item-description">
+                              <p className={`item-description ${billRequested ? 'disabled-text' : ''}`}>
                                 {foodItem.description}
                               </p>
                             </button>
@@ -759,7 +817,7 @@ const Cart = () => {
                                 </div>
                               )}
 
-                            <p className="item-price">
+                            <p className={`item-price ${billRequested ? 'disabled-text' : ''}`}>
                               {(
                                 (foodItem.price +
                                   (cartItem.itemData?.extrasPrice || 0)) *
@@ -768,11 +826,12 @@ const Cart = () => {
                               €
                             </p>
                           </div>
-                          <div className="quantity-controls">
+                          <div className={`quantity-controls ${billRequested ? 'disabled-controls' : ''}`}>
                             <button
                               onClick={() => removeFromCart(itemId, 1)}
                               className="quantity-button-order decrease"
                               aria-label="Decrease quantity"
+                              disabled={billRequested}
                             >
                               <FaMinus />
                             </button>
@@ -789,6 +848,7 @@ const Cart = () => {
                               }
                               className="quantity-button-order increase"
                               aria-label="Increase quantity"
+                              disabled={billRequested}
                             >
                               <FaPlus />
                             </button>
@@ -802,19 +862,22 @@ const Cart = () => {
               </AnimatePresence>
             </div>
 
-             <div className="add-more-button-container">
-      <button
-        className="add-more-button-cart"
-        onClick={() => navigate("/category/All")}
-      >
-        <FaPlus />
-        <span>{t("add_more_items")}</span>
-      </button>
-    </div>
+            {/* Add More Button - doar dacă nota nu este cerută */}
+            {!billRequested && (
+              <div className="add-more-button-container">
+                <button
+                  className="add-more-button-cart"
+                  onClick={() => navigate("/category/All")}
+                >
+                  <FaPlus />
+                  <span>{t("add_more_items")}</span>
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* Popular Products Section - DOAR DACĂ COȘUL NU ESTE GOL */}
-          {!isCartEmpty && displayedPopularProducts.length > 0 && (
+          {/* Popular Products Section - DOAR DACĂ COȘUL NU ESTE GOL ȘI NOTA NU ESTE CERUTĂ */}
+          {!isCartEmpty && displayedPopularProducts.length > 0 && !billRequested && (
             <motion.div
               className="popular-products-section"
               initial={{ opacity: 0, y: 20 }}
@@ -854,11 +917,13 @@ const Cart = () => {
                           src={
                             product.image
                               ? `${url}/images/${product.image}`
-                              : assets.placeholder_food
+                              : assets.image_coming_soon
                           }
                           alt={product.name || "Popular product"}
                           onError={(e) => {
-                            e.target.src = assets.placeholder_food;
+                            e.target.src = assets.image_coming_soon;
+                            e.target.style.objectFit = "contain";
+                            e.target.style.padding = "10px";
                           }}
                         />
 
@@ -906,19 +971,21 @@ const Cart = () => {
             </motion.div>
           )}
 
-          {/* Special Instructions globale */}
-          <div className="special-instructions-section">
-            <h2 className="section-title">{t("special_instructions")}</h2>
-            <div className="instructions-input-container">
-              <textarea
-                value={specialInstructions}
-                onChange={(e) => setSpecialInstructions(e.target.value)}
-                placeholder={t("special_instructions_placeholder")}
-                rows={3}
-                className="instructions-textarea"
-              />
+          {/* Special Instructions globale - doar dacă nota nu este cerută */}
+          {!billRequested && (
+            <div className="special-instructions-section">
+              <h2 className="section-title">{t("special_instructions")}</h2>
+              <div className="instructions-input-container">
+                <textarea
+                  value={specialInstructions}
+                  onChange={(e) => setSpecialInstructions(e.target.value)}
+                  placeholder={t("special_instructions_placeholder")}
+                  rows={3}
+                  className="instructions-textarea"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Order Summary */}
           <div className="order-summary-section">
@@ -943,8 +1010,8 @@ const Cart = () => {
         </div>
       )}
 
-      {/* Floating Checkout Button */}
-      {showFloatingCheckout && (
+      {/* Floating Checkout Button - doar dacă nota nu este cerută */}
+      {showFloatingCheckout && !billRequested && (
         <div
           className={`floating-checkout ${
             isPlacingOrder || orderPlaced ? "placing-order" : ""

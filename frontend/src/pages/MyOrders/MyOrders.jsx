@@ -13,11 +13,23 @@ import {
   FaMoneyBillWave,
   FaLock,
   FaHandHoldingHeart,
+  FaCheckCircle,
+  FaClock,
 } from "react-icons/fa";
 import { assets } from "../../assets/assets";
+import WaiterModalCart from "../../components/Navbar/WaiterModal";
 
 const MyOrders = () => {
-  const { token, food_list, url } = useContext(StoreContext);
+  const { 
+    token, 
+    food_list, 
+    url,
+    // ✅ IA DIN CONTEXT în loc de state local
+    billRequested,
+    markBillAsRequested,
+    resetBillRequest,
+    getTimeSinceBillRequest
+  } = useContext(StoreContext);
 
   const [promoCode, setPromoCode] = useState("");
   const [discount, setDiscount] = useState(0);
@@ -44,6 +56,13 @@ const MyOrders = () => {
   const [customTipAmount, setCustomTipAmount] = useState("");
   const [showTipsSection, setShowTipsSection] = useState(false);
 
+  // State pentru WaiterModal
+  const [showWaiterModal, setShowWaiterModal] = useState(false);
+
+  // ✅ ȘTERGE STATE-URILE LOCALE PENTRU BILL - folosim din context
+  // const [billRequested, setBillRequested] = useState(false);
+  // const [billRequestTime, setBillRequestTime] = useState(null);
+
   const tableNumber = localStorage.getItem("tableNumber") || null;
 
   const promoCodes = {
@@ -57,7 +76,7 @@ const MyOrders = () => {
     order.items.map((item) => ({
       ...item,
       orderId: order._id,
-      uniqueId: `${order._id}_${item._id}`, // ID unic pentru fiecare item
+      uniqueId: `${order._id}_${item._id}`,
     }))
   );
 
@@ -68,6 +87,12 @@ const MyOrders = () => {
     return () => {
       document.body.classList.remove("cart-page");
     };
+  }, []);
+
+  // ✅ ÎNLOCUIEȘTE cu verificarea din context
+  useEffect(() => {
+    // Starea billRequested este acum gestionată complet de context
+    // Nu mai este nevoie de verificări locale
   }, []);
 
   // Fetch comenzile neplătite
@@ -81,9 +106,7 @@ const MyOrders = () => {
           { headers: { token } }
         );
 
-        // Verifică structura răspunsului
         const ordersData = response.data?.data || response.data || [];
-
         const unpaidOrders = Array.isArray(ordersData)
           ? ordersData.filter((order) => order && !order.payment)
           : [];
@@ -108,7 +131,7 @@ const MyOrders = () => {
   }, [url, token, tableNumber]);
 
   useEffect(() => {
-    setShowFloatingCheckout(!isCartEmpty);
+    setShowFloatingCheckout(!isCartEmpty && !billRequested);
 
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -116,16 +139,15 @@ const MyOrders = () => {
   }, []);
 
   useEffect(() => {
-    setShowFloatingCheckout(!isCartEmpty);
-  }, [isCartEmpty, orderItems]);
+    setShowFloatingCheckout(!isCartEmpty && !billRequested);
+  }, [isCartEmpty, orderItems, billRequested]);
 
   // Funcție pentru a găsi informațiile complete despre mâncare
   const findFoodItem = (itemId) => {
     const item = orderItems.find((item) => item.uniqueId === itemId);
     if (item) {
-      // Caută în food_list pentru detalii complete
       const foodItem = food_list.find((food) => food._id === item._id);
-      return foodItem || item; // Returnează foodItem dacă există, altfel item-ul de bază
+      return foodItem || item;
     }
     return null;
   };
@@ -188,14 +210,13 @@ const MyOrders = () => {
     const method = event.target.value;
     setPaymentMethod(method);
 
-    // Arată secțiunea de tips doar pentru plata cu card și setează tips-ul la 10%
     if (method === "creditCard") {
       setShowTipsSection(true);
-      setTipPercentage(0); // Setează automat la 10% când se selectează cardul
-      setCustomTipAmount(""); // Resetează custom tip amount
+      setTipPercentage(0);
+      setCustomTipAmount("");
     } else {
       setShowTipsSection(false);
-      setTipPercentage(0); // Resetează tips-ul pentru alte metode de plată
+      setTipPercentage(0);
       setCustomTipAmount("");
     }
 
@@ -204,8 +225,6 @@ const MyOrders = () => {
 
   const handleClearCart = async () => {
     try {
-      // Aici va trebui să implementezi logica pentru ștergerea tuturor comenzilor neplătite
-      // Aceasta este o implementare temporară
       setUnpaidOrders([]);
       setShowConfirmClear(false);
       toast.success("All unpaid orders cleared");
@@ -234,10 +253,49 @@ const MyOrders = () => {
     return subtotal - discount + tipAmount;
   };
 
+  // ✅ ÎNLOCUIEȘTE cu funcția din context
+  // Funcțiile pentru bill request sunt acum în context
+
+  // Funcție pentru a trimite acțiunea de plată cash către WaiterModal
+  const handleCashPaymentAction = async () => {
+    try {
+      const response = await axios.post(`${url}/api/waiterorders/add`, {
+        action: 'Call waiter - Cash or POS payment',
+        tableNo: tableNumber,
+        orderDetails: {
+          totalAmount: getFinalTotalAmount().toFixed(2),
+          itemCount: getTotalOrderItemCount(),
+          orders: unpaidOrders.map(order => order._id),
+          tipAmount: calculateTipAmount(),
+          discount: discount
+        }
+      });
+
+      if (response.data.success) {
+        toast.success("Waiter notified about your cash payment request");
+        setShowWaiterModal(false);
+        
+        // ✅ FOLOSEȘTE FUNCȚIA DIN CONTEXT
+        markBillAsRequested();
+        
+        // Continuă cu procesul normal de plasare a comenzii
+        setOrderPlaced(true);
+        setShowFloatingCheckout(false);
+      } else {
+        toast.error("Failed to notify waiter");
+        setIsPlacingOrder(false);
+      }
+    } catch (error) {
+      console.error('Error notifying waiter:', error);
+      toast.error('Error notifying waiter, but order was placed');
+      setIsPlacingOrder(false);
+    }
+  };
+
   const placeOrder = async (event) => {
     if (event) event.preventDefault();
 
-    if (orderPlaced) return;
+    if (orderPlaced || billRequested) return;
 
     if (!paymentMethod) {
       setPaymentError("Please select a payment method.");
@@ -285,37 +343,23 @@ const MyOrders = () => {
         );
 
         if (response.data.success) {
+          // ✅ FOLOSEȘTE FUNCȚIA DIN CONTEXT
+          markBillAsRequested();
           window.location.replace(response.data.session_url);
         } else {
           alert("Error processing payment.");
           setIsPlacingOrder(false);
         }
-      } else if (paymentMethod === "cashPOS") {
-        // Pentru plata cash, folosește endpoint-ul tău existent sau adaptează-l
-        const response = await axios.post(
-          url + "/api/order/place-cash",
-          orderData,
-          { headers: { token } }
-        );
-
-        if (response.data.success) {
-          setOrderPlaced(true);
-          setShowFloatingCheckout(false);
-
-          setTimeout(() => {
-            navigate("/thank-you", {
-              state: {
-                tableNo: orderData.tableNo,
-                orderId: response.data.orderId,
-              },
-            });
-            localStorage.setItem("isReloadNeeded", "true");
-          }, 1500);
-        } else {
-          alert("Error placing order.");
-          setIsPlacingOrder(false);
-        }
-      }
+     } else if (paymentMethod === "cashPOS") {
+  // Pentru plata cash, deschide WaiterModal pentru a notifica ospătarul
+  setShowWaiterModal(true);
+  
+  // ✅ FOLOSEȘTE FUNCȚIA DIN CONTEXT
+  markBillAsRequested();
+  
+  // WaiterModalCart se va ocupa de trimiterea notificării automat
+      window.scrollTo(0, 0);
+}
     } catch (error) {
       console.error("Order placement error:", error);
       alert("Error placing order.");
@@ -453,6 +497,34 @@ const MyOrders = () => {
         </motion.div>
       ) : (
         <div className="cart-content">
+          {/* Notification for already requested bill */}
+        {billRequested && (
+  <motion.div
+    className="bill-requested-notification"
+    initial={{ opacity: 0, y: -20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+  >
+    <div className="notification-content">
+      <FaCheckCircle className="notification-icon" />
+      <div className="notification-text">
+        <h3>Bill Request Sent</h3>
+        <p>
+          Waiter notified {getTimeSinceBillRequest()}. They'll come to your table shortly.
+        </p>
+      </div>
+    </div>
+    <button 
+      className="reset-request-button"
+      onClick={resetBillRequest} // ✅ FOLOSEȘTE DIN CONTEXT
+      title="Cancel bill request"
+    >
+      <FaClock />
+      <span>Cancel Request</span>
+    </button>
+  </motion.div>
+)}
+
           {/* Orders List */}
           <div className="cart-items-section">
             <div className="cart-items-list">
@@ -498,7 +570,8 @@ const MyOrders = () => {
                                   alt={foodItem?.name || item.name}
                                   className="item-image"
                                   onError={(e) => {
-                                    e.target.src = assets.placeholder_food;
+                                    e.target.src = assets.image_coming_soon;
+                                    e.target.style.objectFit = "cover";
                                   }}
                                 />
                               </button>
@@ -542,14 +615,6 @@ const MyOrders = () => {
                 ))}
               </AnimatePresence>
             </div>
-
-            {/* <button
-              className="add-more-button"
-              onClick={() => navigate("/category/All")}
-            >
-              <FaPlus />
-              <span>Add More Items</span>
-            </button> */}
           </div>
 
           {/* Order Summary */}
@@ -562,26 +627,29 @@ const MyOrders = () => {
               </div>
               <div className="summary-row">
                 <span>Discount</span>
-                <span>{discount > 0 ? `-${discount} €` : "0 €"}</span>
-              </div>
-              <div className="promo-code-section">
-                <div className="promo-input-container">
-                  <input
-                    type="text"
-                    value={promoCode}
-                    onChange={handlePromoCodeChange}
-                    placeholder="Promo code"
-                    className="promo-input"
-                  />
-                  <button
-                    className="apply-promo-button"
-                    type="button"
-                    onClick={applyPromoCode}
-                  >
-                    Apply
-                  </button>
-                </div>
-              </div>
+<span className={discount > 0 ? "discount-amount" : ""}>
+  {discount > 0 ? `-${discount} €` : "0 €"}
+</span>              </div>
+           <div className="promo-code-section">
+  {!billRequested && (
+    <div className="promo-input-container">
+      <input
+        type="text"
+        value={promoCode}
+        onChange={handlePromoCodeChange}
+        placeholder="Promo code"
+        className="promo-input"
+      />
+      <button
+        className="apply-promo-button"
+        type="button"
+        onClick={applyPromoCode}
+      >
+        Apply
+      </button>
+    </div>
+  )}
+</div>
               <div className="summary-divider"></div>
               <div className="summary-row total">
                 <span>Total</span>
@@ -595,7 +663,8 @@ const MyOrders = () => {
             </div>
           </div>
 
-          {showTipsSection && (
+          {/* Show tips section only if bill hasn't been requested yet */}
+          {showTipsSection && !billRequested && (
             <motion.div
               className="cart-tips-section active"
               initial={{ opacity: 0, y: 20 }}
@@ -634,7 +703,7 @@ const MyOrders = () => {
                 ))}
               </div>
 
-              {/* Custom Tip Section - separat și mai frumos */}
+              {/* Custom Tip Section */}
               <div className="custom-tip-section">
                 <label className="custom-tip-label">
                   Or enter custom amount:
@@ -649,7 +718,6 @@ const MyOrders = () => {
                       value={customTipAmount}
                       onChange={(e) => {
                         const value = e.target.value;
-                        // Permite doar numere pozitive, zero, sau șir gol
                         if (
                           value === "" ||
                           (/^\d*\.?\d*$/.test(value) && parseFloat(value) >= 0)
@@ -659,7 +727,6 @@ const MyOrders = () => {
                         }
                       }}
                       onKeyDown={(e) => {
-                        // Blochează tastele minus și 'e' (pentru exponent)
                         if (e.key === "-" || e.key === "e" || e.key === "E") {
                           e.preventDefault();
                         }
@@ -669,7 +736,6 @@ const MyOrders = () => {
                         if (!customTipAmount) setCustomTipAmount("");
                       }}
                       onBlur={(e) => {
-                        // La ieșire din câmp, formatează valoarea și asigură-te că e pozitivă
                         const value = e.target.value;
                         if (value) {
                           const numValue = Math.max(0, parseFloat(value));
@@ -704,7 +770,6 @@ const MyOrders = () => {
                   </div>
                 )}
 
-                {/* Tip - afișează doar dacă există tips */}
                 {calculateTipAmount() > 0 && (
                   <div className="cart-tips-summary-row">
                     <span>Tip:</span>
@@ -719,110 +784,113 @@ const MyOrders = () => {
               </div>
             </motion.div>
           )}
-          {/* Payment Method Section */}
-          <div className="cart-payment-section" id="payment-method-section">
-            <h2 className="cart-payment-title">Select Payment Method</h2>
 
-            {paymentError && (
-              <div className="cart-payment-error">{paymentError}</div>
-            )}
+          {/* Payment Method Section - Hide if bill already requested */}
+          {!billRequested && (
+            <div className="cart-payment-section" id="payment-method-section">
+              <h2 className="cart-payment-title">Select Payment Method</h2>
 
-            <div className="cart-payment-options">
-              <label className="cart-payment-option">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="creditCard"
-                  onChange={handlePaymentMethodChange}
-                  checked={paymentMethod === "creditCard"}
-                />
-                <div className="cart-payment-option-content">
-                  <div className="cart-payment-icon">
-                    <FaCreditCard />
-                  </div>
-                  <div className="cart-payment-details">
-                    <span className="cart-payment-option-title">
-                      Credit/Debit Card
-                    </span>
-                    <span className="cart-payment-option-subtitle">
-                      Pay securely online with your card
-                    </span>
-                  </div>
-                </div>
-              </label>
+              {paymentError && (
+                <div className="cart-payment-error">{paymentError}</div>
+              )}
 
-              <label className="cart-payment-option">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="cashPOS"
-                  onChange={handlePaymentMethodChange}
-                  checked={paymentMethod === "cashPOS"}
-                />
-                <div className="cart-payment-option-content">
-                  <div className="cart-payment-icon">
-                    <FaMoneyBillWave />
+              <div className="cart-payment-options">
+                <label className="cart-payment-option">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="creditCard"
+                    onChange={handlePaymentMethodChange}
+                    checked={paymentMethod === "creditCard"}
+                  />
+                  <div className="cart-payment-option-content">
+                    <div className="cart-payment-icon">
+                      <FaCreditCard />
+                    </div>
+                    <div className="cart-payment-details">
+                      <span className="cart-payment-option-title">
+                        Credit/Debit Card
+                      </span>
+                      <span className="cart-payment-option-subtitle">
+                        Pay securely online with your card
+                      </span>
+                    </div>
                   </div>
-                  <div className="cart-payment-details">
-                    <span className="cart-payment-option-title">
-                      Cash or POS Terminal
-                    </span>
-                    <span className="cart-payment-option-subtitle">
-                      Pay when you receive your order
-                    </span>
-                  </div>
-                </div>
-              </label>
-            </div>
+                </label>
 
-            <div className="cart-payment-security">
-              <div className="cart-payment-security-info">
-                <FaLock className="cart-lock-icon" />
-                <span>Secure & Encrypted Payment</span>
+                <label className="cart-payment-option">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="cashPOS"
+                    onChange={handlePaymentMethodChange}
+                    checked={paymentMethod === "cashPOS"}
+                  />
+                  <div className="cart-payment-option-content">
+                    <div className="cart-payment-icon">
+                      <FaMoneyBillWave />
+                    </div>
+                    <div className="cart-payment-details">
+                      <span className="cart-payment-option-title">
+                        Cash or POS Terminal
+                      </span>
+                      <span className="cart-payment-option-subtitle">
+  Pay at your table with cash or card terminal
+                      </span>
+                    </div>
+                  </div>
+                </label>
               </div>
-              <div className="cart-payment-providers">
-                <div className="cart-provider-logos">
+
+              <div className="cart-payment-security">
+                <div className="cart-payment-security-info">
+                  <FaLock className="cart-lock-icon" />
+                  <span>Secure & Encrypted Payment</span>
+                </div>
+                <div className="cart-payment-providers">
+                  <div className="cart-provider-logos">
+                    <img
+                      src={assets.visa_logo}
+                      alt="Visa"
+                      className="cart-provider-logo"
+                    />
+                    <img
+                      src={assets.mastercard_logo}
+                      alt="Mastercard"
+                      className="cart-provider-logo"
+                    />
+                    <img
+                      src={assets.apple_pay}
+                      alt="Apple Pay"
+                      className="cart-provider-logo"
+                    />
+                    <img
+                      src={assets.google_pay}
+                      alt="Google Pay"
+                      className="cart-provider-logo"
+                    />
+                  </div>
                   <img
-                    src={assets.visa_logo}
-                    alt="Visa"
-                    className="cart-provider-logo"
-                  />
-                  <img
-                    src={assets.mastercard_logo}
-                    alt="Mastercard"
-                    className="cart-provider-logo"
-                  />
-                  <img
-                    src={assets.apple_pay}
-                    alt="Apple Pay"
-                    className="cart-provider-logo"
-                  />
-                  <img
-                    src={assets.google_pay}
-                    alt="Google Pay"
-                    className="cart-provider-logo"
+                    src={assets.stripe_logo}
+                    alt="Stripe"
+                    className="cart-stripe-logo"
                   />
                 </div>
-                <img
-                  src={assets.stripe_logo}
-                  alt="Stripe"
-                  className="cart-stripe-logo"
-                />
+              </div>
+
+              <div className="cart-payment-features">
+                <div className="cart-payment-feature">SSL Encrypted</div>
+                <div className="cart-payment-feature">PCI Compliant</div>
+                <div className="cart-payment-feature">3D Secure</div>
+                <div className="cart-payment-feature">Money Back Guarantee</div>
               </div>
             </div>
-
-            <div className="cart-payment-features">
-              <div className="cart-payment-feature">SSL Encrypted</div>
-              <div className="cart-payment-feature">PCI Compliant</div>
-              <div className="cart-payment-feature">3D Secure</div>
-              <div className="cart-payment-feature">Money Back Guarantee</div>
-            </div>
-          </div>
+          )}
         </div>
       )}
 
-      {/* Floating Checkout Button */}
-      {showFloatingCheckout && (
+      {/* Floating Checkout Button - Hide if bill already requested */}
+      {showFloatingCheckout && !billRequested && (
         <div
           className={`floating-checkout ${
             isPlacingOrder || orderPlaced ? "placing-order" : ""
@@ -886,13 +954,26 @@ const MyOrders = () => {
         )}
       </AnimatePresence>
 
+<WaiterModalCart 
+  show={showWaiterModal} 
+  onClose={() => {
+    setShowWaiterModal(false);
+    setIsPlacingOrder(false);
+  }}
+  paymentDetails={{
+    totalAmount: getFinalTotalAmount().toFixed(2),
+    itemCount: getTotalOrderItemCount(),
+    paymentMethod: 'Cash/POS',
+    orders: unpaidOrders.map(order => order._id)
+  }}
+/>
+
       <FoodModal
         food={selectedFood}
         closeModal={closeFoodModal}
         isOpen={isFoodModalOpen}
         initialQuantity={selectedFoodQuantity}
         initialInstructions={selectedFoodInstructions}
-        // Adaptează acest prop dacă este necesar pentru comenzile neplătite
         cartItemId={
           selectedFood
             ? Object.keys(orderItems).find((id) => {

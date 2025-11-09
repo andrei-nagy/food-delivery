@@ -992,3 +992,405 @@
 .food-item-modal-description.expanded + .food-item-modal-view-more .food-item-modal-chevron {
     transform: rotate(180deg);
 }
+
+/* FoodModal.css - ADAUGĂ aceste stiluri */
+
+.food-item-modal-container.bill-requested-modal {
+    opacity: 0.95;
+}
+
+.food-modal-bill-warning {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+    padding: 12px 16px;
+    margin: 0 -16px 16px -16px;
+    border-radius: 0;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+.food-modal-bill-warning-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.food-modal-bill-warning-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.food-modal-bill-warning-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.food-modal-bill-warning-text strong {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.food-modal-bill-warning-text span {
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.food-item-modal-image.disabled-image {
+    filter: grayscale(0.3);
+    opacity: 0.7;
+}
+
+.disabled-text {
+    color: #7f8c8d !important;
+}
+
+.food-item-modal-quantity.disabled-controls {
+    opacity: 0.5;
+}
+
+.food-item-modal-quantity.disabled-controls .food-item-modal-qty-btn {
+    cursor: not-allowed;
+    background-color: #bdc3c7 !important;
+}
+
+.food-item-modal-add-btn-disabled {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d) !important;
+    cursor: not-allowed !important;
+    opacity: 0.7 !important;
+}
+
+.food-item-modal-add-btn-disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Dezactivează hover effects când butonul este disabled */
+.food-item-modal-add-btn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Stiluri pentru input-uri dezactivate */
+.food-item-modal-remove-option input:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.food-item-modal-textarea:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.food-item-modal-qty-btn:disabled {
+    cursor: not-allowed;
+    background-color: #e9ecef !important;
+    color: #6c757d !important;
+}
+
+/* Ascunde butonul de view more când nota este cerută */
+.food-item-modal-view-more:disabled {
+    display: none;
+}
+/* FoodModal.css - ADAUGĂ aceste stiluri pentru imaginea de fallback */
+
+/* Stil pentru imaginea de fallback în modal */
+.food-item-modal-image.image-error {
+  background-color: #f8f9fa;
+  border: 1px dashed #dee2e6;
+  object-fit: contain;
+  padding: 20px;
+}
+
+/* Pentru imaginea coming_soon în modal, folosim contain */
+.food-item-modal-image[src*="coming_soon"] {
+  object-fit: contain;
+  background-color: #f8f9fa;
+  border: 1px dashed #dee2e6;
+  padding: 25px;
+  max-height: 250px; /* Asigură-te că imaginea nu devine prea mare */
+}
+
+/* Restul stilurilor existente rămân aceleași */
+.food-item-modal-container.bill-requested-modal {
+  opacity: 0.95;
+}
+
+.food-modal-bill-warning {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  color: white;
+  padding: 12px 16px;
+  margin: 0 -16px 16px -16px;
+  border-radius: 0;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+.food-modal-bill-warning-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.food-modal-bill-warning-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.food-modal-bill-warning-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.food-modal-bill-warning-text strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.food-modal-bill-warning-text span {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.food-item-modal-image.disabled-image {
+  filter: grayscale(0.3);
+  opacity: 0.7;
+}
+
+.disabled-text {
+  color: #7f8c8d !important;
+}
+
+.food-item-modal-quantity.disabled-controls {
+  opacity: 0.5;
+}
+
+.food-item-modal-quantity.disabled-controls .food-item-modal-qty-btn {
+  cursor: not-allowed;
+  background-color: #bdc3c7 !important;
+}
+
+.food-item-modal-add-btn-disabled {
+  background: linear-gradient(135deg, #95a5a6, #7f8c8d) !important;
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+}
+
+.food-item-modal-add-btn-disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.food-item-modal-add-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.food-item-modal-remove-option input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.food-item-modal-textarea:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.food-item-modal-qty-btn:disabled {
+  cursor: not-allowed;
+  background-color: #e9ecef !important;
+  color: #6c757d !important;
+}
+
+.food-item-modal-view-more:disabled {
+  display: none;
+}
+
+
+/* Badge-uri moderne pentru modal */
+.food-item-modal-badges {
+    margin: 18px 0;
+    padding: 0;
+}
+
+.food-item-modal-badges-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.food-item-modal-badge {
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    border: none;
+    backdrop-filter: blur(10px);
+}
+
+.food-item-modal-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.food-item-modal-badge:hover::before {
+    left: 100%;
+}
+
+.food-item-modal-badge:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Badge Vegan - Design modern */
+.food-item-modal-badge-vegan {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.food-item-modal-badge-vegan::after {
+    content: '🌿';
+    font-size: 1.1em;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+/* Badge Best Seller - Design modern */
+.food-item-modal-badge-bestseller {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+    border: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+.food-item-modal-badge-bestseller::after {
+    content: '🏆';
+    font-size: 1.1em;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+/* Badge New - Design modern */
+.food-item-modal-badge-new {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.food-item-modal-badge-new::after {
+    content: '✨';
+    font-size: 1.1em;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+/* Animații subtile pentru badge-uri */
+@keyframes badgeFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
+.food-item-modal-badge {
+    animation: badgeFloat 3s ease-in-out infinite;
+}
+
+.food-item-modal-badge:nth-child(2) {
+    animation-delay: 0.5s;
+}
+
+.food-item-modal-badge:nth-child(3) {
+    animation-delay: 1s;
+}
+
+/* Efect de glow la hover */
+.food-item-modal-badge-vegan:hover {
+    box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+}
+
+.food-item-modal-badge-bestseller:hover {
+    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+}
+
+.food-item-modal-badge-new:hover {
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+}
+
+/* Variante alternative cu fundal transparent */
+.food-item-modal-badge.food-item-modal-badge-vegan-alt {
+    background: rgba(46, 204, 113, 0.1);
+    color: #27ae60;
+    border: 2px solid #27ae60;
+}
+
+.food-item-modal-badge.food-item-modal-badge-bestseller-alt {
+    background: rgba(243, 156, 18, 0.1);
+    color: #e67e22;
+    border: 2px solid #e67e22;
+}
+
+.food-item-modal-badge.food-item-modal-badge-new-alt {
+    background: rgba(231, 76, 60, 0.1);
+    color: #c0392b;
+    border: 2px solid #c0392b;
+}
+
+/* Stiluri pentru textul badge-urilor */
+.food-item-modal-badge-text {
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Responsive design pentru badge-uri */
+@media (max-width: 480px) {
+    .food-item-modal-badges-container {
+        gap: 8px;
+    }
+    
+    .food-item-modal-badge {
+        padding: 6px 14px;
+        font-size: 0.75rem;
+        gap: 6px;
+    }
+    
+    .food-item-modal-badge::after {
+        font-size: 1em;
+    }
+}
+
+/* Pentru ecrane foarte mici */
+@media (max-width: 360px) {
+    .food-item-modal-badges-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .food-item-modal-badge {
+        width: fit-content;
+    }
+}
+
+/* Indicator de stare activă */
+.food-item-modal-badge.active {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+}

@@ -520,3 +520,211 @@
     margin-right: 10px !important;
 } */
 
+
+
+/* RepeatOrder.css - ADAUGĂ aceste stiluri */
+
+/* Bill Requested Warning Banner */
+.repeat-order-bill-warning {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  color: white;
+  padding: 10px 16px;
+  margin: 0 0 16px 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+.repeat-order-bill-warning-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.repeat-order-bill-warning-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.repeat-order-bill-warning-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.repeat-order-bill-warning-text strong {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.repeat-order-bill-warning-text span {
+  font-size: 11px;
+  opacity: 0.9;
+}
+
+/* Swiper dezactivat */
+.repeat-order-swiper-medium.bill-requested-swiper {
+  opacity: 0.8;
+}
+
+/* Card dezactivat */
+.repeat-product-card-medium.bill-requested-card {
+  position: relative;
+  opacity: 0.7;
+}
+
+/* Overlay pentru card-uri */
+.repeat-product-bill-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  z-index: 2;
+}
+
+.repeat-product-bill-message {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 6px 10px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #d63031;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.repeat-product-bill-icon {
+  font-size: 10px;
+}
+
+/* Imagine dezactivată */
+.repeat-product-image-medium.disabled-image {
+  filter: grayscale(0.3);
+}
+
+/* Text dezactivat */
+.disabled-text {
+  color: #7f8c8d !important;
+}
+
+/* Controale de cantitate dezactivate */
+.quantity-selector-medium.disabled-controls {
+  opacity: 0.5;
+}
+
+.quantity-selector-medium.disabled-controls .qty-btn-medium {
+  cursor: not-allowed;
+  background-color: #bdc3c7 !important;
+  color: #7f8c8d !important;
+}
+
+.qty-btn-medium:disabled {
+  cursor: not-allowed;
+  background-color: #e9ecef !important;
+  color: #6c757d !important;
+}
+
+/* Buton Add dezactivat */
+.repeat-add-btn-disabled {
+  background: linear-gradient(135deg, #95a5a6, #7f8c8d) !important;
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+}
+
+.repeat-add-btn-disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.repeat-add-btn-medium:disabled {
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Efecte de hover dezactivate pentru card-uri */
+.repeat-product-card-medium.bill-requested-card:hover {
+  transform: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Stiluri pentru imaginea de fallback */
+.repeat-product-image-medium.image-error-fallback {
+  object-fit: cover;
+  background-color: #f8f9fa;
+  border: 1px dashed #dee2e6;
+}
+
+.repeat-product-image-container-medium {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.repeat-product-image-medium {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+/* Restul stilurilor existente rămân aceleași */
+.repeat-product-image-medium.disabled-image {
+  filter: grayscale(0.3);
+  opacity: 0.7;
+}
+
+.repeat-product-bill-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  border-radius: 12px;
+}
+
+.repeat-product-bill-message {
+  color: white;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.repeat-product-bill-icon {
+  display: block;
+  font-size: 1.2rem;
+  margin-bottom: 4px;
+}
+
+.disabled-text {
+  color: #7f8c8d !important;
+}
+
+.repeat-add-btn-disabled {
+  background: linear-gradient(135deg, #95a5a6, #7f8c8d) !important;
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+}
+
+.quantity-selector-medium.disabled-controls {
+  opacity: 0.5;
+}
+
+.quantity-selector-medium.disabled-controls .qty-btn-medium {
+  cursor: not-allowed;
+  background-color: #bdc3c7 !important;
+}

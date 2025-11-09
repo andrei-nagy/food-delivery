@@ -11,7 +11,25 @@ import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = ({ setShowLogin }) => {
-  const [menu, setMenu] = useState("home");
+  const location = useLocation();
+  const isWelcomePage = location.pathname === "/welcome";
+  const isCartPage = location.pathname === "/cart";
+  const isHomePage = location.pathname === "/";
+  const isMenuPage = location.pathname === "/category/All";
+  const isMyOrdersPage = location.pathname === "/myorders";
+
+  // 🔥 STARE INIȚIALĂ DIRECTĂ
+  const [menu, setMenu] = useState(() => {
+    if (location.pathname === "/") {
+      if (location.hash === "#footer") return "contact-us";
+      if (location.hash === "#explore-menu") return "menu";
+      return "home";
+    } else if (location.pathname === "/category/All" || location.pathname.includes("/category/")) {
+      return "menu";
+    }
+    return "home";
+  });
+
   const {
     url,
     cartItems,
@@ -28,11 +46,23 @@ const Navbar = ({ setShowLogin }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { t, i18n } = useTranslation();
 
-  const location = useLocation();
-  const isWelcomePage = location.pathname === "/welcome";
-  const isCartPage = location.pathname === "/cart";
-  const isHomePage = location.pathname === "/";
-  const isMenuPage = location.pathname === "/category/All";
+  // 🔥 ACTUALIZEAZĂ STARE CÂND SE SCHIMBĂ URL-UL
+  useEffect(() => {
+    const path = location.pathname;
+    const hash = location.hash;
+    
+    if (path === "/") {
+      if (hash === "#footer") {
+        setMenu("contact-us");
+      } else if (hash === "#explore-menu") {
+        setMenu("menu");
+      } else {
+        setMenu("home");
+      }
+    } else if (path === "/category/All" || path.includes("/category/")) {
+      setMenu("menu");
+    }
+  }, [location.pathname, location.hash]);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -46,7 +76,6 @@ const Navbar = ({ setShowLogin }) => {
   const [isVisible, setIsVisible] = useState(false);
   const fabRef = useRef(null);
 
-  // Funcția corectată pentru a calcula totalul produselor din coș
   const getTotalCartItems = () => {
     return Object.values(cartItems).reduce((total, item) => {
       return total + (item.quantity || 0);
@@ -165,6 +194,24 @@ const Navbar = ({ setShowLogin }) => {
     navigate("/");
   };
 
+  // Funcții pentru navigare cu scroll
+  const scrollToSection = (sectionId) => {
+    if (location.pathname !== "/") {
+      navigate("/");
+      setTimeout(() => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+          section.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    } else {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  };
+
   return (
     <div className={`navbar ${isWelcomePage ? "welcome-navbar" : ""}`}>
       {isWelcomePage ? (
@@ -183,20 +230,13 @@ const Navbar = ({ setShowLogin }) => {
         >
           {t("home_navbar")}
         </Link>
-        <a
-          href="#explore-menu"
+        <Link
+          to="/category/All"
           onClick={() => setMenu("menu")}
           className={menu === "menu" ? "active" : ""}
         >
           {t("menu_navbar")}
-        </a>
-        <a
-          href="#footer"
-          onClick={() => setMenu("contact-us")}
-          className={menu === "contact-us" ? "active" : ""}
-        >
-          {t("contact_navbar")}
-        </a>
+        </Link>
       </ul>
 
       <div className={`navbar-right ${isWelcomePage ? "hide-menu" : ""}`}>
@@ -319,11 +359,12 @@ const Navbar = ({ setShowLogin }) => {
                 isMenuPage ? assets.new_menu_selected : assets.new_menu_normal
               }
               alt="Menu Icon"
+              className="navbar-menu-icon"
             />
             <span> {t("menu")}</span>
           </div>
 
-          <div 
+          <div
             className={
               getTotalCartItems() === 0
                 ? "mobile-footer-item"
@@ -339,6 +380,7 @@ const Navbar = ({ setShowLogin }) => {
                 isCartPage ? assets.new_cart_selected : assets.new_cart_normal
               }
               alt="Order Icon"
+              className="navbar-order-icon"
             />
             <div className={getDotClass(getTotalCartItems())}>
               {getTotalCartItems() > 0 && getTotalCartItems()}
@@ -352,13 +394,18 @@ const Navbar = ({ setShowLogin }) => {
                 ? "mobile-footer-item"
                 : "mobile-footer-item dot"
             }
-            // onClick={handleOpenModalMyOrders}
-             onClick={() => {
+            onClick={() => {
               navigate("/myorders");
               window.scrollTo(0, 0);
             }}
           >
-            <img src={assets.new_pay} alt="Pay Icon" />
+            <img
+              src={
+                isMyOrdersPage ? assets.new_pay_selected : assets.new_pay_normal
+              }
+              alt="Pay Icon"
+              className="navbar-pay-icon"
+            />
             <span> {t("pay")}</span>
             <div className={getDotProductsClass(totalProducts)}>
               {totalProducts > 0 && totalProducts}

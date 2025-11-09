@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import './WaiterModal.css';
 import { StoreContext } from '../../context/StoreContext';
 import axios from 'axios';
@@ -9,12 +9,13 @@ import { useTranslation } from 'react-i18next';
 import { FaArrowLeft, FaTimes, FaComments, FaMoneyBillWave, FaCreditCard, FaMoneyBill, FaUtensils, FaQuestion, FaWater, FaWineGlass, FaReceipt, FaClock, FaConciergeBell } from 'react-icons/fa';
 import ChatBot from '../ChatBot/ChatBot';
 
-const WaiterModalCart = ({ show, onClose }) => {
+const WaiterModalCart = ({ show, onClose, customAction, paymentDetails }) => {
   const { url, setToken, token } = useContext(StoreContext);
   const [actionName, setActionName] = useState('');
   const [showDianaAI, setShowDianaAI] = useState(false);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
-  const [showWaiterReasons, setShowWaiterReasons] = useState(false); // Stare pentru motivele de chemare ospătar
+  const [showWaiterReasons, setShowWaiterReasons] = useState(false);
+  const [hasAutoSubmitted, setHasAutoSubmitted] = useState(false); // Nou state pentru a urmări dacă am trimis deja
   const tableNumber = localStorage.getItem("tableNumber");
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -22,8 +23,6 @@ const WaiterModalCart = ({ show, onClose }) => {
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
   };
-  
-  if (!show) return null;
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -35,10 +34,17 @@ const WaiterModalCart = ({ show, onClose }) => {
 
   const submitAction = async (action) => {
     try {
-      const response = await axios.post(`${url}/api/waiterorders/add`, {
+      const requestData = {
         action: action,
         tableNo: tableNumber,
-      });
+      };
+
+      // Adaugă paymentDetails dacă există
+      if (paymentDetails) {
+        requestData.paymentDetails = paymentDetails;
+      }
+
+      const response = await axios.post(`${url}/api/waiterorders/add`, requestData);
 
       if (response.data.success) {
         setActionName('');
@@ -48,6 +54,11 @@ const WaiterModalCart = ({ show, onClose }) => {
         } else {
           onClose();
           toast.success(response.data.message);
+          
+          // Dacă există o acțiune personalizată, o executăm
+          if (customAction) {
+            customAction();
+          }
         }
       } else {
         toast.error(response.data.message);
@@ -72,9 +83,9 @@ const WaiterModalCart = ({ show, onClose }) => {
   const handlePaymentMethod = (paymentMethod) => {
     let action = '';
     if (paymentMethod === 'card') {
-      action = 'Card payment';
+      action = 'Call waiter - POS payment	';
     } else if (paymentMethod === 'cash') {
-      action = 'Cash payment';
+      action = 'Call waiter - Cash payment	';
     }
     
     setActionName(action);
@@ -118,7 +129,21 @@ const WaiterModalCart = ({ show, onClose }) => {
     setShowWaiterReasons(false);
   };
 
-  // Lista de motive pentru chemarea ospătarului
+  // Efectuează automat acțiunea de plată cash atunci când modalul se deschide cu paymentDetails
+  useEffect(() => {
+    if (show && paymentDetails && paymentDetails.paymentMethod === 'Cash/POS' && !hasAutoSubmitted) {
+      setHasAutoSubmitted(true);
+      submitAction('Call waiter - Cash or POS payment');
+    }
+  }, [show, paymentDetails, hasAutoSubmitted]);
+
+  // Reset hasAutoSubmitted când modalul se închide
+  useEffect(() => {
+    if (!show) {
+      setHasAutoSubmitted(false);
+    }
+  }, [show]);
+
   const waiterReasons = [
     {
       id: 'order',
@@ -169,6 +194,9 @@ const WaiterModalCart = ({ show, onClose }) => {
       description: 'Something else'
     }
   ];
+
+  // Mută return-ul la sfârșit, după toate hook-urile
+  if (!show) return null;
 
   return (
     <>

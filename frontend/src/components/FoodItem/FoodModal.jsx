@@ -2,9 +2,10 @@ import React, { useContext, useEffect, useState, useRef } from 'react';
 import { StoreContext } from '../../context/StoreContext';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import './FoodModal.css';
+import { assets } from "../../assets/assets";
 
 const FoodModal = ({ food, closeModal, isOpen }) => {
-    const { addToCart, url } = useContext(StoreContext);
+    const { addToCart, url, canAddToCart, billRequested } = useContext(StoreContext);
     const [selectedQuantity, setSelectedQuantity] = useState(1);
     const [specialInstructions, setSpecialInstructions] = useState("");
     const [isVisible, setIsVisible] = useState(false);
@@ -12,6 +13,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     const [validationError, setValidationError] = useState("");
     const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
     const [descriptionHeight, setDescriptionHeight] = useState('60px');
+    const [imageError, setImageError] = useState(false);
     const descriptionRef = useRef(null);
     const modalRef = useRef(null);
     const optionsRef = useRef(null);
@@ -44,6 +46,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
             setSelectedOptions([]);
             setValidationError("");
             setIsDescriptionExpanded(false);
+            setImageError(false); // Reset image error when modal closes
             setTimeout(() => {
                 document.body.style.overflow = '';
             }, 300);
@@ -65,6 +68,10 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
             }
         }
     }, [isDescriptionExpanded, foodDescription, food]);
+
+    const handleImageError = () => {
+        setImageError(true);
+    };
 
     const handleOptionChange = (option) => {
         setValidationError("");
@@ -188,8 +195,15 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         };
     }, []);
 
-    const increase = () => setSelectedQuantity(q => q + 1);
-    const decrease = () => setSelectedQuantity(q => Math.max(1, q - 1));
+    const increase = () => {
+        if (billRequested) return;
+        setSelectedQuantity(q => q + 1);
+    };
+
+    const decrease = () => {
+        if (billRequested) return;
+        setSelectedQuantity(q => Math.max(1, q - 1));
+    };
     
     const generateCartItemId = () => {
         if (!foodId) return "";
@@ -228,6 +242,12 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     };
 
     const handleAddToCart = () => {
+        // ✅ Verifică dacă nota a fost cerută înainte de a adăuga în coș
+        if (billRequested) {
+            closeModal();
+            return;
+        }
+
         if (!food) {
             console.error("Food object is undefined!");
             closeModal();
@@ -274,7 +294,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     return (
         <div className={`food-item-modal-overlay ${isVisible ? 'active' : ''}`} onClick={closeModal}>
             <div 
-                className="food-item-modal-container" 
+                className={`food-item-modal-container ${billRequested ? 'bill-requested-modal' : ''}`} 
                 ref={modalRef}
                 onClick={(e) => e.stopPropagation()}
             >
@@ -291,19 +311,31 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                 </div>
                 
                 <div className="food-item-modal-body">
+                    {/* Bill Requested Warning Banner */}
+                    {billRequested && (
+                        <div className="food-modal-bill-warning">
+                            <div className="food-modal-bill-warning-content">
+                                <span className="food-modal-bill-warning-icon">⚠️</span>
+                                <div className="food-modal-bill-warning-text">
+                                    <strong>Bill Requested</strong>
+                                    <span>Cannot add new items. Please cancel the bill request first.</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Imaginea principală cu fallback */}
                     <img 
-                        src={url + "/images/" + foodImage} 
+                        src={imageError ? assets.image_coming_soon : (url + "/images/" + foodImage)} 
                         alt={foodName} 
-                        className="food-item-modal-image" 
-                        onError={(e) => {
-                            e.target.style.display = 'none';
-                        }}
+                        className={`food-item-modal-image ${billRequested ? 'disabled-image' : ''} ${imageError ? 'image-error' : ''}`}
+                        onError={handleImageError}
                     />
                     
                     <div className="food-item-modal-description-wrapper">
                         <div 
                             ref={descriptionRef}
-                            className={`food-item-modal-description ${isDescriptionExpanded ? 'expanded' : ''}`}
+                            className={`food-item-modal-description ${isDescriptionExpanded ? 'expanded' : ''} ${billRequested ? 'disabled-text' : ''}`}
                             style={{ maxHeight: descriptionHeight }}
                         >
                             <div className="food-item-modal-description-content">
@@ -314,7 +346,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                             </div>
                         </div>
                         
-                        {foodDescription.length > 200 && (
+                        {foodDescription.length > 200 && !billRequested && (
                             <button 
                                 className="food-item-modal-view-more"
                                 onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
@@ -329,44 +361,50 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                     </div>
                     
                     <div className="food-item-modal-price-section">
-                        <span className="food-item-modal-current-price">{foodPrice.toFixed(2)} €</span>
+                        <span className={`food-item-modal-current-price ${billRequested ? 'disabled-text' : ''}`}>
+                            {foodPrice.toFixed(2)} €
+                        </span>
                         {food.originalPrice && (
-                            <span className="food-item-modal-original-price">{food.originalPrice.toFixed(2)} €</span>
+                            <span className={`food-item-modal-original-price ${billRequested ? 'disabled-text' : ''}`}>
+                                {food.originalPrice.toFixed(2)} €
+                            </span>
                         )}
                     </div>
                     
                     <div className="food-item-modal-ingredients">
-                        <h3 className="food-item-modal-section-title">Ingrediente</h3>
-                        <p className="food-item-modal-section-content">
+                        <h3 className={`food-item-modal-section-title ${billRequested ? 'disabled-text' : ''}`}>
+                            Ingrediente
+                        </h3>
+                        <p className={`food-item-modal-section-content ${billRequested ? 'disabled-text' : ''}`}>
                             {foodDescription || "Ingredientele nu sunt disponibile momentan."}
                         </p>
                     </div>
 
                     {/* Badge-uri pentru Vegan, Best Seller și New */}
-                    {(isVegan || isBestSeller || isNewAdded) && (
+                    {(isVegan || isBestSeller || isNewAdded) && !billRequested && (
                         <div className="food-item-modal-badges">
                             <h3 className="food-item-modal-section-title">Caracteristici</h3>
                             <div className="food-item-modal-badges-container">
                                 {isNewAdded && (
                                     <span className="food-item-modal-badge food-item-modal-badge-new">
-                                        🆕 New
+                                        <span className="food-item-modal-badge-text">New</span>
                                     </span>
                                 )}
                                 {isVegan && (
                                     <span className="food-item-modal-badge food-item-modal-badge-vegan">
-                                        🌱 Vegan
+                                        <span className="food-item-modal-badge-text">Vegan</span>
                                     </span>
                                 )}
                                 {isBestSeller && (
                                     <span className="food-item-modal-badge food-item-modal-badge-bestseller">
-                                        ⭐ Best Seller
+                                        <span className="food-item-modal-badge-text">Best Seller</span>
                                     </span>
                                 )}
                             </div>
                         </div>
                     )}
                     
-                    {foodExtras.length > 0 && (
+                    {foodExtras.length > 0 && !billRequested && (
                         <div className="food-item-modal-remove-section" ref={optionsRef}>
                             <h3 className="food-item-modal-section-title">Extra opțiuni (opțional)</h3>
                             <div className="food-item-modal-remove-options">
@@ -376,6 +414,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                             type="checkbox" 
                                             checked={selectedOptions.includes(extra.name)}
                                             onChange={() => handleOptionChange(extra.name)}
+                                            disabled={billRequested}
                                         />
                                         <span className="food-item-modal-option-text">
                                             {extra.name}
@@ -390,33 +429,39 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                         </div>
                     )}
                     
-                    <textarea
-                        className="food-item-modal-textarea"
-                        placeholder="Instrucțiuni speciale (opțional)"
-                        value={specialInstructions}
-                        onChange={(e) => setSpecialInstructions(e.target.value)}
-                    />
+                    {!billRequested && (
+                        <textarea
+                            className="food-item-modal-textarea"
+                            placeholder="Instrucțiuni speciale (opțional)"
+                            value={specialInstructions}
+                            onChange={(e) => setSpecialInstructions(e.target.value)}
+                            disabled={billRequested}
+                        />
+                    )}
                     
                     <div className="food-item-modal-controls">
-                        <div className="food-item-modal-quantity">
+                        <div className={`food-item-modal-quantity ${billRequested ? 'disabled-controls' : ''}`}>
                             <button 
                                 className="food-item-modal-qty-btn" 
                                 onClick={handleQtyButton(decrease)}
                                 onTouchEnd={handleQtyButton(decrease)}
+                                disabled={billRequested}
                             >-</button>
                             <span className="food-item-modal-qty-value">{selectedQuantity}</span>
                             <button 
                                 className="food-item-modal-qty-btn" 
                                 onClick={handleQtyButton(increase)}
                                 onTouchEnd={handleQtyButton(increase)}
+                                disabled={billRequested}
                             >+</button>
                         </div>
                         <button 
-                            className="food-item-modal-add-btn" 
+                            className={`food-item-modal-add-btn ${billRequested ? 'food-item-modal-add-btn-disabled' : ''}`} 
                             onClick={handleAddButton}
                             onTouchEnd={handleAddButton}
+                            disabled={billRequested}
                         >
-                            Add {calculateTotalPrice().toFixed(2)} €
+                            {billRequested ? 'Bill Requested' : `Add ${calculateTotalPrice().toFixed(2)} €`}
                         </button>
                     </div>
                 </div>

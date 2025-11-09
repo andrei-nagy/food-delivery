@@ -17,7 +17,7 @@ const FoodItemCategory = ({
   category,
   onClick
 }) => {
-  const { cartItems, addToCart, removeFromCart, url, updateCartItemQuantity } =
+  const { cartItems, addToCart, removeFromCart, url, updateCartItemQuantity, canAddToCart, billRequested } =
     useContext(StoreContext);
   const [selectedFood, setSelectedFood] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,7 +25,32 @@ const FoodItemCategory = ({
   const [specialInstructions, setSpecialInstructions] = useState("");
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [showCounterControls, setShowCounterControls] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const timerRef = useRef(null);
+
+  // ✅ FUNCȚIE CORECTĂ: Caută toate variantele produsului în coș
+  const getItemQuantity = () => {
+    if (!cartItems || !id) return 0;
+    
+    let totalQuantity = 0;
+    
+    // Parcurge toate cheile din cartItems
+    Object.keys(cartItems).forEach(key => {
+      // Verifică dacă cheia începe cu ID-ul produsului de bază
+      if (key.startsWith(id)) {
+        const item = cartItems[key];
+        if (typeof item === 'number') {
+          totalQuantity += item;
+        } else if (item && typeof item === 'object' && 'quantity' in item) {
+          totalQuantity += item.quantity || 0;
+        }
+      }
+    });
+    
+    return totalQuantity;
+  };
+
+  const itemQuantity = getItemQuantity();
 
   useEffect(() => {
     if (isModalOpen) {
@@ -39,23 +64,38 @@ const FoodItemCategory = ({
     };
   }, [isModalOpen]);
 
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
   const openFoodModal = () => {
-    // Just call the parent's onClick handler
+    if (billRequested) {
+      return;
+    }
+    
     if (onClick) {
-      onClick({ id, name, price, description, image });
+      onClick({ id, name, price, description, image, isBestSeller, isNewAdded, isVegan, category, extras: [] });
     }
   };
 
-  // Funcție nouă pentru a deschide modalul când se apasă pe iconița Add
   const handleAddIconClick = (e) => {
     e.stopPropagation();
+    
+    if (billRequested) {
+      return;
+    }
+    
     openFoodModal();
   };
 
-  // Funcție pentru a deschide modalul când se apasă pe counter
   const handleCounterClick = (e) => {
     e.stopPropagation();
-    openFoodModal(); // Schimbat: acum deschide modalul în loc să arate controalele
+    
+    if (billRequested) {
+      return;
+    }
+    
+    openFoodModal();
   };
 
   const closeFoodModal = () => {
@@ -73,14 +113,18 @@ const FoodItemCategory = ({
   };
 
   const handleIncreaseQuantityModal = () => {
+    if (billRequested) return;
     setSelectedQuantity((prev) => prev + 1);
   };
 
   const handleDecreaseQuantityModal = () => {
+    if (billRequested) return;
     setSelectedQuantity((prev) => Math.max(prev - 1, 1));
   };
 
   const handleAddToOrder = async () => {
+    if (billRequested) return;
+    
     if (selectedFood) {
       await updateCartItemQuantity(
         selectedFood.id,
@@ -109,9 +153,9 @@ Sare: 1g.
     >
       <>
         <div
-          className="food-item-category"
+          className={`food-item-category ${billRequested ? 'bill-requested-disabled' : ''}`}
           onClick={openFoodModal}
-          style={{ cursor: "pointer" }}
+          style={{ cursor: billRequested ? 'not-allowed' : 'pointer' }}
         >
           <div className="food-item-img-container">
             {isNewAdded && (
@@ -131,15 +175,26 @@ Sare: 1g.
                 alt="Best Seller"
               />
             )}
+            
+            {billRequested && (
+              <div className="bill-requested-overlay">
+                <div className="bill-requested-message">
+                  <span className="repeat-product-bill-icon">🔒</span>
+                  <span>Bill Requested</span>
+                </div>
+              </div>
+            )}
+            
+            {/* Imaginea principală cu fallback la image_coming_soon */}
             <img
-              className="food-item-img"
-              src={url + "/images/" + image}
+              className={`food-item-img ${billRequested ? 'disabled-image' : ''} ${imageError ? 'image-error' : ''}`}
+              src={imageError ? assets.image_coming_soon : (url + "/images/" + image)}
               alt={name}
+              onError={handleImageError}
             />
 
-            {cartItems && cartItems[id] > 0 ? (
+            {!billRequested && itemQuantity > 0 ? ( // ✅ CORECT: folosim itemQuantity
               <AnimatePresence>
-                {/* Eliminat controalele de +/- și lăsat doar counter-ul care deschide modalul */}
                 <motion.div
                   key="cart"
                   className="food-item-counter-cart"
@@ -147,35 +202,40 @@ Sare: 1g.
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 15 }}
                   transition={{ duration: 0.12, ease: "easeOut" }}
-                  onClick={handleCounterClick} // Acum deschide modalul
+                  onClick={handleCounterClick}
                 >
-                  {cartItems[id]}
+                  {itemQuantity} {/* ✅ CORECT: folosim itemQuantity */}
                 </motion.div>
               </AnimatePresence>
-            ) : (
+            ) : !billRequested ? (
               <img
                 className="add"
                 onClick={handleAddIconClick}
                 src={assets.add_icon_white}
                 alt="Add"
               />
-            )}
+            ) : null}
           </div>
 
           <div className="food-item-info">
             <div className="food-item-name-price">
-              <p className="food-item-name">{name}</p>
-              <p className="food-item-price">{price} €</p>
+              <p className={`food-item-name ${billRequested ? 'disabled-text' : ''}`}>{name}</p>
+              <p className={`food-item-price ${billRequested ? 'disabled-text' : ''}`}>{price} €</p>
             </div>
-            <p className="food-item-desc">
+            <p className={`food-item-desc ${billRequested ? 'disabled-text' : ''}`}>
               {description.length > 70
                 ? description.slice(0, 70) + "..."
                 : description}
             </p>
+            
+            {billRequested && (
+              <div className="bill-warning-message">
+                Cannot add items - bill requested
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Folosim FoodModal în loc de modalul vechi */}
         {isModalOpen && selectedFood && (
           <FoodModal 
             food={selectedFood} 
@@ -184,7 +244,6 @@ Sare: 1g.
           />
         )}
 
-        {/* Modal mic pentru informații nutriționale */}
         {isNutritionModalOpen && (
           <div
             className="modal-overlay nutrition-modal-overlay"

@@ -120,7 +120,8 @@ import desk_bell from './desk_bell.png'
 import menu_all from './menu.png'
 import new_home from './new_home.png'
 import new_cart from './new_cart.png'
-import new_pay from './new_pay.png'
+import new_pay_normal from './new_pay_normal.png'
+import new_pay_selected from './new_pay_selected.png'
 import new_ai from './new_ai.png'
 import new_cart_normal from './new_cart_normal.png'
 import new_cart_selected from './new_cart_selected.png'
@@ -130,6 +131,7 @@ import new_menu_normal from './new_menu_normal.png'
 import new_menu_selected from './new_menu_selected.png'
 import empty_cart3 from './empty_cart3.png'
 import no_image from './no_image.png'
+import image_coming_soon from './image_coming_soon.png'
 
 export const assets = {
     logo,
@@ -210,7 +212,8 @@ export const assets = {
     menu_all,
     new_home,
     new_cart,
-    new_pay,
+    new_pay_normal,
+    new_pay_selected,
     new_ai,
     new_cart_normal,
     new_cart_selected,
@@ -219,7 +222,8 @@ export const assets = {
     new_menu_normal,
     new_menu_selected,
     empty_cart3,
-    no_image
+    no_image,
+    image_coming_soon
 }
 
 export const menu_list = [

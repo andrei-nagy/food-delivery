@@ -464,3 +464,95 @@ button.close:hover {
 .food-item-counter img {
     width: 30px;
 }
+
+
+/* FoodItemBestSeller.css - ADAUGĂ aceste stiluri */
+
+.food-item-best.bill-requested-disabled {
+  opacity: 0.7;
+  position: relative;
+}
+
+.bill-requested-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  z-index: 2;
+}
+
+.bill-requested-message {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #d63031;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Stil pentru imaginea de fallback */
+.food-item-img.image-error {
+  background-color: #f8f9fa;
+  border: 1px dashed #dee2e6;
+  object-fit: contain;
+}
+
+/* Pentru imaginea coming_soon, folosim contain în loc de cover */
+.food-item-img[src*="coming_soon"] {
+  object-fit: contain;
+  background-color: #f8f9fa;
+  border: 1px dashed #dee2e6;
+}
+
+.food-item-counter.bill-requested-counter,
+.food-item-counter-cart.bill-requested-counter {
+  background: #95a5a6 !important;
+  cursor: not-allowed !important;
+}
+
+.add.add-disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  filter: grayscale(0.5);
+}
+
+.add.add-disabled:hover {
+  transform: none !important;
+}
+
+.disabled-text {
+  color: #7f8c8d !important;
+}
+
+.bill-warning-message {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  margin-top: 8px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Asigură-te că overlay-ul este deasupra imaginii */
+.food-item-img-container {
+  position: relative;
+}
+
+/* Opțional: Stiluri pentru hover state când este dezactivat */
+.food-item-best.bill-requested-disabled:hover {
+  transform: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}

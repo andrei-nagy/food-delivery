@@ -76,7 +76,6 @@ const ThankYou = () => {
     if (rating > 0) return;
     
     setRating(value);
-    toast.info(`Thank you for your ${value}-star rating!`);
 
     try {
       await axios.post(`${url}/api/order/update-rating`, {

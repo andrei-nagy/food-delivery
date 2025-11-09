@@ -19,13 +19,17 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "./RepeatOrder.css";
 
+// Import assets
+import { assets } from "../../assets/assets";
+
 const RepeatOrder = () => {
-  const { url, token, addToCart } = useContext(StoreContext);
+  const { url, token, addToCart, canAddToCart, billRequested } = useContext(StoreContext);
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasOrders, setHasOrders] = useState(false);
   const [hasUnpaidOrders, setHasUnpaidOrders] = useState(false);
   const [quantities, setQuantities] = useState({});
+  const [imageErrors, setImageErrors] = useState({}); // State pentru erorile de imagine
   const navigate = useNavigate();
   const swiperRef = useRef(null);
   const autoplayTimeoutRef = useRef(null);
@@ -78,6 +82,14 @@ const RepeatOrder = () => {
     }
   };
 
+  // Funcție pentru gestionarea erorilor de imagine
+  const handleImageError = (itemId) => {
+    setImageErrors(prev => ({
+      ...prev,
+      [itemId]: true
+    }));
+  };
+
   const pauseAutoplayTemporarily = () => {
     if (swiperRef.current && swiperRef.current.autoplay) {
       swiperRef.current.autoplay.stop();
@@ -95,6 +107,11 @@ const RepeatOrder = () => {
   };
 
   const handleRepeatSingleItem = async (item) => {
+    // ✅ Verifică dacă nota a fost cerută înainte de a adăuga în coș
+    if (!canAddToCart()) {
+      return;
+    }
+
     try {
       pauseAutoplayTemporarily();
 
@@ -133,6 +150,12 @@ const RepeatOrder = () => {
   };
 
   const handleQuantityChange = (itemId, change) => {
+    // ✅ Verifică dacă nota a fost cerută înainte de a modifica cantitatea
+    if (billRequested) {
+      toast.error("Cannot modify quantities - bill has been requested");
+      return;
+    }
+
     pauseAutoplayTemporarily();
 
     setQuantities((prev) => {
@@ -237,6 +260,19 @@ const RepeatOrder = () => {
 
   return (
     <div className="repeat-order">
+      {/* Bill Requested Warning Banner */}
+      {billRequested && (
+        <div className="repeat-order-bill-warning">
+          <div className="repeat-order-bill-warning-content">
+            <span className="repeat-order-bill-warning-icon">⚠️</span>
+            <div className="repeat-order-bill-warning-text">
+              <strong>Bill Requested</strong>
+              <span>Cannot add new items. Please cancel the bill request first if you want to order again.</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="repeat-order-header">
         <div className="repeat-order-header-left">
           <span className="repeat-order-title">
@@ -290,46 +326,55 @@ const RepeatOrder = () => {
               spaceBetween: 22,
             },
           }}
-          className="repeat-order-swiper-medium"
+          className={`repeat-order-swiper-medium ${billRequested ? 'bill-requested-swiper' : ''}`}
         >
           {uniqueProducts.map((item, index) => {
             const itemId = item.foodId || item._id;
             const quantity = quantities[itemId] || 1;
+            const hasImageError = imageErrors[itemId];
 
             return (
               <SwiperSlide key={itemId || index}>
-                <div className="repeat-product-card-medium">
+                <div className={`repeat-product-card-medium ${billRequested ? 'bill-requested-card' : ''}`}>
                   <div className="repeat-product-image-section-medium">
                     <div className="repeat-product-image-container-medium">
+                      {/* Bill Requested Overlay */}
+                      {billRequested && (
+                        <div className="repeat-product-bill-overlay">
+                          <div className="repeat-product-bill-message">
+                            <span className="repeat-product-bill-icon">🔒</span>
+                            <span>Bill Requested</span>
+                          </div>
+                        </div>
+                      )}
                       <img
-                        src={`${url}/images/${item.image}`}
+                        src={hasImageError ? assets.image_coming_soon : `${url}/images/${item.image}`}
                         alt={item.name}
-                        className="repeat-product-image-medium"
-                        onError={(e) => {
-                          e.target.src = "/images/placeholder-food.jpg";
-                        }}
+                        className={`repeat-product-image-medium ${billRequested ? 'disabled-image' : ''} ${hasImageError ? 'image-error-fallback' : ''}`}
+                        onError={() => handleImageError(itemId)}
                       />
                     </div>
                   </div>
 
                   <div className="repeat-product-content-medium">
                     <div className="repeat-product-info-medium">
-                      <h3 className="repeat-product-name-medium">
+                      <h3 className={`repeat-product-name-medium ${billRequested ? 'disabled-text' : ''}`}>
                         {item.name}
                       </h3>
 
                       <div className="repeat-product-meta-medium">
-                        <div className="repeat-product-price-medium">
+                        <div className={`repeat-product-price-medium ${billRequested ? 'disabled-text' : ''}`}>
                           {item.price} €
                         </div>
                       </div>
                     </div>
 
                     <div className="repeat-product-actions-medium">
-                      <div className="quantity-selector-medium">
+                      <div className={`quantity-selector-medium ${billRequested ? 'disabled-controls' : ''}`}>
                         <button
                           className="qty-btn-medium qty-minus-medium"
                           onClick={() => handleQuantityChange(itemId, -1)}
+                          disabled={billRequested}
                         >
                           <FaMinus />
                         </button>
@@ -337,18 +382,20 @@ const RepeatOrder = () => {
                         <button
                           className="qty-btn-medium qty-plus-medium"
                           onClick={() => handleQuantityChange(itemId, 1)}
+                          disabled={billRequested}
                         >
                           <FaPlus />
                         </button>
                       </div>
 
                       <button
-                        className="repeat-add-btn-medium"
+                        className={`repeat-add-btn-medium ${billRequested ? 'repeat-add-btn-disabled' : ''}`}
                         onClick={() => handleRepeatSingleItem(item)}
-                        title={`Add ${quantity} ${item.name} to cart`}
+                        title={billRequested ? "Bill requested - cannot add items" : `Add ${quantity} ${item.name} to cart`}
                         data-item-id={itemId}
+                        disabled={billRequested}
                       >
-                        Add
+                        {billRequested ? "Disabled" : "Add"}
                       </button>
                     </div>
                   </div>

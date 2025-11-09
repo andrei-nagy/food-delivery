@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const foodSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
+  ingredients: { type: String, default: "" }, // ✅ NOU CÂMP
   price: { type: Number, required: true },
   image: { type: String, required: true },
   category: { type: String, required: true },
@@ -16,7 +17,7 @@ const foodSchema = new mongoose.Schema({
         price: { type: Number, required: true }
       }
     ],
-    default: [] // Asigură-te că este array gol, nu array cu valori default
+    default: []
   }
 });
 

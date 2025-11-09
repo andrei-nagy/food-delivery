@@ -239,7 +239,7 @@
 .cart-count-badge {
     position: absolute !important;
     top: -2px !important;
-    right: -2px !important;
+    right: 3px !important;
     background: linear-gradient(135deg, #ffffff, #f8f9fa) !important;
     color: #e86514 !important;
     border: 2px solid #ffffff !important;

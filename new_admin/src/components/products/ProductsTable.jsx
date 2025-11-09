@@ -147,7 +147,8 @@ const ProductsTable = () => {
         name: "",
         category: "",
         price: "",
-        extras: ""
+        extras: "",
+        ingredients: ""
     });
     const [products, setProducts] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
@@ -162,6 +163,7 @@ const ProductsTable = () => {
         category: "",
         price: "",
         description: "",
+        ingredients: "",
         isBestSeller: false,
         isNewAdded: false,
         isVegan: false,
@@ -268,6 +270,7 @@ const ProductsTable = () => {
         const formData = new FormData();
         formData.append("name", updatedProduct.name);
         formData.append("description", updatedProduct.description);
+        formData.append("ingredients", updatedProduct.ingredients);
         formData.append("price", productPrice);
         formData.append("category", updatedProduct.category);
         formData.append("image", image);
@@ -290,6 +293,7 @@ const ProductsTable = () => {
                     category: "",
                     price: "",
                     description: "",
+                    ingredients: "",
                     isBestSeller: false,
                     isNewAdded: false,
                     isVegan: false,
@@ -330,6 +334,7 @@ const ProductsTable = () => {
             name: product.name,
             category: product.category,
             description: product.description,
+            ingredients: product.ingredients || "",
             price: product.price.toFixed(2),
             image: null,
             isBestSeller: product.isBestSeller,
@@ -348,6 +353,7 @@ const ProductsTable = () => {
         formData.append("category", updatedProduct.category);
         formData.append("price", updatedProduct.price);
         formData.append("description", updatedProduct.description);
+        formData.append("ingredients", updatedProduct.ingredients);
         formData.append("isBestSeller", updatedProduct.isBestSeller);
         formData.append("isNewAdded", updatedProduct.isNewAdded);
         formData.append("isVegan", updatedProduct.isVegan);
@@ -377,50 +383,54 @@ const ProductsTable = () => {
     };
 
     // Import Functions
-    const downloadTemplate = () => {
-        const templateData = [
-            {
-                name: "Margherita Pizza",
-                category: "Pizza",
-                price: "12.99",
-                description: "Classic pizza with tomato sauce and mozzarella",
-                image: "pizza-margherita.jpg",
-                isBestSeller: "true",
-                isNewAdded: "false",
-                isVegan: "true"
-            },
-            {
-                name: "Caesar Salad",
-                category: "Salads",
-                price: "8.99",
-                description: "Fresh salad with caesar dressing",
-                image: "caesar-salad.jpg",
-                isBestSeller: "true",
-                isNewAdded: "true",
-                isVegan: "false"
-            }
-        ];
+  const downloadTemplate = () => {
+    const templateData = [
+        {
+            name: "Margherita Pizza",
+            category: "Pizza",
+            price: "12.99",
+            description: "Classic pizza with tomato sauce and mozzarella",
+            ingredients: "Tomato sauce, Mozzarella cheese, Fresh basil, Olive oil",
+            image: "pizza-margherita.jpg",
+            isBestSeller: "true",
+            isNewAdded: "false",
+            isVegan: "true",
+            extras: "Extra Cheese:1.50,Olives:0.75"
+        },
+        {
+            name: "Caesar Salad",
+            category: "Salads",
+            price: "8.99",
+            description: "Fresh salad with caesar dressing",
+            ingredients: "Romaine lettuce, Caesar dressing, Parmesan cheese, Croutons, Chicken",
+            image: "caesar-salad.jpg",
+            isBestSeller: "true",
+            isNewAdded: "true",
+            isVegan: "false",
+            extras: "Extra Chicken:2.00,Extra Dressing:0.50"
+        }
+    ];
 
-        const headers = ["name", "category", "price", "description", "image", "isBestSeller", "isNewAdded", "isVegan"];
-        let csvContent = headers.join(",") + "\n";
-        
-        templateData.forEach(row => {
-            const rowData = headers.map(header => `"${row[header]}"`).join(",");
-            csvContent += rowData + "\n";
-        });
+    const headers = ["name", "category", "price", "description", "ingredients", "image", "isBestSeller", "isNewAdded", "isVegan", "extras"];
+    let csvContent = headers.join(",") + "\n";
+    
+    templateData.forEach(row => {
+        const rowData = headers.map(header => `"${row[header]}"`).join(",");
+        csvContent += rowData + "\n";
+    });
 
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'products_template.csv';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-        
-        toast.info("Template downloaded successfully!", { theme: "dark" });
-    };
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'products_template.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    toast.info("Template downloaded successfully!", { theme: "dark" });
+};
 
     const handleFileUpload = async (event) => {
         const file = event.target.files[0];
@@ -475,38 +485,89 @@ const ProductsTable = () => {
         });
     };
 
-    const parseCSV = (content) => {
-        const lines = content.split('\n').filter(line => line.trim());
-        if (lines.length < 2) return [];
+ const parseCSV = (content) => {
+    const lines = content.split('\n').filter(line => line.trim());
+    if (lines.length < 2) return [];
 
-        const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
-        const products = [];
+    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+    const products = [];
+    const hasIngredients = headers.includes('ingredients');
 
-        for (let i = 1; i < lines.length; i++) {
-            const values = lines[i].split(',').map(v => v.replace(/"/g, '').trim());
-            const product = {};
-            
-            headers.forEach((header, index) => {
-                product[header] = values[index] || '';
-            });
+    for (let i = 1; i < lines.length; i++) {
+        let values = [];
+        let inQuotes = false;
+        let currentValue = '';
+        
+        for (let char of lines[i]) {
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                values.push(currentValue.trim().replace(/"/g, ''));
+                currentValue = '';
+            } else {
+                currentValue += char;
+            }
+        }
+        values.push(currentValue.trim().replace(/"/g, ''));
 
-            if (product.name && product.category && product.price) {
+        const product = {};
+        headers.forEach((header, index) => {
+            product[header] = values[index] || '';
+        });
+
+        if (product.name && product.category && product.price) {
+            // Parse extras
+            const parsedExtras = [];
+            if (product.extras) {
+                const extrasArray = product.extras.split(',');
+                extrasArray.forEach(extra => {
+                    const [name, price] = extra.split(':');
+                    if (name && price) {
+                        const numericPrice = parseFloat(price.trim());
+                        if (!isNaN(numericPrice)) {
+                            parsedExtras.push({
+                                name: name.trim(),
+                                price: numericPrice.toFixed(2)
+                            });
+                        }
+                    }
+                });
+            }
+
+            if (hasIngredients) {
+                // Format nou cu ingredients
                 products.push({
                     name: product.name,
                     category: product.category,
                     price: parseFloat(product.price) || 0,
                     description: product.description || '',
+                    ingredients: product.ingredients || '',
                     image: product.image || null,
                     isBestSeller: product.isBestSeller === 'true',
                     isNewAdded: product.isNewAdded === 'true',
                     isVegan: product.isVegan === 'true',
-                    extras: []
+                    extras: parsedExtras
+                });
+            } else {
+                // Format vechi fără ingredients
+                products.push({
+                    name: product.name,
+                    category: product.category,
+                    price: parseFloat(product.price) || 0,
+                    description: product.description || '',
+                    ingredients: '',
+                    image: product.image || null,
+                    isBestSeller: product.isBestSeller === 'true',
+                    isNewAdded: product.isNewAdded === 'true',
+                    isVegan: product.isVegan === 'true',
+                    extras: parsedExtras
                 });
             }
         }
+    }
 
-        return products;
-    };
+    return products;
+};
 
     const processImport = async () => {
         if (!importPreview.length) return;
@@ -541,6 +602,7 @@ const ProductsTable = () => {
                 formData.append("category", product.category);
                 formData.append("price", product.price.toString());
                 formData.append("description", product.description);
+                formData.append("ingredients", product.ingredients);
                 formData.append("isBestSeller", product.isBestSeller.toString());
                 formData.append("isNewAdded", product.isNewAdded.toString());
                 formData.append("isVegan", product.isVegan.toString());
@@ -622,6 +684,7 @@ const ProductsTable = () => {
                 product.name.toLowerCase().includes(globalSearch) ||
                 product.category.toLowerCase().includes(globalSearch) ||
                 product.price.toString().includes(globalSearch) ||
+                (product.ingredients && product.ingredients.toLowerCase().includes(globalSearch)) ||
                 (product.extras && product.extras.some(extra => 
                     extra.name.toLowerCase().includes(globalSearch)
                 ))
@@ -646,6 +709,12 @@ const ProductsTable = () => {
             );
         }
 
+        if (columnFilters.ingredients) {
+            filtered = filtered.filter(product =>
+                product.ingredients && product.ingredients.toLowerCase().includes(columnFilters.ingredients)
+            );
+        }
+
         if (columnFilters.extras) {
             filtered = filtered.filter(product =>
                 product.extras && product.extras.some(extra =>
@@ -664,6 +733,7 @@ const ProductsTable = () => {
             name: "",
             category: "",
             price: "",
+            ingredients: "",
             extras: ""
         });
         setFilteredProducts(products);
@@ -756,6 +826,18 @@ const ProductsTable = () => {
                             </th>
                             <th className='px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>
                                 <div className="space-y-2">
+                                    <div>Ingredients</div>
+                                    <input
+                                        type="text"
+                                        placeholder="Filter ingredients..."
+                                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        value={columnFilters.ingredients}
+                                        onChange={(e) => handleColumnFilter('ingredients', e.target.value)}
+                                    />
+                                </div>
+                            </th>
+                            <th className='px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>
+                                <div className="space-y-2">
                                     <div>Extras</div>
                                     <input
                                         type="text"
@@ -789,6 +871,9 @@ const ProductsTable = () => {
                                 </td>
                                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>{product.category}</td>
                                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>{product.price.toFixed(2)} €</td>
+                                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100 max-w-xs truncate' title={product.ingredients}>
+                                    {product.ingredients || <span className="text-gray-500">No ingredients</span>}
+                                </td>
                                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>
                                     {product.extras?.length > 0 ? (
                                         <div className="text-xs text-gray-300">
@@ -1017,13 +1102,27 @@ const ProductsTable = () => {
                             <div className="space-y-2">
                                 <label className="block text-sm font-medium text-white">Description</label>
                                 <textarea
-                                    rows="4"
+                                    rows="3"
                                     maxLength="500"
                                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
                                     placeholder="Describe your product..."
                                     value={updatedProduct.description}
                                     onChange={(e) => setUpdatedProduct({ ...updatedProduct, description: e.target.value })}
                                 />
+                            </div>
+
+                            {/* Ingredients */}
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-white">Ingredients</label>
+                                <textarea
+                                    rows="3"
+                                    maxLength="1000"
+                                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                                    placeholder="List the ingredients (separated by commas)..."
+                                    value={updatedProduct.ingredients}
+                                    onChange={(e) => setUpdatedProduct({ ...updatedProduct, ingredients: e.target.value })}
+                                />
+                                <p className="text-gray-400 text-xs">Separate ingredients with commas (e.g., Tomato sauce, Mozzarella, Basil)</p>
                             </div>
 
                             {/* Extra Options Section */}
@@ -1223,13 +1322,27 @@ const ProductsTable = () => {
                             <div className="space-y-2">
                                 <label className="block text-sm font-medium text-white">Description</label>
                                 <textarea
-                                    rows="4"
+                                    rows="3"
                                     maxLength="500"
                                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
                                     placeholder="Describe your product..."
                                     value={updatedProduct.description}
                                     onChange={(e) => setUpdatedProduct({ ...updatedProduct, description: e.target.value })}
                                 />
+                            </div>
+
+                            {/* Ingredients */}
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-white">Ingredients</label>
+                                <textarea
+                                    rows="3"
+                                    maxLength="1000"
+                                    className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                                    placeholder="List the ingredients (separated by commas)..."
+                                    value={updatedProduct.ingredients}
+                                    onChange={(e) => setUpdatedProduct({ ...updatedProduct, ingredients: e.target.value })}
+                                />
+                                <p className="text-gray-400 text-xs">Separate ingredients with commas (e.g., Tomato sauce, Mozzarella, Basil)</p>
                             </div>
 
                             {/* Extra Options Section */}
@@ -1401,6 +1514,8 @@ const ProductsTable = () => {
                                                     <th className="text-left text-xs font-medium text-gray-400 pb-2">Name</th>
                                                     <th className="text-left text-xs font-medium text-gray-400 pb-2">Category</th>
                                                     <th className="text-left text-xs font-medium text-gray-400 pb-2">Price</th>
+                                                    <th className="text-left text-xs font-medium text-gray-400 pb-2">Ingredients</th>
+                                                    <th className="text-left text-xs font-medium text-gray-400 pb-2">Extras</th>
                                                     <th className="text-left text-xs font-medium text-gray-400 pb-2">Image</th>
                                                     <th className="text-left text-xs font-medium text-gray-400 pb-2">Status</th>
                                                 </tr>
@@ -1413,6 +1528,20 @@ const ProductsTable = () => {
                                                             <td className="py-2 text-sm text-white">{product.name}</td>
                                                             <td className="py-2 text-sm text-gray-300">{product.category}</td>
                                                             <td className="py-2 text-sm text-green-400">{product.price} €</td>
+                                                            <td className="py-2 text-sm text-gray-300 max-w-xs truncate" title={product.ingredients}>
+                                                                {product.ingredients || <span className="text-gray-500">No ingredients</span>}
+                                                            </td>
+                                                            <td className="py-2 text-sm text-gray-300">
+                                                                {product.extras?.length > 0 ? (
+                                                                    <div className="text-xs">
+                                                                        {product.extras.map((extra, idx) => (
+                                                                            <div key={idx}>{extra.name} (+{extra.price}€)</div>
+                                                                        ))}
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-gray-500">No extras</span>
+                                                                )}
+                                                            </td>
                                                             <td className="py-2 text-sm">
                                                                 {product.image ? (
                                                                     <span className={hasImage ? "text-green-400" : "text-yellow-400"}>
@@ -1473,16 +1602,24 @@ const ProductsTable = () => {
                                     <div>
                                         <p><strong>Optional Columns:</strong></p>
                                         <ul className="list-disc list-inside space-y-1 mt-2">
+                                            <li><code>ingredients</code> - List of ingredients</li>
                                             <li><code>image</code> - Image filename (must match uploaded images)</li>
                                             <li><code>isBestSeller</code> - true/false</li>
                                             <li><code>isNewAdded</code> - true/false</li>
                                             <li><code>isVegan</code> - true/false</li>
+                                            <li><code>extras</code> - Format: "Extra1:1.50,Extra2:2.00"</li>
                                         </ul>
                                     </div>
                                 </div>
                                 <div className="mt-4 p-3 bg-blue-900/20 rounded-lg">
                                     <p className="text-blue-300 text-sm">
                                         <strong>Tip:</strong> Make sure image filenames in CSV match exactly with uploaded images (case-sensitive).
+                                    </p>
+                                    <p className="text-blue-300 text-sm mt-1">
+                                        <strong>Ingredients Format:</strong> List ingredients separated by commas - Example: "Tomato sauce, Mozzarella, Basil"
+                                    </p>
+                                    <p className="text-blue-300 text-sm mt-1">
+                                        <strong>Extras Format:</strong> Use "Name:Price,Name:Price" - Example: "Extra Cheese:1.50,Olives:0.75"
                                     </p>
                                 </div>
                             </div>

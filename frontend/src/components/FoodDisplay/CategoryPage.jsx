@@ -282,8 +282,6 @@ const CategoryPage = () => {
   };
 
   const openModal = (food) => {
-      console.log('Food object in modal:', food); // 👈 ADAUGĂ ASTA
-  console.log('Has extras:', food?.extras); // 👈 ȘI ASTA
     setSelectedFood(food);
     setIsModalOpen(true);
     setShowSuggestions(false);
