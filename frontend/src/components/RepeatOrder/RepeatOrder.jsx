@@ -23,7 +23,7 @@ import "./RepeatOrder.css";
 import { assets } from "../../assets/assets";
 
 const RepeatOrder = () => {
-  const { url, token, addToCart, canAddToCart, billRequested } = useContext(StoreContext);
+  const { url, token, addToCart, canAddToCart, billRequested, food_list } = useContext(StoreContext);
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasOrders, setHasOrders] = useState(false);
@@ -80,6 +80,44 @@ const RepeatOrder = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ✅ FUNCȚIE: Găsește informațiile complete despre mâncare din food_list
+  const findFoodItem = (baseFoodId) => {
+    if (!baseFoodId || !food_list) return null;
+    
+    const foodItem = food_list.find((food) => 
+      food._id === baseFoodId
+    );
+    
+    return foodItem || null;
+  };
+
+  // ✅ FUNCȚIE: Calculează prețul cu discount pentru un item
+  const getItemPriceWithDiscount = (foodItem, cartItem) => {
+    if (!foodItem) return {
+      unitPrice: 0,
+      totalPrice: 0,
+      hasDiscount: false,
+      discountPercentage: 0,
+      originalPrice: 0
+    };
+    
+    const rawPrice = parseFloat(foodItem.price) || 0;
+    const discountPercentage = parseFloat(foodItem.discountPercentage) || 0;
+    
+    // Calculează prețul cu discount
+    const discountedPrice = discountPercentage > 0 
+      ? rawPrice * (1 - discountPercentage / 100)
+      : rawPrice;
+      
+    return {
+      unitPrice: discountedPrice,
+      totalPrice: discountedPrice * (cartItem?.quantity || 1),
+      hasDiscount: discountPercentage > 0,
+      discountPercentage,
+      originalPrice: rawPrice
+    };
   };
 
   // Funcție pentru gestionarea erorilor de imagine
@@ -332,6 +370,11 @@ const RepeatOrder = () => {
             const itemId = item.foodId || item._id;
             const quantity = quantities[itemId] || 1;
             const hasImageError = imageErrors[itemId];
+            
+            // ✅ GĂSEȘTE PRODUSUL ÎN FOOD_LIST PENTRU DISCOUNT
+            const foodItem = findFoodItem(item.baseFoodId);
+            const priceInfo = foodItem ? getItemPriceWithDiscount(foodItem, item) : null;
+            const hasDiscount = priceInfo?.hasDiscount;
 
             return (
               <SwiperSlide key={itemId || index}>
@@ -347,6 +390,14 @@ const RepeatOrder = () => {
                           </div>
                         </div>
                       )}
+                      
+                      {/* ✅ BADGE PENTRU DISCOUNT */}
+                      {hasDiscount && !billRequested && (
+                        <div className="repeat-product-discount-badge">
+                          -{priceInfo.discountPercentage}%
+                        </div>
+                      )}
+                      
                       <img
                         src={hasImageError ? assets.image_coming_soon : `${url}/images/${item.image}`}
                         alt={item.name}
@@ -363,9 +414,21 @@ const RepeatOrder = () => {
                       </h3>
 
                       <div className="repeat-product-meta-medium">
-                        <div className={`repeat-product-price-medium ${billRequested ? 'disabled-text' : ''}`}>
-                          {item.price} €
-                        </div>
+                        {/* ✅ AFIȘEAZĂ PREȚUL CU DISCOUNT */}
+                        {hasDiscount && !billRequested ? (
+                          <div className="repeat-product-price-discount-wrapper">
+                            <span className="repeat-product-original-price">
+                              {priceInfo.originalPrice.toFixed(2)} €
+                            </span>
+                            <span className="repeat-product-final-price">
+                              {priceInfo.unitPrice.toFixed(2)} €
+                            </span>
+                          </div>
+                        ) : (
+                          <div className={`repeat-product-price-medium ${billRequested ? 'disabled-text' : ''}`}>
+                            {priceInfo ? priceInfo.unitPrice.toFixed(2) : item.price} €
+                          </div>
+                        )}
                       </div>
                     </div>
 

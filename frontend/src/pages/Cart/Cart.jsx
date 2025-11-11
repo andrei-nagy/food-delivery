@@ -960,100 +960,157 @@ const Cart = () => {
             )}
           </div>
 
-          {/* Popular Products Section - DOAR DACĂ COȘUL NU ESTE GOL ȘI NOTA NU ESTE CERUTĂ */}
-          {!isCartEmpty && displayedPopularProducts.length > 0 && !billRequested && (
-            <motion.div
-              className="popular-products-section"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
+{/* Popular Products Section - DOAR DACĂ COȘUL NU ESTE GOL ȘI NOTA NU ESTE CERUTĂ */}
+{!isCartEmpty && displayedPopularProducts.length > 0 && !billRequested && (
+  <motion.div
+    className="popular-products-section"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.3 }}
+  >
+    <h2 className="section-title">{t("other_products")}</h2>
+    <p className="section-subtitle">{t("popular_choices")}</p>
+
+    <div className="popular-products-grid">
+      {displayedPopularProducts.map((product, index) => {
+        // Asigură-te că product este un obiect valid înainte de a-l randări
+        if (!product || typeof product !== "object") {
+          return null;
+        }
+
+        const quantityInCart = getPopularProductQuantity(product);
+        
+        // ✅ GĂSEȘTE INFORMAȚIILE COMPLETE DESPRE PRODUS DIN FOOD_LIST
+        const completeFoodItem = food_list.find(item => 
+          item._id === (product.id || product._id) || 
+          item.name === product.name
+        );
+        
+        // ✅ CALCULEAZĂ PREȚUL CU DISCOUNT
+        const getProductPriceInfo = () => {
+          if (!completeFoodItem) {
+            return {
+              hasDiscount: false,
+              originalPrice: product.price || 0,
+              discountedPrice: product.price || 0,
+              discountPercentage: 0
+            };
+          }
+          
+          const rawPrice = parseFloat(completeFoodItem.price) || parseFloat(product.price) || 0;
+          const discountPercentage = parseFloat(completeFoodItem.discountPercentage) || 0;
+          
+          const discountedPrice = discountPercentage > 0 
+            ? rawPrice * (1 - discountPercentage / 100)
+            : rawPrice;
+            
+          return {
+            hasDiscount: discountPercentage > 0,
+            originalPrice: rawPrice,
+            discountedPrice: discountedPrice,
+            discountPercentage: discountPercentage
+          };
+        };
+        
+        const priceInfo = getProductPriceInfo();
+
+        return (
+          <motion.div
+            key={product.id || product.name || `popular-${index}`}
+            className="popular-product-card"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 * index }}
+            whileHover={{
+              scale: 1.02,
+              boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+            }}
+          >
+            {/* Card-ul întreg este clickable pentru a deschide modalul */}
+            <div
+              className="popular-product-image"
+              onClick={() => handleAddPopularProduct(product)}
             >
-              <h2 className="section-title">{t("other_products")}</h2>
-              <p className="section-subtitle">{t("popular_choices")}</p>
+              <img
+                src={
+                  product.image
+                    ? `${url}/images/${product.image}`
+                    : assets.image_coming_soon
+                }
+                alt={product.name || "Popular product"}
+                onError={(e) => {
+                  e.target.src = assets.image_coming_soon;
+                  e.target.style.objectFit = "contain";
+                  e.target.style.padding = "10px";
+                }}
+              />
 
-              <div className="popular-products-grid">
-                {displayedPopularProducts.map((product, index) => {
-                  // Asigură-te că product este un obiect valid înainte de a-l randări
-                  if (!product || typeof product !== "object") {
-                    return null;
-                  }
+              {/* Butonul de add sau cantitatea */}
+              {quantityInCart > 0 ? (
+                <div className="popular-product-quantity-badge emerald">
+                  <span className="quantity-number">
+                    {quantityInCart}
+                  </span>
+                </div>
+              ) : (
+                <button
+                  className="add-popular-product-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddPopularProduct(product);
+                  }}
+                  aria-label={`Add ${product.name} to cart`}
+                >
+                  <FaPlus />
+                </button>
+              )}
+              
+              {/* ✅ BADGE PENTRU DISCOUNT */}
+              {priceInfo.hasDiscount && (
+                <div className="popular-product-discount-badge">
+                  -{priceInfo.discountPercentage}%
+                </div>
+              )}
+            </div>
 
-                  const quantityInCart = getPopularProductQuantity(product);
-
-                  return (
-                    <motion.div
-                      key={product.id || product.name || `popular-${index}`}
-                      className="popular-product-card"
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.1 * index }}
-                      whileHover={{
-                        scale: 1.02,
-                        boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
-                      }}
-                    >
-                      {/* Card-ul întreg este clickable pentru a deschide modalul */}
-                      <div
-                        className="popular-product-image"
-                        onClick={() => handleAddPopularProduct(product)}
-                      >
-                        <img
-                          src={
-                            product.image
-                              ? `${url}/images/${product.image}`
-                              : assets.image_coming_soon
-                          }
-                          alt={product.name || "Popular product"}
-                          onError={(e) => {
-                            e.target.src = assets.image_coming_soon;
-                            e.target.style.objectFit = "contain";
-                            e.target.style.padding = "10px";
-                          }}
-                        />
-
-                        {/* Butonul de add sau cantitatea */}
-                        {quantityInCart > 0 ? (
-                          <div className="popular-product-quantity-badge emerald">
-                            <span className="quantity-number">
-                              {quantityInCart}
-                            </span>
-                          </div>
-                        ) : (
-                          <button
-                            className="add-popular-product-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddPopularProduct(product);
-                            }}
-                            aria-label={`Add ${product.name} to cart`}
-                          >
-                            <FaPlus />
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="popular-product-info">
-                        <h4
-                          className="popular-product-name"
-                          onClick={() => handleAddPopularProduct(product)}
-                        >
-                          {product.name || "Popular Item"}
-                        </h4>
-                        <p className="popular-product-price">
-                          {(product.price || 0).toFixed(2)} €
-                        </p>
-                        <div className="popular-product-stats">
-                          <span className="order-count">
-                            {t("ordered_times", { count: product.count || 0 })}
-                          </span>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
+            <div className="popular-product-info">
+              <h4
+                className="popular-product-name"
+                onClick={() => handleAddPopularProduct(product)}
+              >
+                {product.name || "Popular Item"}
+              </h4>
+              
+              {/* ✅ AFIȘEAZĂ PREȚUL CU DISCOUNT - PĂSTRÂND CLASELE ORIGINALE */}
+              <div className="popular-product-price-container">
+                {priceInfo.hasDiscount ? (
+                  <div className="popular-product-price-with-discount">
+                    <span className="popular-product-original-price">
+                      {priceInfo.originalPrice.toFixed(2)} €
+                    </span>
+                    <span className="popular-product-price discounted">
+                      {priceInfo.discountedPrice.toFixed(2)} €
+                    </span>
+                  </div>
+                ) : (
+                  <span className="popular-product-price">
+                    {priceInfo.originalPrice.toFixed(2)} €
+                  </span>
+                )}
               </div>
-            </motion.div>
-          )}
+              
+              <div className="popular-product-stats">
+                <span className="order-count">
+                  {t("ordered_times", { count: product.count || 0 })}
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        );
+      })}
+    </div>
+  </motion.div>
+)}
 
           {/* Special Instructions globale - doar dacă nota nu este cerută */}
           {!billRequested && (
@@ -1086,7 +1143,6 @@ const Cart = () => {
               {getTotalDiscountAmount() > 0 && (
                 <div className="summary-row discount-row">
                   <span className="discount-label">
-                    <FaPercent className="discount-icon" />
                     Discount
                   </span>
                   <span className="discount-amount">

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Edit, Search, Trash2, Plus, Calendar, Tag, Percent, Euro } from "lucide-react";
+import { Edit, Search, Trash2, Plus, Calendar, Tag, Percent, Euro, Infinity } from "lucide-react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -28,6 +28,7 @@ const PromoCodeTable = () => {
         maxDiscountAmount: "",
         startDate: new Date().toISOString().split('T')[0],
         endDate: "",
+        noExpiration: false,
         usageLimit: "",
         isActive: true
     });
@@ -36,46 +37,29 @@ const PromoCodeTable = () => {
     const { url } = useUrl();
     const token = localStorage.getItem("authToken");
 
-  const fetchPromoCodes = async () => {
-  try {
-    console.log("🚀 ===== START FETCH PROMO CODES =====");
-    console.log("🌐 URL:", `${url}/admin/promo-codes`);
-    
-    // FĂRĂ HEADERS CU TOKEN
-    const response = await axios.get(`${url}/admin/promo-codes`);
-    
-    console.log("✅ Response received:", {
-      status: response.status,
-      statusText: response.statusText,
-      data: response.data
-    });
-    
-    if (response.data.success && Array.isArray(response.data.data)) {
-      console.log("🎯 Success true, data:", response.data.data.length, "items");
-      setPromoCodes(response.data.data);
-      setFilteredPromoCodes(response.data.data);
-    } else {
-      console.error("❌ Success false:", response.data);
-      setFilteredPromoCodes([]);
-      toast.error(response.data.message || "Failed to load promo codes");
-    }
-  } catch (error) {
-    console.error("💥 CATCH ERROR - Fetch promo codes failed:", error);
-    
-    if (error.response) {
-      toast.error(`Server error: ${error.response.status}`);
-    } else if (error.request) {
-      toast.error("No response from server");
-    } else {
-      toast.error("Error: " + error.message);
-    }
-  } finally {
-    console.log("🏁 ===== END FETCH PROMO CODES =====");
-  }
-};
+    const fetchPromoCodes = async () => {
+        try {
+            const response = await axios.get(`${url}/admin/promo-codes`);
+            
+            if (response.data.success && Array.isArray(response.data.data)) {
+                setPromoCodes(response.data.data);
+                setFilteredPromoCodes(response.data.data);
+            } else {
+                setFilteredPromoCodes([]);
+                toast.error(response.data.message || "Failed to load promo codes");
+            }
+        } catch (error) {
+            if (error.response) {
+                toast.error(`Server error: ${error.response.status}`);
+            } else if (error.request) {
+                toast.error("No response from server");
+            } else {
+                toast.error("Error: " + error.message);
+            }
+        }
+    };
 
     useEffect(() => {
-        console.log("🔄 PromoCodeTable mounted");
         fetchPromoCodes();
     }, []);
 
@@ -84,27 +68,22 @@ const PromoCodeTable = () => {
         setLoading(true);
 
         try {
-            console.log("🚀 ===== START ADD PROMO CODE =====");
-            console.log("📤 Payload before processing:", updatedPromoCode);
-            
             const payload = {
                 ...updatedPromoCode,
                 discountValue: updatedPromoCode.discountValue === "" ? 0 : parseFloat(updatedPromoCode.discountValue),
                 minOrderAmount: updatedPromoCode.minOrderAmount === "" ? 0 : parseFloat(updatedPromoCode.minOrderAmount),
                 maxDiscountAmount: updatedPromoCode.maxDiscountAmount === "" ? null : parseFloat(updatedPromoCode.maxDiscountAmount),
                 usageLimit: updatedPromoCode.usageLimit === "" ? null : parseInt(updatedPromoCode.usageLimit),
-                endDate: new Date(updatedPromoCode.endDate).toISOString()
+                endDate: updatedPromoCode.noExpiration 
+                    ? new Date(new Date().getFullYear() + 100, 11, 31).toISOString()
+                    : new Date(updatedPromoCode.endDate).toISOString()
             };
-
-            console.log("📦 Final payload:", payload);
 
             const response = await axios.post(`${url}/admin/promo-codes`, payload, {
                 headers: { 
                     token: token 
                 }
             });
-            
-            console.log("✅ Add response:", response.data);
             
             if (response.data.success) {
                 toast.success("Promo code created successfully");
@@ -119,6 +98,7 @@ const PromoCodeTable = () => {
                     maxDiscountAmount: "",
                     startDate: new Date().toISOString().split('T')[0],
                     endDate: "",
+                    noExpiration: false,
                     usageLimit: "",
                     isActive: true
                 });
@@ -126,11 +106,9 @@ const PromoCodeTable = () => {
                 toast.error(response.data.message);
             }
         } catch (error) {
-            console.error("💥 Add promo code error:", error);
             toast.error(error.response?.data?.message || "Error creating promo code");
         } finally {
             setLoading(false);
-            console.log("🏁 ===== END ADD PROMO CODE =====");
         }
     };
 
@@ -140,7 +118,6 @@ const PromoCodeTable = () => {
         }
 
         try {
-            console.log("🗑️ Deleting promo code:", promoCodeId);
             const response = await axios.delete(`${url}/admin/promo-codes/${promoCodeId}`, {
                 headers: { 
                     token: token 
@@ -153,14 +130,15 @@ const PromoCodeTable = () => {
                 toast.error(response.data.message);
             }
         } catch (error) {
-            console.error("❌ Error deleting promo code:", error);
             toast.error("Error deleting promo code");
         }
     };
 
     const editPromoCode = (promoCode) => {
-        console.log("✏️ Editing promo code:", promoCode);
         setCurrentPromoCode(promoCode);
+        
+        const isNoExpiration = promoCode.endDate && new Date(promoCode.endDate).getFullYear() > new Date().getFullYear() + 50;
+        
         setUpdatedPromoCode({
             code: promoCode.code,
             description: promoCode.description,
@@ -169,7 +147,8 @@ const PromoCodeTable = () => {
             minOrderAmount: promoCode.minOrderAmount?.toString() || "",
             maxDiscountAmount: promoCode.maxDiscountAmount?.toString() || "",
             startDate: new Date(promoCode.startDate).toISOString().split('T')[0],
-            endDate: new Date(promoCode.endDate).toISOString().split('T')[0],
+            endDate: isNoExpiration ? "" : new Date(promoCode.endDate).toISOString().split('T')[0],
+            noExpiration: isNoExpiration,
             usageLimit: promoCode.usageLimit?.toString() || "",
             isActive: promoCode.isActive
         });
@@ -181,14 +160,15 @@ const PromoCodeTable = () => {
         setLoading(true);
 
         try {
-            console.log("🔄 Updating promo code:", currentPromoCode._id);
             const payload = {
                 ...updatedPromoCode,
                 discountValue: updatedPromoCode.discountValue === "" ? 0 : parseFloat(updatedPromoCode.discountValue),
                 minOrderAmount: updatedPromoCode.minOrderAmount === "" ? 0 : parseFloat(updatedPromoCode.minOrderAmount),
                 maxDiscountAmount: updatedPromoCode.maxDiscountAmount === "" ? null : parseFloat(updatedPromoCode.maxDiscountAmount),
                 usageLimit: updatedPromoCode.usageLimit === "" ? null : parseInt(updatedPromoCode.usageLimit),
-                endDate: new Date(updatedPromoCode.endDate).toISOString()
+                endDate: updatedPromoCode.noExpiration 
+                    ? new Date(new Date().getFullYear() + 100, 11, 31).toISOString()
+                    : new Date(updatedPromoCode.endDate).toISOString()
             };
 
             const response = await axios.put(`${url}/admin/promo-codes/${currentPromoCode._id}`, payload, {
@@ -205,7 +185,6 @@ const PromoCodeTable = () => {
                 toast.error(response.data.message);
             }
         } catch (error) {
-            console.error("❌ Error updating promo code:", error);
             toast.error(error.response?.data?.message || "Error updating promo code");
         } finally {
             setLoading(false);
@@ -214,7 +193,6 @@ const PromoCodeTable = () => {
 
     const togglePromoCode = async (promoCodeId, currentStatus) => {
         try {
-            console.log("🔘 Toggling promo code:", promoCodeId, "Current status:", currentStatus);
             const response = await axios.patch(`${url}/admin/promo-codes/${promoCodeId}/toggle`, {}, {
                 headers: { 
                     token: token 
@@ -227,7 +205,6 @@ const PromoCodeTable = () => {
                 toast.error(response.data.message);
             }
         } catch (error) {
-            console.error("❌ Error toggling promo code:", error);
             toast.error("Error toggling promo code");
         }
     };
@@ -301,6 +278,10 @@ const PromoCodeTable = () => {
     };
 
     const isExpired = (endDate) => {
+        if (!endDate) return false;
+        if (new Date(endDate).getFullYear() > new Date().getFullYear() + 50) {
+            return false;
+        }
         return new Date(endDate) < new Date();
     };
 
@@ -312,13 +293,32 @@ const PromoCodeTable = () => {
         if (!promoCode.isActive) {
             return <span className="px-2 py-1 text-xs bg-red-500 text-white rounded-full">Inactive</span>;
         }
-        if (isExpired(promoCode.endDate)) {
+        if (promoCode.endDate && isExpired(promoCode.endDate)) {
             return <span className="px-2 py-1 text-xs bg-gray-500 text-white rounded-full">Expired</span>;
         }
         if (isUpcoming(promoCode.startDate)) {
             return <span className="px-2 py-1 text-xs bg-yellow-500 text-white rounded-full">Upcoming</span>;
         }
         return <span className="px-2 py-1 text-xs bg-green-500 text-white rounded-full">Active</span>;
+    };
+
+    const getValidityDisplay = (promoCode) => {
+        const isNoExpiration = promoCode.endDate && new Date(promoCode.endDate).getFullYear() > new Date().getFullYear() + 50;
+        
+        if (isNoExpiration) {
+            return (
+                <div className="flex items-center gap-1 text-green-400">
+                    <Infinity size={14} />
+                    <span>No expiration</span>
+                </div>
+            );
+        }
+        return (
+            <div className="flex items-center gap-1">
+                <Calendar size={14} className="text-gray-400" />
+                {new Date(promoCode.startDate).toLocaleDateString()} - {new Date(promoCode.endDate).toLocaleDateString()}
+            </div>
+        );
     };
 
     const indexOfLastPromoCode = currentPage * promoCodesPerPage;
@@ -463,10 +463,7 @@ const PromoCodeTable = () => {
                                     </div>
                                 </td>
                                 <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-300'>
-                                    <div className="flex items-center gap-1">
-                                        <Calendar size={14} className="text-gray-400" />
-                                        {new Date(promoCode.startDate).toLocaleDateString()} - {new Date(promoCode.endDate).toLocaleDateString()}
-                                    </div>
+                                    {getValidityDisplay(promoCode)}
                                 </td>
                                 <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-300'>
                                     {promoCode.usageLimit ? (
@@ -658,15 +655,35 @@ const PromoCodeTable = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-gray-400 text-sm mb-1">End Date</label>
-                                    <input
-                                        type="date"
-                                        className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600"
-                                        value={updatedPromoCode.endDate}
-                                        onChange={(e) => setUpdatedPromoCode({ ...updatedPromoCode, endDate: e.target.value })}
-                                        required
-                                        min={updatedPromoCode.startDate}
-                                    />
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <input
+                                            type="checkbox"
+                                            id="noExpiration"
+                                            checked={updatedPromoCode.noExpiration}
+                                            onChange={(e) => setUpdatedPromoCode({ 
+                                                ...updatedPromoCode, 
+                                                noExpiration: e.target.checked,
+                                                endDate: e.target.checked ? "" : updatedPromoCode.endDate
+                                            })}
+                                            className="w-4 h-4"
+                                        />
+                                        <label htmlFor="noExpiration" className="text-gray-400 text-sm">
+                                            No expiration date
+                                        </label>
+                                    </div>
+                                    {!updatedPromoCode.noExpiration && (
+                                        <>
+                                            <label className="block text-gray-400 text-sm mb-1">End Date</label>
+                                            <input
+                                                type="date"
+                                                className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600"
+                                                value={updatedPromoCode.endDate}
+                                                onChange={(e) => setUpdatedPromoCode({ ...updatedPromoCode, endDate: e.target.value })}
+                                                required={!updatedPromoCode.noExpiration}
+                                                min={updatedPromoCode.startDate}
+                                            />
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
@@ -849,15 +866,36 @@ const PromoCodeTable = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="block text-sm font-medium text-white">End Date *</label>
-                                    <input
-                                        type="date"
-                                        className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                                        value={updatedPromoCode.endDate}
-                                        onChange={(e) => setUpdatedPromoCode({ ...updatedPromoCode, endDate: e.target.value })}
-                                        required
-                                        min={updatedPromoCode.startDate}
-                                    />
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <input
+                                            type="checkbox"
+                                            id="noExpirationModal"
+                                            checked={updatedPromoCode.noExpiration}
+                                            onChange={(e) => setUpdatedPromoCode({ 
+                                                ...updatedPromoCode, 
+                                                noExpiration: e.target.checked,
+                                                endDate: e.target.checked ? "" : updatedPromoCode.endDate
+                                            })}
+                                            className="w-4 h-4 text-blue-500 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
+                                        />
+                                        <label htmlFor="noExpirationModal" className="text-sm font-medium text-white flex items-center gap-1">
+                                            <Infinity size={14} />
+                                            No expiration date
+                                        </label>
+                                    </div>
+                                    {!updatedPromoCode.noExpiration && (
+                                        <>
+                                            <label className="block text-sm font-medium text-white">End Date *</label>
+                                            <input
+                                                type="date"
+                                                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                                value={updatedPromoCode.endDate}
+                                                onChange={(e) => setUpdatedPromoCode({ ...updatedPromoCode, endDate: e.target.value })}
+                                                required={!updatedPromoCode.noExpiration}
+                                                min={updatedPromoCode.startDate}
+                                            />
+                                        </>
+                                    )}
                                 </div>
                             </div>
 

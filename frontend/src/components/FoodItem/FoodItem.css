@@ -42,7 +42,7 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: 8px;
+  /* gap: 8px; */
   padding: 10px 15px;
   flex-grow: 0;
   flex-shrink: 1;
@@ -122,9 +122,9 @@
 }
 
 .regular-price {
-  color: tomato;
+  color: #e74c3c;
   font-size: 18px;
-  font-weight: 500;
+  font-weight: 600;
   margin: 0;
 }
 
@@ -570,4 +570,36 @@ button.close:hover {
 .food-item.bill-requested-disabled:hover {
   transform: none;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.food-item-info {
+  display: flex;
+  flex-direction: column;
+  /* gap: 8px; */
+  height: 100%; /* Asigură că ocupă tot spațiul */
+}
+
+.food-item-desc-container {
+  min-height: 48px; /* Înălțime fixă pentru 2 linii de text */
+  display: flex;
+  align-items: flex-start;
+}
+
+.food-item-desc {
+  line-height: 1.4;
+  margin: 0;
+  /* Asigură că textul ocupă tot containerul */
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Limitează la 2 linii */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.food-item-price-container {
+  margin-top: auto; /* Împinge prețul în partea de jos */
+}
+
+.discount-price-wrapper {
+  bottom: 5px;
+  position: relative;
 }

@@ -30,20 +30,20 @@ const FoodItemBestSeller = ({
   // ✅ FUNCȚIE CORECTĂ: Caută toate variantele produsului în coș
   const getItemQuantity = () => {
     if (!cartItems || !_id) return 0;
-    
+
     let totalQuantity = 0;
-    
-    Object.keys(cartItems).forEach(key => {
+
+    Object.keys(cartItems).forEach((key) => {
       if (key.startsWith(_id)) {
         const item = cartItems[key];
-        if (typeof item === 'number') {
+        if (typeof item === "number") {
           totalQuantity += item;
-        } else if (item && typeof item === 'object' && 'quantity' in item) {
+        } else if (item && typeof item === "object" && "quantity" in item) {
           totalQuantity += item.quantity || 0;
         }
       }
     });
-    
+
     return totalQuantity;
   };
 
@@ -55,11 +55,11 @@ const FoodItemBestSeller = ({
 
   const handleCounterClick = (e) => {
     e.stopPropagation();
-    
+
     if (billRequested) {
       return;
     }
-    
+
     setShowCounterControls(true);
 
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -82,24 +82,24 @@ const FoodItemBestSeller = ({
     if (billRequested) {
       return;
     }
-    openModal({ 
-      _id, 
-      name, 
-      price, 
-      description, 
+    openModal({
+      _id,
+      name,
+      price,
+      description,
       image,
       discountPercentage,
-      discountedPrice 
+      discountedPrice,
     });
   };
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
-    
+
     if (billRequested) {
       return;
     }
-    
+
     addToCart(_id, 1);
     pauseSwiper();
     handleCounterClick(e);
@@ -107,11 +107,11 @@ const FoodItemBestSeller = ({
 
   const handleRemoveFromCart = (e) => {
     e.stopPropagation();
-    
+
     if (billRequested) {
       return;
     }
-    
+
     removeFromCart(_id, 1);
     pauseSwiper();
     handleCounterClick(e);
@@ -120,39 +120,39 @@ const FoodItemBestSeller = ({
   // ✅ FUNCȚIE pentru butonul PLUS ALB - care deschide modalul
   const handlePlusButtonClick = (e) => {
     e.stopPropagation();
-    
+
     if (billRequested) {
       return;
     }
-    
-    openModal({ 
-      _id, 
-      name, 
-      price, 
-      description, 
+
+    openModal({
+      _id,
+      name,
+      price,
+      description,
       image,
       discountPercentage,
-      discountedPrice 
+      discountedPrice,
     });
   };
 
   // ✅ FUNCȚIE pentru counter (când produsul este deja în coș)
   const handleCounterClickOpenModal = (e) => {
     e.stopPropagation();
-    
+
     if (billRequested) {
       return;
     }
-    
+
     if (!showCounterControls) {
-      openModal({ 
-        _id, 
-        name, 
-        price, 
-        description, 
+      openModal({
+        _id,
+        name,
+        price,
+        description,
         image,
         discountPercentage,
-        discountedPrice 
+        discountedPrice,
       });
     } else {
       handleCounterClick(e);
@@ -161,9 +161,11 @@ const FoodItemBestSeller = ({
 
   return (
     <div
-      className={`food-item-best ${billRequested ? 'bill-requested-disabled' : ''}`}
+      className={`food-item-best ${
+        billRequested ? "bill-requested-disabled" : ""
+      }`}
       onClick={handleClick}
-      style={{ cursor: billRequested ? 'not-allowed' : 'pointer' }}
+      style={{ cursor: billRequested ? "not-allowed" : "pointer" }}
     >
       <div className="food-item-img-container">
         {isNewAdded && (
@@ -182,9 +184,7 @@ const FoodItemBestSeller = ({
 
         {/* Badge pentru discount */}
         {hasDiscount && (
-          <div className="discount-badge">
-            -{discountPercentage}%
-          </div>
+          <div className="discount-badge">-{discountPercentage}%</div>
         )}
 
         {billRequested && (
@@ -197,8 +197,10 @@ const FoodItemBestSeller = ({
         )}
 
         <img
-          className={`food-item-img ${billRequested ? 'disabled-image' : ''} ${imageError ? 'image-error' : ''}`}
-          src={imageError ? assets.image_coming_soon : (url + "/images/" + image)}
+          className={`food-item-img ${billRequested ? "disabled-image" : ""} ${
+            imageError ? "image-error" : ""
+          }`}
+          src={imageError ? assets.image_coming_soon : url + "/images/" + image}
           alt={name}
           onError={handleImageError}
         />
@@ -251,23 +253,31 @@ const FoodItemBestSeller = ({
       </div>
       <div className="food-item-info">
         <div className="food-item-name-rating">
-          <p className={billRequested ? 'disabled-text' : ''}>{name}</p>
-          <div className={`food-item-price-container ${billRequested ? 'disabled-text' : ''}`}>
-            {hasDiscount ? (
-              <div className="discount-price-wrapper">
-                <span className="original-price">{price} €</span>
-                <span className="discounted-price">{discountedPrice} €</span>
-              </div>
-            ) : (
-              <span className="regular-price">{price} €</span>
-            )}
-          </div>
+          <p className={billRequested ? "disabled-text" : ""}>{name}</p>
         </div>
-        <p className={`food-item-desc ${billRequested ? 'disabled-text' : ''}`}>
+        <p
+          className={`food-item-desc fixed-height ${
+            billRequested ? "disabled-text" : ""
+          }`}
+        >
           {description.length > 150
             ? description.slice(0, 150) + "..."
             : description}
         </p>
+        <div
+          className={`food-item-price-container ${
+            billRequested ? "disabled-text" : ""
+          }`}
+        >
+          {hasDiscount ? (
+            <div className="discount-price-wrapper">
+              <span className="original-price">{price} €</span>
+              <span className="discounted-price">{discountedPrice} €</span>
+            </div>
+          ) : (
+            <span className="regular-price">{price} €</span>
+          )}
+        </div>
 
         {billRequested && (
           <div className="bill-warning-message">

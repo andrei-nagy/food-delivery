@@ -398,13 +398,13 @@ body.cart-page .navbar {
 }
 
 .cart-items-list .item-name-button:hover .item-name {
-  color: #e86514;
+  color: #e74c3c;
 }
 
 .cart-items-list .item-price {
   font-size: 15px;
   font-weight: 700;
-  color: #e86514;
+  color: #e74c3c;
   margin-top: 6px;
 }
 
@@ -549,7 +549,7 @@ body.cart-page .navbar {
 .item-price {
   font-size: 16px;
   font-weight: 600;
-  color: #e86514;
+  color: #e74c3c;
   margin-top: 4px;
 }
 
@@ -601,7 +601,7 @@ body.cart-page .navbar {
 .summary-details {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px !important;
 }
 
 .summary-row {
@@ -2044,5 +2044,236 @@ body.cart-page .cart-container .cart-content .cart-items-section .cart-items-lis
   .remove-promo-button {
     padding: 6px 12px;
     font-size: 13px;
+  }
+}
+
+/* Efecte pentru prețuri cu discount în cart-item */
+.item-price.discount-price-wrapper {
+  margin-top: 8px;
+}
+
+.discount-price-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.original-price-line {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.discounted-price {
+  color: #e74c3c;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.discount-badge {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
+}
+
+.item-price.regular-price {
+  color: #2c3e50;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+/* Efecte pentru summary discount */
+.discount-row .discount-label {
+  color: #27ae60;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.discount-row .discount-amount {
+  color: #27ae60;
+  font-weight: 700;
+}
+
+.promo-discount .promo-label {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.promo-discount .promo-discount-amount {
+  color: #27ae60;
+  font-weight: 700;
+}
+
+.saved-amount .saved-label {
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.saved-amount .saved-amount-value {
+  color: #27ae60;
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.summary-row.discount-row,
+.summary-row.promo-discount,
+.summary-row.saved-amount {
+  margin: 4px -12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.summary-row.saved-amount {
+  background: rgba(52, 152, 219, 0.08);
+  border: 1px dashed #3498db;
+}
+
+/* Efecte pentru prețuri cu discount în item-details */
+.item-price-container {
+  margin-top: 8px;
+}
+
+.discount-price-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.final-price {
+  color: #e74c3c;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.discount-badge {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);
+}
+
+.item-price {
+  color: #2c3e50;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+/* Efecte pentru summary discount */
+.discount-row .discount-label {
+  color: #27ae60;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.discount-row .discount-amount {
+  color: #27ae60;
+  font-weight: 700;
+}
+
+.promo-discount .promo-label {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.promo-discount .promo-discount-amount {
+  color: #27ae60;
+  font-weight: 700;
+}
+
+.saved-amount .saved-label {
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.saved-amount .saved-amount-value {
+  color: #27ae60;
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.summary-row.discount-row,
+.summary-row.promo-discount,
+.summary-row.saved-amount {
+  margin: 4px -12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.summary-row.saved-amount {
+  background: rgba(52, 152, 219, 0.08);
+  border: 1px dashed #3498db;
+}
+
+
+
+/* ===== CORECȚIE BADGE DISCOUNT PE IMAGINE ===== */
+
+.item-image-button {
+  position: relative;
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.discount-badge-image {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  z-index: 2;
+  border: 1.5px solid white;
+  line-height: 1;
+   background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(231, 76, 60, 0.3);;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .discount-badge-image {
+    top: 6px;
+    left: 6px;
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .discount-badge-image {
+    top: 4px;
+    left: 4px;
+    font-size: 9px;
+    padding: 2px 5px;
   }
 }

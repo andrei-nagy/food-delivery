@@ -468,7 +468,7 @@ body.cart-page header > div:first-child {
 .summary-details {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px;
 }
 
 .summary-row {
@@ -2258,13 +2258,13 @@ body.cart-page header > div:first-child {
 .discounted-price-cart {
   font-size: 16px;
   font-weight: 700;
-  color: #e86514;
+  color: #e74c3c;
 }
 
 .regular-price-cart {
   font-size: 16px;
   font-weight: 700;
-  color: #e86514;
+  color: #e74c3c;
 }
 
 .discount-badge-cart {
@@ -2459,4 +2459,144 @@ body.cart-page header > div:first-child {
     padding: 6px 12px;
     font-size: 13px;
   }
+}
+
+/* ===== POPULAR PRODUCTS DISCOUNT STYLES ===== */
+
+.popular-product-discount-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.popular-product-price-section {
+  margin: 8px 0;
+}
+
+.discount-price-wrapper-popular {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.original-price-popular {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.discounted-price-popular {
+  color: #e74c3c;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.regular-price-popular {
+  color: #e74c3c;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Improve existing popular product styles */
+.popular-product-image {
+  position: relative;
+}
+
+.popular-product-quantity-badge.emerald {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .popular-product-discount-badge {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+  
+  .original-price-popular {
+    font-size: 12px;
+  }
+  
+  .discounted-price-popular,
+  .regular-price-popular {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .discount-price-wrapper-popular {
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+  }
+}
+
+/* ===== POPULAR PRODUCTS DISCOUNT STYLES - ADD THESE TO EXISTING CSS ===== */
+
+.popular-product-discount-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.popular-product-price-container {
+  margin: 8px 0;
+}
+
+.popular-product-price-with-discount {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.popular-product-original-price {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Păstrează stilurile originale pentru popular-product-price */
+.popular-product-price.discounted {
+  color: #e74c3c !important; /* Roșu pentru prețul discounted */
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* Asigură-te că prețul normal rămâne verde */
+.popular-product-price:not(.discounted) {
+  color: #e74c3c !important; /* Verde pentru prețul normal */
+  font-size: 16px;
+  font-weight: 600;
 }

@@ -17,25 +17,26 @@ import {
   FaCheckCircle,
   FaClock,
   FaTag,
-  FaCheckCircle as FaCheck
+  FaCheckCircle as FaCheck,
+  FaPercent,
 } from "react-icons/fa";
 import { assets } from "../../assets/assets";
 import WaiterModalCart from "../../components/Navbar/WaiterModal";
 
 const MyOrders = () => {
-  const { 
-    token, 
-    food_list, 
+  const {
+    token,
+    food_list,
     url,
     billRequested,
     markBillAsRequested,
     resetBillRequest,
-    getTimeSinceBillRequest
+    getTimeSinceBillRequest,
   } = useContext(StoreContext);
 
   const { t } = useTranslation();
 
-  // ✅ STATE-URI NOI PENTRU PROMO CODE (la fel ca în Cart)
+  // ✅ STATE-URI NOI PENTRU PROMO CODE
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromoCode, setAppliedPromoCode] = useState("");
   const [isPromoApplied, setIsPromoApplied] = useState(false);
@@ -70,7 +71,6 @@ const MyOrders = () => {
 
   const tableNumber = localStorage.getItem("tableNumber") || null;
 
-
   // Înlocuim cartItems cu produsele din comenzile neplătite
   const orderItems = unpaidOrders.flatMap((order) =>
     order.items.map((item) => ({
@@ -89,44 +89,163 @@ const MyOrders = () => {
     };
   }, []);
 
-// ✅ FUNCȚIE NOUĂ pentru aplicarea promo code-ului DIN BAZA DE DATE
-const applyPromoCode = async () => {
-  if (!promoCode.trim()) {
-    setPromoError("Please enter a promo code");
-    return;
-  }
+  // ✅ FUNCȚIE ÎMBUNĂTĂȚITĂ: Găsește informațiile complete despre mâncare din food_list
+  const findFoodItem = (itemId) => {
+    const item = orderItems.find((item) => item.uniqueId === itemId);
+    if (item) {
+      // Încearcă mai multe metode de a găsi produsul în food_list
+      const foodItem = food_list.find((food) => {
+        const match =
+          food._id === item.foodId ||
+          food._id === item._id ||
+          food._id === item.baseFoodId ||
+          (food.name && item.name && food.name === item.name);
 
-  try {
-    const response = await axios.post(`${url}/admin/promo-codes/validate`, {
-      code: promoCode.trim(),
-      orderAmount: getTotalOrderAmount()
+        return match;
+      });
+
+      return foodItem || item;
+    }
+
+    return null;
+  };
+
+  // ✅ FUNCȚIE: Calculează prețul cu discount pentru un item (la fel ca în Cart)
+  const getItemPriceWithDiscount = (foodItem, cartItem) => {
+    if (!foodItem) {
+      return {
+        unitPrice: 0,
+        totalPrice: 0,
+        hasDiscount: false,
+        discountPercentage: 0,
+        originalPrice: 0,
+      };
+    }
+
+    const rawPrice = parseFloat(foodItem.price) || 0;
+    const discountPercentage = parseFloat(foodItem.discountPercentage) || 0;
+
+    // Calculează prețul cu discount
+    const discountedPrice =
+      discountPercentage > 0
+        ? rawPrice * (1 - discountPercentage / 100)
+        : rawPrice;
+
+    // Adaugă prețul extraselor (dacă există)
+    const extrasPrice = cartItem?.extrasPrice || 0;
+
+    const result = {
+      unitPrice: discountedPrice + extrasPrice,
+      totalPrice: (discountedPrice + extrasPrice) * (cartItem?.quantity || 1),
+      hasDiscount: discountPercentage > 0,
+      discountPercentage,
+      originalPrice: rawPrice + extrasPrice,
+    };
+
+    return result;
+  };
+
+  // ✅ CALCULEAZĂ TOTALUL REAL (cu discount-urile aplicate)
+  const getTotalOrderAmount = () => {
+    return orderItems.reduce((total, item) => {
+      const foodItem = findFoodItem(item.uniqueId);
+      if (foodItem) {
+        const priceInfo = getItemPriceWithDiscount(foodItem, item);
+        return total + priceInfo.totalPrice;
+      }
+      // Fallback la prețul original din item dacă nu găsim foodItem
+      return total + item.price * item.quantity;
+    }, 0);
+  };
+
+  // ✅ CALCULEAZĂ SUBTOTAL-UL ORIGINAL (fără discount-uri)
+  const getOriginalSubtotal = () => {
+    return orderItems.reduce((total, item) => {
+      const foodItem = findFoodItem(item.uniqueId);
+      if (foodItem) {
+        const priceInfo = getItemPriceWithDiscount(foodItem, item);
+        return total + priceInfo.originalPrice * item.quantity;
+      }
+      return total + item.price * item.quantity;
+    }, 0);
+  };
+
+  // ✅ CALCULEAZĂ DISCOUNT-UL TOTAL DIN PRODUSE
+  const getTotalProductDiscountAmount = () => {
+    let totalDiscount = 0;
+
+    orderItems.forEach((item) => {
+      if (item && item.quantity > 0) {
+        const foodItem = findFoodItem(item.uniqueId);
+        if (foodItem) {
+          const priceInfo = getItemPriceWithDiscount(foodItem, item);
+          if (priceInfo.hasDiscount) {
+            const originalTotal = priceInfo.originalPrice * item.quantity;
+            const discountedTotal = priceInfo.totalPrice;
+            const itemDiscount = originalTotal - discountedTotal;
+            totalDiscount += itemDiscount;
+          }
+        }
+      }
     });
 
-    if (response.data.success) {
-      const promoData = response.data.data;
-      const discountAmount = promoData.discountAmount;
-      
-      setDiscount(discountAmount);
-      setAppliedPromoCode(promoData.code);
-      setIsPromoApplied(true);
-      setPromoError("");
-      
-      toast.success(`Promo code applied! ${discountAmount.toFixed(2)}€ discount`);
-    } else {
-      setPromoError(response.data.message);
+    return totalDiscount;
+  };
+
+  // Calculează numărul total de items
+  const getTotalOrderItemCount = () => {
+    return orderItems.reduce((total, item) => total + item.quantity, 0);
+  };
+
+  // ✅ CALCULEAZĂ TOTALUL FINAL CU PROMO CODE ȘI TIPS
+  const getFinalTotalAmount = () => {
+    const subtotal = getTotalOrderAmount();
+    const tipAmount = calculateTipAmount();
+    const promoDiscount = discount || 0;
+    return subtotal - promoDiscount + tipAmount;
+  };
+
+  // ✅ FUNCȚIE NOUĂ pentru aplicarea promo code-ului DIN BAZA DE DATE
+  const applyPromoCode = async () => {
+    if (!promoCode.trim()) {
+      setPromoError("Please enter a promo code");
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${url}/admin/promo-codes/validate`, {
+        code: promoCode.trim(),
+        orderAmount: getTotalOrderAmount(),
+      });
+
+      if (response.data.success) {
+        const promoData = response.data.data;
+        const discountAmount = promoData.discountAmount;
+
+        setDiscount(discountAmount);
+        setAppliedPromoCode(promoData.code);
+        setIsPromoApplied(true);
+        setPromoError("");
+
+        toast.success(
+          `Promo code applied! ${discountAmount.toFixed(2)}€ discount`
+        );
+      } else {
+        setPromoError(response.data.message);
+        setIsPromoApplied(false);
+        setAppliedPromoCode("");
+        setDiscount(0);
+      }
+    } catch (error) {
+      console.error("Error applying promo code:", error);
+      setPromoError("Error validating promo code");
       setIsPromoApplied(false);
       setAppliedPromoCode("");
       setDiscount(0);
     }
-  } catch (error) {
-    console.error("Error applying promo code:", error);
-    setPromoError("Error validating promo code");
-    setIsPromoApplied(false);
-    setAppliedPromoCode("");
-    setDiscount(0);
-  }
-};
-  // ✅ FUNCȚIE NOUĂ pentru eliminarea promo code-ului (la fel ca în Cart)
+  };
+
+  // ✅ FUNCȚIE NOUĂ pentru eliminarea promo code-ului
   const removePromoCode = () => {
     setPromoCode("");
     setAppliedPromoCode("");
@@ -182,16 +301,6 @@ const applyPromoCode = async () => {
     setShowFloatingCheckout(!isCartEmpty && !billRequested);
   }, [isCartEmpty, orderItems, billRequested]);
 
-  // Funcție pentru a găsi informațiile complete despre mâncare
-  const findFoodItem = (itemId) => {
-    const item = orderItems.find((item) => item.uniqueId === itemId);
-    if (item) {
-      const foodItem = food_list.find((food) => food._id === item._id);
-      return foodItem || item;
-    }
-    return null;
-  };
-
   const openFoodModal = (itemId) => {
     const foodItem = findFoodItem(itemId);
     if (foodItem) {
@@ -212,7 +321,7 @@ const applyPromoCode = async () => {
 
   // Funcții pentru sistemul de tips
   const calculateTipAmount = () => {
-    const subtotal = getTotalOrderAmount();
+    const subtotal = getTotalOrderAmount() - discount;
     if (tipPercentage > 0) {
       return (subtotal * tipPercentage) / 100;
     } else if (customTipAmount) {
@@ -262,25 +371,7 @@ const applyPromoCode = async () => {
     }
   };
 
-  // Calculează totalul comenzilor neplătite
-  const getTotalOrderAmount = () => {
-    return orderItems.reduce((total, item) => {
-      return total + item.price * item.quantity;
-    }, 0);
-  };
-
-  // Calculează numărul total de items
-  const getTotalOrderItemCount = () => {
-    return orderItems.reduce((total, item) => total + item.quantity, 0);
-  };
-
-  // ✅ CALCULEAZĂ TOTALUL FINAL CU DISCOUNT ȘI TIPS (actualizat)
-  const getFinalTotalAmount = () => {
-    const subtotal = getTotalOrderAmount();
-    const tipAmount = calculateTipAmount();
-    return subtotal - discount + tipAmount;
-  };
-
+  // ✅ FUNCȚIA PLACEORDER
   const placeOrder = async (event) => {
     if (event) event.preventDefault();
 
@@ -307,7 +398,7 @@ const applyPromoCode = async () => {
     setIsPlacingOrder(true);
 
     const tipAmount = calculateTipAmount();
-    const totalAmount = getTotalOrderAmount() - discount + tipAmount;
+    const totalAmount = getFinalTotalAmount();
     const orderIds = unpaidOrders.map((order) => order._id);
 
     const orderData = {
@@ -319,6 +410,8 @@ const applyPromoCode = async () => {
       tipPercentage: tipPercentage,
       specialInstructions: specialInstructions,
       orders: orderIds,
+      promoCode: isPromoApplied ? appliedPromoCode : null,
+      promoDiscount: discount,
     };
 
     try {
@@ -338,7 +431,7 @@ const applyPromoCode = async () => {
           alert("Error processing payment.");
           setIsPlacingOrder(false);
         }
-     } else if (paymentMethod === "cashPOS") {
+      } else if (paymentMethod === "cashPOS") {
         // Pentru plata cash, deschide WaiterModal pentru a notifica ospătarul
         setShowWaiterModal(true);
         markBillAsRequested();
@@ -494,11 +587,12 @@ const applyPromoCode = async () => {
                 <div className="notification-text">
                   <h3>Bill Request Sent</h3>
                   <p>
-                    Waiter notified {getTimeSinceBillRequest()}. They'll come to your table shortly.
+                    Waiter notified {getTimeSinceBillRequest()}. They'll come to
+                    your table shortly.
                   </p>
                 </div>
               </div>
-              <button 
+              <button
                 className="reset-request-button"
                 onClick={resetBillRequest}
                 title="Cancel bill request"
@@ -525,86 +619,123 @@ const applyPromoCode = async () => {
                       </h6>
                     </div>
 
-                    {/* Order Items */}
-                    {order.items.map((item, itemIndex) => {
-                      const uniqueId = `${order._id}_${item._id}_${itemIndex}`;
-                      const foodItem = findFoodItem(uniqueId);
+ {/* Order Items */}
+{order.items.map((item, itemIndex) => {
+  const uniqueId = `${order._id}_${item._id}_${itemIndex}`;
+  
+  // ✅ FOLOSEȘTE DIRECT baseFoodId PENTRU A GĂSI PRODUSUL
+  const foodItem = food_list.find(food => food._id === item.baseFoodId);
+  
+  // ✅ CALCULEAZĂ PREȚUL
+  let priceInfo = null;
+  
+  if (foodItem) {
+    priceInfo = getItemPriceWithDiscount(foodItem, item);
+  }
 
-                      return (
-                        <React.Fragment key={uniqueId}>
-                          <motion.div
-                            className="cart-item-container"
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.3 }}
-                            layout
-                          >
-                            <div className="cart-item">
-                              <button
-                                className="item-image-button"
-                                onClick={() => openFoodModal(uniqueId)}
-                              >
-                                <img
-                                  src={
-                                    url +
-                                    "/images/" +
-                                    (foodItem?.image || item.image)
-                                  }
-                                  alt={foodItem?.name || item.name}
-                                  className="item-image"
-                                  onError={(e) => {
-                                    e.target.src = assets.image_coming_soon;
-                                    e.target.style.objectFit = "cover";
-                                  }}
-                                />
-                              </button>
-                              <div className="item-details">
-                                <button
-                                  className="item-name-button"
-                                  onClick={() => openFoodModal(uniqueId)}
-                                >
-                                  <h3 className="item-name">
-                                    {foodItem?.name || item.name}
-                                  </h3>
-                                </button>
-                                {item.specialInstructions && (
-                                  <div className="item-special-instructions">
-                                    <span className="instructions-label">
-                                      Note:{" "}
-                                    </span>
-                                    {item.specialInstructions}
-                                  </div>
-                                )}
+  return (
+    <React.Fragment key={uniqueId}>
+      <motion.div
+        className="cart-item-container"
+        initial={{ opacity: 0, height: 0 }}
+        animate={{ opacity: 1, height: "auto" }}
+        exit={{ opacity: 0, height: 0 }}
+        transition={{ duration: 0.3 }}
+        layout
+      >
+        <div className="cart-item">
+          <button
+            className="item-image-button"
+            onClick={() => openFoodModal(uniqueId)}
+          >
+            <img
+              src={
+                url +
+                "/images/" +
+                (foodItem?.image || item.image)
+              }
+              alt={foodItem?.name || item.name}
+              className="item-image"
+              onError={(e) => {
+                e.target.src = assets.image_coming_soon;
+                e.target.style.objectFit = "cover";
+              }}
+            />
+            {/* ✅ BADGE-UL DE DISCOUNT PE POZĂ - POZIȚIE CORECTĂ */}
+            {foodItem && priceInfo && priceInfo.hasDiscount && (
+              <div className="discount-badge-image">
+                -{priceInfo.discountPercentage}%
+              </div>
+            )}
+          </button>
+          <div className="item-details">
+            <button
+              className="item-name-button"
+              onClick={() => openFoodModal(uniqueId)}
+            >
+              <h3 className="item-name">
+                {foodItem?.name || item.name}
+              </h3>
+            </button>
+            {item.specialInstructions && (
+              <div className="item-special-instructions">
+                <span className="instructions-label">
+                  Note:{" "}
+                </span>
+                {item.specialInstructions}
+              </div>
+            )}
 
-                                <p className="item-price">
-                                  {(item.price * item.quantity).toFixed(2)} €
-                                </p>
-                              </div>
-                              <div className="myorders-quantity-display">
-                                <span className="myorders-quantity-number">
-                                  x{item.quantity}
-                                </span>
-                              </div>
-                            </div>
-                          </motion.div>
-                          {itemIndex < order.items.length - 1 && (
-                            <div className="item-divider"></div>
-                          )}
-                        </React.Fragment>
-                      );
-                    })}
+            {/* ✅ AFIȘEAZĂ PREȚUL */}
+            {foodItem && priceInfo ? (
+              priceInfo.hasDiscount ? (
+                <div className="item-price-container">
+                  <div className="discount-price-wrapper">
+                    <span className="original-price">
+                      {(priceInfo.originalPrice * item.quantity).toFixed(2)} €
+                    </span>
+                    <span className="final-price">
+                      {priceInfo.totalPrice.toFixed(2)} €
+                    </span>
+                 
+                  </div>
+                </div>
+              ) : (
+                <p className="item-price">
+                  {priceInfo.totalPrice.toFixed(2)} €
+                </p>
+              )
+            ) : (
+              <p className="item-price">
+                {(item.price * item.quantity).toFixed(2)} €
+              </p>
+            )}
+          </div>
+          <div className="myorders-quantity-display">
+            <span className="myorders-quantity-number">
+              x{item.quantity}
+            </span>
+          </div>
+        </div>
+      </motion.div>
+      {itemIndex < order.items.length - 1 && (
+        <div className="item-divider"></div>
+      )}
+    </React.Fragment>
+  );
+})}
                   </div>
                 ))}
               </AnimatePresence>
             </div>
           </div>
 
+          {/* Restul codului rămâne la fel... */}
           {/* Order Summary */}
           <div className="order-summary-section">
             <h2 className="section-title">Order Summary</h2>
-            
-            {/* ✅ SECȚIUNEA NOUĂ PENTRU PROMO CODE (la fel ca în Cart) */}
+
+            {/* ✅ SECȚIUNEA PENTRU PROMO CODE */}
             {!billRequested && (
               <div className="promo-code-section">
                 <div className="promo-code-input-container">
@@ -619,14 +750,14 @@ const applyPromoCode = async () => {
                       disabled={isPromoApplied}
                     />
                     {!isPromoApplied ? (
-                      <button 
+                      <button
                         className="apply-promo-button"
                         onClick={applyPromoCode}
                       >
                         Apply
                       </button>
                     ) : (
-                      <button 
+                      <button
                         className="remove-promo-button"
                         onClick={removePromoCode}
                       >
@@ -635,14 +766,15 @@ const applyPromoCode = async () => {
                     )}
                   </div>
                   {promoError && (
-                    <div className="promo-error-message">
-                      {promoError}
-                    </div>
+                    <div className="promo-error-message">{promoError}</div>
                   )}
                   {isPromoApplied && (
                     <div className="promo-success-message">
                       <FaCheck className="success-icon" />
-                      <span>Promo code <strong>{appliedPromoCode}</strong> applied successfully!</span>
+                      <span>
+                        Promo code <strong>{appliedPromoCode}</strong> applied
+                        successfully!
+                      </span>
                     </div>
                   )}
                 </div>
@@ -652,18 +784,36 @@ const applyPromoCode = async () => {
             <div className="summary-details">
               <div className="summary-row">
                 <span>Subtotal</span>
-                <span>{getTotalOrderAmount().toFixed(2)} €</span>
+                {/* ✅ Folosim subtotal-ul ORIGINAL (fără discount) */}
+                <span>{getOriginalSubtotal().toFixed(2)} €</span>
               </div>
 
-              {/* ✅ SECȚIUNEA PENTRU REDUCEREA OBTINUTĂ (la fel ca în Cart) */}
+              {/* ✅ SECȚIUNEA PENTRU DISCOUNT-UL TOTAL DIN PRODUSELE CU REDUCERE */}
+              {getTotalProductDiscountAmount() > 0 && (
+                <div className="summary-row discount-row">
+                  <span className="discount-label">Product discounts</span>
+                  <span className="discount-amount">
+                    -{getTotalProductDiscountAmount().toFixed(2)} €
+                  </span>
+                </div>
+              )}
+
+              {/* ✅ SECȚIUNEA PENTRU REDUCEREA OBTINUTĂ DIN PROMO CODE */}
               {isPromoApplied && (
                 <div className="summary-row promo-discount">
-                  <span className="promo-label">
-                    <FaTag className="promo-discount-icon" />
-                    Promo Code Discount ({appliedPromoCode})
-                  </span>
+                  <span className="promo-label">Promo code discount</span>
                   <span className="promo-discount-amount">
-                    -{discount}€
+                    -{discount.toFixed(2)}€
+                  </span>
+                </div>
+              )}
+
+              {/* ✅ SECȚIUNEA PENTRU TOTALUL ECONOMISIT */}
+              {(getTotalProductDiscountAmount() > 0 || isPromoApplied) && (
+                <div className="summary-row saved-amount">
+                  <span className="saved-label">Total Saved</span>
+                  <span className="saved-amount-value">
+                    {(getTotalProductDiscountAmount() + discount).toFixed(2)} €
                   </span>
                 </div>
               )}
@@ -671,12 +821,7 @@ const applyPromoCode = async () => {
               <div className="summary-divider"></div>
               <div className="summary-row total">
                 <span>Total</span>
-                <span>
-                  {getTotalOrderAmount() === 0
-                    ? 0
-                    : (getTotalOrderAmount() - discount).toFixed(2)}{" "}
-                  €
-                </span>
+                <span>{getFinalTotalAmount().toFixed(2)} €</span>
               </div>
             </div>
           </div>
@@ -712,7 +857,8 @@ const applyPromoCode = async () => {
                         {percentage === 0
                           ? "No tip"
                           : `${(
-                              (getTotalOrderAmount() * percentage) /
+                              ((getTotalOrderAmount() - discount) *
+                                percentage) /
                               100
                             ).toFixed(2)} €`}
                       </span>
@@ -759,7 +905,8 @@ const applyPromoCode = async () => {
                     {customTipAmount &&
                       parseFloat(customTipAmount) > 0 &&
                       `(${(
-                        (parseFloat(customTipAmount) / getTotalOrderAmount()) *
+                        (parseFloat(customTipAmount) /
+                          (getTotalOrderAmount() - discount)) *
                         100
                       ).toFixed(1)}% of order)`}
                   </div>
@@ -769,15 +916,8 @@ const applyPromoCode = async () => {
               <div className="cart-tips-summary">
                 <div className="cart-tips-summary-row">
                   <span>Subtotal:</span>
-                  <span>{getTotalOrderAmount().toFixed(2)} €</span>
+                  <span>{(getTotalOrderAmount() - discount).toFixed(2)} €</span>
                 </div>
-
-                {discount > 0 && (
-                  <div className="cart-tips-summary-row">
-                    <span>Discount:</span>
-                    <span>-{discount.toFixed(2)} €</span>
-                  </div>
-                )}
 
                 {calculateTipAmount() > 0 && (
                   <div className="cart-tips-summary-row">
@@ -963,8 +1103,8 @@ const applyPromoCode = async () => {
         )}
       </AnimatePresence>
 
-      <WaiterModalCart 
-        show={showWaiterModal} 
+      <WaiterModalCart
+        show={showWaiterModal}
         onClose={() => {
           setShowWaiterModal(false);
           setIsPlacingOrder(false);
@@ -972,8 +1112,8 @@ const applyPromoCode = async () => {
         paymentDetails={{
           totalAmount: getFinalTotalAmount().toFixed(2),
           itemCount: getTotalOrderItemCount(),
-          paymentMethod: 'Cash/POS',
-          orders: unpaidOrders.map(order => order._id)
+          paymentMethod: "Cash/POS",
+          orders: unpaidOrders.map((order) => order._id),
         }}
       />
 

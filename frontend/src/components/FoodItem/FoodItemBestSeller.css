@@ -42,7 +42,7 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: 8px;
+  /* gap: 8px; */
   padding: 10px 15px;
   flex-grow: 0;
   flex-shrink: 1;
@@ -122,9 +122,9 @@
 }
 
 .regular-price {
-  color: tomato;
+  color: #e74c3c;
   font-size: 18px;
-  font-weight: 500;
+  font-weight: 600;
   margin: 0;
 }
 
@@ -562,4 +562,23 @@ button.close:hover {
 .food-item-best.bill-requested-disabled:hover {
   transform: none;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+.food-item-info {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  /* gap: 8px; */
+}
+
+.food-item-desc.fixed-height {
+  min-height: 72px; /* Spațiu pentru ~3 linii de text */
+  line-height: 1.5;
+  margin: 0;
+  /* Permite textului să se extindă natural dar asigură spațiu consistent */
+}
+
+.food-item-price-container {
+  margin-top: auto;
 }
