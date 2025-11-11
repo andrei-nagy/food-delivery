@@ -23,8 +23,8 @@ const PromoCodeTable = () => {
         code: "",
         description: "",
         discountType: "percentage",
-        discountValue: 0,
-        minOrderAmount: 0,
+        discountValue: "",
+        minOrderAmount: "",
         maxDiscountAmount: "",
         startDate: new Date().toISOString().split('T')[0],
         endDate: "",
@@ -34,36 +34,102 @@ const PromoCodeTable = () => {
     const [loading, setLoading] = useState(false);
     const promoCodesPerPage = 10;
     const { url } = useUrl();
+    const token = localStorage.getItem("authToken");
 
     const fetchPromoCodes = async () => {
         try {
-            const response = await axios.get(`${url}/api/promo-codes`);
-            if (response.data.success && Array.isArray(response.data.data)) {
-                setPromoCodes(response.data.data);
-                setFilteredPromoCodes(response.data.data);
+            console.log("🚀 ===== START FETCH PROMO CODES =====");
+            console.log("🔑 Token exists:", !!token);
+            console.log("🔑 Token length:", token?.length);
+            console.log("🌐 URL:", `${url}/admin/promo-codes`);
+            console.log("📋 Headers:", { token: token });
+            
+            const response = await axios.get(`${url}/admin/promo-codes`, {
+                headers: { 
+                    token: token 
+                },
+                timeout: 10000
+            });
+            
+            console.log("✅ Response received:", {
+                status: response.status,
+                statusText: response.statusText,
+                data: response.data
+            });
+            
+            if (response.data.success) {
+                console.log("🎯 Success true, data:", response.data.data);
+                if (Array.isArray(response.data.data)) {
+                    setPromoCodes(response.data.data);
+                    setFilteredPromoCodes(response.data.data);
+                    console.log("📊 Promo codes loaded:", response.data.data.length);
+                } else {
+                    console.warn("⚠️ Data is not an array:", response.data.data);
+                    setFilteredPromoCodes([]);
+                }
             } else {
-                console.error("Response structure is not as expected:", response.data);
+                console.error("❌ Success false:", response.data);
+                console.error("❌ Error message:", response.data.message);
                 setFilteredPromoCodes([]);
+                toast.error(response.data.message || "Failed to load promo codes");
             }
         } catch (error) {
-            console.error("Error fetching promo codes:", error);
-            toast.error("Error loading promo codes");
+            console.error("💥 CATCH ERROR - Fetch promo codes failed:", {
+                name: error.name,
+                message: error.message,
+                code: error.code,
+                response: error.response?.data,
+                status: error.response?.status,
+                config: {
+                    url: error.config?.url,
+                    method: error.config?.method,
+                    headers: error.config?.headers
+                }
+            });
+            
+            if (error.response) {
+                toast.error(`Server error: ${error.response.status} - ${error.response.data?.message || 'Unknown error'}`);
+            } else if (error.request) {
+                toast.error("No response from server. Check your connection.");
+            } else {
+                toast.error("Error: " + error.message);
+            }
+        } finally {
+            console.log("🏁 ===== END FETCH PROMO CODES =====");
         }
     };
+
+    useEffect(() => {
+        console.log("🔄 PromoCodeTable mounted");
+        fetchPromoCodes();
+    }, []);
 
     const handleAddPromoCode = async (event) => {
         event.preventDefault();
         setLoading(true);
 
         try {
+            console.log("🚀 ===== START ADD PROMO CODE =====");
+            console.log("📤 Payload before processing:", updatedPromoCode);
+            
             const payload = {
                 ...updatedPromoCode,
-                maxDiscountAmount: updatedPromoCode.maxDiscountAmount || null,
-                usageLimit: updatedPromoCode.usageLimit || null,
+                discountValue: updatedPromoCode.discountValue === "" ? 0 : parseFloat(updatedPromoCode.discountValue),
+                minOrderAmount: updatedPromoCode.minOrderAmount === "" ? 0 : parseFloat(updatedPromoCode.minOrderAmount),
+                maxDiscountAmount: updatedPromoCode.maxDiscountAmount === "" ? null : parseFloat(updatedPromoCode.maxDiscountAmount),
+                usageLimit: updatedPromoCode.usageLimit === "" ? null : parseInt(updatedPromoCode.usageLimit),
                 endDate: new Date(updatedPromoCode.endDate).toISOString()
             };
 
-            const response = await axios.post(`${url}/api/promo-codes`, payload);
+            console.log("📦 Final payload:", payload);
+
+            const response = await axios.post(`${url}/admin/promo-codes`, payload, {
+                headers: { 
+                    token: token 
+                }
+            });
+            
+            console.log("✅ Add response:", response.data);
             
             if (response.data.success) {
                 toast.success("Promo code created successfully");
@@ -73,8 +139,8 @@ const PromoCodeTable = () => {
                     code: "",
                     description: "",
                     discountType: "percentage",
-                    discountValue: 0,
-                    minOrderAmount: 0,
+                    discountValue: "",
+                    minOrderAmount: "",
                     maxDiscountAmount: "",
                     startDate: new Date().toISOString().split('T')[0],
                     endDate: "",
@@ -85,10 +151,11 @@ const PromoCodeTable = () => {
                 toast.error(response.data.message);
             }
         } catch (error) {
-            console.error("Error adding promo code:", error);
+            console.error("💥 Add promo code error:", error);
             toast.error(error.response?.data?.message || "Error creating promo code");
         } finally {
             setLoading(false);
+            console.log("🏁 ===== END ADD PROMO CODE =====");
         }
     };
 
@@ -98,7 +165,12 @@ const PromoCodeTable = () => {
         }
 
         try {
-            const response = await axios.delete(`${url}/api/promo-codes/${promoCodeId}`);
+            console.log("🗑️ Deleting promo code:", promoCodeId);
+            const response = await axios.delete(`${url}/admin/promo-codes/${promoCodeId}`, {
+                headers: { 
+                    token: token 
+                }
+            });
             if (response.data.success) {
                 toast.success("Promo code deleted successfully");
                 fetchPromoCodes();
@@ -106,23 +178,24 @@ const PromoCodeTable = () => {
                 toast.error(response.data.message);
             }
         } catch (error) {
-            console.error("Error deleting promo code:", error);
+            console.error("❌ Error deleting promo code:", error);
             toast.error("Error deleting promo code");
         }
     };
 
     const editPromoCode = (promoCode) => {
+        console.log("✏️ Editing promo code:", promoCode);
         setCurrentPromoCode(promoCode);
         setUpdatedPromoCode({
             code: promoCode.code,
             description: promoCode.description,
             discountType: promoCode.discountType,
-            discountValue: promoCode.discountValue,
-            minOrderAmount: promoCode.minOrderAmount,
-            maxDiscountAmount: promoCode.maxDiscountAmount || "",
+            discountValue: promoCode.discountValue.toString(),
+            minOrderAmount: promoCode.minOrderAmount?.toString() || "",
+            maxDiscountAmount: promoCode.maxDiscountAmount?.toString() || "",
             startDate: new Date(promoCode.startDate).toISOString().split('T')[0],
             endDate: new Date(promoCode.endDate).toISOString().split('T')[0],
-            usageLimit: promoCode.usageLimit || "",
+            usageLimit: promoCode.usageLimit?.toString() || "",
             isActive: promoCode.isActive
         });
         setIsEditing(true);
@@ -133,14 +206,21 @@ const PromoCodeTable = () => {
         setLoading(true);
 
         try {
+            console.log("🔄 Updating promo code:", currentPromoCode._id);
             const payload = {
                 ...updatedPromoCode,
-                maxDiscountAmount: updatedPromoCode.maxDiscountAmount || null,
-                usageLimit: updatedPromoCode.usageLimit || null,
+                discountValue: updatedPromoCode.discountValue === "" ? 0 : parseFloat(updatedPromoCode.discountValue),
+                minOrderAmount: updatedPromoCode.minOrderAmount === "" ? 0 : parseFloat(updatedPromoCode.minOrderAmount),
+                maxDiscountAmount: updatedPromoCode.maxDiscountAmount === "" ? null : parseFloat(updatedPromoCode.maxDiscountAmount),
+                usageLimit: updatedPromoCode.usageLimit === "" ? null : parseInt(updatedPromoCode.usageLimit),
                 endDate: new Date(updatedPromoCode.endDate).toISOString()
             };
 
-            const response = await axios.put(`${url}/api/promo-codes/${currentPromoCode._id}`, payload);
+            const response = await axios.put(`${url}/admin/promo-codes/${currentPromoCode._id}`, payload, {
+                headers: { 
+                    token: token 
+                }
+            });
             
             if (response.data.success) {
                 toast.success("Promo code updated successfully");
@@ -150,7 +230,7 @@ const PromoCodeTable = () => {
                 toast.error(response.data.message);
             }
         } catch (error) {
-            console.error("Error updating promo code:", error);
+            console.error("❌ Error updating promo code:", error);
             toast.error(error.response?.data?.message || "Error updating promo code");
         } finally {
             setLoading(false);
@@ -159,7 +239,12 @@ const PromoCodeTable = () => {
 
     const togglePromoCode = async (promoCodeId, currentStatus) => {
         try {
-            const response = await axios.patch(`${url}/api/promo-codes/${promoCodeId}/toggle`);
+            console.log("🔘 Toggling promo code:", promoCodeId, "Current status:", currentStatus);
+            const response = await axios.patch(`${url}/admin/promo-codes/${promoCodeId}/toggle`, {}, {
+                headers: { 
+                    token: token 
+                }
+            });
             if (response.data.success) {
                 toast.success(`Promo code ${!currentStatus ? 'activated' : 'deactivated'} successfully`);
                 fetchPromoCodes();
@@ -167,23 +252,17 @@ const PromoCodeTable = () => {
                 toast.error(response.data.message);
             }
         } catch (error) {
-            console.error("Error toggling promo code:", error);
+            console.error("❌ Error toggling promo code:", error);
             toast.error("Error toggling promo code");
         }
     };
 
-    useEffect(() => {
-        fetchPromoCodes();
-    }, []);
-
-    // Funcția de filtrare globală
     const handleSearch = (e) => {
         const term = e.target.value.toLowerCase();
         setSearchTerm(term);
         applyFilters(term, columnFilters);
     };
 
-    // Funcția pentru filtrarea pe coloane
     const handleColumnFilter = (column, value) => {
         const newFilters = {
             ...columnFilters,
@@ -193,11 +272,9 @@ const PromoCodeTable = () => {
         applyFilters(searchTerm, newFilters);
     };
 
-    // Funcția care aplică toate filtrele
     const applyFilters = (globalSearch, columnFilters) => {
         let filtered = promoCodes;
 
-        // Filtrare globală
         if (globalSearch) {
             filtered = filtered.filter(promoCode =>
                 promoCode.code.toLowerCase().includes(globalSearch) ||
@@ -207,7 +284,6 @@ const PromoCodeTable = () => {
             );
         }
 
-        // Filtrare pe coloane
         if (columnFilters.code) {
             filtered = filtered.filter(promoCode =>
                 promoCode.code.toLowerCase().includes(columnFilters.code)
@@ -237,7 +313,6 @@ const PromoCodeTable = () => {
         setCurrentPage(1);
     };
 
-    // Resetează toate filtrele
     const resetFilters = () => {
         setSearchTerm("");
         setColumnFilters({
@@ -464,7 +539,6 @@ const PromoCodeTable = () => {
                     </tbody>
                 </table>
 
-                {/* Mesaj pentru niciun rezultat */}
                 {currentPromoCodes.length === 0 && (
                     <div className="text-center py-8 text-gray-400">
                         No promo codes found matching your filters.
@@ -472,7 +546,6 @@ const PromoCodeTable = () => {
                 )}
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
                 <div className='flex justify-center mt-4'>
                     {Array.from({ length: totalPages }, (_, index) => (
@@ -491,7 +564,6 @@ const PromoCodeTable = () => {
                 </div>
             )}
 
-            {/* Edit Modal */}
             {isEditing && (
                 <motion.div
                     className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50'
@@ -547,7 +619,7 @@ const PromoCodeTable = () => {
                                 </div>
                                 <div>
                                     <label className="block text-gray-400 text-sm mb-1">
-                                        {updatedPromoCode.discountType === 'percentage' ? 'Discount Percentage' : 'Discount Amount'}
+                                        {updatedPromoCode.discountType === 'percentage' ? 'Discount Percentage *' : 'Discount Amount *'}
                                     </label>
                                     <input
                                         type="number"
@@ -556,7 +628,10 @@ const PromoCodeTable = () => {
                                         max={updatedPromoCode.discountType === 'percentage' ? 100 : undefined}
                                         className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600"
                                         value={updatedPromoCode.discountValue}
-                                        onChange={(e) => setUpdatedPromoCode({ ...updatedPromoCode, discountValue: parseFloat(e.target.value) })}
+                                        onChange={(e) => setUpdatedPromoCode({ 
+                                            ...updatedPromoCode, 
+                                            discountValue: e.target.value 
+                                        })}
                                         required
                                     />
                                 </div>
@@ -571,7 +646,10 @@ const PromoCodeTable = () => {
                                         min="0"
                                         className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600"
                                         value={updatedPromoCode.minOrderAmount}
-                                        onChange={(e) => setUpdatedPromoCode({ ...updatedPromoCode, minOrderAmount: parseFloat(e.target.value) })}
+                                        onChange={(e) => setUpdatedPromoCode({ 
+                                            ...updatedPromoCode, 
+                                            minOrderAmount: e.target.value 
+                                        })}
                                     />
                                 </div>
                                 {updatedPromoCode.discountType === 'percentage' && (
@@ -583,7 +661,10 @@ const PromoCodeTable = () => {
                                             min="0"
                                             className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600"
                                             value={updatedPromoCode.maxDiscountAmount}
-                                            onChange={(e) => setUpdatedPromoCode({ ...updatedPromoCode, maxDiscountAmount: e.target.value })}
+                                            onChange={(e) => setUpdatedPromoCode({ 
+                                                ...updatedPromoCode, 
+                                                maxDiscountAmount: e.target.value 
+                                            })}
                                             placeholder="No limit"
                                         />
                                     </div>
@@ -622,7 +703,10 @@ const PromoCodeTable = () => {
                                         min="0"
                                         className="w-full p-2 bg-gray-700 text-white rounded border border-gray-600"
                                         value={updatedPromoCode.usageLimit}
-                                        onChange={(e) => setUpdatedPromoCode({ ...updatedPromoCode, usageLimit: e.target.value })}
+                                        onChange={(e) => setUpdatedPromoCode({ 
+                                            ...updatedPromoCode, 
+                                            usageLimit: e.target.value 
+                                        })}
                                         placeholder="No limit"
                                     />
                                 </div>
@@ -662,7 +746,6 @@ const PromoCodeTable = () => {
                 </motion.div>
             )}
 
-            {/* Add Modal */}
             {isModalOpen && (
                 <motion.div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm"
@@ -677,7 +760,6 @@ const PromoCodeTable = () => {
                         exit={{ scale: 0.9, opacity: 0 }}
                         transition={{ type: "spring", damping: 25, stiffness: 300 }}
                     >
-                        {/* Header */}
                         <div className="flex items-center justify-between p-6 border-b border-gray-700">
                             <h3 className="text-2xl font-bold text-white">
                                 Create New Promo Code
@@ -692,11 +774,8 @@ const PromoCodeTable = () => {
                             </button>
                         </div>
 
-                        {/* Form */}
                         <form className="p-6 space-y-6" onSubmit={handleAddPromoCode}>
-                            {/* Grid Layout */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Promo Code */}
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-white">Promo Code *</label>
                                     <input
@@ -709,7 +788,6 @@ const PromoCodeTable = () => {
                                     />
                                 </div>
 
-                                {/* Discount Type */}
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-white">Discount Type *</label>
                                     <select
@@ -725,7 +803,6 @@ const PromoCodeTable = () => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Discount Value */}
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-white">
                                         {updatedPromoCode.discountType === 'percentage' ? 'Discount Percentage *' : 'Discount Amount *'}
@@ -738,12 +815,14 @@ const PromoCodeTable = () => {
                                         className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                         placeholder={updatedPromoCode.discountType === 'percentage' ? 'e.g., 20' : 'e.g., 5.00'}
                                         value={updatedPromoCode.discountValue}
-                                        onChange={(e) => setUpdatedPromoCode({ ...updatedPromoCode, discountValue: parseFloat(e.target.value) })}
+                                        onChange={(e) => setUpdatedPromoCode({ 
+                                            ...updatedPromoCode, 
+                                            discountValue: e.target.value 
+                                        })}
                                         required
                                     />
                                 </div>
 
-                                {/* Minimum Order Amount */}
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-white">Minimum Order Amount</label>
                                     <input
@@ -753,14 +832,16 @@ const PromoCodeTable = () => {
                                         className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                         placeholder="e.g., 50.00"
                                         value={updatedPromoCode.minOrderAmount}
-                                        onChange={(e) => setUpdatedPromoCode({ ...updatedPromoCode, minOrderAmount: parseFloat(e.target.value) })}
+                                        onChange={(e) => setUpdatedPromoCode({ 
+                                            ...updatedPromoCode, 
+                                            minOrderAmount: e.target.value 
+                                        })}
                                     />
                                 </div>
                             </div>
 
                             {updatedPromoCode.discountType === 'percentage' && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Maximum Discount Amount */}
                                     <div className="space-y-2">
                                         <label className="block text-sm font-medium text-white">Maximum Discount Amount</label>
                                         <input
@@ -770,15 +851,17 @@ const PromoCodeTable = () => {
                                             className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                             placeholder="No limit"
                                             value={updatedPromoCode.maxDiscountAmount}
-                                            onChange={(e) => setUpdatedPromoCode({ ...updatedPromoCode, maxDiscountAmount: e.target.value })}
+                                            onChange={(e) => setUpdatedPromoCode({ 
+                                                ...updatedPromoCode, 
+                                                maxDiscountAmount: e.target.value 
+                                            })}
                                         />
                                     </div>
-                                    <div></div> {/* Empty div for grid alignment */}
+                                    <div></div>
                                 </div>
                             )}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Start Date */}
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-white">Start Date *</label>
                                     <input
@@ -790,7 +873,6 @@ const PromoCodeTable = () => {
                                     />
                                 </div>
 
-                                {/* End Date */}
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-white">End Date *</label>
                                     <input
@@ -805,7 +887,6 @@ const PromoCodeTable = () => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Usage Limit */}
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-white">Usage Limit</label>
                                     <input
@@ -814,11 +895,13 @@ const PromoCodeTable = () => {
                                         className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                         placeholder="No limit"
                                         value={updatedPromoCode.usageLimit}
-                                        onChange={(e) => setUpdatedPromoCode({ ...updatedPromoCode, usageLimit: e.target.value })}
+                                        onChange={(e) => setUpdatedPromoCode({ 
+                                            ...updatedPromoCode, 
+                                            usageLimit: e.target.value 
+                                        })}
                                     />
                                 </div>
 
-                                {/* Status */}
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-white">Status</label>
                                     <select
@@ -833,7 +916,6 @@ const PromoCodeTable = () => {
                                 </div>
                             </div>
 
-                            {/* Description */}
                             <div className="space-y-2">
                                 <label className="block text-sm font-medium text-white">Description *</label>
                                 <textarea
@@ -846,7 +928,6 @@ const PromoCodeTable = () => {
                                 />
                             </div>
 
-                            {/* Actions */}
                             <div className="flex justify-end space-x-4 pt-6 border-t border-gray-700">
                                 <button
                                     type="button"

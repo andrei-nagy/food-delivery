@@ -17,7 +17,6 @@ import dotenv from "dotenv"
 
 // 🔥 ADAUGĂ ACEST COD PENTRU A FORȚA RELOAD
 import { createRequire } from 'module';
-import promoCodeRoute from "./routes/promoCodeRoute.js"
 const require = createRequire(import.meta.url);
 
 // Funcție pentru a șterge cache-ul modulelor
@@ -106,7 +105,6 @@ app.use("/api/waiterorders", waiterRouter)
 app.use("/admin", adminRouter)
 app.use("/admin/personalization", customizationRoute)
 app.use("/api", validateAuthRouter)
-app.use('/api/promo-codes', promoCodeRoute);
 
 // Static files
 app.use("/images", express.static("uploads"))

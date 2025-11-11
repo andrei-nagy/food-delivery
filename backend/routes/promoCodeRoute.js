@@ -64,19 +64,29 @@ promoCodeRoute.post("/validate", async (req, res) => {
   }
 });
 
-// ✅ Obține toate promo codes (admin only)
+// În promoCodeRoute.js - MODIFICĂ RUTA GET cu log-uri
 promoCodeRoute.get("/", authMiddleware, async (req, res) => {
+  console.log("🔍 [BACKEND] GET /api/promo-codes - START");
+  console.log("👤 User ID:", req.body.userId);
+  
   try {
+    console.log("🔄 [BACKEND] Before PromoCode.find()");
+    
     const promoCodes = await PromoCode.find()
-      .populate('createdBy', 'name email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .select('-createdBy');
 
+    console.log("✅ [BACKEND] Promo codes found:", promoCodes.length);
+    
     res.json({
       success: true,
       data: promoCodes
     });
+    
   } catch (error) {
-    console.error("Get promo codes error:", error);
+    console.error("❌ [BACKEND] Get promo codes ERROR:", error);
+    console.error("❌ [BACKEND] Error stack:", error.stack);
+    
     res.json({
       success: false,
       message: "Error fetching promo codes"
@@ -125,7 +135,7 @@ promoCodeRoute.post("/", authMiddleware, async (req, res) => {
       usageLimit: usageLimit || null,
       applicableCategories: applicableCategories || [],
       excludedProducts: excludedProducts || [],
-      createdBy: req.userId
+      createdBy: req.body.userId // ← Schimbat aici
     });
 
     await promoCode.save();

@@ -59,11 +59,11 @@ const promoSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Food'
   }],
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
+createdBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'AdminUser', // Exact cum este în userAdminModel
+  required: true
+},
   createdAt: {
     type: Date,
     default: Date.now
