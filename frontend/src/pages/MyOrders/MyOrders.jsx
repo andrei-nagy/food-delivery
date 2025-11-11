@@ -70,12 +70,6 @@ const MyOrders = () => {
 
   const tableNumber = localStorage.getItem("tableNumber") || null;
 
-  // ✅ PROMO CODES (la fel ca în Cart)
-  const promoCodes = {
-    DISCOUNT10: 10,
-    SAVE5: 5,
-    OFF20: 20,
-  };
 
   // Înlocuim cartItems cu produsele din comenzile neplătite
   const orderItems = unpaidOrders.flatMap((order) =>
@@ -95,30 +89,43 @@ const MyOrders = () => {
     };
   }, []);
 
-  // ✅ FUNCȚIE NOUĂ pentru aplicarea promo code-ului (la fel ca în Cart)
-  const applyPromoCode = () => {
-    if (!promoCode.trim()) {
-      setPromoError("Please enter a promo code");
-      return;
-    }
+// ✅ FUNCȚIE NOUĂ pentru aplicarea promo code-ului DIN BAZA DE DATE
+const applyPromoCode = async () => {
+  if (!promoCode.trim()) {
+    setPromoError("Please enter a promo code");
+    return;
+  }
 
-    const code = promoCode.trim().toUpperCase();
-    
-    if (promoCodes[code]) {
-      const discountAmount = promoCodes[code];
+  try {
+    const response = await axios.post(`${url}/admin/promo-codes/validate`, {
+      code: promoCode.trim(),
+      orderAmount: getTotalOrderAmount()
+    });
+
+    if (response.data.success) {
+      const promoData = response.data.data;
+      const discountAmount = promoData.discountAmount;
+      
       setDiscount(discountAmount);
-      setAppliedPromoCode(code);
+      setAppliedPromoCode(promoData.code);
       setIsPromoApplied(true);
       setPromoError("");
-      toast.success(`Promo code applied! ${discountAmount}€ discount`);
+      
+      toast.success(`Promo code applied! ${discountAmount.toFixed(2)}€ discount`);
     } else {
-      setPromoError("Invalid promo code");
+      setPromoError(response.data.message);
       setIsPromoApplied(false);
       setAppliedPromoCode("");
       setDiscount(0);
     }
-  };
-
+  } catch (error) {
+    console.error("Error applying promo code:", error);
+    setPromoError("Error validating promo code");
+    setIsPromoApplied(false);
+    setAppliedPromoCode("");
+    setDiscount(0);
+  }
+};
   // ✅ FUNCȚIE NOUĂ pentru eliminarea promo code-ului (la fel ca în Cart)
   const removePromoCode = () => {
     setPromoCode("");

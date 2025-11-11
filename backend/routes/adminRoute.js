@@ -1,7 +1,6 @@
 import express from 'express';
 import { registerAdmin, loginAdmin, updateCustomization, getCustomization, getAllAdminAccounts, removeAccount, updateAccount, createQRCode, getQrCodes, removeQrCode } from '../controllers/adminController.js';
 import promoCodeController from '../controllers/promoCodeController.js'; 
-import authMiddleware from '../middleware/auth.js'; 
 
 const adminRouter = express.Router();
 
@@ -16,10 +15,12 @@ adminRouter.get('/qrcodes', getQrCodes);
 adminRouter.post('/remove-qrcode', removeQrCode);
 adminRouter.post('/update', updateAccount);
 
-adminRouter.get('/promo-codes', promoCodeController.getAllPromoCodes); // ← Fără authMiddleware
-adminRouter.post('/promo-codes', promoCodeController.createPromoCode); // ← Fără authMiddleware  
-adminRouter.put('/promo-codes/:id', promoCodeController.updatePromoCode); // ← Fără authMiddleware
-adminRouter.delete('/promo-codes/:id', promoCodeController.deletePromoCode); // ← Fără authMiddleware
-adminRouter.patch('/promo-codes/:id/toggle', promoCodeController.togglePromoCode); // ← Fără authMiddleware
+adminRouter.get('/promo-codes', promoCodeController.getAllPromoCodes);
+adminRouter.post('/promo-codes', promoCodeController.createPromoCode);  
+adminRouter.put('/promo-codes/:id', promoCodeController.updatePromoCode);
+adminRouter.delete('/promo-codes/:id', promoCodeController.deletePromoCode);
+adminRouter.patch('/promo-codes/:id/toggle', promoCodeController.togglePromoCode);
+
+adminRouter.post('/promo-codes/validate', promoCodeController.validatePromoCode);
 
 export default adminRouter;
