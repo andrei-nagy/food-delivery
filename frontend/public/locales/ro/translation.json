@@ -48,5 +48,7 @@
   "remove": "Șterge",
     "clear_cart": "Golește coșul",
   "clear_cart_confirmation": "Ești sigur că vrei să golești tot coșul?",
-  "clear_all": "Golește tot"
+  "clear_all": "Golește tot",
+  "time_remaining": "Timp rămas",
+  "time_expired": "Timp expirat"
 }

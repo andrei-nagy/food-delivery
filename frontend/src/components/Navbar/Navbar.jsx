@@ -289,14 +289,14 @@ const Navbar = ({ setShowLogin }) => {
                   EN
                 </>
               )}
-
+{/* 
               <img
                 className={`arrow_down_language ${
                   isDropdownOpen ? "rotated" : ""
                 }`}
                 src={assets.arrow_down}
                 alt="arrow"
-              />
+              /> */}
             </span>
 
             <AnimatePresence>

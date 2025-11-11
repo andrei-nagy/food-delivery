@@ -147,8 +147,9 @@ const ProductsTable = () => {
         name: "",
         category: "",
         price: "",
-        extras: "",
-        ingredients: ""
+        discount: "",
+        ingredients: "",
+        extras: ""
     });
     const [products, setProducts] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
@@ -162,6 +163,8 @@ const ProductsTable = () => {
         name: "",
         category: "",
         price: "",
+        discountPercentage: 0,
+        discountedPrice: 0,
         description: "",
         ingredients: "",
         isBestSeller: false,
@@ -216,6 +219,35 @@ const ProductsTable = () => {
             priceValue = 0;
         }
         setUpdatedProduct({ ...updatedProduct, price: priceValue.toFixed(2) });
+        calculateDiscountedPrice(priceValue, updatedProduct.discountPercentage);
+    };
+
+    const handleDiscountBlur = (e) => {
+        let discountValue = parseFloat(e.target.value);
+        if (isNaN(discountValue) || discountValue < 0) {
+            discountValue = 0;
+        }
+        if (discountValue > 100) {
+            discountValue = 100;
+            toast.warning("Discount cannot exceed 100%", { theme: "dark" });
+        }
+        setUpdatedProduct({ ...updatedProduct, discountPercentage: discountValue });
+        calculateDiscountedPrice(updatedProduct.price, discountValue);
+    };
+
+    const calculateDiscountedPrice = (price, discount) => {
+        const numericPrice = parseFloat(price) || 0;
+        const numericDiscount = parseFloat(discount) || 0;
+        
+        let discountedPrice = numericPrice;
+        if (numericDiscount > 0 && numericDiscount <= 100) {
+            discountedPrice = numericPrice * (1 - numericDiscount / 100);
+        }
+        
+        setUpdatedProduct(prev => ({
+            ...prev,
+            discountedPrice: discountedPrice.toFixed(2)
+        }));
     };
 
     const addExtra = () => {
@@ -272,6 +304,7 @@ const ProductsTable = () => {
         formData.append("description", updatedProduct.description);
         formData.append("ingredients", updatedProduct.ingredients);
         formData.append("price", productPrice);
+        formData.append("discountPercentage", updatedProduct.discountPercentage);
         formData.append("category", updatedProduct.category);
         formData.append("image", image);
         formData.append("isBestSeller", updatedProduct.isBestSeller);
@@ -292,6 +325,8 @@ const ProductsTable = () => {
                     name: "",
                     category: "",
                     price: "",
+                    discountPercentage: 0,
+                    discountedPrice: 0,
                     description: "",
                     ingredients: "",
                     isBestSeller: false,
@@ -336,6 +371,8 @@ const ProductsTable = () => {
             description: product.description,
             ingredients: product.ingredients || "",
             price: product.price.toFixed(2),
+            discountPercentage: product.discountPercentage || 0,
+            discountedPrice: product.discountedPrice || product.price,
             image: null,
             isBestSeller: product.isBestSeller,
             isNewAdded: product.isNewAdded,
@@ -352,6 +389,7 @@ const ProductsTable = () => {
         formData.append("name", updatedProduct.name);
         formData.append("category", updatedProduct.category);
         formData.append("price", updatedProduct.price);
+        formData.append("discountPercentage", updatedProduct.discountPercentage);
         formData.append("description", updatedProduct.description);
         formData.append("ingredients", updatedProduct.ingredients);
         formData.append("isBestSeller", updatedProduct.isBestSeller);
@@ -383,54 +421,56 @@ const ProductsTable = () => {
     };
 
     // Import Functions
-  const downloadTemplate = () => {
-    const templateData = [
-        {
-            name: "Margherita Pizza",
-            category: "Pizza",
-            price: "12.99",
-            description: "Classic pizza with tomato sauce and mozzarella",
-            ingredients: "Tomato sauce, Mozzarella cheese, Fresh basil, Olive oil",
-            image: "pizza-margherita.jpg",
-            isBestSeller: "true",
-            isNewAdded: "false",
-            isVegan: "true",
-            extras: "Extra Cheese:1.50,Olives:0.75"
-        },
-        {
-            name: "Caesar Salad",
-            category: "Salads",
-            price: "8.99",
-            description: "Fresh salad with caesar dressing",
-            ingredients: "Romaine lettuce, Caesar dressing, Parmesan cheese, Croutons, Chicken",
-            image: "caesar-salad.jpg",
-            isBestSeller: "true",
-            isNewAdded: "true",
-            isVegan: "false",
-            extras: "Extra Chicken:2.00,Extra Dressing:0.50"
-        }
-    ];
+    const downloadTemplate = () => {
+        const templateData = [
+            {
+                name: "Margherita Pizza",
+                category: "Pizza",
+                price: "12.99",
+                discountPercentage: "10",
+                description: "Classic pizza with tomato sauce and mozzarella",
+                ingredients: "Tomato sauce, Mozzarella cheese, Fresh basil, Olive oil",
+                image: "pizza-margherita.jpg",
+                isBestSeller: "true",
+                isNewAdded: "false",
+                isVegan: "true",
+                extras: "Extra Cheese:1.50,Olives:0.75"
+            },
+            {
+                name: "Caesar Salad",
+                category: "Salads",
+                price: "8.99",
+                discountPercentage: "0",
+                description: "Fresh salad with caesar dressing",
+                ingredients: "Romaine lettuce, Caesar dressing, Parmesan cheese, Croutons, Chicken",
+                image: "caesar-salad.jpg",
+                isBestSeller: "true",
+                isNewAdded: "true",
+                isVegan: "false",
+                extras: "Extra Chicken:2.00,Extra Dressing:0.50"
+            }
+        ];
 
-    const headers = ["name", "category", "price", "description", "ingredients", "image", "isBestSeller", "isNewAdded", "isVegan", "extras"];
-    let csvContent = headers.join(",") + "\n";
-    
-    templateData.forEach(row => {
-        const rowData = headers.map(header => `"${row[header]}"`).join(",");
-        csvContent += rowData + "\n";
-    });
+        const headers = ["name", "category", "price", "discountPercentage", "description", "ingredients", "image", "isBestSeller", "isNewAdded", "isVegan", "extras"];
+        let csvContent = headers.join(",") + "\n";
+        
+        templateData.forEach(row => {
+            const rowData = headers.map(header => `"${row[header]}"`).join(",");
+            csvContent += rowData + "\n";
+        });
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'products_template.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-    
-    toast.info("Template downloaded successfully!", { theme: "dark" });
-};
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'products_template.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        toast.info("Template downloaded successfully!", { theme: "dark" });
+    };
 
     const handleFileUpload = async (event) => {
         const file = event.target.files[0];
@@ -485,89 +525,100 @@ const ProductsTable = () => {
         });
     };
 
- const parseCSV = (content) => {
-    const lines = content.split('\n').filter(line => line.trim());
-    if (lines.length < 2) return [];
+    const parseCSV = (content) => {
+        const lines = content.split('\n').filter(line => line.trim());
+        if (lines.length < 2) return [];
 
-    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
-    const products = [];
-    const hasIngredients = headers.includes('ingredients');
+        const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+        const products = [];
+        const hasIngredients = headers.includes('ingredients');
+        const hasDiscount = headers.includes('discountPercentage');
 
-    for (let i = 1; i < lines.length; i++) {
-        let values = [];
-        let inQuotes = false;
-        let currentValue = '';
-        
-        for (let char of lines[i]) {
-            if (char === '"') {
-                inQuotes = !inQuotes;
-            } else if (char === ',' && !inQuotes) {
-                values.push(currentValue.trim().replace(/"/g, ''));
-                currentValue = '';
-            } else {
-                currentValue += char;
+        for (let i = 1; i < lines.length; i++) {
+            let values = [];
+            let inQuotes = false;
+            let currentValue = '';
+            
+            for (let char of lines[i]) {
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    values.push(currentValue.trim().replace(/"/g, ''));
+                    currentValue = '';
+                } else {
+                    currentValue += char;
+                }
             }
-        }
-        values.push(currentValue.trim().replace(/"/g, ''));
+            values.push(currentValue.trim().replace(/"/g, ''));
 
-        const product = {};
-        headers.forEach((header, index) => {
-            product[header] = values[index] || '';
-        });
+            const product = {};
+            headers.forEach((header, index) => {
+                product[header] = values[index] || '';
+            });
 
-        if (product.name && product.category && product.price) {
-            // Parse extras
-            const parsedExtras = [];
-            if (product.extras) {
-                const extrasArray = product.extras.split(',');
-                extrasArray.forEach(extra => {
-                    const [name, price] = extra.split(':');
-                    if (name && price) {
-                        const numericPrice = parseFloat(price.trim());
-                        if (!isNaN(numericPrice)) {
-                            parsedExtras.push({
-                                name: name.trim(),
-                                price: numericPrice.toFixed(2)
-                            });
+            if (product.name && product.category && product.price) {
+                // Parse extras
+                const parsedExtras = [];
+                if (product.extras) {
+                    const extrasArray = product.extras.split(',');
+                    extrasArray.forEach(extra => {
+                        const [name, price] = extra.split(':');
+                        if (name && price) {
+                            const numericPrice = parseFloat(price.trim());
+                            if (!isNaN(numericPrice)) {
+                                parsedExtras.push({
+                                    name: name.trim(),
+                                    price: numericPrice.toFixed(2)
+                                });
+                            }
                         }
-                    }
-                });
-            }
+                    });
+                }
 
-            if (hasIngredients) {
-                // Format nou cu ingredients
-                products.push({
-                    name: product.name,
-                    category: product.category,
-                    price: parseFloat(product.price) || 0,
-                    description: product.description || '',
-                    ingredients: product.ingredients || '',
-                    image: product.image || null,
-                    isBestSeller: product.isBestSeller === 'true',
-                    isNewAdded: product.isNewAdded === 'true',
-                    isVegan: product.isVegan === 'true',
-                    extras: parsedExtras
-                });
-            } else {
-                // Format vechi fără ingredients
-                products.push({
-                    name: product.name,
-                    category: product.category,
-                    price: parseFloat(product.price) || 0,
-                    description: product.description || '',
-                    ingredients: '',
-                    image: product.image || null,
-                    isBestSeller: product.isBestSeller === 'true',
-                    isNewAdded: product.isNewAdded === 'true',
-                    isVegan: product.isVegan === 'true',
-                    extras: parsedExtras
-                });
+                // Calculate discounted price
+                const priceValue = parseFloat(product.price) || 0;
+                const discountValue = parseFloat(product.discountPercentage) || 0;
+                let discountedPrice = priceValue;
+                if (discountValue > 0 && discountValue <= 100) {
+                    discountedPrice = priceValue * (1 - discountValue / 100);
+                }
+
+                if (hasIngredients) {
+                    products.push({
+                        name: product.name,
+                        category: product.category,
+                        price: priceValue,
+                        discountPercentage: discountValue,
+                        discountedPrice: discountedPrice,
+                        description: product.description || '',
+                        ingredients: product.ingredients || '',
+                        image: product.image || null,
+                        isBestSeller: product.isBestSeller === 'true',
+                        isNewAdded: product.isNewAdded === 'true',
+                        isVegan: product.isVegan === 'true',
+                        extras: parsedExtras
+                    });
+                } else {
+                    products.push({
+                        name: product.name,
+                        category: product.category,
+                        price: priceValue,
+                        discountPercentage: discountValue,
+                        discountedPrice: discountedPrice,
+                        description: product.description || '',
+                        ingredients: '',
+                        image: product.image || null,
+                        isBestSeller: product.isBestSeller === 'true',
+                        isNewAdded: product.isNewAdded === 'true',
+                        isVegan: product.isVegan === 'true',
+                        extras: parsedExtras
+                    });
+                }
             }
         }
-    }
 
-    return products;
-};
+        return products;
+    };
 
     const processImport = async () => {
         if (!importPreview.length) return;
@@ -601,6 +652,7 @@ const ProductsTable = () => {
                 formData.append("name", product.name);
                 formData.append("category", product.category);
                 formData.append("price", product.price.toString());
+                formData.append("discountPercentage", product.discountPercentage.toString());
                 formData.append("description", product.description);
                 formData.append("ingredients", product.ingredients);
                 formData.append("isBestSeller", product.isBestSeller.toString());
@@ -684,6 +736,7 @@ const ProductsTable = () => {
                 product.name.toLowerCase().includes(globalSearch) ||
                 product.category.toLowerCase().includes(globalSearch) ||
                 product.price.toString().includes(globalSearch) ||
+                product.discountPercentage.toString().includes(globalSearch) ||
                 (product.ingredients && product.ingredients.toLowerCase().includes(globalSearch)) ||
                 (product.extras && product.extras.some(extra => 
                     extra.name.toLowerCase().includes(globalSearch)
@@ -706,6 +759,12 @@ const ProductsTable = () => {
         if (columnFilters.price) {
             filtered = filtered.filter(product =>
                 product.price.toString().includes(columnFilters.price)
+            );
+        }
+
+        if (columnFilters.discount) {
+            filtered = filtered.filter(product =>
+                product.discountPercentage.toString().includes(columnFilters.discount)
             );
         }
 
@@ -733,6 +792,7 @@ const ProductsTable = () => {
             name: "",
             category: "",
             price: "",
+            discount: "",
             ingredients: "",
             extras: ""
         });
@@ -746,6 +806,30 @@ const ProductsTable = () => {
     const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    const PriceDisplay = ({ product }) => {
+        const hasDiscount = product.discountPercentage > 0;
+        
+        return (
+            <div className="flex flex-col">
+                {hasDiscount ? (
+                    <>
+                        <span className="text-red-400 line-through text-sm">
+                            {product.price.toFixed(2)} €
+                        </span>
+                        <span className="text-green-400 font-bold">
+                            {product.discountedPrice.toFixed(2)} €
+                        </span>
+                        <span className="text-orange-400 text-xs">
+                            -{product.discountPercentage}%
+                        </span>
+                    </>
+                ) : (
+                    <span className="text-gray-100">{product.price.toFixed(2)} €</span>
+                )}
+            </div>
+        );
+    };
 
     return (
         <motion.div
@@ -826,6 +910,18 @@ const ProductsTable = () => {
                             </th>
                             <th className='px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>
                                 <div className="space-y-2">
+                                    <div>Discount</div>
+                                    <input
+                                        type="text"
+                                        placeholder="Filter discount..."
+                                        className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        value={columnFilters.discount}
+                                        onChange={(e) => handleColumnFilter('discount', e.target.value)}
+                                    />
+                                </div>
+                            </th>
+                            <th className='px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>
+                                <div className="space-y-2">
                                     <div>Ingredients</div>
                                     <input
                                         type="text"
@@ -870,7 +966,16 @@ const ProductsTable = () => {
                                     {product.name}
                                 </td>
                                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>{product.category}</td>
-                                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>{product.price.toFixed(2)} €</td>
+                                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>
+                                    <PriceDisplay product={product} />
+                                </td>
+                                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100'>
+                                    {product.discountPercentage > 0 ? (
+                                        <span className="text-orange-400 font-bold">{product.discountPercentage}%</span>
+                                    ) : (
+                                        <span className="text-gray-500">No discount</span>
+                                    )}
+                                </td>
                                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100 max-w-xs truncate' title={product.ingredients}>
                                     {product.ingredients || <span className="text-gray-500">No ingredients</span>}
                                 </td>
@@ -1041,6 +1146,30 @@ const ProductsTable = () => {
                                         step="0.01"
                                         min="0"
                                     />
+                                </div>
+
+                                {/* Discount Percentage */}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-white">Discount Percentage</label>
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 no-arrows"
+                                            placeholder="0"
+                                            value={updatedProduct.discountPercentage}
+                                            onChange={(e) => setUpdatedProduct({ ...updatedProduct, discountPercentage: e.target.value })}
+                                            onBlur={handleDiscountBlur}
+                                            step="1"
+                                            min="0"
+                                            max="100"
+                                        />
+                                        <span className="absolute right-3 top-3 text-gray-400">%</span>
+                                    </div>
+                                    {updatedProduct.discountPercentage > 0 && (
+                                        <div className="text-green-400 text-sm">
+                                            Discounted Price: {updatedProduct.discountedPrice} €
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Category */}
@@ -1258,6 +1387,31 @@ const ProductsTable = () => {
                                         step="0.01"
                                         min="0"
                                     />
+                                </div>
+
+                                {/* Discount Percentage */}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-white">Discount Percentage</label>
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            name="discountPercentage"
+                                            className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 no-arrows"
+                                            placeholder="0"
+                                            value={updatedProduct.discountPercentage}
+                                            onChange={(e) => setUpdatedProduct({ ...updatedProduct, discountPercentage: e.target.value })}
+                                            onBlur={handleDiscountBlur}
+                                            step="1"
+                                            min="0"
+                                            max="100"
+                                        />
+                                        <span className="absolute right-3 top-3 text-gray-400">%</span>
+                                    </div>
+                                    {updatedProduct.discountPercentage > 0 && (
+                                        <div className="text-green-400 text-sm">
+                                            Discounted Price: {updatedProduct.discountedPrice} €
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Category */}
@@ -1514,6 +1668,7 @@ const ProductsTable = () => {
                                                     <th className="text-left text-xs font-medium text-gray-400 pb-2">Name</th>
                                                     <th className="text-left text-xs font-medium text-gray-400 pb-2">Category</th>
                                                     <th className="text-left text-xs font-medium text-gray-400 pb-2">Price</th>
+                                                    <th className="text-left text-xs font-medium text-gray-400 pb-2">Discount</th>
                                                     <th className="text-left text-xs font-medium text-gray-400 pb-2">Ingredients</th>
                                                     <th className="text-left text-xs font-medium text-gray-400 pb-2">Extras</th>
                                                     <th className="text-left text-xs font-medium text-gray-400 pb-2">Image</th>
@@ -1528,6 +1683,9 @@ const ProductsTable = () => {
                                                             <td className="py-2 text-sm text-white">{product.name}</td>
                                                             <td className="py-2 text-sm text-gray-300">{product.category}</td>
                                                             <td className="py-2 text-sm text-green-400">{product.price} €</td>
+                                                            <td className="py-2 text-sm text-orange-400">
+                                                                {product.discountPercentage > 0 ? `${product.discountPercentage}%` : '0%'}
+                                                            </td>
                                                             <td className="py-2 text-sm text-gray-300 max-w-xs truncate" title={product.ingredients}>
                                                                 {product.ingredients || <span className="text-gray-500">No ingredients</span>}
                                                             </td>
@@ -1602,6 +1760,7 @@ const ProductsTable = () => {
                                     <div>
                                         <p><strong>Optional Columns:</strong></p>
                                         <ul className="list-disc list-inside space-y-1 mt-2">
+                                            <li><code>discountPercentage</code> - Discount percentage (0-100)</li>
                                             <li><code>ingredients</code> - List of ingredients</li>
                                             <li><code>image</code> - Image filename (must match uploaded images)</li>
                                             <li><code>isBestSeller</code> - true/false</li>
@@ -1620,6 +1779,9 @@ const ProductsTable = () => {
                                     </p>
                                     <p className="text-blue-300 text-sm mt-1">
                                         <strong>Extras Format:</strong> Use "Name:Price,Name:Price" - Example: "Extra Cheese:1.50,Olives:0.75"
+                                    </p>
+                                    <p className="text-blue-300 text-sm mt-1">
+                                        <strong>Discount:</strong> Enter percentage (0-100). Discounted price will be calculated automatically.
                                     </p>
                                 </div>
                             </div>

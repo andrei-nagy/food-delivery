@@ -48,6 +48,7 @@
   "remove": "Remove",
   "clear_cart": "Clear cart",
   "clear_cart_confirmation": "Are you sure you want to remove all items from your cart?",
-  "clear_all": "Clear all"
-
+  "clear_all": "Clear all",
+  "time_remaining": "Time remaining",
+  "time_expired": "Time expired"
 }
