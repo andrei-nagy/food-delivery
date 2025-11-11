@@ -275,86 +275,102 @@ const Sidebar = () => {
 									</>
 								) : item.name === "Customization" ? (
 									<>
-										<motion.div
-											className="flex items-center p-4 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors mb-2 cursor-pointer"
-											onClick={handleCustomizationClick}
-											style={{
-												backgroundColor:
-													location.pathname === item.href || location.pathname === '/customization' || location.pathname === '/create-qrcodes'|| location.pathname === '/qrcodes'
-														? "rgba(255, 255, 255, 0.1)"
-														: "transparent",
-											}}
-										>
-											<item.icon size={20} style={{ color: item.color, minWidth: "20px" }} />
-											<AnimatePresence>
-												{isSidebarOpen && (
-													<>
-														<motion.span
-															className="ml-4 whitespace-nowrap"
-															initial={{ opacity: 0, width: 0 }}
-															animate={{ opacity: 1, width: "auto" }}
-															exit={{ opacity: 0, width: 0 }}
-															transition={{ duration: 0.2, delay: 0.3 }}
-														>
-															{item.name}
-														</motion.span>
-														<motion.div
-															initial={{ rotate: 0 }}
-															animate={{ rotate: isAnalyticsOpen ? 180 : 0 }}
-															className="ml-auto"
-														>
-															<ChevronDown size={16} />
-														</motion.div>
-													</>
-												)}
-											</AnimatePresence>
-										</motion.div>
-										<AnimatePresence>
-											{isCustomizationOpen && (
-												<motion.div
-													className="ml-6"
-													initial={{ height: 0, opacity: 0 }}
-													animate={{ height: "auto", opacity: 1 }}
-													exit={{ height: 0, opacity: 0 }}
-													transition={{ duration: 0.3 }}
-												>
-													<Link to="/customization">
-														<motion.div
-															className="p-2 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors mb-2"
-															style={{
-																backgroundColor:
-																	location.pathname === "/customization" ? "rgba(255, 255, 255, 0.1)" : "transparent",
-															}}
-														>
-															Customization
-														</motion.div>
-													</Link>
-													<Link to="/qrcodes">
-														<motion.div
-															className="p-2 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors mb-2"
-															style={{
-																backgroundColor:
-																	location.pathname === "/qrcodes" ? "rgba(255, 255, 255, 0.1)" : "transparent",
-															}}
-														>
-															QR Codes
-														</motion.div>
-													</Link>
-													<Link to="/create-qrcode">
-														<motion.div
-															className="p-2 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors mb-2"
-															style={{
-																backgroundColor:
-																	location.pathname === "/create-qrcode" ? "rgba(255, 255, 255, 0.1)" : "transparent",
-															}}
-														>
-															Create QR Code
-														</motion.div>
-													</Link>
-												</motion.div>
-											)}
-										</AnimatePresence>
-									</>
+        <motion.div
+            className="flex items-center p-4 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors mb-2 cursor-pointer"
+            onClick={handleCustomizationClick}
+            style={{
+                backgroundColor:
+                    location.pathname === item.href || 
+                    location.pathname === '/customization' || 
+                    location.pathname === '/create-qrcodes' || 
+                    location.pathname === '/qrcodes' ||
+                    location.pathname === '/promo-codes'
+                        ? "rgba(255, 255, 255, 0.1)"
+                        : "transparent",
+            }}
+        >
+            <item.icon size={20} style={{ color: item.color, minWidth: "20px" }} />
+            <AnimatePresence>
+                {isSidebarOpen && (
+                    <>
+                        <motion.span
+                            className="ml-4 whitespace-nowrap"
+                            initial={{ opacity: 0, width: 0 }}
+                            animate={{ opacity: 1, width: "auto" }}
+                            exit={{ opacity: 0, width: 0 }}
+                            transition={{ duration: 0.2, delay: 0.3 }}
+                        >
+                            {item.name}
+                        </motion.span>
+                        <motion.div
+                            initial={{ rotate: 0 }}
+                            animate={{ rotate: isCustomizationOpen ? 180 : 0 }}
+                            className="ml-auto"
+                        >
+                            <ChevronDown size={16} />
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+        </motion.div>
+        <AnimatePresence>
+            {isCustomizationOpen && (
+                <motion.div
+                    className="ml-6"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <Link to="/customization">
+                        <motion.div
+                            className="p-2 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors mb-2"
+                            style={{
+                                backgroundColor:
+                                    location.pathname === "/customization" ? "rgba(255, 255, 255, 0.1)" : "transparent",
+                            }}
+                        >
+                            Customization
+                        </motion.div>
+                    </Link>
+                    <Link to="/qrcodes">
+                        <motion.div
+                            className="p-2 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors mb-2"
+                            style={{
+                                backgroundColor:
+                                    location.pathname === "/qrcodes" ? "rgba(255, 255, 255, 0.1)" : "transparent",
+                            }}
+                        >
+                            QR Codes
+                        </motion.div>
+                    </Link>
+                    <Link to="/create-qrcode">
+                        <motion.div
+                            className="p-2 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors mb-2"
+                            style={{
+                                backgroundColor:
+                                    location.pathname === "/create-qrcode" ? "rgba(255, 255, 255, 0.1)" : "transparent",
+                            }}
+                        >
+                            Create QR Code
+                        </motion.div>
+                    </Link>
+                    {/* Adaugă link-ul pentru Promo Codes */}
+                    <Link to="/promo-codes">
+                        <motion.div
+                            className="p-2 text-sm font-medium rounded-lg hover:bg-gray-700 transition-colors mb-2"
+                            style={{
+                                backgroundColor:
+                                    location.pathname === "/promo-codes" ? "rgba(255, 255, 255, 0.1)" : "transparent",
+                            }}
+                        >
+                            Promo Codes
+                        </motion.div>
+                    </Link>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    </>
 								) : (
 									<Link to={item.href}>
 										<motion.div

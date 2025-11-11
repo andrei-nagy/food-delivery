@@ -1901,3 +1901,148 @@ body.cart-page .cart-container .cart-content .cart-items-section .cart-items-lis
   object-fit: cover;
 }
 
+/* Stiluri pentru secțiunea de promo code în MyOrders */
+.promo-code-section {
+  margin-bottom: 20px;
+}
+
+.promo-code-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.promo-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 8px 12px;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.promo-input-wrapper:focus-within {
+  border-color: #28a745;
+  background: white;
+}
+
+.promo-icon {
+  color: #6c757d;
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.promo-code-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  padding: 8px 0;
+  outline: none;
+}
+
+.promo-code-input:disabled {
+  background: transparent;
+  color: #6c757d;
+}
+
+.apply-promo-button {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.apply-promo-button:hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+.remove-promo-button {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.remove-promo-button:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+}
+
+.promo-error-message {
+  color: #dc3545;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 8px;
+  background: #f8d7da;
+  border-radius: 6px;
+  border-left: 3px solid #dc3545;
+}
+
+.promo-success-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #155724;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 12px;
+  background: #d4edda;
+  border-radius: 6px;
+  border-left: 3px solid #28a745;
+}
+
+.success-icon {
+  color: #28a745;
+  font-size: 14px;
+}
+
+/* Stiluri pentru rândul de discount din order summary */
+.summary-row.promo-discount {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.promo-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.promo-discount-icon {
+  font-size: 14px;
+}
+
+.promo-discount-amount {
+  color: #28a745;
+  font-weight: 700;
+}
+
+/* Responsive adjustments pentru MyOrders */
+@media (max-width: 768px) {
+  .promo-input-wrapper {
+    padding: 6px 10px;
+  }
+  
+  .promo-code-input {
+    font-size: 13px;
+  }
+  
+  .apply-promo-button,
+  .remove-promo-button {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}

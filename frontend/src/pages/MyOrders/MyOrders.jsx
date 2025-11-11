@@ -4,6 +4,7 @@ import { StoreContext } from "../../context/StoreContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import FoodModal from "../../components/FoodItem/FoodModal";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -15,6 +16,8 @@ import {
   FaHandHoldingHeart,
   FaCheckCircle,
   FaClock,
+  FaTag,
+  FaCheckCircle as FaCheck
 } from "react-icons/fa";
 import { assets } from "../../assets/assets";
 import WaiterModalCart from "../../components/Navbar/WaiterModal";
@@ -24,15 +27,21 @@ const MyOrders = () => {
     token, 
     food_list, 
     url,
-    // ✅ IA DIN CONTEXT în loc de state local
     billRequested,
     markBillAsRequested,
     resetBillRequest,
     getTimeSinceBillRequest
   } = useContext(StoreContext);
 
+  const { t } = useTranslation();
+
+  // ✅ STATE-URI NOI PENTRU PROMO CODE (la fel ca în Cart)
   const [promoCode, setPromoCode] = useState("");
+  const [appliedPromoCode, setAppliedPromoCode] = useState("");
+  const [isPromoApplied, setIsPromoApplied] = useState(false);
+  const [promoError, setPromoError] = useState("");
   const [discount, setDiscount] = useState(0);
+
   const [specialInstructions, setSpecialInstructions] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [paymentError, setPaymentError] = useState("");
@@ -51,7 +60,7 @@ const MyOrders = () => {
   const [unpaidOrders, setUnpaidOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // State-uri pentru sistemul de tips - SETAT LA 0 BY DEFAULT
+  // State-uri pentru sistemul de tips
   const [tipPercentage, setTipPercentage] = useState(0);
   const [customTipAmount, setCustomTipAmount] = useState("");
   const [showTipsSection, setShowTipsSection] = useState(false);
@@ -59,12 +68,9 @@ const MyOrders = () => {
   // State pentru WaiterModal
   const [showWaiterModal, setShowWaiterModal] = useState(false);
 
-  // ✅ ȘTERGE STATE-URILE LOCALE PENTRU BILL - folosim din context
-  // const [billRequested, setBillRequested] = useState(false);
-  // const [billRequestTime, setBillRequestTime] = useState(null);
-
   const tableNumber = localStorage.getItem("tableNumber") || null;
 
+  // ✅ PROMO CODES (la fel ca în Cart)
   const promoCodes = {
     DISCOUNT10: 10,
     SAVE5: 5,
@@ -89,11 +95,38 @@ const MyOrders = () => {
     };
   }, []);
 
-  // ✅ ÎNLOCUIEȘTE cu verificarea din context
-  useEffect(() => {
-    // Starea billRequested este acum gestionată complet de context
-    // Nu mai este nevoie de verificări locale
-  }, []);
+  // ✅ FUNCȚIE NOUĂ pentru aplicarea promo code-ului (la fel ca în Cart)
+  const applyPromoCode = () => {
+    if (!promoCode.trim()) {
+      setPromoError("Please enter a promo code");
+      return;
+    }
+
+    const code = promoCode.trim().toUpperCase();
+    
+    if (promoCodes[code]) {
+      const discountAmount = promoCodes[code];
+      setDiscount(discountAmount);
+      setAppliedPromoCode(code);
+      setIsPromoApplied(true);
+      setPromoError("");
+      toast.success(`Promo code applied! ${discountAmount}€ discount`);
+    } else {
+      setPromoError("Invalid promo code");
+      setIsPromoApplied(false);
+      setAppliedPromoCode("");
+      setDiscount(0);
+    }
+  };
+
+  // ✅ FUNCȚIE NOUĂ pentru eliminarea promo code-ului (la fel ca în Cart)
+  const removePromoCode = () => {
+    setPromoCode("");
+    setAppliedPromoCode("");
+    setIsPromoApplied(false);
+    setDiscount(0);
+    setPromoError("");
+  };
 
   // Fetch comenzile neplătite
   useEffect(() => {
@@ -194,18 +227,6 @@ const MyOrders = () => {
     }
   };
 
-  const applyPromoCode = () => {
-    if (promoCodes[promoCode]) {
-      setDiscount(promoCodes[promoCode]);
-      toast.success(`Promo code applied! ${promoCodes[promoCode]}€ discount`);
-    } else {
-      toast.error("Invalid Promo Code");
-      setDiscount(0);
-    }
-  };
-
-  const handlePromoCodeChange = (event) => setPromoCode(event.target.value);
-
   const handlePaymentMethodChange = (event) => {
     const method = event.target.value;
     setPaymentMethod(method);
@@ -246,50 +267,11 @@ const MyOrders = () => {
     return orderItems.reduce((total, item) => total + item.quantity, 0);
   };
 
-  // Calculează totalul final cu discount și tips
+  // ✅ CALCULEAZĂ TOTALUL FINAL CU DISCOUNT ȘI TIPS (actualizat)
   const getFinalTotalAmount = () => {
     const subtotal = getTotalOrderAmount();
     const tipAmount = calculateTipAmount();
     return subtotal - discount + tipAmount;
-  };
-
-  // ✅ ÎNLOCUIEȘTE cu funcția din context
-  // Funcțiile pentru bill request sunt acum în context
-
-  // Funcție pentru a trimite acțiunea de plată cash către WaiterModal
-  const handleCashPaymentAction = async () => {
-    try {
-      const response = await axios.post(`${url}/api/waiterorders/add`, {
-        action: 'Call waiter - Cash or POS payment',
-        tableNo: tableNumber,
-        orderDetails: {
-          totalAmount: getFinalTotalAmount().toFixed(2),
-          itemCount: getTotalOrderItemCount(),
-          orders: unpaidOrders.map(order => order._id),
-          tipAmount: calculateTipAmount(),
-          discount: discount
-        }
-      });
-
-      if (response.data.success) {
-        toast.success("Waiter notified about your cash payment request");
-        setShowWaiterModal(false);
-        
-        // ✅ FOLOSEȘTE FUNCȚIA DIN CONTEXT
-        markBillAsRequested();
-        
-        // Continuă cu procesul normal de plasare a comenzii
-        setOrderPlaced(true);
-        setShowFloatingCheckout(false);
-      } else {
-        toast.error("Failed to notify waiter");
-        setIsPlacingOrder(false);
-      }
-    } catch (error) {
-      console.error('Error notifying waiter:', error);
-      toast.error('Error notifying waiter, but order was placed');
-      setIsPlacingOrder(false);
-    }
   };
 
   const placeOrder = async (event) => {
@@ -343,7 +325,6 @@ const MyOrders = () => {
         );
 
         if (response.data.success) {
-          // ✅ FOLOSEȘTE FUNCȚIA DIN CONTEXT
           markBillAsRequested();
           window.location.replace(response.data.session_url);
         } else {
@@ -351,15 +332,11 @@ const MyOrders = () => {
           setIsPlacingOrder(false);
         }
      } else if (paymentMethod === "cashPOS") {
-  // Pentru plata cash, deschide WaiterModal pentru a notifica ospătarul
-  setShowWaiterModal(true);
-  
-  // ✅ FOLOSEȘTE FUNCȚIA DIN CONTEXT
-  markBillAsRequested();
-  
-  // WaiterModalCart se va ocupa de trimiterea notificării automat
-      window.scrollTo(0, 0);
-}
+        // Pentru plata cash, deschide WaiterModal pentru a notifica ospătarul
+        setShowWaiterModal(true);
+        markBillAsRequested();
+        window.scrollTo(0, 0);
+      }
     } catch (error) {
       console.error("Order placement error:", error);
       alert("Error placing order.");
@@ -498,32 +475,32 @@ const MyOrders = () => {
       ) : (
         <div className="cart-content">
           {/* Notification for already requested bill */}
-        {billRequested && (
-  <motion.div
-    className="bill-requested-notification"
-    initial={{ opacity: 0, y: -20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5 }}
-  >
-    <div className="notification-content">
-      <FaCheckCircle className="notification-icon" />
-      <div className="notification-text">
-        <h3>Bill Request Sent</h3>
-        <p>
-          Waiter notified {getTimeSinceBillRequest()}. They'll come to your table shortly.
-        </p>
-      </div>
-    </div>
-    <button 
-      className="reset-request-button"
-      onClick={resetBillRequest} // ✅ FOLOSEȘTE DIN CONTEXT
-      title="Cancel bill request"
-    >
-      <FaClock />
-      <span>Cancel Request</span>
-    </button>
-  </motion.div>
-)}
+          {billRequested && (
+            <motion.div
+              className="bill-requested-notification"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="notification-content">
+                <FaCheckCircle className="notification-icon" />
+                <div className="notification-text">
+                  <h3>Bill Request Sent</h3>
+                  <p>
+                    Waiter notified {getTimeSinceBillRequest()}. They'll come to your table shortly.
+                  </p>
+                </div>
+              </div>
+              <button 
+                className="reset-request-button"
+                onClick={resetBillRequest}
+                title="Cancel bill request"
+              >
+                <FaClock />
+                <span>Cancel Request</span>
+              </button>
+            </motion.div>
+          )}
 
           {/* Orders List */}
           <div className="cart-items-section">
@@ -583,7 +560,6 @@ const MyOrders = () => {
                                   <h3 className="item-name">
                                     {foodItem?.name || item.name}
                                   </h3>
-                                  
                                 </button>
                                 {item.specialInstructions && (
                                   <div className="item-special-instructions">
@@ -620,36 +596,71 @@ const MyOrders = () => {
           {/* Order Summary */}
           <div className="order-summary-section">
             <h2 className="section-title">Order Summary</h2>
+            
+            {/* ✅ SECȚIUNEA NOUĂ PENTRU PROMO CODE (la fel ca în Cart) */}
+            {!billRequested && (
+              <div className="promo-code-section">
+                <div className="promo-code-input-container">
+                  <div className="promo-input-wrapper">
+                    <FaTag className="promo-icon" />
+                    <input
+                      type="text"
+                      className="promo-code-input"
+                      placeholder="Enter promo code"
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value)}
+                      disabled={isPromoApplied}
+                    />
+                    {!isPromoApplied ? (
+                      <button 
+                        className="apply-promo-button"
+                        onClick={applyPromoCode}
+                      >
+                        Apply
+                      </button>
+                    ) : (
+                      <button 
+                        className="remove-promo-button"
+                        onClick={removePromoCode}
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  {promoError && (
+                    <div className="promo-error-message">
+                      {promoError}
+                    </div>
+                  )}
+                  {isPromoApplied && (
+                    <div className="promo-success-message">
+                      <FaCheck className="success-icon" />
+                      <span>Promo code <strong>{appliedPromoCode}</strong> applied successfully!</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="summary-details">
               <div className="summary-row">
                 <span>Subtotal</span>
                 <span>{getTotalOrderAmount().toFixed(2)} €</span>
               </div>
-              <div className="summary-row">
-                <span>Discount</span>
-<span className={discount > 0 ? "discount-amount" : ""}>
-  {discount > 0 ? `-${discount} €` : "0 €"}
-</span>              </div>
-           <div className="promo-code-section">
-  {!billRequested && (
-    <div className="promo-input-container">
-      <input
-        type="text"
-        value={promoCode}
-        onChange={handlePromoCodeChange}
-        placeholder="Promo code"
-        className="promo-input"
-      />
-      <button
-        className="apply-promo-button"
-        type="button"
-        onClick={applyPromoCode}
-      >
-        Apply
-      </button>
-    </div>
-  )}
-</div>
+
+              {/* ✅ SECȚIUNEA PENTRU REDUCEREA OBTINUTĂ (la fel ca în Cart) */}
+              {isPromoApplied && (
+                <div className="summary-row promo-discount">
+                  <span className="promo-label">
+                    <FaTag className="promo-discount-icon" />
+                    Promo Code Discount ({appliedPromoCode})
+                  </span>
+                  <span className="promo-discount-amount">
+                    -{discount}€
+                  </span>
+                </div>
+              )}
+
               <div className="summary-divider"></div>
               <div className="summary-row total">
                 <span>Total</span>
@@ -716,16 +727,7 @@ const MyOrders = () => {
                       step="0.01"
                       placeholder="0.00"
                       value={customTipAmount}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (
-                          value === "" ||
-                          (/^\d*\.?\d*$/.test(value) && parseFloat(value) >= 0)
-                        ) {
-                          setCustomTipAmount(value);
-                          setTipPercentage(0);
-                        }
-                      }}
+                      onChange={handleCustomTipChange}
                       onKeyDown={(e) => {
                         if (e.key === "-" || e.key === "e" || e.key === "E") {
                           e.preventDefault();
@@ -835,7 +837,7 @@ const MyOrders = () => {
                         Cash or POS Terminal
                       </span>
                       <span className="cart-payment-option-subtitle">
-  Pay at your table with cash or card terminal
+                        Pay at your table with cash or card terminal
                       </span>
                     </div>
                   </div>
@@ -954,19 +956,19 @@ const MyOrders = () => {
         )}
       </AnimatePresence>
 
-<WaiterModalCart 
-  show={showWaiterModal} 
-  onClose={() => {
-    setShowWaiterModal(false);
-    setIsPlacingOrder(false);
-  }}
-  paymentDetails={{
-    totalAmount: getFinalTotalAmount().toFixed(2),
-    itemCount: getTotalOrderItemCount(),
-    paymentMethod: 'Cash/POS',
-    orders: unpaidOrders.map(order => order._id)
-  }}
-/>
+      <WaiterModalCart 
+        show={showWaiterModal} 
+        onClose={() => {
+          setShowWaiterModal(false);
+          setIsPlacingOrder(false);
+        }}
+        paymentDetails={{
+          totalAmount: getFinalTotalAmount().toFixed(2),
+          itemCount: getTotalOrderItemCount(),
+          paymentMethod: 'Cash/POS',
+          orders: unpaidOrders.map(order => order._id)
+        }}
+      />
 
       <FoodModal
         food={selectedFood}

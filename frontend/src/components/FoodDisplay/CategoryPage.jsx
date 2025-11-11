@@ -770,28 +770,31 @@ const CategoryPage = () => {
                             ease: "easeInOut",
                           }}
                         >
-                          {categoryFoods.map((item) => (
-                            <motion.div
-                              key={item._id}
-                              layout
-                              className={`category-explorer__food-item category-explorer__food-item--${viewMode}`}
-                              transition={{ duration: 0.2 }}
-                            >
-                              <FoodItemCategory
-                                id={item._id}
-                                name={item.name}
-                                description={item.description}
-                                price={item.price}
-                                image={item.image}
-                                isBestSeller={item.isBestSeller}
-                                isNewAdded={item.isNewAdded}
-                                isVegan={item.isVegan}
-                                category={item.category}
-                                onClick={() => openModal(item)}
-                                viewMode={viewMode}
-                              />
-                            </motion.div>
-                          ))}
+{categoryFoods.map((item) => (
+  <motion.div
+    key={item._id}
+    layout
+    className={`category-explorer__food-item category-explorer__food-item--${viewMode}`}
+    transition={{ duration: 0.2 }}
+  >
+    <FoodItemCategory
+      id={item._id}
+      name={item.name}
+      description={item.description}
+      price={item.price}
+      image={item.image}
+      isBestSeller={item.isBestSeller}
+      isNewAdded={item.isNewAdded}
+      isVegan={item.isVegan}
+      category={item.category}
+      // ✅ ADAUGĂ ACESTE PROPS PENTRU DISCOUNT
+      discountPercentage={item.discountPercentage || 0}
+      discountedPrice={item.discountedPrice || item.price}
+      onClick={() => openModal(item)}
+      viewMode={viewMode}
+    />
+  </motion.div>
+))}
                         </motion.div>
                       </div>
                     </div>
@@ -824,28 +827,31 @@ const CategoryPage = () => {
                         ease: "easeInOut",
                       }}
                     >
-                      {filteredFood.map((item) => (
-                        <motion.div
-                          key={item._id}
-                          layout
-                          className={`category-explorer__food-item category-explorer__food-item--${viewMode}`}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <FoodItemCategory
-                            id={item._id}
-                            name={item.name}
-                            description={item.description}
-                            price={item.price}
-                            image={item.image}
-                            isBestSeller={item.isBestSeller}
-                            isNewAdded={item.isNewAdded}
-                            isVegan={item.isVegan}
-                            category={item.category}
-                            onClick={() => openModal(item)}
-                            viewMode={viewMode}
-                          />
-                        </motion.div>
-                      ))}
+                     {filteredFood.map((item) => (
+  <motion.div
+    key={item._id}
+    layout
+    className={`category-explorer__food-item category-explorer__food-item--${viewMode}`}
+    transition={{ duration: 0.2 }}
+  >
+    <FoodItemCategory
+      id={item._id}
+      name={item.name}
+      description={item.description}
+      price={item.price}
+      image={item.image}
+      isBestSeller={item.isBestSeller}
+      isNewAdded={item.isNewAdded}
+      isVegan={item.isVegan}
+      category={item.category}
+      // ✅ ADAUGĂ ACESTE PROPS PENTRU DISCOUNT
+      discountPercentage={item.discountPercentage || 0}
+      discountedPrice={item.discountedPrice || item.price}
+      onClick={() => openModal(item)}
+      viewMode={viewMode}
+    />
+  </motion.div>
+))}
                     </motion.div>
                   </div>
                 </>

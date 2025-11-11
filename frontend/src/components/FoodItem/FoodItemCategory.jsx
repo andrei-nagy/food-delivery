@@ -3,7 +3,6 @@ import "./FoodItemCategory.css";
 import { assets } from "../../assets/assets";
 import { StoreContext } from "../../context/StoreContext";
 import { motion, AnimatePresence } from "framer-motion";
-import FoodModal from "../FoodItem/FoodModal";
 
 const FoodItemCategory = ({
   id,
@@ -15,18 +14,24 @@ const FoodItemCategory = ({
   isNewAdded,
   isVegan,
   category,
+  discountPercentage,
+  discountedPrice,
   onClick
 }) => {
-  const { cartItems, addToCart, removeFromCart, url, updateCartItemQuantity, canAddToCart, billRequested } =
-    useContext(StoreContext);
-  const [selectedFood, setSelectedFood] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isNutritionModalOpen, setIsNutritionModalOpen] = useState(false);
-  const [specialInstructions, setSpecialInstructions] = useState("");
-  const [selectedQuantity, setSelectedQuantity] = useState(1);
-  const [showCounterControls, setShowCounterControls] = useState(false);
+  const { cartItems, url, billRequested } = useContext(StoreContext);
   const [imageError, setImageError] = useState(false);
-  const timerRef = useRef(null);
+
+  // ✅ CALCULEAZĂ FORȚAT discountPercentage și discountedPrice
+  const rawDiscountPercentage = parseFloat(discountPercentage) || 0;
+  const rawPrice = parseFloat(price) || 0;
+  
+  // ✅ CALCULEAZĂ discountedPrice INDIFERENT de ce vine din props
+  const calculatedDiscountedPrice = rawDiscountPercentage > 0 
+    ? rawPrice * (1 - rawDiscountPercentage / 100)
+    : rawPrice;
+
+  // ✅ Verifică dacă ar TREBUI să afișeze discount (indiferent de ce vine din backend)
+  const shouldShowDiscount = rawDiscountPercentage > 0;
 
   // ✅ FUNCȚIE CORECTĂ: Caută toate variantele produsului în coș
   const getItemQuantity = () => {
@@ -34,9 +39,7 @@ const FoodItemCategory = ({
     
     let totalQuantity = 0;
     
-    // Parcurge toate cheile din cartItems
     Object.keys(cartItems).forEach(key => {
-      // Verifică dacă cheia începe cu ID-ul produsului de bază
       if (key.startsWith(id)) {
         const item = cartItems[key];
         if (typeof item === 'number') {
@@ -52,30 +55,8 @@ const FoodItemCategory = ({
 
   const itemQuantity = getItemQuantity();
 
-  useEffect(() => {
-    if (isModalOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isModalOpen]);
-
   const handleImageError = () => {
     setImageError(true);
-  };
-
-  const openFoodModal = () => {
-    if (billRequested) {
-      return;
-    }
-    
-    if (onClick) {
-      onClick({ id, name, price, description, image, isBestSeller, isNewAdded, isVegan, category, extras: [] });
-    }
   };
 
   const handleAddIconClick = (e) => {
@@ -85,7 +66,24 @@ const FoodItemCategory = ({
       return;
     }
     
-    openFoodModal();
+    // ✅ Apelează direct onClick prop fără a seta state local
+    if (onClick) {
+      const foodData = { 
+        _id: id,
+        name, 
+        price: rawPrice, 
+        description, 
+        image, 
+        isBestSeller, 
+        isNewAdded, 
+        isVegan, 
+        category, 
+        extras: [],
+        discountPercentage: rawDiscountPercentage,
+        discountedPrice: calculatedDiscountedPrice
+      };
+      onClick(foodData);
+    }
   };
 
   const handleCounterClick = (e) => {
@@ -95,54 +93,50 @@ const FoodItemCategory = ({
       return;
     }
     
-    openFoodModal();
-  };
-
-  const closeFoodModal = () => {
-    setSelectedFood(null);
-    setIsModalOpen(false);
-  };
-
-  const openNutritionModal = (e) => {
-    e.stopPropagation();
-    setIsNutritionModalOpen(true);
-  };
-
-  const closeNutritionModal = () => {
-    setIsNutritionModalOpen(false);
-  };
-
-  const handleIncreaseQuantityModal = () => {
-    if (billRequested) return;
-    setSelectedQuantity((prev) => prev + 1);
-  };
-
-  const handleDecreaseQuantityModal = () => {
-    if (billRequested) return;
-    setSelectedQuantity((prev) => Math.max(prev - 1, 1));
-  };
-
-  const handleAddToOrder = async () => {
-    if (billRequested) return;
-    
-    if (selectedFood) {
-      await updateCartItemQuantity(
-        selectedFood.id,
-        selectedQuantity,
-        specialInstructions
-      );
+    // ✅ Apelează direct onClick prop fără a seta state local
+    if (onClick) {
+      const foodData = { 
+        _id: id,
+        name, 
+        price: rawPrice, 
+        description, 
+        image, 
+        isBestSeller, 
+        isNewAdded, 
+        isVegan, 
+        category, 
+        extras: [],
+        discountPercentage: rawDiscountPercentage,
+        discountedPrice: calculatedDiscountedPrice
+      };
+      onClick(foodData);
     }
-    closeFoodModal();
   };
 
-  const nutritionDummyText = `
-Ingrediente: Apă, făină de grâu, ulei vegetal, sare, zahăr, conservanți (E202).
-Calorii: 250 kcal per porție.
-Grăsimi: 10g (din care saturate 2g).
-Carbohidrați: 30g (din care zaharuri 5g).
-Proteine: 5g.
-Sare: 1g.
-`;
+  const handleCardClick = () => {
+    if (billRequested) {
+      return;
+    }
+    
+    // ✅ Apelează direct onClick prop fără a seta state local
+    if (onClick) {
+      const foodData = { 
+        _id: id,
+        name, 
+        price: rawPrice, 
+        description, 
+        image, 
+        isBestSeller, 
+        isNewAdded, 
+        isVegan, 
+        category, 
+        extras: [],
+        discountPercentage: rawDiscountPercentage,
+        discountedPrice: calculatedDiscountedPrice
+      };
+      onClick(foodData);
+    }
+  };
 
   return (
     <motion.div
@@ -151,128 +145,116 @@ Sare: 1g.
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
     >
-      <>
-        <div
-          className={`food-item-category ${billRequested ? 'bill-requested-disabled' : ''}`}
-          onClick={openFoodModal}
-          style={{ cursor: billRequested ? 'not-allowed' : 'pointer' }}
-        >
-          <div className="food-item-img-container">
-            {isNewAdded && (
-              <img className="new-badge" src={assets.new_icon} alt="New" />
-            )}
-            {isVegan && (
-              <img
-                className="vegan-badge"
-                src={assets.vegan_icon}
-                alt="Vegan"
-              />
-            )}
-            {isBestSeller && (
-              <img
-                className="best-seller-badge"
-                src={assets.bestseller_icon}
-                alt="Best Seller"
-              />
-            )}
-            
-            {billRequested && (
-              <div className="bill-requested-overlay">
-                <div className="bill-requested-message">
-                  <span className="repeat-product-bill-icon">🔒</span>
-                  <span>Bill Requested</span>
-                </div>
-              </div>
-            )}
-            
-            {/* Imaginea principală cu fallback la image_coming_soon */}
+      <div
+        className={`food-item-category ${billRequested ? 'bill-requested-disabled' : ''}`}
+        style={{ cursor: billRequested ? 'not-allowed' : 'pointer' }}
+      >
+        <div className="food-item-img-container">
+          {isNewAdded && (
+            <img className="new-badge" src={assets.new_icon} alt="New" />
+          )}
+          {isVegan && (
             <img
-              className={`food-item-img ${billRequested ? 'disabled-image' : ''} ${imageError ? 'image-error' : ''}`}
-              src={imageError ? assets.image_coming_soon : (url + "/images/" + image)}
-              alt={name}
-              onError={handleImageError}
+              className="vegan-badge"
+              src={assets.vegan_icon}
+              alt="Vegan"
             />
-
-            {!billRequested && itemQuantity > 0 ? ( // ✅ CORECT: folosim itemQuantity
-              <AnimatePresence>
-                <motion.div
-                  key="cart"
-                  className="food-item-counter-cart"
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 15 }}
-                  transition={{ duration: 0.12, ease: "easeOut" }}
-                  onClick={handleCounterClick}
-                >
-                  {itemQuantity} {/* ✅ CORECT: folosim itemQuantity */}
-                </motion.div>
-              </AnimatePresence>
-            ) : !billRequested ? (
-              <img
-                className="add"
-                onClick={handleAddIconClick}
-                src={assets.add_icon_white}
-                alt="Add"
-              />
-            ) : null}
-          </div>
-
-          <div className="food-item-info">
-            <div className="food-item-name-price">
-              <p className={`food-item-name ${billRequested ? 'disabled-text' : ''}`}>{name}</p>
-              <p className={`food-item-price ${billRequested ? 'disabled-text' : ''}`}>{price} €</p>
+          )}
+          {isBestSeller && (
+            <img
+              className="best-seller-badge"
+              src={assets.bestseller_icon}
+              alt="Best Seller"
+            />
+          )}
+          
+          {/* ✅ Afișează badge-ul bazat pe calculul FORȚAT */}
+          {shouldShowDiscount && (
+            <div className="discount-badge">
+              -{rawDiscountPercentage}%
             </div>
-            <p className={`food-item-desc ${billRequested ? 'disabled-text' : ''}`}>
-              {description.length > 70
-                ? description.slice(0, 70) + "..."
-                : description}
-            </p>
-            
-            {billRequested && (
-              <div className="bill-warning-message">
-                Cannot add items - bill requested
+          )}
+          
+          {billRequested && (
+            <div className="bill-requested-overlay">
+              <div className="bill-requested-message">
+                <span className="repeat-product-bill-icon">🔒</span>
+                <span>Bill Requested</span>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+          
+          <img
+            className={`food-item-img ${billRequested ? 'disabled-image' : ''} ${imageError ? 'image-error' : ''}`}
+            src={imageError ? assets.image_coming_soon : (url + "/images/" + image)}
+            alt={name}
+            onError={handleImageError}
+            onClick={handleCardClick}
+          />
+
+          {!billRequested && itemQuantity > 0 ? (
+            <AnimatePresence>
+              <motion.div
+                key="cart"
+                className="food-item-counter-cart"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 15 }}
+                transition={{ duration: 0.12, ease: "easeOut" }}
+                onClick={handleCounterClick}
+              >
+                {itemQuantity}
+              </motion.div>
+            </AnimatePresence>
+          ) : !billRequested ? (
+            <img
+              className="add"
+              onClick={handleAddIconClick}
+              src={assets.add_icon_white}
+              alt="Add"
+            />
+          ) : null}
         </div>
 
-        {isModalOpen && selectedFood && (
-          <FoodModal 
-            food={selectedFood} 
-            closeModal={closeFoodModal} 
-            isOpen={isModalOpen}
-          />
-        )}
-
-        {isNutritionModalOpen && (
-          <div
-            className="modal-overlay nutrition-modal-overlay"
-            onClick={closeNutritionModal}
-          >
-            <div
-              className="food-modal-content nutrition-modal-content"
-              onClick={(e) => e.stopPropagation()}
+        <div className="food-item-info">
+          <div className="food-item-name-price">
+            <p 
+              className={`food-item-name ${billRequested ? 'disabled-text' : ''}`}
+              onClick={handleCardClick}
             >
-              <button
-                className="modal-close-button"
-                onClick={closeNutritionModal}
-              >
-                ✕
-              </button>
-              <h3>Informații nutriționale</h3>
-              <pre
-                style={{
-                  whiteSpace: "pre-wrap",
-                  fontSize: "1rem",
-                  color: "#333",
-                }}
-              >
-                {nutritionDummyText}
-              </pre>
+              {name}
+            </p>
+            <div 
+              className={`food-item-price-container ${billRequested ? 'disabled-text' : ''}`}
+              onClick={handleCardClick}
+            >
+              {/* ✅ Afișează prețurile bazat pe calculul FORȚAT */}
+              {shouldShowDiscount ? (
+                <div className="discount-price-wrapper">
+                  <span className="original-price">{rawPrice.toFixed(2)} €</span>
+                  <span className="discounted-price">{calculatedDiscountedPrice.toFixed(2)} €</span>
+                </div>
+              ) : (
+                <span className="regular-price">{rawPrice.toFixed(2)} €</span>
+              )}
             </div>
           </div>
-        )}
-      </>
+          <p 
+            className={`food-item-desc ${billRequested ? 'disabled-text' : ''}`}
+            onClick={handleCardClick}
+          >
+            {description.length > 70
+              ? description.slice(0, 70) + "..."
+              : description}
+          </p>
+          
+          {billRequested && (
+            <div className="bill-warning-message">
+              Cannot add items - bill requested
+            </div>
+          )}
+        </div>
+      </div>
     </motion.div>
   );
 };

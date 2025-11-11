@@ -651,18 +651,42 @@ const StoreContextProvider = (props) => {
     }
   };
 
-  const getTotalCartAmount = () => {
-    let totalAmount = 0;
+ const getTotalCartAmount = () => {
+  let totalAmount = 0;
 
-    Object.keys(cartItems).forEach((itemId) => {
-      const cartItem = cartItems[itemId];
+  Object.keys(cartItems).forEach((itemId) => {
+    const cartItem = cartItems[itemId];
 
-      if (cartItem && cartItem.quantity > 0) {
+    if (cartItem && cartItem.quantity > 0) {
+      // ✅ FOLOSEȘTE unitPrice DIN itemData DACA EXISTA
+      const unitPrice = cartItem.itemData?.unitPrice || 0;
+      
+      if (unitPrice > 0) {
+        // ✅ Dacă avem unitPrice din itemData, folosim-l
+        let itemTotal = unitPrice * cartItem.quantity;
+
+        if (cartItem.selectedOptions && cartItem.selectedOptions.length > 0) {
+          cartItem.selectedOptions.forEach((optionName) => {
+            const extra = cartItem.itemData?.extras?.find(
+              (extra) => extra.name === optionName
+            ) || { price: 0 };
+            
+            if (extra) {
+              itemTotal += extra.price * cartItem.quantity;
+            }
+          });
+        }
+
+        totalAmount += itemTotal;
+      } else {
+        // ✅ FALLBACK: folosește logica veche dacă nu avem unitPrice în itemData
         const baseFoodId = itemId.split("__")[0];
         const foodItem = food_list.find((item) => item._id === baseFoodId);
 
         if (foodItem) {
-          let itemTotal = foodItem.price * cartItem.quantity;
+          // ✅ Verifică dacă produsul are discount
+          const itemPrice = foodItem.discountedPrice || foodItem.price;
+          let itemTotal = itemPrice * cartItem.quantity;
 
           if (cartItem.selectedOptions && cartItem.selectedOptions.length > 0) {
             cartItem.selectedOptions.forEach((optionName) => {
@@ -678,10 +702,11 @@ const StoreContextProvider = (props) => {
           totalAmount += itemTotal;
         }
       }
-    });
+    }
+  });
 
-    return totalAmount;
-  };
+  return totalAmount;
+};
 
   const getTotalItemCount = () => {
     const total = Object.values(cartItems).reduce((total, item) => {

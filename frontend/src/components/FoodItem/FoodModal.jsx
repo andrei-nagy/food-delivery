@@ -31,6 +31,11 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     const isVegan = food?.isVegan || false;
     const isBestSeller = food?.isBestSeller || false;
     const isNewAdded = food?.isNewAdded || false;
+    const discountPercentage = food?.discountPercentage || 0;
+    const discountedPrice = food?.discountedPrice || foodPrice;
+
+    // Verifică dacă produsul are discount
+    const hasDiscount = discountPercentage > 0;
 
     useEffect(() => {
         if (isOpen && food) {
@@ -46,7 +51,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
             setSelectedOptions([]);
             setValidationError("");
             setIsDescriptionExpanded(false);
-            setImageError(false); // Reset image error when modal closes
+            setImageError(false);
             setTimeout(() => {
                 document.body.style.overflow = '';
             }, 300);
@@ -229,7 +234,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     const calculateTotalPrice = () => {
         if (!food) return 0;
         
-        let total = foodPrice * selectedQuantity;
+        let total = discountedPrice * selectedQuantity;
         
         selectedOptions.forEach(optionName => {
             const extra = foodExtras.find(extra => extra.name === optionName);
@@ -241,35 +246,39 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         return total;
     };
 
-    const handleAddToCart = () => {
-        // ✅ Verifică dacă nota a fost cerută înainte de a adăuga în coș
-        if (billRequested) {
-            closeModal();
-            return;
-        }
+  const handleAddToCart = () => {
+  if (billRequested) {
+    closeModal();
+    return;
+  }
 
-        if (!food) {
-            console.error("Food object is undefined!");
-            closeModal();
-            return;
-        }
+  if (!food) {
+    console.error("Food object is undefined!");
+    closeModal();
+    return;
+  }
 
-        const cartItemId = generateCartItemId();
-        const cartItemData = {
-            baseFoodId: foodId,
-            quantity: selectedQuantity,
-            specialInstructions: specialInstructions,
-            selectedOptions: selectedOptions,
-            unitPrice: foodPrice,
-            extrasPrice: selectedOptions.reduce((total, optionName) => {
-                const extra = foodExtras.find(extra => extra.name === optionName);
-                return total + (extra?.price || 0);
-            }, 0)
-        };
-        
-        addToCart(cartItemId, selectedQuantity, specialInstructions, selectedOptions, cartItemData);
-        closeModal();
-    };
+  const cartItemId = generateCartItemId();
+  
+  // ✅ Calculează prețul extras-urilor
+  const extrasPrice = selectedOptions.reduce((total, optionName) => {
+    const extra = foodExtras.find(extra => extra.name === optionName);
+    return total + (extra?.price || 0);
+  }, 0);
+
+  const cartItemData = {
+    baseFoodId: foodId,
+    quantity: selectedQuantity,
+    specialInstructions: specialInstructions,
+    selectedOptions: selectedOptions,
+    unitPrice: discountedPrice, // ✅ Folosește prețul cu discount
+    extrasPrice: extrasPrice,
+    extras: foodExtras // ✅ Include și lista de extras-uri pentru calcul
+  };
+  
+  addToCart(cartItemId, selectedQuantity, specialInstructions, selectedOptions, cartItemData);
+  closeModal();
+};
 
     const handleAddButton = (e) => {
         e.preventDefault();
@@ -361,12 +370,23 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                     </div>
                     
                     <div className="food-item-modal-price-section">
-                        <span className={`food-item-modal-current-price ${billRequested ? 'disabled-text' : ''}`}>
-                            {foodPrice.toFixed(2)} €
-                        </span>
-                        {food.originalPrice && (
-                            <span className={`food-item-modal-original-price ${billRequested ? 'disabled-text' : ''}`}>
-                                {food.originalPrice.toFixed(2)} €
+                        {hasDiscount ? (
+                            <div className="food-item-modal-discount-price-wrapper">
+                                <div className="food-item-modal-price-row">
+                                    <span className="food-item-modal-original-price">
+                                        {foodPrice.toFixed(2)} €
+                                    </span>
+                                    <span className="food-item-modal-discount-badge">
+                                        -{discountPercentage}%
+                                    </span>
+                                </div>
+                                <span className="food-item-modal-current-price">
+                                    {discountedPrice.toFixed(2)} €
+                                </span>
+                            </div>
+                        ) : (
+                            <span className={`food-item-modal-current-price ${billRequested ? 'disabled-text' : ''}`}>
+                                {foodPrice.toFixed(2)} €
                             </span>
                         )}
                     </div>

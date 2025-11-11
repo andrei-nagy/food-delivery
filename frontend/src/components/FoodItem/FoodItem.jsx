@@ -13,6 +13,8 @@ const FoodItem = ({
   isBestSeller,
   isNewAdded,
   isVegan,
+  discountPercentage,
+  discountedPrice,
   openModal,
 }) => {
   const { cartItems, addToCart, removeFromCart, url, billRequested } =
@@ -21,15 +23,16 @@ const FoodItem = ({
   const [imageError, setImageError] = useState(false);
   const timerRef = useRef(null);
 
+  // Verifică dacă produsul are discount
+  const hasDiscount = discountPercentage > 0;
+
   // ✅ FUNCȚIE CORECTĂ: Caută toate variantele produsului în coș
   const getItemQuantity = () => {
     if (!cartItems || !_id) return 0;
     
     let totalQuantity = 0;
     
-    // Parcurge toate cheile din cartItems
     Object.keys(cartItems).forEach(key => {
-      // Verifică dacă cheia începe cu ID-ul produsului de bază
       if (key.startsWith(_id)) {
         const item = cartItems[key];
         if (typeof item === 'number') {
@@ -69,7 +72,15 @@ const FoodItem = ({
     if (billRequested) {
       return;
     }
-    openModal({ _id, name, price, description, image });
+    openModal({ 
+      _id, 
+      name, 
+      price, 
+      description, 
+      image,
+      discountPercentage,
+      discountedPrice 
+    });
   };
 
   const handleAddToCart = (e) => {
@@ -90,7 +101,6 @@ const FoodItem = ({
       return;
     }
     
-    // ✅ CORECT: Elimină din coș folosind funcția din context
     removeFromCart(_id, 1);
     handleCounterClick(e);
   };
@@ -103,7 +113,15 @@ const FoodItem = ({
     }
     
     if (!showCounterControls) {
-      openModal({ _id, name, price, description, image });
+      openModal({ 
+        _id, 
+        name, 
+        price, 
+        description, 
+        image,
+        discountPercentage,
+        discountedPrice 
+      });
     } else {
       handleCounterClick(e);
     }
@@ -116,7 +134,15 @@ const FoodItem = ({
       return;
     }
     
-    openModal({ _id, name, price, description, image });
+    openModal({ 
+      _id, 
+      name, 
+      price, 
+      description, 
+      image,
+      discountPercentage,
+      discountedPrice 
+    });
   };
 
   return (
@@ -138,6 +164,13 @@ const FoodItem = ({
             src={assets.bestseller_icon}
             alt="Best Seller"
           />
+        )}
+        
+        {/* Badge pentru discount */}
+        {hasDiscount && (
+          <div className="discount-badge">
+            -{discountPercentage}%
+          </div>
         )}
         
         {billRequested && (
@@ -205,9 +238,16 @@ const FoodItem = ({
       <div className="food-item-info">
         <div className="food-item-name-rating">
           <p className={billRequested ? 'disabled-text' : ''}>{name}</p>
-          <p className={`food-item-price ${billRequested ? 'disabled-text' : ''}`}>
-            {price} €
-          </p>
+          <div className={`food-item-price-container ${billRequested ? 'disabled-text' : ''}`}>
+            {hasDiscount ? (
+              <div className="discount-price-wrapper">
+                <span className="original-price">{price} €</span>
+                <span className="discounted-price">{discountedPrice} €</span>
+              </div>
+            ) : (
+              <span className="regular-price">{price} €</span>
+            )}
+          </div>
         </div>
         <p className={`food-item-desc ${billRequested ? 'disabled-text' : ''}`}>
           {description.length > 70

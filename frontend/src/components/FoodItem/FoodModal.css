@@ -166,11 +166,24 @@
     line-height: 1.4;
 }
 
+/* Stiluri pentru discount în modal */
 .food-item-modal-price-section {
     margin: 15px 0;
     padding: 10px 0;
     border-top: 1px solid #f0f0f0;
     border-bottom: 1px solid #f0f0f0;
+}
+
+.food-item-modal-discount-price-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.food-item-modal-price-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .food-item-modal-current-price {
@@ -183,7 +196,16 @@
     font-size: 1rem;
     text-decoration: line-through;
     color: #999;
-    margin-left: 10px;
+}
+
+.food-item-modal-discount-badge {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    font-weight: bold;
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
 }
 
 .food-item-modal-ingredients,

@@ -2232,3 +2232,231 @@ body.cart-page header > div:first-child {
   background-color: #f8f9fa;
   border: 1px dashed #dee2e6;
 }
+
+
+/* Stiluri pentru discount în coș */
+.item-price-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.discount-price-wrapper-cart {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.original-price-line {
+  font-size: 14px;
+  color: #6c757d;
+  text-decoration: line-through;
+  font-weight: 400;
+}
+
+.discounted-price-cart {
+  font-size: 16px;
+  font-weight: 700;
+  color: #e86514;
+}
+
+.regular-price-cart {
+  font-size: 16px;
+  font-weight: 700;
+  color: #e86514;
+}
+
+.discount-badge-cart {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(255, 107, 107, 0.3);
+}
+
+/* Ajustări pentru layout-ul item-ului din coș */
+.item-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+  width: 100%;
+}
+
+.item-price-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .discount-price-wrapper-cart {
+    gap: 4px;
+  }
+  
+  .original-price-line {
+    font-size: 12px;
+  }
+  
+  .discounted-price-cart,
+  .regular-price-cart {
+    font-size: 14px;
+  }
+  
+  .discount-badge-cart {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+}
+
+/* Stiluri pentru secțiunea de promo code */
+.promo-code-section {
+  margin-bottom: 20px;
+}
+
+.promo-code-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.promo-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 8px 12px;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.promo-input-wrapper:focus-within {
+  border-color: #28a745;
+  background: white;
+}
+
+.promo-icon {
+  color: #6c757d;
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.promo-code-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  padding: 8px 0;
+  outline: none;
+}
+
+.promo-code-input:disabled {
+  background: transparent;
+  color: #6c757d;
+}
+
+.apply-promo-button {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.apply-promo-button:hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+.remove-promo-button {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.remove-promo-button:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+}
+
+.promo-error-message {
+  color: #dc3545;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 8px;
+  background: #f8d7da;
+  border-radius: 6px;
+  border-left: 3px solid #dc3545;
+}
+
+.promo-success-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #155724;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 12px;
+  background: #d4edda;
+  border-radius: 6px;
+  border-left: 3px solid #28a745;
+}
+
+.success-icon {
+  color: #28a745;
+  font-size: 14px;
+}
+
+/* Stiluri pentru rândul de discount din order summary */
+.summary-row.promo-discount {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.promo-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.promo-discount-icon {
+  font-size: 14px;
+}
+
+.promo-discount-amount {
+  color: #28a745;
+  font-weight: 700;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .promo-input-wrapper {
+    padding: 6px 10px;
+  }
+  
+  .promo-code-input {
+    font-size: 13px;
+  }
+  
+  .apply-promo-button,
+  .remove-promo-button {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}

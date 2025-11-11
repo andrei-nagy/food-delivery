@@ -12,6 +12,7 @@
   transition: transform 0.3s ease;
   overflow: hidden;
 }
+
 .food-item-counter-cart {
   width: 35px;
   height: 35px;
@@ -23,7 +24,7 @@
   font-weight: bold;
   font-size: 14px;
   position: absolute;
-  bottom: 10px;  /* înlocuit top cu bottom */
+  bottom: 10px;
   right: 10px;
   z-index: 2;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
@@ -50,8 +51,18 @@
 .food-item-name-rating {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   font-weight: 600;
   font-size: 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.food-item-name-rating p {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+  flex: 1;
 }
 
 .food-item-desc {
@@ -61,381 +72,382 @@
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 2; /* max 2 linii */
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
+/* Stiluri pentru discount */
+.discount-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
 
+.food-item-price-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  margin: 0;
+}
 
-/* .vegan-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background-color: #00cc44;
-    color: #fff;
-    font-weight: bold;
-    font-size: 0.75rem;
-    padding: 4px 8px;
-    border-radius: 4px;
-    z-index: 10;
-} */
+.discount-price-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #888;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1;
+}
+
+.discounted-price {
+  color: #e74c3c;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.regular-price {
+  color: tomato;
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0;
+}
 
 .vegan-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 50px;
-    height: 40px;
-    padding: 4px;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 50px;
+  height: 40px;
+  padding: 4px;
+  z-index: 10;
 }
 
 .best-seller-badge {
-    position: absolute;
-    bottom: 8px;
-    left: 8px;
-    width: 75px;
-    height: 20px;
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  width: 75px;
+  height: 20px;
+  z-index: 10;
 }
 
 .new-badge {
-    position: absolute;
-    top: 2px;
-    left: 8px;
-    width: 40px;
-    height: 40px;
-    padding: 2px;
-}
-
-.food-item-name-rating {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    cursor: pointer;
-}
-
-.food-item-name-rating p {
-    font-size: 20px;
-    font-weight: 500;
-
+  position: absolute;
+  top: 2px;
+  left: 8px;
+  width: 40px;
+  height: 40px;
+  padding: 2px;
+  z-index: 10;
 }
 
 .food-item-name-rating img {
-    width: 70px;
+  width: 70px;
 }
 
- 
 .food-item-price {
-    color: tomato;
-    font-size: 22px;
-    font-weight: 500;
-    margin: 10px 0px;
+  color: tomato;
+  font-size: 22px;
+  font-weight: 500;
+  margin: 10px 0px;
 }
-
 
 .food-item-img-container {
-    position: relative;
+  position: relative;
 }
 
 .food-item-img-container .add {
-    width: 35px;
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
-    cursor: pointer;
-    border-radius: 50%;
+  width: 35px;
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  cursor: pointer;
+  border-radius: 50%;
 }
 
 .food-item-counter {
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px;
-    border-radius: 50px;
-    background-color: white;
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  border-radius: 50px;
+  background-color: white;
 }
 
 .food-item-counter img {
-    width: 30px;
+  width: 30px;
 }
-
 
 /* MODAL QUICK VIEW */
-/* Stilizarea pentru overlay-ul modalului */
 .modal-overlay.quick-food-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    /* fundal semi-transparent */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-/* Stilizarea pentru conținutul modalului */
 .modal-content {
-    background-color: #fff;
-    padding: 20px;
-    width: 90%;
-    max-width: 500px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    animation: fadeIn 0.3s ease-in-out;
+  background-color: #fff;
+  padding: 20px;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
-/* Titlul modalului */
 .modal-content h2 {
-    font-size: 24px;
-    margin-bottom: 10px;
-    color: #333;
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: #333;
 }
 
-/* Imaginea produsului din modal */
 .modal-content img {
-    width: 100%;
-    max-height: 200px;
-    object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 15px;
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 15px;
 }
 
-/* Descrierea produsului */
 .modal-content p {
-    font-size: 16px;
-    color: #666;
-    margin-bottom: 20px;
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 20px;
 }
 
-/* Acțiunile din modal (butonul Add/Remove) */
 .modal-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
 }
 
 .modal-actions button {
-    padding: 10px 15px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s;
+  padding: 10px 15px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
 }
 
 .modal-actions button:hover {
-    background-color: #218838;
+  background-color: #218838;
 }
 
-/* Butonul Remove */
 .modal-actions button:last-child {
-    background-color: #dc3545;
+  background-color: #dc3545;
 }
 
 .modal-actions button:last-child:hover {
-    background-color: #c82333;
+  background-color: #c82333;
 }
 
-/* Textarea pentru instrucțiuni speciale */
 textarea {
-    width: 100%;
-    height: 80px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    font-size: 14px;
-    resize: none;
+  width: 100%;
+  height: 80px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  resize: none;
 }
 
-/* Butonul pentru salvarea instrucțiunilor */
 button.save {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 button.save:hover {
-    background-color: #0056b3;
+  background-color: #0056b3;
 }
 
-/* Butonul Close */
 button.close {
-    background-color: #e4600f;
-    color: white;
-    border: 1px solid #e4600f;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
+  background-color: #e4600f;
+  color: white;
+  border: 1px solid #e4600f;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 button.close:hover {
-    background-color: #5a6268;
+  background-color: #5a6268;
 }
 
-/* Animație de apariție a modalului */
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-/* Stilizare pentru selectorul de cantitate */
 .quantity-selector {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: auto;
-    margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: auto;
+  margin-bottom: 20px;
 }
 
 .quantity-selector button {
-    padding: 5px 10px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.2s;
+  padding: 5px 10px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s;
 }
 
 .quantity-selector button:hover {
-    background-color: #218838;
+  background-color: #218838;
 }
 
 .quantity-selector span {
-    font-size: 16px;
-    color: #333;
-    padding: 0 10px;
-    width: 40px;
-    text-align: center;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+  font-size: 16px;
+  color: #333;
+  padding: 0 10px;
+  width: 40px;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
-/* Stilizare pentru butonul de close în dreapta sus */
 .modal-close-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: transparent;
-    border: 2px solid orange;
-    color: black;
-    font-size: 20px;
-    font-weight: bold;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  border: 2px solid orange;
+  color: black;
+  font-size: 20px;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
-
-/* .modal-close-button:hover {
-    background-color: red;
-    color: white;
-} */
 
 .quick-food-modal .modal-content {
-    position: relative;
-    padding: 20px;
+  position: relative;
+  padding: 20px;
 }
-
 
 /* Media query pentru tablete și telefoane */
 @media (max-width: 768px) {
-    .best-seller-badge {
-        position: absolute;
-        bottom: 11px;
-        left: 8px;
-        width: 75px;
-        height: 20px;
-    }
+  .best-seller-badge {
+    position: absolute;
+    bottom: 11px;
+    left: 8px;
+    width: 75px;
+    height: 20px;
+  }
 }
-
 
 /* MODAL: responsive pe ecrane foarte mici (ex: iPhone SE) */
 @media (max-width: 375px) {
-    .modal-content {
-        width: 95%;
-        padding: 15px;
-        border-radius: 8px;
-        font-size: 0.95rem;
-    }
+  .modal-content {
+    width: 95%;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+  }
 
-    .modal-food-image {
-        max-height: 150px !important;
-        height: 150px !important;
-        object-fit: cover;
-    }
+  .modal-food-image {
+    max-height: 150px !important;
+    height: 150px !important;
+    object-fit: cover;
+  }
 
-    .modal-description {
-        font-size: 14px;
-        margin-bottom: 0px !important;
-    }
+  .modal-description {
+    font-size: 14px;
+    margin-bottom: 0px !important;
+  }
 
-    .special-instructions-modal {
-        max-height: 50px !important;
-        min-height: 50px !important;
-        margin-bottom: 5px !important;
-        height: 50px !important;
-        margin-top: 0px !important;
-    }
+  .special-instructions-modal {
+    max-height: 50px !important;
+    min-height: 50px !important;
+    margin-bottom: 5px !important;
+    height: 50px !important;
+    margin-top: 0px !important;
+  }
 
-    .modal-controls {
-        flex-direction: column;
-        gap: 10px;
-        margin-top: 8px !important;
-    }
+  .modal-controls {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px !important;
+  }
 
+  .add-to-cart-btn {
+    width: 100%;
+  }
 
-    .add-to-cart-btn {
-        width: 100%;
-    }
-
-    .quantity-control {
-        justify-content: center;
-    }
+  .quantity-control {
+    justify-content: center;
+  }
 }
 
 /* Siguranță suplimentară pt. înălțime mică */
 @media (max-height: 600px) {
-    .modal-content {
-        max-height: 80vh;
-        padding-bottom: 60px;
-    }
+  .modal-content {
+    max-height: 80vh;
+    padding-bottom: 60px;
+  }
 }
 
 .food-item-counter {
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px;
-    border-radius: 50px;
-    background-color: white;
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  border-radius: 50px;
+  background-color: white;
 }
+
 .food-item-counter-cart {
   width: 35px;
   height: 35px;
@@ -447,7 +459,7 @@ button.close:hover {
   font-weight: 700;
   font-size: 14px;
   position: absolute;
-  bottom: 15px; 
+  bottom: 15px;
   right: 15px;
   z-index: 0;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.1);
@@ -455,14 +467,11 @@ button.close:hover {
   border: 1px solid #a7a7a7;
 }
 
-
 .food-item-counter img {
-    width: 30px;
+  width: 30px;
 }
 
-
-/* FoodItem.css - ADAUGĂ aceste stiluri */
-
+/* Stiluri pentru bill requested */
 .food-item.bill-requested-disabled {
   opacity: 0.7;
   position: relative;
@@ -535,109 +544,26 @@ button.close:hover {
   font-weight: 500;
 }
 
-/* Asigură-te că overlay-ul este deasupra imaginii */
-.food-item-img-container {
-  position: relative;
-}
-
-/* Opțional: Stiluri pentru hover state când este dezactivat */
-.food-item.bill-requested-disabled:hover {
-  transform: none;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* FoodItem.css - ADAUGĂ aceste stiluri pentru imaginea de fallback */
-
-/* Stil pentru imaginea de fallback */
+/* Stiluri pentru imaginea de fallback */
 .food-item-img.image-error {
   background-color: #f8f9fa;
   border: 1px dashed #dee2e6;
-  object-fit: contain; /* Pentru a se vedea întreaga imagine coming soon */
+  object-fit: contain;
 }
 
-/* Pentru imaginea coming_soon, folosim contain în loc de cover */
 .food-item-img[src*="coming_soon"] {
   object-fit: contain;
   background-color: #f8f9fa;
   border: 1px dashed #dee2e6;
 }
 
-/* Restul stilurilor existente rămân aceleași */
-.food-item.bill-requested-disabled {
-  opacity: 0.7;
-  position: relative;
+/* Ajustare pentru cazurile cu multiple badge-uri */
+.food-item-img-container .discount-badge ~ .new-badge {
+  top: 45px;
 }
 
-.bill-requested-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  z-index: 2;
-}
-
-.bill-requested-message {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 8px 12px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #d63031;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.lock-icon {
-  width: 12px;
-  height: 12px;
-}
-
-.food-item-img.disabled-image {
-  filter: grayscale(0.3);
-}
-
-.food-item-counter-cart.bill-requested-counter {
-  background: #95a5a6 !important;
-  cursor: not-allowed !important;
-}
-
-.add.add-disabled {
-  opacity: 0.5;
-  cursor: not-allowed !important;
-  filter: grayscale(0.5);
-}
-
-.add.add-disabled:hover {
-  transform: none !important;
-}
-
-.disabled-text {
-  color: #7f8c8d !important;
-}
-
-.bill-warning-message {
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  color: #856404;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 11px;
-  margin-top: 8px;
-  text-align: center;
-  font-weight: 500;
-}
-
-/* Asigură-te că overlay-ul este deasupra imaginii */
-.food-item-img-container {
-  position: relative;
+.food-item-img-container .discount-badge ~ .vegan-badge {
+  top: 45px;
 }
 
 /* Opțional: Stiluri pentru hover state când este dezactivat */

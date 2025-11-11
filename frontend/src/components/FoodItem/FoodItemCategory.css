@@ -1,7 +1,6 @@
 .food-item-category {
   min-width: 100%;
   max-width: 100%;
-  /* height: 335px; */
   height: 275px;
   flex-shrink: 0;
   display: flex;
@@ -17,23 +16,77 @@
 .food-display-list > .food-item:only-child {
   min-width: 100%;
 }
+
 .food-item-name-price {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 5px;
 }
-.food-item-name,
-.food-item-price {
+
+.food-item-name {
   margin: 0;
   font-weight: 600;
   font-size: 16px;
+  flex: 1;
 }
+
+.food-item-price-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  margin: 0;
+}
+
+.discount-price-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #888;
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 1;
+}
+
+.discounted-price {
+  color: #e74c3c;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.regular-price {
+  color: tomato;
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Stiluri pentru discount badge */
+.discount-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
 .food-item-img {
   width: 100%;
   border-radius: 15px 15px 0px 0px;
-    height: 145px;
-  /* height: 175px; */
+  height: 145px;
   object-fit: cover;
   cursor: pointer;
 }
@@ -41,19 +94,6 @@
 .food-item-info {
   padding: 10px;
 }
-
-/* .vegan-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    background-color: #00cc44;
-    color: #fff;
-    font-weight: bold;
-    font-size: 0.75rem;
-    padding: 4px 8px;
-    border-radius: 4px;
-    z-index: 10;
-} */
 
 .vegan-badge {
   position: absolute;
@@ -103,10 +143,6 @@
   font-size: 12px;
 }
 
-.food-item-name {
-  margin-bottom: 5px;
-}
-
 .food-item-price {
   color: tomato;
   font-size: 18px;
@@ -140,6 +176,7 @@
   border-radius: 50px;
   background-color: white;
 }
+
 .food-item-counter-cart {
   width: 35px;
   height: 35px;
@@ -173,7 +210,6 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 1050;
-  /* peste modalul principal */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -234,11 +270,9 @@
   width: 100%;
   max-height: 70vh;
   overflow-y: auto;
-  /* Adaugă asta */
   transform: translateY(0);
   animation: slideUp 0.3s ease-out;
   position: relative;
-  /* Pentru butonul close */
 }
 
 .food-modal-content img {
@@ -253,13 +287,10 @@
   from {
     transform: translateY(100%);
   }
-
   to {
     transform: translateY(0);
   }
 }
-
-/* Restul stilurilor rămân la fel */
 
 .modal-header {
   display: flex;
@@ -381,7 +412,6 @@
   }
 }
 
-
 /* FoodItemCategory.css - ADAUGĂ aceste stiluri */
 
 .food-item-category.bill-requested-disabled {
@@ -459,6 +489,15 @@
 /* Asigură-te că overlay-ul este deasupra imaginii */
 .food-item-img-container {
   position: relative;
+}
+
+/* Ajustare pentru cazurile cu multiple badge-uri */
+.food-item-img-container .discount-badge ~ .new-badge {
+  top: 45px;
+}
+
+.food-item-img-container .discount-badge ~ .vegan-badge {
+  top: 45px;
 }
 
 /* Opțional: Stiluri pentru hover state când este dezactivat */

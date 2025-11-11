@@ -13,6 +13,8 @@ const FoodItemBestSeller = ({
   isBestSeller,
   isNewAdded,
   isVegan,
+  discountPercentage,
+  discountedPrice,
   openModal,
   swiperRef,
 }) => {
@@ -22,15 +24,16 @@ const FoodItemBestSeller = ({
   const [imageError, setImageError] = useState(false);
   const timerRef = useRef(null);
 
+  // Verifică dacă produsul are discount
+  const hasDiscount = discountPercentage > 0;
+
   // ✅ FUNCȚIE CORECTĂ: Caută toate variantele produsului în coș
   const getItemQuantity = () => {
     if (!cartItems || !_id) return 0;
     
     let totalQuantity = 0;
     
-    // Parcurge toate cheile din cartItems
     Object.keys(cartItems).forEach(key => {
-      // Verifică dacă cheia începe cu ID-ul produsului de bază
       if (key.startsWith(_id)) {
         const item = cartItems[key];
         if (typeof item === 'number') {
@@ -79,7 +82,15 @@ const FoodItemBestSeller = ({
     if (billRequested) {
       return;
     }
-    openModal({ _id, name, price, description, image });
+    openModal({ 
+      _id, 
+      name, 
+      price, 
+      description, 
+      image,
+      discountPercentage,
+      discountedPrice 
+    });
   };
 
   const handleAddToCart = (e) => {
@@ -114,8 +125,15 @@ const FoodItemBestSeller = ({
       return;
     }
     
-    // Deschide modalul în loc să adauge direct în coș
-    openModal({ _id, name, price, description, image });
+    openModal({ 
+      _id, 
+      name, 
+      price, 
+      description, 
+      image,
+      discountPercentage,
+      discountedPrice 
+    });
   };
 
   // ✅ FUNCȚIE pentru counter (când produsul este deja în coș)
@@ -126,12 +144,17 @@ const FoodItemBestSeller = ({
       return;
     }
     
-    // Dacă counter-ul este vizibil, doar îl păstrăm deschis
     if (!showCounterControls) {
-      // Dacă counter-ul nu este vizibil, deschide modalul
-      openModal({ _id, name, price, description, image });
+      openModal({ 
+        _id, 
+        name, 
+        price, 
+        description, 
+        image,
+        discountPercentage,
+        discountedPrice 
+      });
     } else {
-      // Dacă counter-ul este deja vizibil, doar resetează timerul
       handleCounterClick(e);
     }
   };
@@ -157,6 +180,13 @@ const FoodItemBestSeller = ({
           />
         )}
 
+        {/* Badge pentru discount */}
+        {hasDiscount && (
+          <div className="discount-badge">
+            -{discountPercentage}%
+          </div>
+        )}
+
         {billRequested && (
           <div className="bill-requested-overlay">
             <div className="bill-requested-message">
@@ -173,7 +203,7 @@ const FoodItemBestSeller = ({
           onError={handleImageError}
         />
 
-        {!billRequested && itemQuantity > 0 ? ( // ✅ CORECT: folosim itemQuantity
+        {!billRequested && itemQuantity > 0 ? (
           <AnimatePresence>
             {showCounterControls ? (
               <motion.div
@@ -189,7 +219,7 @@ const FoodItemBestSeller = ({
                   src={assets.remove_icon_red}
                   alt="Remove"
                 />
-                <p>{itemQuantity}</p> {/* ✅ CORECT: folosim itemQuantity */}
+                <p>{itemQuantity}</p>
                 <img
                   onClick={handleAddToCart}
                   src={assets.add_icon_green}
@@ -206,7 +236,7 @@ const FoodItemBestSeller = ({
                 transition={{ duration: 0.25, ease: "easeOut" }}
                 onClick={handleCounterClickOpenModal}
               >
-                {itemQuantity} {/* ✅ CORECT: folosim itemQuantity */}
+                {itemQuantity}
               </motion.div>
             )}
           </AnimatePresence>
@@ -222,7 +252,16 @@ const FoodItemBestSeller = ({
       <div className="food-item-info">
         <div className="food-item-name-rating">
           <p className={billRequested ? 'disabled-text' : ''}>{name}</p>
-          <p className={`food-item-price ${billRequested ? 'disabled-text' : ''}`}>{price} €</p>
+          <div className={`food-item-price-container ${billRequested ? 'disabled-text' : ''}`}>
+            {hasDiscount ? (
+              <div className="discount-price-wrapper">
+                <span className="original-price">{price} €</span>
+                <span className="discounted-price">{discountedPrice} €</span>
+              </div>
+            ) : (
+              <span className="regular-price">{price} €</span>
+            )}
+          </div>
         </div>
         <p className={`food-item-desc ${billRequested ? 'disabled-text' : ''}`}>
           {description.length > 150

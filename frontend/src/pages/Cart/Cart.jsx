@@ -16,6 +16,9 @@ import {
   FaMoneyBillWave,
   FaLock,
   FaShoppingBag,
+  FaTag,
+  FaCheckCircle,
+  FaPercent
 } from "react-icons/fa";
 import { assets } from "../../assets/assets";
 
@@ -38,7 +41,6 @@ const Cart = () => {
 
   const { t, i18n } = useTranslation();
 
-  const [discount, setDiscount] = useState(0);
   const [specialInstructions, setSpecialInstructions] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [paymentError, setPaymentError] = useState("");
@@ -60,12 +62,6 @@ const Cart = () => {
   const [swipeOffsets, setSwipeOffsets] = useState({});
 
   const tableNumber = localStorage.getItem("tableNumber") || null;
-
-  const promoCodes = {
-    DISCOUNT10: 10,
-    SAVE5: 5,
-    OFF20: 20,
-  };
 
   const isCartEmpty = Object.keys(cartItems).length === 0;
 
@@ -226,6 +222,7 @@ const Cart = () => {
     }
   };
 
+  // În funcția findFoodItem, asigură-te că incluzi câmpurile pentru discount
   const findFoodItem = (itemId, cartItem) => {
     let baseFoodId = "";
 
@@ -244,6 +241,79 @@ const Cart = () => {
     }
 
     return foodItem || null;
+  };
+
+  // ✅ FUNCȚIE: Calculează prețul cu discount pentru un item
+  const getItemPriceWithDiscount = (foodItem, cartItem) => {
+    if (!foodItem) return {
+      unitPrice: 0,
+      totalPrice: 0,
+      hasDiscount: false,
+      discountPercentage: 0,
+      originalPrice: 0
+    };
+    
+    const rawPrice = parseFloat(foodItem.price) || 0;
+    const discountPercentage = parseFloat(foodItem.discountPercentage) || 0;
+    
+    // Calculează prețul cu discount
+    const discountedPrice = discountPercentage > 0 
+      ? rawPrice * (1 - discountPercentage / 100)
+      : rawPrice;
+      
+    // Adaugă prețul extraselor
+    const extrasPrice = cartItem?.itemData?.extrasPrice || 0;
+    
+    return {
+      unitPrice: discountedPrice + extrasPrice,
+      totalPrice: (discountedPrice + extrasPrice) * (cartItem?.quantity || 1),
+      hasDiscount: discountPercentage > 0,
+      discountPercentage,
+      originalPrice: rawPrice + extrasPrice
+    };
+  };
+
+  // ✅ FUNCȚIE NOUĂ: Calculează subtotal-ul ORIGINAL (fără discount)
+  const getOriginalSubtotal = () => {
+    let originalSubtotal = 0;
+    
+    Object.keys(cartItems).forEach((itemId) => {
+      const cartItem = cartItems[itemId];
+      if (cartItem && cartItem.quantity > 0) {
+        const foodItem = findFoodItem(itemId, cartItem);
+        if (foodItem) {
+          const priceInfo = getItemPriceWithDiscount(foodItem, cartItem);
+          // Folosim prețul original pentru subtotal
+          originalSubtotal += priceInfo.originalPrice * cartItem.quantity;
+        }
+      }
+    });
+    
+    return originalSubtotal;
+  };
+
+  // ✅ FUNCȚIE NOUĂ: Calculează discount-ul total pentru toate produsele din coș
+  const getTotalDiscountAmount = () => {
+    let totalDiscount = 0;
+    
+    Object.keys(cartItems).forEach((itemId) => {
+      const cartItem = cartItems[itemId];
+      if (cartItem && cartItem.quantity > 0) {
+        const foodItem = findFoodItem(itemId, cartItem);
+        if (foodItem) {
+          const priceInfo = getItemPriceWithDiscount(foodItem, cartItem);
+          if (priceInfo.hasDiscount) {
+            // Calculează discount-ul pentru acest item
+            const originalTotal = priceInfo.originalPrice * cartItem.quantity;
+            const discountedTotal = priceInfo.totalPrice;
+            const itemDiscount = originalTotal - discountedTotal;
+            totalDiscount += itemDiscount;
+          }
+        }
+      }
+    });
+    
+    return totalDiscount;
   };
 
   const getItemInstructions = (itemId) => {
@@ -375,7 +445,7 @@ const Cart = () => {
       }
     });
 
-    const totalAmount = getTotalCartAmount() - discount;
+    const totalAmount = getTotalCartAmount(); // Folosește getTotalCartAmount care deja include discount-urile
 
     const orderData = {
       userId: token,
@@ -725,6 +795,8 @@ const Cart = () => {
                     );
                   }
 
+                  const priceInfo = getItemPriceWithDiscount(foodItem, cartItem);
+
                   return (
                     <React.Fragment key={itemId}>
                       <motion.div
@@ -817,14 +889,26 @@ const Cart = () => {
                                 </div>
                               )}
 
-                            <p className={`item-price ${billRequested ? 'disabled-text' : ''}`}>
-                              {(
-                                (foodItem.price +
-                                  (cartItem.itemData?.extrasPrice || 0)) *
-                                cartItem.quantity
-                              ).toFixed(2)}{" "}
-                              €
-                            </p>
+                            {/* SECȚIUNEA DE PREȚ CU DISCOUNT */}
+                            <div className="item-price-section">
+                              {priceInfo.hasDiscount ? (
+                                <div className="discount-price-wrapper-cart">
+                                  <span className="original-price-line">
+                                    {(priceInfo.originalPrice * cartItem.quantity).toFixed(2)} €
+                                  </span>
+                                  <span className="discounted-price-cart">
+                                    {priceInfo.totalPrice.toFixed(2)} €
+                                  </span>
+                                  <div className="discount-badge-cart">
+                                    -{priceInfo.discountPercentage}%
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="regular-price-cart">
+                                  {priceInfo.totalPrice.toFixed(2)} €
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <div className={`quantity-controls ${billRequested ? 'disabled-controls' : ''}`}>
                             <button
@@ -990,19 +1074,33 @@ const Cart = () => {
           {/* Order Summary */}
           <div className="order-summary-section">
             <h2 className="section-title">{t("order_summary")}</h2>
+
             <div className="summary-details">
               <div className="summary-row">
                 <span>{t("subtotal")}</span>
-                <span>{getTotalCartAmount().toFixed(2)} €</span>
+                {/* ✅ Folosim subtotal-ul ORIGINAL (fără discount) */}
+                <span>{getOriginalSubtotal().toFixed(2)} €</span>
               </div>
+
+              {/* ✅ SECȚIUNEA PENTRU DISCOUNT-UL TOTAL DIN PRODUSELE CU REDUCERE */}
+              {getTotalDiscountAmount() > 0 && (
+                <div className="summary-row discount-row">
+                  <span className="discount-label">
+                    <FaPercent className="discount-icon" />
+                    Discount
+                  </span>
+                  <span className="discount-amount">
+                    -{getTotalDiscountAmount().toFixed(2)} €
+                  </span>
+                </div>
+              )}
+
               <div className="summary-divider"></div>
               <div className="summary-row total">
                 <span>{t("total")}</span>
+                {/* ✅ Totalul este subtotal-ul original minus discount-ul */}
                 <span>
-                  {getTotalCartAmount() === 0
-                    ? 0
-                    : (getTotalCartAmount() - discount).toFixed(2)}{" "}
-                  €
+                  {(getOriginalSubtotal() - getTotalDiscountAmount()).toFixed(2)} €
                 </span>
               </div>
             </div>
@@ -1024,7 +1122,8 @@ const Cart = () => {
                 <div className="item-count">{getTotalItemCount()}</div>
                 <div className="checkout-text"> {t("place_order")}</div>
                 <div className="checkout-total">
-                  {(getTotalCartAmount() - discount).toFixed(2)} €
+                  {/* ✅ Folosim getTotalCartAmount() care deja include discount-urile */}
+                  {getTotalCartAmount().toFixed(2)} €
                 </div>
               </>
             ) : (
