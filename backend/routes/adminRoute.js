@@ -16,10 +16,10 @@ adminRouter.get('/qrcodes', getQrCodes);
 adminRouter.post('/remove-qrcode', removeQrCode);
 adminRouter.post('/update', updateAccount);
 
-adminRouter.get('/promo-codes', authMiddleware, promoCodeController.getAllPromoCodes);
-adminRouter.post('/promo-codes', authMiddleware, promoCodeController.createPromoCode);
-adminRouter.put('/promo-codes/:id', authMiddleware, promoCodeController.updatePromoCode);
-adminRouter.delete('/promo-codes/:id', authMiddleware, promoCodeController.deletePromoCode);
-adminRouter.patch('/promo-codes/:id/toggle', authMiddleware, promoCodeController.togglePromoCode);
+adminRouter.get('/promo-codes', promoCodeController.getAllPromoCodes); // ← Fără authMiddleware
+adminRouter.post('/promo-codes', promoCodeController.createPromoCode); // ← Fără authMiddleware  
+adminRouter.put('/promo-codes/:id', promoCodeController.updatePromoCode); // ← Fără authMiddleware
+adminRouter.delete('/promo-codes/:id', promoCodeController.deletePromoCode); // ← Fără authMiddleware
+adminRouter.patch('/promo-codes/:id/toggle', promoCodeController.togglePromoCode); // ← Fără authMiddleware
 
 export default adminRouter;

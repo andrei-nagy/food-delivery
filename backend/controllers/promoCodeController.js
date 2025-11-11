@@ -1,17 +1,15 @@
 import PromoCode from "../models/promoCodeModel.js";
 
 const promoCodeController = {
-  // ✅ Obține toate promo codes (admin only)
+  // ✅ Obține toate promo codes (public - ca /admin/qrcodes)
   getAllPromoCodes: async (req, res) => {
-    console.log("🔍 [PROMO CONTROLLER] GET /admin/promo-codes - START");
-    console.log("👤 User ID:", req.body.userId);
+    console.log("🎯 [PROMO CONTROLLER] GET /admin/promo-codes - START");
     
     try {
       console.log("🔄 [PROMO CONTROLLER] Before database query");
       
       const promoCodes = await PromoCode.find()
-        .sort({ createdAt: -1 })
-        .select('-createdBy');
+        .sort({ createdAt: -1 });
 
       console.log("✅ [PROMO CONTROLLER] Found:", promoCodes.length, "codes");
       
@@ -29,8 +27,10 @@ const promoCodeController = {
     }
   },
 
-  // ✅ Creează promo code nou (admin only)
+  // ✅ Creează promo code nou (public - ca /admin/create-qrcode)
   createPromoCode: async (req, res) => {
+    console.log("🎯 [PROMO CONTROLLER] POST /admin/promo-codes - START");
+    
     try {
       const {
         code,
@@ -69,12 +69,14 @@ const promoCodeController = {
         endDate,
         usageLimit: usageLimit || null,
         applicableCategories: applicableCategories || [],
-        excludedProducts: excludedProducts || [],
-        createdBy: req.body.userId
+        excludedProducts: excludedProducts || []
+        // FĂRĂ createdBy - exact ca în createQRCode
       });
 
       await promoCode.save();
 
+      console.log("✅ [PROMO CONTROLLER] Promo code created:", promoCode.code);
+      
       res.json({
         success: true,
         message: "Promo code created successfully",
@@ -82,7 +84,7 @@ const promoCodeController = {
       });
 
     } catch (error) {
-      console.error("Create promo code error:", error);
+      console.error("❌ [PROMO CONTROLLER] Create error:", error);
       res.json({
         success: false,
         message: "Error creating promo code"
@@ -90,8 +92,10 @@ const promoCodeController = {
     }
   },
 
-  // ✅ Actualizează promo code (admin only)
+  // ✅ Actualizează promo code (public - ca /admin/update)
   updatePromoCode: async (req, res) => {
+    console.log("🎯 [PROMO CONTROLLER] PUT /admin/promo-codes/:id - START");
+    
     try {
       const { id } = req.params;
       
@@ -108,6 +112,8 @@ const promoCodeController = {
         });
       }
 
+      console.log("✅ [PROMO CONTROLLER] Promo code updated:", promoCode.code);
+      
       res.json({
         success: true,
         message: "Promo code updated successfully",
@@ -115,7 +121,7 @@ const promoCodeController = {
       });
 
     } catch (error) {
-      console.error("Update promo code error:", error);
+      console.error("❌ [PROMO CONTROLLER] Update error:", error);
       res.json({
         success: false,
         message: "Error updating promo code"
@@ -123,8 +129,10 @@ const promoCodeController = {
     }
   },
 
-  // ✅ Șterge promo code (admin only)
+  // ✅ Șterge promo code (public - ca /admin/remove-qrcode)
   deletePromoCode: async (req, res) => {
+    console.log("🎯 [PROMO CONTROLLER] DELETE /admin/promo-codes/:id - START");
+    
     try {
       const { id } = req.params;
       
@@ -137,13 +145,15 @@ const promoCodeController = {
         });
       }
 
+      console.log("✅ [PROMO CONTROLLER] Promo code deleted:", promoCode.code);
+      
       res.json({
         success: true,
         message: "Promo code deleted successfully"
       });
 
     } catch (error) {
-      console.error("Delete promo code error:", error);
+      console.error("❌ [PROMO CONTROLLER] Delete error:", error);
       res.json({
         success: false,
         message: "Error deleting promo code"
@@ -151,8 +161,10 @@ const promoCodeController = {
     }
   },
 
-  // ✅ Activează/Dezactivează promo code (admin only)
+  // ✅ Activează/Dezactivează promo code (public)
   togglePromoCode: async (req, res) => {
+    console.log("🎯 [PROMO CONTROLLER] PATCH /admin/promo-codes/:id/toggle - START");
+    
     try {
       const { id } = req.params;
       
@@ -168,6 +180,8 @@ const promoCodeController = {
       promoCode.isActive = !promoCode.isActive;
       await promoCode.save();
 
+      console.log("✅ [PROMO CONTROLLER] Promo code toggled:", promoCode.code, "to", promoCode.isActive);
+      
       res.json({
         success: true,
         message: `Promo code ${promoCode.isActive ? 'activated' : 'deactivated'} successfully`,
@@ -175,7 +189,7 @@ const promoCodeController = {
       });
 
     } catch (error) {
-      console.error("Toggle promo code error:", error);
+      console.error("❌ [PROMO CONTROLLER] Toggle error:", error);
       res.json({
         success: false,
         message: "Error toggling promo code"
@@ -183,8 +197,10 @@ const promoCodeController = {
     }
   },
 
-  // ✅ Verificare promo code (public - păstrează în controller separat)
+  // ✅ Verificare promo code (public - pentru frontend customer)
   validatePromoCode: async (req, res) => {
+    console.log("🎯 [PROMO CONTROLLER] POST /admin/promo-codes/validate - START");
+    
     try {
       const { code, orderAmount = 0 } = req.body;
       
@@ -220,6 +236,8 @@ const promoCodeController = {
       const discountAmount = promoCode.calculateDiscount(orderAmount);
       const finalAmount = orderAmount - discountAmount;
 
+      console.log("✅ [PROMO CONTROLLER] Promo code validated:", code);
+      
       res.json({
         success: true,
         data: {
@@ -235,7 +253,7 @@ const promoCodeController = {
       });
 
     } catch (error) {
-      console.error("Promo code validation error:", error);
+      console.error("❌ [PROMO CONTROLLER] Validation error:", error);
       res.json({
         success: false,
         message: "Error validating promo code"
@@ -245,6 +263,8 @@ const promoCodeController = {
 
   // ✅ Incrementează contorul de utilizări (public)
   incrementUsage: async (req, res) => {
+    console.log("🎯 [PROMO CONTROLLER] PATCH /admin/promo-codes/:id/increment-usage - START");
+    
     try {
       const { id } = req.params;
       
@@ -261,6 +281,8 @@ const promoCodeController = {
         });
       }
 
+      console.log("✅ [PROMO CONTROLLER] Usage incremented for:", promoCode.code);
+      
       res.json({
         success: true,
         message: "Usage count incremented",
@@ -268,7 +290,7 @@ const promoCodeController = {
       });
 
     } catch (error) {
-      console.error("Increment usage error:", error);
+      console.error("❌ [PROMO CONTROLLER] Increment usage error:", error);
       res.json({
         success: false,
         message: "Error incrementing usage count"

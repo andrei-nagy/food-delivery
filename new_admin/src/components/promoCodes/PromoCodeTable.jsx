@@ -36,68 +36,43 @@ const PromoCodeTable = () => {
     const { url } = useUrl();
     const token = localStorage.getItem("authToken");
 
-    const fetchPromoCodes = async () => {
-        try {
-            console.log("🚀 ===== START FETCH PROMO CODES =====");
-            console.log("🔑 Token exists:", !!token);
-            console.log("🔑 Token length:", token?.length);
-            console.log("🌐 URL:", `${url}/admin/promo-codes`);
-            console.log("📋 Headers:", { token: token });
-            
-            const response = await axios.get(`${url}/admin/promo-codes`, {
-                headers: { 
-                    token: token 
-                },
-                timeout: 10000
-            });
-            
-            console.log("✅ Response received:", {
-                status: response.status,
-                statusText: response.statusText,
-                data: response.data
-            });
-            
-            if (response.data.success) {
-                console.log("🎯 Success true, data:", response.data.data);
-                if (Array.isArray(response.data.data)) {
-                    setPromoCodes(response.data.data);
-                    setFilteredPromoCodes(response.data.data);
-                    console.log("📊 Promo codes loaded:", response.data.data.length);
-                } else {
-                    console.warn("⚠️ Data is not an array:", response.data.data);
-                    setFilteredPromoCodes([]);
-                }
-            } else {
-                console.error("❌ Success false:", response.data);
-                console.error("❌ Error message:", response.data.message);
-                setFilteredPromoCodes([]);
-                toast.error(response.data.message || "Failed to load promo codes");
-            }
-        } catch (error) {
-            console.error("💥 CATCH ERROR - Fetch promo codes failed:", {
-                name: error.name,
-                message: error.message,
-                code: error.code,
-                response: error.response?.data,
-                status: error.response?.status,
-                config: {
-                    url: error.config?.url,
-                    method: error.config?.method,
-                    headers: error.config?.headers
-                }
-            });
-            
-            if (error.response) {
-                toast.error(`Server error: ${error.response.status} - ${error.response.data?.message || 'Unknown error'}`);
-            } else if (error.request) {
-                toast.error("No response from server. Check your connection.");
-            } else {
-                toast.error("Error: " + error.message);
-            }
-        } finally {
-            console.log("🏁 ===== END FETCH PROMO CODES =====");
-        }
-    };
+  const fetchPromoCodes = async () => {
+  try {
+    console.log("🚀 ===== START FETCH PROMO CODES =====");
+    console.log("🌐 URL:", `${url}/admin/promo-codes`);
+    
+    // FĂRĂ HEADERS CU TOKEN
+    const response = await axios.get(`${url}/admin/promo-codes`);
+    
+    console.log("✅ Response received:", {
+      status: response.status,
+      statusText: response.statusText,
+      data: response.data
+    });
+    
+    if (response.data.success && Array.isArray(response.data.data)) {
+      console.log("🎯 Success true, data:", response.data.data.length, "items");
+      setPromoCodes(response.data.data);
+      setFilteredPromoCodes(response.data.data);
+    } else {
+      console.error("❌ Success false:", response.data);
+      setFilteredPromoCodes([]);
+      toast.error(response.data.message || "Failed to load promo codes");
+    }
+  } catch (error) {
+    console.error("💥 CATCH ERROR - Fetch promo codes failed:", error);
+    
+    if (error.response) {
+      toast.error(`Server error: ${error.response.status}`);
+    } else if (error.request) {
+      toast.error("No response from server");
+    } else {
+      toast.error("Error: " + error.message);
+    }
+  } finally {
+    console.log("🏁 ===== END FETCH PROMO CODES =====");
+  }
+};
 
     useEffect(() => {
         console.log("🔄 PromoCodeTable mounted");
