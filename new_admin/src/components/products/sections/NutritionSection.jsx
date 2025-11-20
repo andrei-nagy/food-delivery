@@ -1,46 +1,50 @@
 import { useEffect } from "react";
 
 const NutritionSection = ({ nutrition, setNutrition }) => {
-    // Creează un obiect safe cu toate proprietățile necesare
+    // Asigură-te că avem întotdeauna un obiect complet
     const safeNutrition = {
-        calories: nutrition?.calories ?? 0,
-        protein: nutrition?.protein ?? 0,
-        carbs: nutrition?.carbs ?? 0,
-        fat: nutrition?.fat ?? 0,
-        fiber: nutrition?.fiber ?? 0,
-        sugar: nutrition?.sugar ?? 0,
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+        fiber: 0,
+        sugar: 0,
+        ...nutrition
     };
 
     const handleNutritionChange = (field, value) => {
-        // Asigură-te că valoarea este convertită corect la number
-        const numericValue = value === '' ? 0 : parseFloat(value) || 0;
+        // Permite empty string temporar, convertește la number doar când e necesar
+        let finalValue;
         
-        // Creează un nou obiect cu TOATE proprietățile
+        if (value === '') {
+            finalValue = ''; // Păstrează empty temporar pentru UX
+        } else {
+            const numericValue = parseFloat(value);
+            finalValue = isNaN(numericValue) ? 0 : numericValue;
+        }
+        
         const updatedNutrition = {
-            calories: safeNutrition.calories,
-            protein: safeNutrition.protein,
-            carbs: safeNutrition.carbs,
-            fat: safeNutrition.fat,
-            fiber: safeNutrition.fiber,
-            sugar: safeNutrition.sugar,
-            [field]: numericValue
+            ...safeNutrition,
+            [field]: finalValue
         };
         
-        console.log("🔄 Nutrition change:", { 
+        console.log("🔄 NutritionSection - Change:", { 
             field, 
-            value, 
-            numericValue, 
-            currentNutrition: nutrition,
-            safeNutrition,
+            inputValue: value,
+            finalValue,
             updatedNutrition 
         });
         
         setNutrition(updatedNutrition);
     };
 
+    // Funcție helper pentru a afișa empty string în loc de 0
+    const displayValue = (value) => {
+        return value === 0 ? '' : value;
+    };
+
     useEffect(() => {
-        console.log("🔬 NutritionSection - Current nutrition prop:", nutrition);
-        console.log("🔬 NutritionSection - Safe nutrition:", safeNutrition);
+        console.log("🔬 NutritionSection mounted/updated:", safeNutrition);
     }, [nutrition]);
 
     return (
@@ -52,7 +56,7 @@ const NutritionSection = ({ nutrition, setNutrition }) => {
                     <label className="block text-sm font-medium text-gray-300">Calories</label>
                     <input
                         type="number"
-                        value={safeNutrition.calories}
+                        value={displayValue(safeNutrition.calories)}
                         onChange={(e) => handleNutritionChange('calories', e.target.value)}
                         placeholder="0"
                         min="0"
@@ -65,7 +69,7 @@ const NutritionSection = ({ nutrition, setNutrition }) => {
                     <input
                         type="number"
                         step="0.1"
-                        value={safeNutrition.protein}
+                        value={displayValue(safeNutrition.protein)}
                         onChange={(e) => handleNutritionChange('protein', e.target.value)}
                         placeholder="0"
                         min="0"
@@ -78,7 +82,7 @@ const NutritionSection = ({ nutrition, setNutrition }) => {
                     <input
                         type="number"
                         step="0.1"
-                        value={safeNutrition.carbs}
+                        value={displayValue(safeNutrition.carbs)}
                         onChange={(e) => handleNutritionChange('carbs', e.target.value)}
                         placeholder="0"
                         min="0"
@@ -91,7 +95,7 @@ const NutritionSection = ({ nutrition, setNutrition }) => {
                     <input
                         type="number"
                         step="0.1"
-                        value={safeNutrition.fat}
+                        value={displayValue(safeNutrition.fat)}
                         onChange={(e) => handleNutritionChange('fat', e.target.value)}
                         placeholder="0"
                         min="0"
@@ -104,7 +108,7 @@ const NutritionSection = ({ nutrition, setNutrition }) => {
                     <input
                         type="number"
                         step="0.1"
-                        value={safeNutrition.fiber}
+                        value={displayValue(safeNutrition.fiber)}
                         onChange={(e) => handleNutritionChange('fiber', e.target.value)}
                         placeholder="0"
                         min="0"
@@ -117,7 +121,7 @@ const NutritionSection = ({ nutrition, setNutrition }) => {
                     <input
                         type="number"
                         step="0.1"
-                        value={safeNutrition.sugar}
+                        value={displayValue(safeNutrition.sugar)}
                         onChange={(e) => handleNutritionChange('sugar', e.target.value)}
                         placeholder="0"
                         min="0"

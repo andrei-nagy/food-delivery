@@ -234,7 +234,7 @@ const updateFood = async (req, res) => {
       id, 
       name, 
       description, 
-      ingredients, 
+      ingredients,  // Acesta este acum JSON string array
       category, 
       price, 
       discountPercentage, 
@@ -248,46 +248,37 @@ const updateFood = async (req, res) => {
       allergens
     } = req.body;
     
-    console.log("📥 UPDATE FOOD - Raw data types:", {
-      nutrition: typeof nutrition,
-      preparation: typeof preparation, 
-      dietaryInfo: typeof dietaryInfo,
-      allergens: typeof allergens
+    console.log("📥 UPDATE FOOD - Raw data received:", {
+      nutrition: nutrition,
+      preparation: preparation, 
+      dietaryInfo: dietaryInfo,
+      allergens: allergens,
+      ingredients: ingredients  // Ar trebui să fie JSON string array
     });
-    console.log("📥 UPDATE FOOD - Raw nutrition:", nutrition);
-
-
-    console.log("🔍 UPDATE FOOD - Raw nutrition value:", nutrition);
-console.log("🔍 UPDATE FOOD - Raw nutrition type:", typeof nutrition);
-console.log("🔍 UPDATE FOOD - Is nutrition an array?", Array.isArray(nutrition));
-
 
     // Validare câmpuri obligatorii
     if (!id || !name || !description || !price || !category) {
       return res.status(400).json({ 
         success: false, 
-        message: "Missing required fields: id, name, description, price, or category" 
+        message: "Missing required fields" 
       });
     }
 
-    // Validare preț
-    const priceValue = parseFloat(price);
-    if (isNaN(priceValue) || priceValue <= 0) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Invalid price value" 
-      });
-    }
+    // Helper function pentru parsare safe
+    const safeParseJSON = (str, defaultValue) => {
+      try {
+        if (typeof str === 'string') {
+          return JSON.parse(str);
+        }
+        return str || defaultValue;
+      } catch (error) {
+        console.log("⚠️ JSON parse error, using defaultValue:", error.message);
+        return defaultValue;
+      }
+    };
 
-    // Calcul preț redus
-    const discountValue = parseFloat(discountPercentage) || 0;
-    let discountedPrice = priceValue;
-    
-    if (discountValue > 0 && discountValue <= 100) {
-      discountedPrice = priceValue * (1 - discountValue / 100);
-    }
-
-    // Parse data cu safe fallback - CORECTAT CU VALORI DEFAULT EXPLICITE
+    // Parsează toate câmpurile JSON
+    const parsedIngredients = safeParseJSON(ingredients, []);
     const parsedExtras = safeParseJSON(extras, []);
     const parsedNutrition = safeParseJSON(nutrition, {
       calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0
@@ -301,30 +292,43 @@ console.log("🔍 UPDATE FOOD - Is nutrition an array?", Array.isArray(nutrition
     });
     const parsedAllergens = safeParseJSON(allergens, []);
 
-    console.log("✅ UPDATE FOOD - Parsed nutrition:", parsedNutrition);
+    console.log("✅ UPDATE FOOD - Parsed data:", {
+      ingredients: parsedIngredients,
+      nutrition: parsedNutrition,
+      preparation: parsedPreparation
+    });
 
-    // Procesare boolean values
-    const isBestSellerBool = isBestSeller === 'true' || isBestSeller === true || isBestSeller === '1';
-    const isNewAddedBool = isNewAdded === 'true' || isNewAdded === true || isNewAdded === '1';
-    const isVeganBool = isVegan === 'true' || isVegan === true || isVegan === '1';
+    // Validare și conversie valori numerice
+    const priceValue = parseFloat(price);
+    const discountValue = parseFloat(discountPercentage) || 0;
+    
+    // Calcul preț redus
+    let discountedPrice = priceValue;
+    if (discountValue > 0 && discountValue <= 100) {
+      discountedPrice = priceValue * (1 - discountValue / 100);
+    }
 
-    // Validare extras
+    // Validează nutrition cu valori numerice
+    const validatedNutrition = {
+      calories: parseInt(parsedNutrition?.calories) || 0,
+      protein: parseInt(parsedNutrition?.protein) || 0,
+      carbs: parseInt(parsedNutrition?.carbs) || 0,
+      fat: parseInt(parsedNutrition?.fat) || 0,
+      fiber: parseInt(parsedNutrition?.fiber) || 0,
+      sugar: parseInt(parsedNutrition?.sugar) || 0
+    };
+
+    // Validează ingredients să fie array
+    const validatedIngredients = Array.isArray(parsedIngredients) ? 
+      parsedIngredients.filter(ingredient => ingredient && ingredient.trim() !== '') : [];
+
+    // Validează extras
     const validatedExtras = Array.isArray(parsedExtras) ? parsedExtras.map(extra => ({
       name: extra?.name || '',
       price: parseFloat(extra?.price) || 0
     })).filter(extra => extra.name && extra.price > 0) : [];
 
-    // Validare informații nutriționale - CORECTAT CU VERIFICĂRI DE SAFETY
-    const validatedNutrition = {
-      calories: parseFloat(parsedNutrition?.calories) || 0,
-      protein: parseFloat(parsedNutrition?.protein) || 0,
-      carbs: parseFloat(parsedNutrition?.carbs) || 0,
-      fat: parseFloat(parsedNutrition?.fat) || 0,
-      fiber: parseFloat(parsedNutrition?.fiber) || 0,
-      sugar: parseFloat(parsedNutrition?.sugar) || 0
-    };
-
-    // Validare informații despre preparare
+    // Validează preparation
     const validatedPreparation = {
       cookingTime: parsedPreparation?.cookingTime || "",
       spiceLevel: parsedPreparation?.spiceLevel || "",
@@ -332,34 +336,39 @@ console.log("🔍 UPDATE FOOD - Is nutrition an array?", Array.isArray(nutrition
       difficulty: parsedPreparation?.difficulty || ""
     };
 
-    // Validare informații dietetice
+    // Validează dietaryInfo (boolean values)
     const validatedDietaryInfo = {
-      isGlutenFree: parsedDietaryInfo?.isGlutenFree === true || parsedDietaryInfo?.isGlutenFree === 'true' || parsedDietaryInfo?.isGlutenFree === '1',
-      isDairyFree: parsedDietaryInfo?.isDairyFree === true || parsedDietaryInfo?.isDairyFree === 'true' || parsedDietaryInfo?.isDairyFree === '1',
-      isVegetarian: parsedDietaryInfo?.isVegetarian === true || parsedDietaryInfo?.isVegetarian === 'true' || parsedDietaryInfo?.isVegetarian === '1',
-      isSpicy: parsedDietaryInfo?.isSpicy === true || parsedDietaryInfo?.isSpicy === 'true' || parsedDietaryInfo?.isSpicy === '1',
-      containsNuts: parsedDietaryInfo?.containsNuts === true || parsedDietaryInfo?.containsNuts === 'true' || parsedDietaryInfo?.containsNuts === '1'
+      isGlutenFree: !!parsedDietaryInfo?.isGlutenFree,
+      isDairyFree: !!parsedDietaryInfo?.isDairyFree,
+      isVegetarian: !!parsedDietaryInfo?.isVegetarian,
+      isSpicy: !!parsedDietaryInfo?.isSpicy,
+      containsNuts: !!parsedDietaryInfo?.containsNuts
     };
 
-    // Validare alergeni
+    // Validează alergeni
     const validatedAllergens = Array.isArray(parsedAllergens) ? 
       parsedAllergens.filter(allergen => 
         allergen && typeof allergen === 'string' && allergen.trim() !== ''
       ).map(allergen => allergen.trim()) : [];
 
-    console.log("✅ UPDATE FOOD - Final validated nutrition:", validatedNutrition);
+    console.log("✅ UPDATE FOOD - Final validated data:", {
+      nutrition: validatedNutrition,
+      ingredients: validatedIngredients,
+      preparation: validatedPreparation
+    });
 
+    // Construiește obiectul de update
     const updateData = {
       name: name.trim(),
       description: description.trim(),
-      ingredients: ingredients ? ingredients.trim() : "",
+      ingredients: validatedIngredients, // Array, nu string
       category: category.trim(),
       price: priceValue,
       discountPercentage: discountValue,
       discountedPrice: parseFloat(discountedPrice.toFixed(2)),
-      isBestSeller: isBestSellerBool,
-      isNewAdded: isNewAddedBool,
-      isVegan: isVeganBool,
+      isBestSeller: isBestSeller === 'true' || isBestSeller === true,
+      isNewAdded: isNewAdded === 'true' || isNewAdded === true,
+      isVegan: isVegan === 'true' || isVegan === true,
       extras: validatedExtras,
       nutrition: validatedNutrition,
       preparation: validatedPreparation,
@@ -367,39 +376,25 @@ console.log("🔍 UPDATE FOOD - Is nutrition an array?", Array.isArray(nutrition
       allergens: validatedAllergens,
       updatedAt: new Date()
     };
-    
-    console.log("💾 UPDATE FOOD - Final update data nutrition:", updateData.nutrition);
 
-    // Procesare imagine nouă dacă este furnizată
+    // Procesează imaginea nouă dacă există
     if (req.file) {
       console.log("🖼️ New image provided:", req.file.filename);
+      
+      // Șterge vechea imagine
       const oldFood = await foodModel.findById(id);
       if (oldFood && oldFood.image) {
         const oldImagePath = `uploads/${oldFood.image}`;
         if (fs.existsSync(oldImagePath)) {
-          fs.unlink(oldImagePath, (err) => {
-            if (err) console.error("Error deleting old image:", err);
-            else console.log("🗑️ Old image deleted successfully");
-          });
+          fs.unlinkSync(oldImagePath);
+          console.log("🗑️ Old image deleted successfully");
         }
       }
       
       updateData.image = req.file.filename;
-    } else {
-      console.log("🖼️ No new image provided, keeping existing one");
     }
 
-    // Verifică dacă produsul există
-    const existingProduct = await foodModel.findById(id);
-    if (!existingProduct) {
-      return res.status(404).json({ 
-        success: false, 
-        message: "Product not found" 
-      });
-    }
-
-    console.log("🔄 Updating product in database...");
-
+    // Actualizează produsul
     const product = await foodModel.findByIdAndUpdate(
       id, 
       updateData, 
@@ -412,18 +407,23 @@ console.log("🔍 UPDATE FOOD - Is nutrition an array?", Array.isArray(nutrition
     if (!product) {
       return res.status(404).json({ 
         success: false, 
-        message: "Product not found after update" 
+        message: "Product not found" 
       });
     }
 
     console.log("✅ Product updated successfully:", product._id);
-    console.log("✅ Updated product nutrition:", product.nutrition);
+    console.log("✅ Final product data:", {
+      nutrition: product.nutrition,
+      ingredients: product.ingredients,
+      preparation: product.preparation
+    });
 
     res.json({
       success: true,
       message: "Product updated successfully!",
       data: product
     });
+    
   } catch (error) {
     console.error("❌ Error updating product:", error);
     res.status(500).json({ 
@@ -433,7 +433,6 @@ console.log("🔍 UPDATE FOOD - Is nutrition an array?", Array.isArray(nutrition
     });
   }
 };
-
 const listFood = async (req, res) => {
   try {
     const foods = await foodModel.find({}).sort({ createdAt: -1 });

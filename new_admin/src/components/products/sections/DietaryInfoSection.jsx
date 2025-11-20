@@ -1,9 +1,6 @@
 const DietaryInfoSection = ({ dietaryInfo, setDietaryInfo }) => {
     const handleDietaryChange = (field, value) => {
-        setDietaryInfo(prev => ({
-            ...prev,
-            [field]: value
-        }));
+        setDietaryInfo(field, value); 
     };
 
     return (

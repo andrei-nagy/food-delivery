@@ -994,3 +994,610 @@
 .food-modal-image {
     will-change: transform;
 }
+
+/* === EXTRAS MODERN DESIGN === */
+
+.food-modal-options-modern {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.food-modal-option-modern {
+    position: relative;
+    background: #fff;
+    border: 2px solid #f0f0f0;
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.food-modal-option-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #ff6b35, transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.food-modal-option-modern:hover {
+    border-color: #ff6b35;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(255, 107, 53, 0.15);
+}
+
+.food-modal-option-modern:hover::before {
+    opacity: 1;
+}
+
+.food-modal-option-modern.selected {
+    border-color: #ff6b35;
+    /* background: linear-gradient(135deg, #fff5f0, #fff); */
+    /* box-shadow: 0 4px 25px rgba(255, 107, 53, 0.2); */
+    transform: translateY(-2px);
+}
+
+.food-modal-option-modern.selected::before {
+    opacity: 1;
+}
+
+.option-modern-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    z-index: 2;
+}
+
+.option-modern-checkbox {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.option-modern-checkbox input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.checkmark::after {
+    content: '✓';
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.3s ease;
+}
+
+.food-modal-option-modern.selected .checkmark {
+    background: #ff6b35;
+    border-color: #ff6b35;
+    transform: scale(1.1);
+}
+
+.food-modal-option-modern.selected .checkmark::after {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.option-modern-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+    gap: 10px;
+}
+
+.option-modern-name {
+    font-weight: 500;
+    color: #333;
+    font-size: 0.95rem;
+    transition: color 0.3s ease;
+}
+
+.food-modal-option-modern.selected .option-modern-name {
+    color: #ff6b35;
+    font-weight: 600;
+}
+
+.option-modern-price {
+    background: linear-gradient(135deg, #ff6b35, #e86514);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+    transition: all 0.3s ease;
+}
+
+.food-modal-option-modern:hover .option-modern-price {
+    transform: scale(1.05);
+}
+
+.food-modal-option-modern.selected .option-modern-price {
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+    transform: scale(1.05);
+}
+
+.option-modern-glow {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.1), transparent);
+    transition: left 0.6s ease;
+}
+
+.food-modal-option-modern:hover .option-modern-glow {
+    left: 100%;
+}
+
+/* Animation for selection */
+@keyframes optionSelect {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.food-modal-option-modern.selected {
+    animation: optionSelect 0.4s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .food-modal-option-modern {
+        padding: 14px;
+    }
+    
+    .option-modern-content {
+        gap: 10px;
+    }
+    
+    .option-modern-name {
+        font-size: 0.9rem;
+    }
+    
+    .option-modern-price {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+}
+
+ 
+
+/* Loading state for options */
+.food-modal-option-modern.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.food-modal-option-modern.loading .option-modern-name,
+.food-modal-option-modern.loading .option-modern-price {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    color: transparent;
+}
+
+.food-modal-option-modern.loading .checkmark {
+    background: #f0f0f0;
+    border-color: #e0e0e0;
+}
+
+/* FoodModal.css - DESIGN IMBUNATATIT CU ANIMATII */
+
+/* === CONTROALE TRADUCERE - DESIGN NOU === */
+.food-modal-translation-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: auto;
+}
+
+.translation-toggle-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 4px;
+    backdrop-filter: blur(10px);
+}
+
+.food-modal-translate-btn {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+    color: #666;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.food-modal-translate-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.6s;
+}
+
+.food-modal-translate-btn:hover::before {
+    left: 100%;
+}
+
+.food-modal-translate-btn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.food-modal-translate-btn.active {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    border-color: #3b82f6;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    transform: translateY(-1px);
+}
+
+.food-modal-translate-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.translate-icon {
+    font-size: 16px;
+    transition: transform 0.3s ease;
+}
+
+.food-modal-translate-btn:hover .translate-icon {
+    transform: rotate(15deg);
+}
+
+.food-modal-translate-btn.active .translate-icon {
+    transform: scale(1.1);
+}
+
+.language-select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border-radius: 8px;
+    padding: 4px 8px;
+    border: 1px solid #e2e8f0;
+    animation: slideInRight 0.3s ease-out;
+}
+
+.language-select-icon {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.food-modal-language-select {
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    outline: none;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.food-modal-language-select:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.food-modal-language-select:focus {
+    background: rgba(59, 130, 246, 0.15);
+}
+
+/* === INDICATOR TRADUCERE - DESIGN NOU === */
+.food-modal-translation-indicator {
+    margin-bottom: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    animation: slideDown 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.food-modal-translation-indicator.translating {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    border: 1px solid #ffd43b;
+}
+
+.food-modal-translation-indicator.completed {
+    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+    border: 1px solid #0dcaf0;
+}
+
+.translation-indicator-content {
+    padding: 12px 16px;
+}
+
+.translation-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.status-icon {
+    font-size: 16px;
+    animation: bounce 2s infinite;
+}
+
+.food-modal-translation-indicator.completed .status-icon {
+    animation: none;
+    color: #0d6efd;
+}
+
+.status-text {
+    font-weight: 600;
+    font-size: 14px;
+    color: #856404;
+}
+
+.food-modal-translation-indicator.completed .status-text {
+    color: #055160;
+}
+
+.translation-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(255, 193, 7, 0.3);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ffc107, #fd7e14);
+    border-radius: 2px;
+    animation: progressFill 2s ease-in-out infinite;
+    width: 60%;
+}
+
+.translation-progress span {
+    font-size: 12px;
+    color: #856404;
+    font-weight: 500;
+}
+
+/* === ANIMAȚII PENTRU CONȚINUT TRADUS === */
+.content-translating {
+    position: relative;
+    overflow: hidden;
+}
+
+.content-translating::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+.content-translated {
+    animation: fadeInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.content-fading {
+    animation: fadeOut 0.3s ease-out;
+}
+
+/* Animații pentru listă de ingrediente */
+.food-modal-ingredients-list.content-translating .ingredient-item {
+    animation: staggerFadeIn 0.5s ease-out forwards;
+    opacity: 0;
+    transform: translateX(-10px);
+}
+
+.food-modal-ingredients-list.content-translated .ingredient-item {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* === ANIMAȚII PERSONALIZATE === */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 100px;
+    }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-3px);
+    }
+    60% {
+        transform: translateY(-2px);
+    }
+}
+
+@keyframes progressFill {
+    0% {
+        transform: translateX(-100%);
+    }
+    50% {
+        transform: translateX(0%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes staggerFadeIn {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Animație progresivă pentru ingrediente */
+.food-modal-ingredients-list.content-translating .ingredient-item:nth-child(1) { animation-delay: 0.1s; }
+.food-modal-ingredients-list.content-translating .ingredient-item:nth-child(2) { animation-delay: 0.2s; }
+.food-modal-ingredients-list.content-translating .ingredient-item:nth-child(3) { animation-delay: 0.3s; }
+.food-modal-ingredients-list.content-translating .ingredient-item:nth-child(4) { animation-delay: 0.4s; }
+.food-modal-ingredients-list.content-translating .ingredient-item:nth-child(5) { animation-delay: 0.5s; }
+
+/* === DESIGN IMBUNATATIT PENTRU BUTON CLOSE === */
+.food-modal-close-btn {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    font-size: 16px;
+    color: #666;
+    backdrop-filter: blur(10px);
+}
+
+.food-modal-close-btn:hover {
+    background: #ef4444;
+    color: white;
+    transform: rotate(90deg) scale(1.1);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* === TRIMITE SPINNER === */
+.translate-spinner {
+    animation: spin 1s linear infinite;
+    font-size: 12px;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 768px) {
+    .translation-toggle-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .language-select-wrapper {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .food-modal-translate-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

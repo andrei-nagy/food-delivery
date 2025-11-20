@@ -5,10 +5,6 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useUrl } from "../context/UrlContext";
 import ImageUploadSection from "./sections/ImageUploadSection";
-import NutritionSection from "./sections/NutritionSection";
-import PreparationSection from "./sections/PreparationSection";
-import DietaryInfoSection from "./sections/DietaryInfoSection";
-import AllergensSection from "./sections/AllergensSection";
 import ExtraOptionsSection from "./sections/ExtraOptionsSection";
 
 const ProductModal = ({ isOpen, onClose, onProductAdded }) => {
@@ -96,6 +92,14 @@ const ProductModal = ({ isOpen, onClose, onProductAdded }) => {
     const handleAddProduct = async (event) => {
         event.preventDefault();
 
+        // DEBUGGING COMPLET
+        console.log("🔍 === DEBUG PRODUCT DATA ===");
+        console.log("Full product state:", JSON.parse(JSON.stringify(updatedProduct)));
+        console.log("Nutrition:", updatedProduct.nutrition);
+        console.log("Preparation:", updatedProduct.preparation);
+        console.log("DietaryInfo:", updatedProduct.dietaryInfo);
+        console.log("Allergens:", updatedProduct.allergens);
+
         const productPrice = parseFloat(updatedProduct.price);
         if (isNaN(productPrice) || productPrice <= 0) {
             toast.error("Please enter a valid product price", { theme: "dark" });
@@ -124,10 +128,19 @@ const ProductModal = ({ isOpen, onClose, onProductAdded }) => {
         formData.append("dietaryInfo", JSON.stringify(updatedProduct.dietaryInfo));
         formData.append("allergens", JSON.stringify(updatedProduct.allergens));
 
+        // DEBUG: Verifică formData
+        console.log("📋 === FORM DATA CONTENTS ===");
+        for (let [key, value] of formData.entries()) {
+            console.log(key + ":", value);
+        }
+
         try {
             const response = await axios.post(`${url}/api/food/add`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
+
+            console.log("✅ === SERVER RESPONSE ===");
+            console.log("Response:", response.data);
 
             if (response.data.success) {
                 setImage(null);
@@ -147,7 +160,9 @@ const ProductModal = ({ isOpen, onClose, onProductAdded }) => {
                 toast.error(response.data.message, { theme: "dark" });
             }
         } catch (error) {
-            console.error("❌ Error adding product:", error);
+            console.error("❌ === ERROR DETAILS ===");
+            console.error("Error:", error);
+            console.error("Error response:", error.response?.data);
             toast.error("Error adding product", { theme: "dark" });
         }
     };
@@ -314,29 +329,314 @@ const ProductModal = ({ isOpen, onClose, onProductAdded }) => {
                         <p className="text-gray-400 text-xs">Separate ingredients with commas (e.g., Tomato sauce, Mozzarella, Basil)</p>
                     </div>
 
-                    {/* Nutrition Information */}
-                    <NutritionSection 
-                        nutrition={updatedProduct.nutrition}
-                        setNutrition={(newNutrition) => setUpdatedProduct(prev => ({ ...prev, nutrition: newNutrition }))}
-                    />
+                    {/* Nutrition Information - DIRECT IN MODAL */}
+                    <div className="space-y-4">
+                        <label className="block text-lg font-semibold text-white">Nutrition Information</label>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-300">Calories</label>
+                                <input
+                                    type="number"
+                                    value={updatedProduct.nutrition.calories || ''}
+                                    onChange={(e) => setUpdatedProduct(prev => ({
+                                        ...prev,
+                                        nutrition: { 
+                                            ...prev.nutrition, 
+                                            calories: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 
+                                        }
+                                    }))}
+                                    placeholder="0"
+                                    min="0"
+                                    className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
 
-                    {/* Preparation Information */}
-                    <PreparationSection 
-                        preparation={updatedProduct.preparation}
-                        setPreparation={(newPreparation) => setUpdatedProduct(prev => ({ ...prev, preparation: newPreparation }))}
-                    />
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-300">Protein (g)</label>
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    value={updatedProduct.nutrition.protein || ''}
+                                    onChange={(e) => setUpdatedProduct(prev => ({
+                                        ...prev,
+                                        nutrition: { 
+                                            ...prev.nutrition, 
+                                            protein: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 
+                                        }
+                                    }))}
+                                    placeholder="0"
+                                    min="0"
+                                    className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
 
-                    {/* Dietary Information */}
-                    <DietaryInfoSection 
-                        dietaryInfo={updatedProduct.dietaryInfo}
-                        setDietaryInfo={(newDietaryInfo) => setUpdatedProduct(prev => ({ ...prev, dietaryInfo: newDietaryInfo }))}
-                    />
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-300">Carbs (g)</label>
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    value={updatedProduct.nutrition.carbs || ''}
+                                    onChange={(e) => setUpdatedProduct(prev => ({
+                                        ...prev,
+                                        nutrition: { 
+                                            ...prev.nutrition, 
+                                            carbs: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 
+                                        }
+                                    }))}
+                                    placeholder="0"
+                                    min="0"
+                                    className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
 
-                    {/* Allergens */}
-                    <AllergensSection 
-                        allergens={updatedProduct.allergens}
-                        setAllergens={(newAllergens) => setUpdatedProduct(prev => ({ ...prev, allergens: newAllergens }))}
-                    />
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-300">Fat (g)</label>
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    value={updatedProduct.nutrition.fat || ''}
+                                    onChange={(e) => setUpdatedProduct(prev => ({
+                                        ...prev,
+                                        nutrition: { 
+                                            ...prev.nutrition, 
+                                            fat: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 
+                                        }
+                                    }))}
+                                    placeholder="0"
+                                    min="0"
+                                    className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-300">Fiber (g)</label>
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    value={updatedProduct.nutrition.fiber || ''}
+                                    onChange={(e) => setUpdatedProduct(prev => ({
+                                        ...prev,
+                                        nutrition: { 
+                                            ...prev.nutrition, 
+                                            fiber: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 
+                                        }
+                                    }))}
+                                    placeholder="0"
+                                    min="0"
+                                    className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-300">Sugar (g)</label>
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    value={updatedProduct.nutrition.sugar || ''}
+                                    onChange={(e) => setUpdatedProduct(prev => ({
+                                        ...prev,
+                                        nutrition: { 
+                                            ...prev.nutrition, 
+                                            sugar: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 
+                                        }
+                                    }))}
+                                    placeholder="0"
+                                    min="0"
+                                    className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Preparation Information - DIRECT IN MODAL */}
+                    <div className="space-y-4">
+                        <label className="block text-lg font-semibold text-white">Preparation Information</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          
+
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-300">Spice Level</label>
+                                <select
+                                    value={updatedProduct.preparation.spiceLevel}
+                                    onChange={(e) => setUpdatedProduct(prev => ({
+                                        ...prev,
+                                        preparation: { ...prev.preparation, spiceLevel: e.target.value }
+                                    }))}
+                                    className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value="">Select spice level</option>
+                                    <option value="Mild">Mild</option>
+                                    <option value="Medium 🌶️">Medium 🌶️</option>
+                                    <option value="Hot 🌶️🌶️">Hot 🌶️🌶️</option>
+                                    <option value="Very Hot 🌶️🌶️🌶️">Very Hot 🌶️🌶️🌶️</option>
+                                    <option value="Extreme 🌶️🌶️🌶️🌶️🌶️">Extreme 🌶️🌶️🌶️🌶️🌶️</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-gray-300">Serving Size</label>
+                                <input
+                                    type="text"
+                                    value={updatedProduct.preparation.servingSize}
+                                    onChange={(e) => setUpdatedProduct(prev => ({
+                                        ...prev,
+                                        preparation: { ...prev.preparation, servingSize: e.target.value }
+                                    }))}
+                                    placeholder="ex: 350g"
+                                    className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Dietary Information - DIRECT IN MODAL */}
+                    <div className="space-y-4">
+                        <label className="block text-lg font-semibold text-white">Dietary Information</label>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <label className="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:bg-gray-700/70 transition-all duration-200 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={updatedProduct.dietaryInfo.isGlutenFree}
+                                    onChange={(e) => setUpdatedProduct(prev => ({
+                                        ...prev,
+                                        dietaryInfo: { ...prev.dietaryInfo, isGlutenFree: e.target.checked }
+                                    }))}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                />
+                                <span className="ml-2 text-sm text-white">Gluten Free</span>
+                            </label>
+
+                            <label className="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:bg-gray-700/70 transition-all duration-200 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={updatedProduct.dietaryInfo.isDairyFree}
+                                    onChange={(e) => setUpdatedProduct(prev => ({
+                                        ...prev,
+                                        dietaryInfo: { ...prev.dietaryInfo, isDairyFree: e.target.checked }
+                                    }))}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                />
+                                <span className="ml-2 text-sm text-white">Dairy Free</span>
+                            </label>
+
+                            <label className="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:bg-gray-700/70 transition-all duration-200 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={updatedProduct.dietaryInfo.isVegetarian}
+                                    onChange={(e) => setUpdatedProduct(prev => ({
+                                        ...prev,
+                                        dietaryInfo: { ...prev.dietaryInfo, isVegetarian: e.target.checked }
+                                    }))}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                />
+                                <span className="ml-2 text-sm text-white">Vegetarian</span>
+                            </label>
+
+                            <label className="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:bg-gray-700/70 transition-all duration-200 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={updatedProduct.dietaryInfo.isSpicy}
+                                    onChange={(e) => setUpdatedProduct(prev => ({
+                                        ...prev,
+                                        dietaryInfo: { ...prev.dietaryInfo, isSpicy: e.target.checked }
+                                    }))}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                />
+                                <span className="ml-2 text-sm text-white">Spicy</span>
+                            </label>
+
+                            <label className="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:bg-gray-700/70 transition-all duration-200 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={updatedProduct.dietaryInfo.containsNuts}
+                                    onChange={(e) => setUpdatedProduct(prev => ({
+                                        ...prev,
+                                        dietaryInfo: { ...prev.dietaryInfo, containsNuts: e.target.checked }
+                                    }))}
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                />
+                                <span className="ml-2 text-sm text-white">Contains Nuts</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    {/* Allergens - DIRECT IN MODAL */}
+                    <div className="space-y-4">
+                        <label className="block text-lg font-semibold text-white">Allergens</label>
+                        
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={updatedProduct.allergens.find(a => typeof a === 'string' && a.startsWith('NEW:'))?.replace('NEW:', '') || ''}
+                                onChange={(e) => {
+                                    const newValue = e.target.value;
+                                    setUpdatedProduct(prev => {
+                                        const otherAllergens = prev.allergens.filter(a => !(typeof a === 'string' && a.startsWith('NEW:')));
+                                        if (newValue.trim()) {
+                                            return { ...prev, allergens: [...otherAllergens, `NEW:${newValue}`] };
+                                        }
+                                        return { ...prev, allergens: otherAllergens };
+                                    });
+                                }}
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        const input = e.target;
+                                        const value = input.value.trim();
+                                        if (value) {
+                                            setUpdatedProduct(prev => ({
+                                                ...prev,
+                                                allergens: [...prev.allergens.filter(a => !(typeof a === 'string' && a.startsWith('NEW:'))), value]
+                                            }));
+                                            input.value = '';
+                                        }
+                                    }
+                                }}
+                                placeholder="Add allergen (e.g., Nuts, Gluten)"
+                                className="flex-1 px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const input = document.querySelector('input[placeholder*="Add allergen"]');
+                                    const value = input.value.trim();
+                                    if (value) {
+                                        setUpdatedProduct(prev => ({
+                                            ...prev,
+                                            allergens: [...prev.allergens.filter(a => !(typeof a === 'string' && a.startsWith('NEW:'))), value]
+                                        }));
+                                        input.value = '';
+                                    }
+                                }}
+                                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-500 transition duration-200"
+                            >
+                                <Plus size={16} />
+                            </button>
+                        </div>
+
+                        {updatedProduct.allergens.filter(a => !(typeof a === 'string' && a.startsWith('NEW:'))).length > 0 && (
+                            <div className="bg-gray-700/30 rounded-lg p-3">
+                                <h4 className="text-sm font-medium text-white mb-2">Added Allergens:</h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {updatedProduct.allergens.filter(a => !(typeof a === 'string' && a.startsWith('NEW:'))).map((allergen, index) => (
+                                        <div key={index} className="flex items-center bg-red-600/20 border border-red-500/50 rounded-full px-3 py-1">
+                                            <span className="text-red-300 text-sm">{allergen}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setUpdatedProduct(prev => ({
+                                                    ...prev,
+                                                    allergens: prev.allergens.filter((_, i) => i !== index)
+                                                }))}
+                                                className="text-red-400 hover:text-red-300 ml-2"
+                                            >
+                                                <X size={14} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
                     {/* Extra Options Section */}
                     <ExtraOptionsSection 

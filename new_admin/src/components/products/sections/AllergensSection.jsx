@@ -4,15 +4,18 @@ import { Plus, X } from "lucide-react";
 const AllergensSection = ({ allergens, setAllergens }) => {
     const [newAllergen, setNewAllergen] = useState("");
 
+    // ASIGURĂ că allergens este întotdeauna array
+    const safeAllergens = Array.isArray(allergens) ? allergens : [];
+
     const addAllergen = () => {
-        if (newAllergen.trim() && !allergens.includes(newAllergen.trim())) {
-            setAllergens(prev => [...prev, newAllergen.trim()]);
+        if (newAllergen.trim() && !safeAllergens.includes(newAllergen.trim())) {
+            setAllergens([...safeAllergens, newAllergen.trim()]);
             setNewAllergen("");
         }
     };
 
     const removeAllergen = (index) => {
-        setAllergens(prev => prev.filter((_, i) => i !== index));
+        setAllergens(safeAllergens.filter((_, i) => i !== index));
     };
 
     const handleKeyPress = (e) => {
@@ -44,11 +47,11 @@ const AllergensSection = ({ allergens, setAllergens }) => {
                 </button>
             </div>
 
-            {allergens.length > 0 && (
+            {safeAllergens.length > 0 && (
                 <div className="bg-gray-700/30 rounded-lg p-3">
                     <h4 className="text-sm font-medium text-white mb-2">Added Allergens:</h4>
                     <div className="flex flex-wrap gap-2">
-                        {allergens.map((allergen, index) => (
+                        {safeAllergens.map((allergen, index) => (
                             <div key={index} className="flex items-center bg-red-600/20 border border-red-500/50 rounded-full px-3 py-1">
                                 <span className="text-red-300 text-sm">{allergen}</span>
                                 <button

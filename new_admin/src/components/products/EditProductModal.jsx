@@ -19,7 +19,7 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
     discountPercentage: 0,
     discountedPrice: 0,
     description: "",
-    ingredients: "",
+    ingredients: [],
     isBestSeller: false,
     isNewAdded: false,
     isVegan: false,
@@ -78,11 +78,16 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
         sugar: productNutrition.sugar || 0,
       });
 
+      // NORMALIZEAZĂ ingredients să fie întotdeauna array
+      const normalizedIngredients = Array.isArray(product.ingredients) 
+        ? product.ingredients 
+        : (product.ingredients || '').split(',').map(item => item.trim()).filter(item => item !== '');
+
       setUpdatedProduct({
         name: product.name,
         category: product.category,
         description: product.description,
-        ingredients: product.ingredients || "",
+        ingredients: normalizedIngredients, // Folosește array-ul normalizat
         price: product.price.toFixed(2),
         discountPercentage: product.discountPercentage || 0,
         discountedPrice: product.discountedPrice || product.price,
@@ -125,9 +130,16 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
       nutrition: updatedProduct.nutrition,
       preparation: updatedProduct.preparation,
       dietaryInfo: updatedProduct.dietaryInfo,
-      allergens: updatedProduct.allergens
+      allergens: updatedProduct.allergens,
+      ingredients: updatedProduct.ingredients
     });
-  }, [updatedProduct.nutrition, updatedProduct.preparation, updatedProduct.dietaryInfo, updatedProduct.allergens]);
+  }, [
+    updatedProduct.nutrition,
+    updatedProduct.preparation,
+    updatedProduct.dietaryInfo,
+    updatedProduct.allergens,
+    updatedProduct.ingredients
+  ]);
 
   const handlePriceBlur = (e) => {
     let priceValue = parseFloat(e.target.value);
@@ -188,36 +200,53 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
     toast.info("Extra option removed", { theme: "dark" });
   };
 
-  // Funcție pentru a actualiza informațiile nutriționale
-  const handleNutritionChange = (newNutrition) => {
-    console.log("🔄 handleNutritionChange called with:", newNutrition);
-    console.log("📊 Current nutrition before update:", updatedProduct.nutrition);
-    
-    setUpdatedProduct((prev) => {
-      const updated = {
-        ...prev,
-        nutrition: { ...prev.nutrition, ...newNutrition },
-      };
-      console.log("✅ Nutrition after update:", updated.nutrition);
-      return updated;
-    });
+const handleNutritionChange = (field, value) => {
+  console.log("🔄 Nutrition change:", field, value);
+  setUpdatedProduct(prev => ({
+    ...prev,
+    nutrition: {
+      ...prev.nutrition,
+      [field]: value
+    }
+  }));
+};
+
+// Funcție pentru a actualiza informațiile despre preparare (câmp cu câmp)
+const handlePreparationChange = (field, value) => {
+  console.log("🔄 Preparation change:", field, value);
+  setUpdatedProduct(prev => ({
+    ...prev,
+    preparation: {
+      ...prev.preparation,
+      [field]: value
+    }
+  }));
+};
+
+// Funcție pentru a actualiza informațiile dietetice (câmp cu câmp)
+const handleDietaryInfoChange = (field, value) => {
+  console.log("🔄 DietaryInfo change:", field, value);
+  setUpdatedProduct(prev => ({
+    ...prev,
+    dietaryInfo: {
+      ...prev.dietaryInfo,
+      [field]: value
+    }
+  }));
+};
+  // Funcție helper pentru a converti ingredients în string pentru afișare
+  const getIngredientsDisplayValue = () => {
+    return Array.isArray(updatedProduct.ingredients) 
+      ? updatedProduct.ingredients.join(', ') 
+      : updatedProduct.ingredients || '';
   };
 
-  // Funcție pentru a actualiza informațiile despre preparare
-  const handlePreparationChange = (newPreparation) => {
-    console.log("🔄 handlePreparationChange called with:", newPreparation);
-    setUpdatedProduct((prev) => ({
+  // Funcție pentru a procesa ingredients la schimbare
+  const handleIngredientsChange = (value) => {
+    // Salvează ca string pentru editare, dar va fi procesat ca array la submit
+    setUpdatedProduct(prev => ({
       ...prev,
-      preparation: { ...prev.preparation, ...newPreparation },
-    }));
-  };
-
-  // Funcție pentru a actualiza informațiile dietetice
-  const handleDietaryInfoChange = (newDietaryInfo) => {
-    console.log("🔄 handleDietaryInfoChange called with:", newDietaryInfo);
-    setUpdatedProduct((prev) => ({
-      ...prev,
-      dietaryInfo: { ...prev.dietaryInfo, ...newDietaryInfo },
+      ingredients: value
     }));
   };
 
@@ -226,115 +255,92 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
 
     console.log("🚀 ===== START HANDLE UPDATE PRODUCT =====");
     
-    // DEBUG: Verifică starea actuală a nutrition înainte de trimitere
-    console.log("🔍 BEFORE SEND - updatedProduct.nutrition:", updatedProduct.nutrition);
-    console.log("🔍 BEFORE SEND - typeof nutrition:", typeof updatedProduct.nutrition);
-    console.log("🔍 BEFORE SEND - Is nutrition object?", typeof updatedProduct.nutrition === 'object');
-    console.log("🔍 BEFORE SEND - Is nutrition array?", Array.isArray(updatedProduct.nutrition));
+    // DEBUG: Verifică starea actuală
+    console.log("🔍 BEFORE SEND - updatedProduct:", {
+      nutrition: updatedProduct.nutrition,
+      preparation: updatedProduct.preparation,
+      dietaryInfo: updatedProduct.dietaryInfo,
+      allergens: updatedProduct.allergens,
+      ingredients: updatedProduct.ingredients
+    });
 
-    // ASIGURĂ-TE că nutrition este întotdeauna un obiect valid
-    const nutritionToSend =
-      updatedProduct.nutrition &&
-      typeof updatedProduct.nutrition === "object" &&
-      !Array.isArray(updatedProduct.nutrition)
-        ? updatedProduct.nutrition
-        : {
-            calories: parseInt(updatedProduct.nutrition?.calories) || 0,
-            protein: parseInt(updatedProduct.nutrition?.protein) || 0,
-            carbs: parseInt(updatedProduct.nutrition?.carbs) || 0,
-            fat: parseInt(updatedProduct.nutrition?.fat) || 0,
-            fiber: parseInt(updatedProduct.nutrition?.fiber) || 0,
-            sugar: parseInt(updatedProduct.nutrition?.sugar) || 0,
-          };
+    // CONVERTEȘTE ingredients în array (dacă este string)
+    let ingredientsArray = [];
+    if (typeof updatedProduct.ingredients === 'string') {
+      ingredientsArray = updatedProduct.ingredients
+        .split(',')
+        .map(item => item.trim())
+        .filter(item => item !== '');
+    } else if (Array.isArray(updatedProduct.ingredients)) {
+      ingredientsArray = updatedProduct.ingredients;
+    }
 
-    console.log("🔍 FINAL nutritionToSend:", nutritionToSend);
-    console.log("🔍 JSON.stringify(nutritionToSend):", JSON.stringify(nutritionToSend));
+    console.log("🔧 Processed ingredients:", ingredientsArray);
 
-    // Verifică toate câmpurile înainte de a crea FormData
-    console.log("📋 ALL FIELDS BEFORE FORMDATA:");
-    console.log("  - name:", updatedProduct.name);
-    console.log("  - category:", updatedProduct.category);
-    console.log("  - price:", updatedProduct.price);
-    console.log("  - description:", updatedProduct.description);
-    console.log("  - ingredients:", updatedProduct.ingredients);
-    console.log("  - isBestSeller:", updatedProduct.isBestSeller);
-    console.log("  - isNewAdded:", updatedProduct.isNewAdded);
-    console.log("  - isVegan:", updatedProduct.isVegan);
-    console.log("  - extras:", updatedProduct.extras);
-    console.log("  - preparation:", updatedProduct.preparation);
-    console.log("  - dietaryInfo:", updatedProduct.dietaryInfo);
-    console.log("  - allergens:", updatedProduct.allergens);
+    // ASIGURĂ că nutrition este obiect valid
+    const nutritionToSend = {
+      calories: parseInt(updatedProduct.nutrition?.calories) || 0,
+      protein: parseInt(updatedProduct.nutrition?.protein) || 0,
+      carbs: parseInt(updatedProduct.nutrition?.carbs) || 0,
+      fat: parseInt(updatedProduct.nutrition?.fat) || 0,
+      fiber: parseInt(updatedProduct.nutrition?.fiber) || 0,
+      sugar: parseInt(updatedProduct.nutrition?.sugar) || 0,
+    };
 
     const formData = new FormData();
+    
+    // Câmpuri de bază
     formData.append("id", product._id);
     formData.append("name", updatedProduct.name);
     formData.append("category", updatedProduct.category);
-    formData.append("price", updatedProduct.price);
-    formData.append("discountPercentage", updatedProduct.discountPercentage);
+    formData.append("price", parseFloat(updatedProduct.price));
+    formData.append("discountPercentage", parseFloat(updatedProduct.discountPercentage));
     formData.append("description", updatedProduct.description);
-    formData.append("ingredients", updatedProduct.ingredients);
+    
+    // CORECTAT: Trimite ingredients ca JSON string array
+    formData.append("ingredients", JSON.stringify(ingredientsArray));
+    
     formData.append("isBestSeller", updatedProduct.isBestSeller);
     formData.append("isNewAdded", updatedProduct.isNewAdded);
     formData.append("isVegan", updatedProduct.isVegan);
+    
+    // CORECTAT: Extras deja este array, doar stringify
     formData.append("extras", JSON.stringify(updatedProduct.extras));
 
-    // CORECTAT: Trimite ÎNTOTDEAUNA obiectul validat
+    // CORECTAT: Trimite întotdeauna obiecte validate
     formData.append("nutrition", JSON.stringify(nutritionToSend));
     formData.append("preparation", JSON.stringify(updatedProduct.preparation));
     formData.append("dietaryInfo", JSON.stringify(updatedProduct.dietaryInfo));
-    formData.append(
-      "allergens",
-      JSON.stringify(updatedProduct.allergens || [])
-    );
+    formData.append("allergens", JSON.stringify(updatedProduct.allergens || []));
 
     if (updatedProduct.image instanceof File) {
       formData.append("image", updatedProduct.image);
-      console.log("🖼️ Image appended:", updatedProduct.image.name);
-    } else {
-      console.log("🖼️ No new image provided");
     }
 
-    // DEBUG EXTINS: Verifică TOATE câmpurile FormData
-    console.log("=== FINAL FORM DATA CONTENT ===");
-    let formDataEntries = [];
+    // DEBUG: Verifică FormData final
+    console.log("=== FINAL FORM DATA ===");
     for (let [key, value] of formData.entries()) {
-      console.log(`📦 ${key}:`, value, `(type: ${typeof value})`);
-      formDataEntries.push({ key, value, type: typeof value });
+      console.log(`📦 ${key}:`, value);
     }
-    console.log("=== END FINAL FORM DATA ===");
-
-    // Verifică specific valorile JSON
-    console.log("🔎 JSON VALUES CHECK:");
-    console.log("  - nutrition:", JSON.stringify(nutritionToSend));
-    console.log("  - preparation:", JSON.stringify(updatedProduct.preparation));
-    console.log("  - dietaryInfo:", JSON.stringify(updatedProduct.dietaryInfo));
-    console.log("  - allergens:", JSON.stringify(updatedProduct.allergens || []));
 
     try {
-      console.log("📤 Sending request to server...");
       const response = await axios.post(`${url}/api/food/update`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
       if (response.data.success) {
-        console.log("✅ Update successful:", response.data.message);
         toast.success(response.data.message, { theme: "dark" });
         onProductUpdated();
         onClose();
       } else {
-        console.log("❌ Update failed:", response.data.message);
         toast.error(response.data.message, { theme: "dark" });
       }
     } catch (error) {
       console.error("💥 Error updating product:", error);
-      if (error.response?.data?.message) {
-        toast.error(error.response.data.message, { theme: "dark" });
-      } else {
-        toast.error("Error updating product", { theme: "dark" });
-      }
+      toast.error(error.response?.data?.message || "Error updating product", { 
+        theme: "dark" 
+      });
     }
-
-    console.log("🏁 ===== END HANDLE UPDATE PRODUCT =====");
   };
 
   if (!isOpen || !product) return null;
@@ -583,13 +589,8 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
               maxLength="1000"
               className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
               placeholder="List the ingredients (separated by commas)..."
-              value={updatedProduct.ingredients}
-              onChange={(e) =>
-                setUpdatedProduct({
-                  ...updatedProduct,
-                  ingredients: e.target.value,
-                })
-              }
+              value={getIngredientsDisplayValue()}
+              onChange={(e) => handleIngredientsChange(e.target.value)}
             />
             <p className="text-gray-400 text-xs">
               Separate ingredients with commas (e.g., Tomato sauce, Mozzarella,

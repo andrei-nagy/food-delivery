@@ -1,9 +1,6 @@
 const PreparationSection = ({ preparation, setPreparation }) => {
     const handlePreparationChange = (field, value) => {
-        setPreparation(prev => ({
-            ...prev,
-            [field]: value
-        }));
+        setPreparation(field, value);
     };
 
     return (
