@@ -1,13 +1,47 @@
+import { useEffect } from "react";
+
 const NutritionSection = ({ nutrition, setNutrition }) => {
+    // Creează un obiect safe cu toate proprietățile necesare
+    const safeNutrition = {
+        calories: nutrition?.calories ?? 0,
+        protein: nutrition?.protein ?? 0,
+        carbs: nutrition?.carbs ?? 0,
+        fat: nutrition?.fat ?? 0,
+        fiber: nutrition?.fiber ?? 0,
+        sugar: nutrition?.sugar ?? 0,
+    };
+
     const handleNutritionChange = (field, value) => {
         // Asigură-te că valoarea este convertită corect la number
         const numericValue = value === '' ? 0 : parseFloat(value) || 0;
         
-        setNutrition({
-            ...nutrition,
+        // Creează un nou obiect cu TOATE proprietățile
+        const updatedNutrition = {
+            calories: safeNutrition.calories,
+            protein: safeNutrition.protein,
+            carbs: safeNutrition.carbs,
+            fat: safeNutrition.fat,
+            fiber: safeNutrition.fiber,
+            sugar: safeNutrition.sugar,
             [field]: numericValue
+        };
+        
+        console.log("🔄 Nutrition change:", { 
+            field, 
+            value, 
+            numericValue, 
+            currentNutrition: nutrition,
+            safeNutrition,
+            updatedNutrition 
         });
+        
+        setNutrition(updatedNutrition);
     };
+
+    useEffect(() => {
+        console.log("🔬 NutritionSection - Current nutrition prop:", nutrition);
+        console.log("🔬 NutritionSection - Safe nutrition:", safeNutrition);
+    }, [nutrition]);
 
     return (
         <div className="space-y-4">
@@ -18,7 +52,7 @@ const NutritionSection = ({ nutrition, setNutrition }) => {
                     <label className="block text-sm font-medium text-gray-300">Calories</label>
                     <input
                         type="number"
-                        value={nutrition.calories}
+                        value={safeNutrition.calories}
                         onChange={(e) => handleNutritionChange('calories', e.target.value)}
                         placeholder="0"
                         min="0"
@@ -31,7 +65,7 @@ const NutritionSection = ({ nutrition, setNutrition }) => {
                     <input
                         type="number"
                         step="0.1"
-                        value={nutrition.protein}
+                        value={safeNutrition.protein}
                         onChange={(e) => handleNutritionChange('protein', e.target.value)}
                         placeholder="0"
                         min="0"
@@ -44,7 +78,7 @@ const NutritionSection = ({ nutrition, setNutrition }) => {
                     <input
                         type="number"
                         step="0.1"
-                        value={nutrition.carbs}
+                        value={safeNutrition.carbs}
                         onChange={(e) => handleNutritionChange('carbs', e.target.value)}
                         placeholder="0"
                         min="0"
@@ -57,7 +91,7 @@ const NutritionSection = ({ nutrition, setNutrition }) => {
                     <input
                         type="number"
                         step="0.1"
-                        value={nutrition.fat}
+                        value={safeNutrition.fat}
                         onChange={(e) => handleNutritionChange('fat', e.target.value)}
                         placeholder="0"
                         min="0"
@@ -70,7 +104,7 @@ const NutritionSection = ({ nutrition, setNutrition }) => {
                     <input
                         type="number"
                         step="0.1"
-                        value={nutrition.fiber}
+                        value={safeNutrition.fiber}
                         onChange={(e) => handleNutritionChange('fiber', e.target.value)}
                         placeholder="0"
                         min="0"
@@ -83,7 +117,7 @@ const NutritionSection = ({ nutrition, setNutrition }) => {
                     <input
                         type="number"
                         step="0.1"
-                        value={nutrition.sugar}
+                        value={safeNutrition.sugar}
                         onChange={(e) => handleNutritionChange('sugar', e.target.value)}
                         placeholder="0"
                         min="0"
