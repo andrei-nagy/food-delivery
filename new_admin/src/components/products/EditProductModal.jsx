@@ -169,13 +169,10 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
         e.preventDefault();
         
         // DEBUG: Verifică ce date sunt trimise
-        console.log("📤 Sending update data:", {
-            name: updatedProduct.name,
-            nutrition: updatedProduct.nutrition,
-            preparation: updatedProduct.preparation,
-            dietaryInfo: updatedProduct.dietaryInfo,
-            allergens: updatedProduct.allergens
-        });
+        console.log("📤 Sending update data - NUTRITION:", updatedProduct.nutrition);
+        console.log("📤 Sending update data - PREPARATION:", updatedProduct.preparation);
+        console.log("📤 Sending update data - DIETARYINFO:", updatedProduct.dietaryInfo);
+        console.log("📤 Sending update data - ALLERGENS:", updatedProduct.allergens);
 
         const formData = new FormData();
         formData.append("id", product._id);
@@ -190,20 +187,23 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
         formData.append("isVegan", updatedProduct.isVegan);
         formData.append("extras", JSON.stringify(updatedProduct.extras));
         
-        // Asigură-te că toate câmpurile nutriționale sunt trimise ca string JSON
+        // CORECTAT: Asigură-te că trimiți ÎNTOTDEAUNA obiecte valide
+        // Nu verifica dacă sunt goale, trimite întotdeauna obiectul complet
         formData.append("nutrition", JSON.stringify(updatedProduct.nutrition));
         formData.append("preparation", JSON.stringify(updatedProduct.preparation));
         formData.append("dietaryInfo", JSON.stringify(updatedProduct.dietaryInfo));
-        formData.append("allergens", JSON.stringify(updatedProduct.allergens));
+        formData.append("allergens", JSON.stringify(updatedProduct.allergens || []));
         
         if (updatedProduct.image instanceof File) {
             formData.append("image", updatedProduct.image);
         }
 
         // DEBUG: Afișează conținutul FormData
+        console.log("=== FORM DATA CONTENT ===");
         for (let [key, value] of formData.entries()) {
-            console.log(`📦 FormData: ${key} =`, value);
+            console.log(`📦 ${key}:`, value);
         }
+        console.log("=== END FORM DATA ===");
 
         try {
             const response = await axios.post(`${url}/api/food/update`, formData, {
@@ -219,7 +219,11 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
             }
         } catch (error) {
             console.error("Error updating product:", error);
-            toast.error("Error updating product", { theme: "dark" });
+            if (error.response?.data?.message) {
+                toast.error(error.response.data.message, { theme: "dark" });
+            } else {
+                toast.error("Error updating product", { theme: "dark" });
+            }
         }
     };
 
