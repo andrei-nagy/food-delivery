@@ -27,7 +27,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     // Combină ambele condiții pentru a bloca interacțiunea
     const isDisabled = billRequested || userBlocked;
 
-    // Safe access to food properties
+    // Safe access to food properties with fallbacks
     const foodDescription = food?.description || "";
     const foodName = food?.name || "";
     const foodPrice = food?.price || 0;
@@ -40,48 +40,41 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     const discountPercentage = food?.discountPercentage || 0;
     const discountedPrice = food?.discountedPrice || foodPrice;
 
+    // Date pentru secțiuni - folosim datele reale din food sau valori default
+    const nutritionData = food?.nutrition || {
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+        fiber: 0,
+        sugar: 0
+    };
+
+    const allergens = Array.isArray(food?.allergens) ? food.allergens : [];
+
+    const preparationInfo = food?.preparation || {
+        cookingTime: "",
+        spiceLevel: "",
+        servingSize: "",
+        difficulty: ""
+    };
+
+    const ingredientsList = Array.isArray(food?.ingredients) && food.ingredients.length > 0 
+        ? food.ingredients 
+        : (food?.ingredients && typeof food.ingredients === 'string' 
+            ? food.ingredients.split(',').map(item => item.trim()).filter(item => item) 
+            : []);
+
+    const dietaryInfo = food?.dietaryInfo || {
+        isGlutenFree: false,
+        isDairyFree: false,
+        isVegetarian: false,
+        isSpicy: false,
+        containsNuts: false
+    };
+
     // Verifică dacă produsul are discount
     const hasDiscount = discountPercentage > 0;
-
-    // Date pentru secțiuni
-    const nutritionData = {
-        calories: 450,
-        protein: 25,
-        carbs: 45,
-        fat: 18,
-        fiber: 8,
-        sugar: 12
-    };
-
-    const allergens = [
-        "Lactose",
-        "Gluten", 
-        "Soia",
-        "Nuci"
-    ];
-
-    const preparationInfo = {
-        cookingTime: "15-20 minute",
-        spiceLevel: "Mediu 🌶️",
-        servingSize: "350g",
-        difficulty: "Ușor"
-    };
-
-    const ingredientsList = [
-        "Pui marinat",
-        "Legume proaspete",
-        "Sos teriyaki",
-        "Orez basmati",
-        "Condimente orientale"
-    ];
-
-    const dietaryInfo = {
-        isGlutenFree: false,
-        isDairyFree: true,
-        isVegetarian: false,
-        isSpicy: true,
-        containsNuts: true
-    };
 
     // Mesajul care va apărea când utilizatorul este blocat
     const getBlockedMessage = () => {
@@ -389,6 +382,12 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         action();
     };
 
+    // Funcții pentru a verifica dacă să afișăm secțiunile
+    const shouldShowNutrition = nutritionData.calories > 0 || nutritionData.protein > 0 || nutritionData.carbs > 0;
+    const shouldShowIngredients = ingredientsList.length > 0;
+    const shouldShowPreparation = preparationInfo.cookingTime || preparationInfo.servingSize || preparationInfo.difficulty;
+    const shouldShowAllergens = allergens.length > 0;
+
     // Early return if no food or not open
     if (!isOpen || !food) return null;
 
@@ -444,60 +443,64 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                         </div>
                     )}
                     
-                 <div className="food-modal-price-section">
-    <div className="food-modal-price-main">
-        {hasDiscount ? (
-            <div className="food-modal-price-discount-wrapper">
-                <div className="food-modal-price-row">
-                    <span className="food-modal-current-price">
-                        {discountedPrice.toFixed(2)} €
-                    </span>
-                    <span className="food-modal-discount-badge">
-                        -{discountPercentage}%
-                    </span>
-                </div>
-                <span className="food-modal-original-price">
-                    {foodPrice.toFixed(2)} €
-                </span>
-            </div>
-        ) : (
-            <span className={`food-modal-current-price ${isDisabled ? 'disabled-text' : ''}`}>
-                {foodPrice.toFixed(2)} €
-            </span>
-        )}
-    </div>
-    
-    <div className="food-modal-quick-info">
-        {/* Calorii - mereu afișat */}
-        <div className="food-modal-quick-info-item">
-            <FaFire className="quick-info-icon" />
-            <span>{nutritionData.calories} cal</span>
-        </div>
-        
-        {/* Gramaj - mereu afișat */}
-        <div className="food-modal-quick-info-item">
-            <FaWeight className="quick-info-icon" />
-            <span>{preparationInfo.servingSize}</span>
-        </div>
-        
-        {/* Picant - afișat doar dacă este spicy */}
-        {dietaryInfo.isSpicy && !isDisabled && (
-            <div className="food-modal-quick-info-item">
-                <span className="spicy-icon">🌶️</span>
-                <span>{preparationInfo.spiceLevel.replace('🌶️', '').trim()}</span>
-            </div>
-        )}
-    </div>
-</div>
+                    <div className="food-modal-price-section">
+                        <div className="food-modal-price-main">
+                            {hasDiscount ? (
+                                <div className="food-modal-price-discount-wrapper">
+                                    <div className="food-modal-price-row">
+                                        <span className="food-modal-current-price">
+                                            {discountedPrice.toFixed(2)} €
+                                        </span>
+                                        <span className="food-modal-discount-badge">
+                                            -{discountPercentage}%
+                                        </span>
+                                    </div>
+                                    <span className="food-modal-original-price">
+                                        {foodPrice.toFixed(2)} €
+                                    </span>
+                                </div>
+                            ) : (
+                                <span className={`food-modal-current-price ${isDisabled ? 'disabled-text' : ''}`}>
+                                    {foodPrice.toFixed(2)} €
+                                </span>
+                            )}
+                        </div>
+                        
+                        <div className="food-modal-quick-info">
+                            {/* Calorii - afișat doar dacă există */}
+                            {nutritionData.calories > 0 && (
+                                <div className="food-modal-quick-info-item">
+                                    <FaFire className="quick-info-icon" />
+                                    <span>{nutritionData.calories} cal</span>
+                                </div>
+                            )}
+                            
+                            {/* Gramaj - afișat doar dacă există */}
+                            {preparationInfo.servingSize && (
+                                <div className="food-modal-quick-info-item">
+                                    <FaWeight className="quick-info-icon" />
+                                    <span>{preparationInfo.servingSize}</span>
+                                </div>
+                            )}
+                            
+                            {/* Picant - afișat doar dacă este spicy */}
+                            {dietaryInfo.isSpicy && !isDisabled && (
+                                <div className="food-modal-quick-info-item">
+                                    <span className="spicy-icon">🌶️</span>
+                                    <span>{preparationInfo.spiceLevel?.replace('🌶️', '').trim() || 'Picant'}</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
-{/* DESCRIERE - STATICĂ */}
-{foodDescription && (
-    <div className="food-modal-section">
-        <div className="food-modal-description-static">
-            <p className="food-modal-description-text">{foodDescription}</p>
-        </div>
-    </div>
-)}
+                    {/* DESCRIERE - din food object */}
+                    {foodDescription && (
+                        <div className="food-modal-section">
+                            <div className="food-modal-description-static">
+                                <p className="food-modal-description-text">{foodDescription}</p>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Instrucțiuni speciale */}
                     {!isDisabled && (
@@ -513,161 +516,187 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                         </div>
                     )}   
 
-                    {/* ACCORDION: Valori nutritionale */}
-                    <div className="food-modal-section">
-                        <div 
-                            className={`food-modal-accordion ${expandedSections.nutrition ? 'expanded' : ''}`}
-                            onClick={() => toggleSection('nutrition')}
-                        >
-                            <div className="food-modal-accordion-header">
-                                <FaFire className="accordion-icon" />
-                                <span className="food-modal-accordion-title">Valori Nutritionale</span>
-                                {expandedSections.nutrition ? 
-                                    <FaChevronUp className="accordion-chevron" /> : 
-                                    <FaChevronDown className="accordion-chevron" />
-                                }
-                            </div>
-                            {expandedSections.nutrition && (
-                                <div className="food-modal-accordion-content">
-                                    <div className="food-modal-nutrition-grid">
-                                        <div className="nutrition-item">
-                                            <span className="nutrition-label">Calorii</span>
-                                            <span className="nutrition-value">{nutritionData.calories} kcal</span>
-                                        </div>
-                                        <div className="nutrition-item">
-                                            <span className="nutrition-label">Proteine</span>
-                                            <span className="nutrition-value">{nutritionData.protein}g</span>
-                                        </div>
-                                        <div className="nutrition-item">
-                                            <span className="nutrition-label">Carbohidrați</span>
-                                            <span className="nutrition-value">{nutritionData.carbs}g</span>
-                                        </div>
-                                        <div className="nutrition-item">
-                                            <span className="nutrition-label">Grăsimi</span>
-                                            <span className="nutrition-value">{nutritionData.fat}g</span>
-                                        </div>
-                                        <div className="nutrition-item">
-                                            <span className="nutrition-label">Fibre</span>
-                                            <span className="nutrition-value">{nutritionData.fiber}g</span>
-                                        </div>
-                                        <div className="nutrition-item">
-                                            <span className="nutrition-label">Zaharuri</span>
-                                            <span className="nutrition-value">{nutritionData.sugar}g</span>
+                    {/* ACCORDION: Valori nutritionale - afișat doar dacă există date */}
+                    {shouldShowNutrition && (
+                        <div className="food-modal-section">
+                            <div 
+                                className={`food-modal-accordion ${expandedSections.nutrition ? 'expanded' : ''}`}
+                                onClick={() => toggleSection('nutrition')}
+                            >
+                                <div className="food-modal-accordion-header">
+                                    <FaFire className="accordion-icon" />
+                                    <span className="food-modal-accordion-title">Valori Nutritionale</span>
+                                    {expandedSections.nutrition ? 
+                                        <FaChevronUp className="accordion-chevron" /> : 
+                                        <FaChevronDown className="accordion-chevron" />
+                                    }
+                                </div>
+                                {expandedSections.nutrition && (
+                                    <div className="food-modal-accordion-content">
+                                        <div className="food-modal-nutrition-grid">
+                                            {nutritionData.calories > 0 && (
+                                                <div className="nutrition-item">
+                                                    <span className="nutrition-label">Calorii</span>
+                                                    <span className="nutrition-value">{nutritionData.calories} kcal</span>
+                                                </div>
+                                            )}
+                                            {nutritionData.protein > 0 && (
+                                                <div className="nutrition-item">
+                                                    <span className="nutrition-label">Proteine</span>
+                                                    <span className="nutrition-value">{nutritionData.protein}g</span>
+                                                </div>
+                                            )}
+                                            {nutritionData.carbs > 0 && (
+                                                <div className="nutrition-item">
+                                                    <span className="nutrition-label">Carbohidrați</span>
+                                                    <span className="nutrition-value">{nutritionData.carbs}g</span>
+                                                </div>
+                                            )}
+                                            {nutritionData.fat > 0 && (
+                                                <div className="nutrition-item">
+                                                    <span className="nutrition-label">Grăsimi</span>
+                                                    <span className="nutrition-value">{nutritionData.fat}g</span>
+                                                </div>
+                                            )}
+                                            {nutritionData.fiber > 0 && (
+                                                <div className="nutrition-item">
+                                                    <span className="nutrition-label">Fibre</span>
+                                                    <span className="nutrition-value">{nutritionData.fiber}g</span>
+                                                </div>
+                                            )}
+                                            {nutritionData.sugar > 0 && (
+                                                <div className="nutrition-item">
+                                                    <span className="nutrition-label">Zaharuri</span>
+                                                    <span className="nutrition-value">{nutritionData.sugar}g</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* ACCORDION: Ingrediente */}
-                    <div className="food-modal-section">
-                        <div 
-                            className={`food-modal-accordion ${expandedSections.ingredients ? 'expanded' : ''}`}
-                            onClick={() => toggleSection('ingredients')}
-                        >
-                            <div className="food-modal-accordion-header">
-                                <FaUtensils className="accordion-icon" />
-                                <span className="food-modal-accordion-title">Ingrediente</span>
-                                {expandedSections.ingredients ? 
-                                    <FaChevronUp className="accordion-chevron" /> : 
-                                    <FaChevronDown className="accordion-chevron" />
-                                }
-                            </div>
-                            {expandedSections.ingredients && (
-                                <div className="food-modal-accordion-content">
-                                    <ul className="food-modal-ingredients-list">
-                                        {ingredientsList.map((ingredient, index) => (
-                                            <li key={index} className="ingredient-item">
-                                                {ingredient}
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    
-                                    <div className="food-modal-dietary-tags">
-                                        {dietaryInfo.isGlutenFree && (
-                                            <span className="dietary-tag gluten-free">Fără Gluten</span>
-                                        )}
-                                        {dietaryInfo.isDairyFree && (
-                                            <span className="dietary-tag dairy-free">Fără Lapte</span>
-                                        )}
-                                        {dietaryInfo.isVegetarian && (
-                                            <span className="dietary-tag vegetarian">Vegetarian</span>
-                                        )}
-                                        {dietaryInfo.containsNuts && (
-                                            <span className="dietary-tag contains-nuts">Conține Nuci</span>
-                                        )}
-                                    </div>
+                    {/* ACCORDION: Ingrediente - afișat doar dacă există */}
+                    {shouldShowIngredients && (
+                        <div className="food-modal-section">
+                            <div 
+                                className={`food-modal-accordion ${expandedSections.ingredients ? 'expanded' : ''}`}
+                                onClick={() => toggleSection('ingredients')}
+                            >
+                                <div className="food-modal-accordion-header">
+                                    <FaUtensils className="accordion-icon" />
+                                    <span className="food-modal-accordion-title">Ingrediente</span>
+                                    {expandedSections.ingredients ? 
+                                        <FaChevronUp className="accordion-chevron" /> : 
+                                        <FaChevronDown className="accordion-chevron" />
+                                    }
                                 </div>
-                            )}
+                                {expandedSections.ingredients && (
+                                    <div className="food-modal-accordion-content">
+                                        <ul className="food-modal-ingredients-list">
+                                            {ingredientsList.map((ingredient, index) => (
+                                                <li key={index} className="ingredient-item">
+                                                    {ingredient}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        
+                                        <div className="food-modal-dietary-tags">
+                                            {dietaryInfo.isGlutenFree && (
+                                                <span className="dietary-tag gluten-free">Fără Gluten</span>
+                                            )}
+                                            {dietaryInfo.isDairyFree && (
+                                                <span className="dietary-tag dairy-free">Fără Lapte</span>
+                                            )}
+                                            {dietaryInfo.isVegetarian && (
+                                                <span className="dietary-tag vegetarian">Vegetarian</span>
+                                            )}
+                                            {dietaryInfo.containsNuts && (
+                                                <span className="dietary-tag contains-nuts">Conține Nuci</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* ACCORDION: Informații preparare */}
-                    <div className="food-modal-section">
-                        <div 
-                            className={`food-modal-accordion ${expandedSections.preparation ? 'expanded' : ''}`}
-                            onClick={() => toggleSection('preparation')}
-                        >
-                            <div className="food-modal-accordion-header">
-                                <FaClock className="accordion-icon" />
-                                <span className="food-modal-accordion-title">Informații Preparare</span>
-                                {expandedSections.preparation ? 
-                                    <FaChevronUp className="accordion-chevron" /> : 
-                                    <FaChevronDown className="accordion-chevron" />
-                                }
-                            </div>
-                            {expandedSections.preparation && (
-                                <div className="food-modal-accordion-content">
-                                    <div className="food-modal-preparation-grid">
-                                        <div className="preparation-item">
-                                            <span className="preparation-label">Timp preparare</span>
-                                            <span className="preparation-value">{preparationInfo.cookingTime}</span>
-                                        </div>
-                                        <div className="preparation-item">
-                                            <span className="preparation-label">Gramaj</span>
-                                            <span className="preparation-value">{preparationInfo.servingSize}</span>
-                                        </div>
-                                        <div className="preparation-item">
-                                            <span className="preparation-label">Dificultate</span>
-                                            <span className="preparation-value">{preparationInfo.difficulty}</span>
+                    {/* ACCORDION: Informații preparare - afișat doar dacă există */}
+                    {shouldShowPreparation && (
+                        <div className="food-modal-section">
+                            <div 
+                                className={`food-modal-accordion ${expandedSections.preparation ? 'expanded' : ''}`}
+                                onClick={() => toggleSection('preparation')}
+                            >
+                                <div className="food-modal-accordion-header">
+                                    <FaClock className="accordion-icon" />
+                                    <span className="food-modal-accordion-title">Informații Preparare</span>
+                                    {expandedSections.preparation ? 
+                                        <FaChevronUp className="accordion-chevron" /> : 
+                                        <FaChevronDown className="accordion-chevron" />
+                                    }
+                                </div>
+                                {expandedSections.preparation && (
+                                    <div className="food-modal-accordion-content">
+                                        <div className="food-modal-preparation-grid">
+                                            {preparationInfo.cookingTime && (
+                                                <div className="preparation-item">
+                                                    <span className="preparation-label">Timp preparare</span>
+                                                    <span className="preparation-value">{preparationInfo.cookingTime}</span>
+                                                </div>
+                                            )}
+                                            {preparationInfo.servingSize && (
+                                                <div className="preparation-item">
+                                                    <span className="preparation-label">Gramaj</span>
+                                                    <span className="preparation-value">{preparationInfo.servingSize}</span>
+                                                </div>
+                                            )}
+                                            {preparationInfo.difficulty && (
+                                                <div className="preparation-item">
+                                                    <span className="preparation-label">Dificultate</span>
+                                                    <span className="preparation-value">{preparationInfo.difficulty}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* ACCORDION: Alergeni */}
-                    <div className="food-modal-section">
-                        <div 
-                            className={`food-modal-accordion ${expandedSections.allergens ? 'expanded' : ''}`}
-                            onClick={() => toggleSection('allergens')}
-                        >
-                            <div className="food-modal-accordion-header">
-                                <FaAllergies className="accordion-icon" />
-                                <span className="food-modal-accordion-title">Alergeni</span>
-                                {expandedSections.allergens ? 
-                                    <FaChevronUp className="accordion-chevron" /> : 
-                                    <FaChevronDown className="accordion-chevron" />
-                                }
-                            </div>
-                            {expandedSections.allergens && (
-                                <div className="food-modal-accordion-content">
-                                    <div className="food-modal-allergens-list">
-                                        {allergens.map((allergen, index) => (
-                                            <span key={index} className="allergen-tag">
-                                                {allergen}
-                                            </span>
-                                        ))}
-                                    </div>
-                                    <p className="food-modal-allergens-disclaimer">
-                                        *Vă rugăm să ne anunțați dacă aveți alergii sau restricții alimentare.
-                                    </p>
+                    {/* ACCORDION: Alergeni - afișat doar dacă există */}
+                    {shouldShowAllergens && (
+                        <div className="food-modal-section">
+                            <div 
+                                className={`food-modal-accordion ${expandedSections.allergens ? 'expanded' : ''}`}
+                                onClick={() => toggleSection('allergens')}
+                            >
+                                <div className="food-modal-accordion-header">
+                                    <FaAllergies className="accordion-icon" />
+                                    <span className="food-modal-accordion-title">Alergeni</span>
+                                    {expandedSections.allergens ? 
+                                        <FaChevronUp className="accordion-chevron" /> : 
+                                        <FaChevronDown className="accordion-chevron" />
+                                    }
                                 </div>
-                            )}
+                                {expandedSections.allergens && (
+                                    <div className="food-modal-accordion-content">
+                                        <div className="food-modal-allergens-list">
+                                            {allergens.map((allergen, index) => (
+                                                <span key={index} className="allergen-tag">
+                                                    {allergen}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <p className="food-modal-allergens-disclaimer">
+                                            *Vă rugăm să ne anunțați dacă aveți alergii sau restricții alimentare.
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    )}
                     
                     {/* Extra opțiuni */}
                     {foodExtras.length > 0 && !isDisabled && (
@@ -694,8 +723,6 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                             )}
                         </div>
                     )}
-                    
-                
                     
                     {/* Controale */}
                     <div className="food-modal-controls">

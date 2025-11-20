@@ -5,7 +5,7 @@ import StatCard from "../components/common/StatCard";
 import { AlertTriangle, DollarSign, Package, TrendingUp } from "lucide-react";
 import CategoryDistributionChart from "../components/overview/CategoryDistributionChart";
 import SalesTrendChart from "../components/products/SalesTrendChart";
-import ProductsTable from "../components/products/ProductsTable";
+import ProductsTable from "../components/products/ProductsTable_original";
 import axios from "axios"; // Importă Axios
 import SalesOverviewChart from "../components/overview/SalesOverviewChart";
 import MostPopularProductChart from "../components/overview/MostPopularProduct";

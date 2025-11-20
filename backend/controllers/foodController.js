@@ -293,6 +293,14 @@ const updateFood = async (req, res) => {
       allergens
     } = req.body;
     
+    // DEBUG: Afișează ce primești
+    console.log("📥 Received update request for product ID:", id);
+    console.log("📥 Received nutrition data:", nutrition);
+    console.log("📥 Type of nutrition:", typeof nutrition);
+    console.log("📥 Received preparation data:", preparation);
+    console.log("📥 Received dietaryInfo data:", dietaryInfo);
+    console.log("📥 Received allergens data:", allergens);
+
     // Validare câmpuri obligatorii
     if (!id || !name || !description || !price || !category) {
       return res.status(400).json({ 
@@ -323,15 +331,16 @@ const updateFood = async (req, res) => {
     if (extras && typeof extras === 'string') {
       try {
         parsedExtras = JSON.parse(extras);
+        console.log("✅ Parsed extras:", parsedExtras);
       } catch (error) {
-        console.log("Error parsing extras:", error);
+        console.log("❌ Error parsing extras:", error);
         parsedExtras = [];
       }
     } else if (Array.isArray(extras)) {
       parsedExtras = extras;
     }
 
-    // Parse nutrition data
+    // Parse nutrition data - CORECTAT
     let parsedNutrition = {
       calories: 0,
       protein: 0,
@@ -341,17 +350,28 @@ const updateFood = async (req, res) => {
       sugar: 0
     };
     
-    if (nutrition && typeof nutrition === 'string') {
-      try {
-        parsedNutrition = JSON.parse(nutrition);
-      } catch (error) {
-        console.log("Error parsing nutrition:", error);
+    if (nutrition) {
+      if (typeof nutrition === 'string') {
+        try {
+          parsedNutrition = JSON.parse(nutrition);
+          console.log("✅ Parsed nutrition from string:", parsedNutrition);
+        } catch (error) {
+          console.log("❌ Error parsing nutrition string:", error);
+          // Încearcă să parsezi ca object literal
+          try {
+            parsedNutrition = eval(`(${nutrition})`);
+            console.log("✅ Parsed nutrition with eval:", parsedNutrition);
+          } catch (evalError) {
+            console.log("❌ Error parsing nutrition with eval:", evalError);
+          }
+        }
+      } else if (typeof nutrition === 'object') {
+        parsedNutrition = nutrition;
+        console.log("✅ Nutrition is already object:", parsedNutrition);
       }
-    } else if (typeof nutrition === 'object') {
-      parsedNutrition = nutrition;
     }
 
-    // Parse preparation data
+    // Parse preparation data - CORECTAT
     let parsedPreparation = {
       cookingTime: "",
       spiceLevel: "",
@@ -359,17 +379,27 @@ const updateFood = async (req, res) => {
       difficulty: ""
     };
     
-    if (preparation && typeof preparation === 'string') {
-      try {
-        parsedPreparation = JSON.parse(preparation);
-      } catch (error) {
-        console.log("Error parsing preparation:", error);
+    if (preparation) {
+      if (typeof preparation === 'string') {
+        try {
+          parsedPreparation = JSON.parse(preparation);
+          console.log("✅ Parsed preparation from string:", parsedPreparation);
+        } catch (error) {
+          console.log("❌ Error parsing preparation string:", error);
+          try {
+            parsedPreparation = eval(`(${preparation})`);
+            console.log("✅ Parsed preparation with eval:", parsedPreparation);
+          } catch (evalError) {
+            console.log("❌ Error parsing preparation with eval:", evalError);
+          }
+        }
+      } else if (typeof preparation === 'object') {
+        parsedPreparation = preparation;
+        console.log("✅ Preparation is already object:", parsedPreparation);
       }
-    } else if (typeof preparation === 'object') {
-      parsedPreparation = preparation;
     }
 
-    // Parse dietary info
+    // Parse dietary info - CORECTAT
     let parsedDietaryInfo = {
       isGlutenFree: false,
       isDairyFree: false,
@@ -378,27 +408,50 @@ const updateFood = async (req, res) => {
       containsNuts: false
     };
     
-    if (dietaryInfo && typeof dietaryInfo === 'string') {
-      try {
-        parsedDietaryInfo = JSON.parse(dietaryInfo);
-      } catch (error) {
-        console.log("Error parsing dietaryInfo:", error);
+    if (dietaryInfo) {
+      if (typeof dietaryInfo === 'string') {
+        try {
+          parsedDietaryInfo = JSON.parse(dietaryInfo);
+          console.log("✅ Parsed dietaryInfo from string:", parsedDietaryInfo);
+        } catch (error) {
+          console.log("❌ Error parsing dietaryInfo string:", error);
+          try {
+            parsedDietaryInfo = eval(`(${dietaryInfo})`);
+            console.log("✅ Parsed dietaryInfo with eval:", parsedDietaryInfo);
+          } catch (evalError) {
+            console.log("❌ Error parsing dietaryInfo with eval:", evalError);
+          }
+        }
+      } else if (typeof dietaryInfo === 'object') {
+        parsedDietaryInfo = dietaryInfo;
+        console.log("✅ DietaryInfo is already object:", parsedDietaryInfo);
       }
-    } else if (typeof dietaryInfo === 'object') {
-      parsedDietaryInfo = dietaryInfo;
     }
 
-    // Parse allergens
+    // Parse allergens - CORECTAT
     let parsedAllergens = [];
-    if (allergens && typeof allergens === 'string') {
-      try {
-        parsedAllergens = JSON.parse(allergens);
-      } catch (error) {
-        console.log("Error parsing allergens:", error);
-        parsedAllergens = [];
+    if (allergens) {
+      if (typeof allergens === 'string') {
+        try {
+          parsedAllergens = JSON.parse(allergens);
+          console.log("✅ Parsed allergens from string:", parsedAllergens);
+        } catch (error) {
+          console.log("❌ Error parsing allergens string:", error);
+          // Încearcă să parsezi ca array simplu
+          try {
+            parsedAllergens = eval(allergens);
+            console.log("✅ Parsed allergens with eval:", parsedAllergens);
+          } catch (evalError) {
+            console.log("❌ Error parsing allergens with eval:", evalError);
+            // Fallback: split by commas
+            parsedAllergens = allergens.split(',').map(a => a.trim()).filter(a => a);
+            console.log("✅ Parsed allergens with split:", parsedAllergens);
+          }
+        }
+      } else if (Array.isArray(allergens)) {
+        parsedAllergens = allergens;
+        console.log("✅ Allergens is already array:", parsedAllergens);
       }
-    } else if (Array.isArray(allergens)) {
-      parsedAllergens = allergens;
     }
 
     // Validare extras
@@ -407,7 +460,9 @@ const updateFood = async (req, res) => {
       price: parseFloat(extra.price) || 0
     })).filter(extra => extra.name && extra.price > 0);
 
-    // Validare informații nutriționale
+    console.log("✅ Validated extras:", validatedExtras);
+
+    // Validare informații nutriționale - CORECTAT CU CONVERSIE NUMERICĂ
     const validatedNutrition = {
       calories: parseFloat(parsedNutrition.calories) || 0,
       protein: parseFloat(parsedNutrition.protein) || 0,
@@ -417,6 +472,8 @@ const updateFood = async (req, res) => {
       sugar: parseFloat(parsedNutrition.sugar) || 0
     };
 
+    console.log("✅ Validated nutrition:", validatedNutrition);
+
     // Validare informații despre preparare
     const validatedPreparation = {
       cookingTime: parsedPreparation.cookingTime || "",
@@ -425,24 +482,32 @@ const updateFood = async (req, res) => {
       difficulty: parsedPreparation.difficulty || ""
     };
 
-    // Validare informații dietetice
+    console.log("✅ Validated preparation:", validatedPreparation);
+
+    // Validare informații dietetice - CORECTAT CU CONVERSIE BOOLEAN
     const validatedDietaryInfo = {
-      isGlutenFree: parsedDietaryInfo.isGlutenFree === true || parsedDietaryInfo.isGlutenFree === 'true',
-      isDairyFree: parsedDietaryInfo.isDairyFree === true || parsedDietaryInfo.isDairyFree === 'true',
-      isVegetarian: parsedDietaryInfo.isVegetarian === true || parsedDietaryInfo.isVegetarian === 'true',
-      isSpicy: parsedDietaryInfo.isSpicy === true || parsedDietaryInfo.isSpicy === 'true',
-      containsNuts: parsedDietaryInfo.containsNuts === true || parsedDietaryInfo.containsNuts === 'true'
+      isGlutenFree: parsedDietaryInfo.isGlutenFree === true || parsedDietaryInfo.isGlutenFree === 'true' || parsedDietaryInfo.isGlutenFree === '1',
+      isDairyFree: parsedDietaryInfo.isDairyFree === true || parsedDietaryInfo.isDairyFree === 'true' || parsedDietaryInfo.isDairyFree === '1',
+      isVegetarian: parsedDietaryInfo.isVegetarian === true || parsedDietaryInfo.isVegetarian === 'true' || parsedDietaryInfo.isVegetarian === '1',
+      isSpicy: parsedDietaryInfo.isSpicy === true || parsedDietaryInfo.isSpicy === 'true' || parsedDietaryInfo.isSpicy === '1',
+      containsNuts: parsedDietaryInfo.containsNuts === true || parsedDietaryInfo.containsNuts === 'true' || parsedDietaryInfo.containsNuts === '1'
     };
+
+    console.log("✅ Validated dietaryInfo:", validatedDietaryInfo);
 
     // Validare alergeni
     const validatedAllergens = parsedAllergens.filter(allergen => 
       allergen && typeof allergen === 'string' && allergen.trim() !== ''
     ).map(allergen => allergen.trim());
 
+    console.log("✅ Validated allergens:", validatedAllergens);
+
     // Procesare boolean values
-    const isBestSellerBool = isBestSeller === 'true' || isBestSeller === true;
-    const isNewAddedBool = isNewAdded === 'true' || isNewAdded === true;
-    const isVeganBool = isVegan === 'true' || isVegan === true;
+    const isBestSellerBool = isBestSeller === 'true' || isBestSeller === true || isBestSeller === '1';
+    const isNewAddedBool = isNewAdded === 'true' || isNewAdded === true || isNewAdded === '1';
+    const isVeganBool = isVegan === 'true' || isVegan === true || isVegan === '1';
+
+    console.log("✅ Boolean flags - BestSeller:", isBestSellerBool, "NewAdded:", isNewAddedBool, "Vegan:", isVeganBool);
 
     const updateData = {
       name: name.trim(),
@@ -459,23 +524,41 @@ const updateFood = async (req, res) => {
       nutrition: validatedNutrition,
       preparation: validatedPreparation,
       dietaryInfo: validatedDietaryInfo,
-      allergens: validatedAllergens
+      allergens: validatedAllergens,
+      updatedAt: new Date()
     };
     
+    console.log("📤 Final update data:", JSON.stringify(updateData, null, 2));
+
     // Procesare imagine nouă dacă este furnizată
     if (req.file) {
+      console.log("🖼️ New image provided:", req.file.filename);
       const oldFood = await foodModel.findById(id);
       if (oldFood && oldFood.image) {
         const oldImagePath = `uploads/${oldFood.image}`;
         if (fs.existsSync(oldImagePath)) {
           fs.unlink(oldImagePath, (err) => {
             if (err) console.error("Error deleting old image:", err);
+            else console.log("🗑️ Old image deleted successfully");
           });
         }
       }
       
       updateData.image = req.file.filename;
+    } else {
+      console.log("🖼️ No new image provided, keeping existing one");
     }
+
+    // Verifică dacă produsul există
+    const existingProduct = await foodModel.findById(id);
+    if (!existingProduct) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Product not found" 
+      });
+    }
+
+    console.log("🔄 Updating product in database...");
 
     const product = await foodModel.findByIdAndUpdate(
       id, 
@@ -489,9 +572,11 @@ const updateFood = async (req, res) => {
     if (!product) {
       return res.status(404).json({ 
         success: false, 
-        message: "Product not found" 
+        message: "Product not found after update" 
       });
     }
+
+    console.log("✅ Product updated successfully:", product._id);
 
     res.json({
       success: true,
@@ -499,7 +584,7 @@ const updateFood = async (req, res) => {
       data: product
     });
   } catch (error) {
-    console.error("Error updating product:", error);
+    console.error("❌ Error updating product:", error);
     res.status(500).json({ 
       success: false, 
       message: "Error updating product", 
