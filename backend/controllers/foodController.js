@@ -13,7 +13,11 @@ const addFood = async (req, res) => {
       isBestSeller, 
       isNewAdded, 
       isVegan, 
-      extras 
+      extras,
+      nutrition,
+      preparation,
+      dietaryInfo,
+      allergens
     } = req.body;
     
     let parsedExtras = [];
@@ -26,6 +30,76 @@ const addFood = async (req, res) => {
       }
     } else if (Array.isArray(extras)) {
       parsedExtras = extras;
+    }
+
+    // Parse nutrition data
+    let parsedNutrition = {
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      fiber: 0,
+      sugar: 0
+    };
+    
+    if (nutrition && typeof nutrition === 'string') {
+      try {
+        parsedNutrition = JSON.parse(nutrition);
+      } catch (error) {
+        console.log("Error parsing nutrition:", error);
+      }
+    } else if (typeof nutrition === 'object') {
+      parsedNutrition = nutrition;
+    }
+
+    // Parse preparation data
+    let parsedPreparation = {
+      cookingTime: "",
+      spiceLevel: "",
+      servingSize: "",
+      difficulty: ""
+    };
+    
+    if (preparation && typeof preparation === 'string') {
+      try {
+        parsedPreparation = JSON.parse(preparation);
+      } catch (error) {
+        console.log("Error parsing preparation:", error);
+      }
+    } else if (typeof preparation === 'object') {
+      parsedPreparation = preparation;
+    }
+
+    // Parse dietary info
+    let parsedDietaryInfo = {
+      isGlutenFree: false,
+      isDairyFree: false,
+      isVegetarian: false,
+      isSpicy: false,
+      containsNuts: false
+    };
+    
+    if (dietaryInfo && typeof dietaryInfo === 'string') {
+      try {
+        parsedDietaryInfo = JSON.parse(dietaryInfo);
+      } catch (error) {
+        console.log("Error parsing dietaryInfo:", error);
+      }
+    } else if (typeof dietaryInfo === 'object') {
+      parsedDietaryInfo = dietaryInfo;
+    }
+
+    // Parse allergens
+    let parsedAllergens = [];
+    if (allergens && typeof allergens === 'string') {
+      try {
+        parsedAllergens = JSON.parse(allergens);
+      } catch (error) {
+        console.log("Error parsing allergens:", error);
+        parsedAllergens = [];
+      }
+    } else if (Array.isArray(allergens)) {
+      parsedAllergens = allergens;
     }
 
     // Validare câmpuri obligatorii
@@ -71,6 +145,38 @@ const addFood = async (req, res) => {
       price: parseFloat(extra.price) || 0
     })).filter(extra => extra.name && extra.price > 0);
 
+    // Validare informații nutriționale
+    const validatedNutrition = {
+      calories: parseFloat(parsedNutrition.calories) || 0,
+      protein: parseFloat(parsedNutrition.protein) || 0,
+      carbs: parseFloat(parsedNutrition.carbs) || 0,
+      fat: parseFloat(parsedNutrition.fat) || 0,
+      fiber: parseFloat(parsedNutrition.fiber) || 0,
+      sugar: parseFloat(parsedNutrition.sugar) || 0
+    };
+
+    // Validare informații despre preparare
+    const validatedPreparation = {
+      cookingTime: parsedPreparation.cookingTime || "",
+      spiceLevel: parsedPreparation.spiceLevel || "",
+      servingSize: parsedPreparation.servingSize || "",
+      difficulty: parsedPreparation.difficulty || ""
+    };
+
+    // Validare informații dietetice
+    const validatedDietaryInfo = {
+      isGlutenFree: parsedDietaryInfo.isGlutenFree === true || parsedDietaryInfo.isGlutenFree === 'true',
+      isDairyFree: parsedDietaryInfo.isDairyFree === true || parsedDietaryInfo.isDairyFree === 'true',
+      isVegetarian: parsedDietaryInfo.isVegetarian === true || parsedDietaryInfo.isVegetarian === 'true',
+      isSpicy: parsedDietaryInfo.isSpicy === true || parsedDietaryInfo.isSpicy === 'true',
+      containsNuts: parsedDietaryInfo.containsNuts === true || parsedDietaryInfo.containsNuts === 'true'
+    };
+
+    // Validare alergeni
+    const validatedAllergens = parsedAllergens.filter(allergen => 
+      allergen && typeof allergen === 'string' && allergen.trim() !== ''
+    ).map(allergen => allergen.trim());
+
     const newFood = new foodModel({
       name: name.trim(),
       description: description.trim(),
@@ -83,7 +189,11 @@ const addFood = async (req, res) => {
       isBestSeller: isBestSellerBool,
       isNewAdded: isNewAddedBool,
       isVegan: isVeganBool,
-      extras: validatedExtras
+      extras: validatedExtras,
+      nutrition: validatedNutrition,
+      preparation: validatedPreparation,
+      dietaryInfo: validatedDietaryInfo,
+      allergens: validatedAllergens
     });
 
     const savedFood = await newFood.save();
@@ -176,7 +286,11 @@ const updateFood = async (req, res) => {
       isBestSeller, 
       isNewAdded, 
       isVegan, 
-      extras 
+      extras,
+      nutrition,
+      preparation,
+      dietaryInfo,
+      allergens
     } = req.body;
     
     // Validare câmpuri obligatorii
@@ -217,11 +331,113 @@ const updateFood = async (req, res) => {
       parsedExtras = extras;
     }
 
+    // Parse nutrition data
+    let parsedNutrition = {
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      fiber: 0,
+      sugar: 0
+    };
+    
+    if (nutrition && typeof nutrition === 'string') {
+      try {
+        parsedNutrition = JSON.parse(nutrition);
+      } catch (error) {
+        console.log("Error parsing nutrition:", error);
+      }
+    } else if (typeof nutrition === 'object') {
+      parsedNutrition = nutrition;
+    }
+
+    // Parse preparation data
+    let parsedPreparation = {
+      cookingTime: "",
+      spiceLevel: "",
+      servingSize: "",
+      difficulty: ""
+    };
+    
+    if (preparation && typeof preparation === 'string') {
+      try {
+        parsedPreparation = JSON.parse(preparation);
+      } catch (error) {
+        console.log("Error parsing preparation:", error);
+      }
+    } else if (typeof preparation === 'object') {
+      parsedPreparation = preparation;
+    }
+
+    // Parse dietary info
+    let parsedDietaryInfo = {
+      isGlutenFree: false,
+      isDairyFree: false,
+      isVegetarian: false,
+      isSpicy: false,
+      containsNuts: false
+    };
+    
+    if (dietaryInfo && typeof dietaryInfo === 'string') {
+      try {
+        parsedDietaryInfo = JSON.parse(dietaryInfo);
+      } catch (error) {
+        console.log("Error parsing dietaryInfo:", error);
+      }
+    } else if (typeof dietaryInfo === 'object') {
+      parsedDietaryInfo = dietaryInfo;
+    }
+
+    // Parse allergens
+    let parsedAllergens = [];
+    if (allergens && typeof allergens === 'string') {
+      try {
+        parsedAllergens = JSON.parse(allergens);
+      } catch (error) {
+        console.log("Error parsing allergens:", error);
+        parsedAllergens = [];
+      }
+    } else if (Array.isArray(allergens)) {
+      parsedAllergens = allergens;
+    }
+
     // Validare extras
     const validatedExtras = parsedExtras.map(extra => ({
       name: extra.name || '',
       price: parseFloat(extra.price) || 0
     })).filter(extra => extra.name && extra.price > 0);
+
+    // Validare informații nutriționale
+    const validatedNutrition = {
+      calories: parseFloat(parsedNutrition.calories) || 0,
+      protein: parseFloat(parsedNutrition.protein) || 0,
+      carbs: parseFloat(parsedNutrition.carbs) || 0,
+      fat: parseFloat(parsedNutrition.fat) || 0,
+      fiber: parseFloat(parsedNutrition.fiber) || 0,
+      sugar: parseFloat(parsedNutrition.sugar) || 0
+    };
+
+    // Validare informații despre preparare
+    const validatedPreparation = {
+      cookingTime: parsedPreparation.cookingTime || "",
+      spiceLevel: parsedPreparation.spiceLevel || "",
+      servingSize: parsedPreparation.servingSize || "",
+      difficulty: parsedPreparation.difficulty || ""
+    };
+
+    // Validare informații dietetice
+    const validatedDietaryInfo = {
+      isGlutenFree: parsedDietaryInfo.isGlutenFree === true || parsedDietaryInfo.isGlutenFree === 'true',
+      isDairyFree: parsedDietaryInfo.isDairyFree === true || parsedDietaryInfo.isDairyFree === 'true',
+      isVegetarian: parsedDietaryInfo.isVegetarian === true || parsedDietaryInfo.isVegetarian === 'true',
+      isSpicy: parsedDietaryInfo.isSpicy === true || parsedDietaryInfo.isSpicy === 'true',
+      containsNuts: parsedDietaryInfo.containsNuts === true || parsedDietaryInfo.containsNuts === 'true'
+    };
+
+    // Validare alergeni
+    const validatedAllergens = parsedAllergens.filter(allergen => 
+      allergen && typeof allergen === 'string' && allergen.trim() !== ''
+    ).map(allergen => allergen.trim());
 
     // Procesare boolean values
     const isBestSellerBool = isBestSeller === 'true' || isBestSeller === true;
@@ -239,7 +455,11 @@ const updateFood = async (req, res) => {
       isBestSeller: isBestSellerBool,
       isNewAdded: isNewAddedBool,
       isVegan: isVeganBool,
-      extras: validatedExtras
+      extras: validatedExtras,
+      nutrition: validatedNutrition,
+      preparation: validatedPreparation,
+      dietaryInfo: validatedDietaryInfo,
+      allergens: validatedAllergens
     };
     
     // Procesare imagine nouă dacă este furnizată
@@ -353,6 +573,39 @@ const bulkImportFood = async (req, res) => {
           })).filter(extra => extra.name && extra.price > 0);
         }
 
+        // Validare informații nutriționale
+        const validatedNutrition = {
+          calories: parseFloat(product.nutrition?.calories) || 0,
+          protein: parseFloat(product.nutrition?.protein) || 0,
+          carbs: parseFloat(product.nutrition?.carbs) || 0,
+          fat: parseFloat(product.nutrition?.fat) || 0,
+          fiber: parseFloat(product.nutrition?.fiber) || 0,
+          sugar: parseFloat(product.nutrition?.sugar) || 0
+        };
+
+        // Validare informații despre preparare
+        const validatedPreparation = {
+          cookingTime: product.preparation?.cookingTime || "",
+          spiceLevel: product.preparation?.spiceLevel || "",
+          servingSize: product.preparation?.servingSize || "",
+          difficulty: product.preparation?.difficulty || ""
+        };
+
+        // Validare informații dietetice
+        const validatedDietaryInfo = {
+          isGlutenFree: product.dietaryInfo?.isGlutenFree === true || product.dietaryInfo?.isGlutenFree === 'true',
+          isDairyFree: product.dietaryInfo?.isDairyFree === true || product.dietaryInfo?.isDairyFree === 'true',
+          isVegetarian: product.dietaryInfo?.isVegetarian === true || product.dietaryInfo?.isVegetarian === 'true',
+          isSpicy: product.dietaryInfo?.isSpicy === true || product.dietaryInfo?.isSpicy === 'true',
+          containsNuts: product.dietaryInfo?.containsNuts === true || product.dietaryInfo?.containsNuts === 'true'
+        };
+
+        // Validare alergeni
+        const validatedAllergens = Array.isArray(product.allergens) ? 
+          product.allergens.filter(allergen => 
+            allergen && typeof allergen === 'string' && allergen.trim() !== ''
+          ).map(allergen => allergen.trim()) : [];
+
         const newFood = new foodModel({
           name: product.name.trim(),
           description: product.description ? product.description.trim() : "",
@@ -365,7 +618,11 @@ const bulkImportFood = async (req, res) => {
           isBestSeller: isBestSellerBool,
           isNewAdded: isNewAddedBool,
           isVegan: isVeganBool,
-          extras: validatedExtras
+          extras: validatedExtras,
+          nutrition: validatedNutrition,
+          preparation: validatedPreparation,
+          dietaryInfo: validatedDietaryInfo,
+          allergens: validatedAllergens
         });
 
         await newFood.save();

@@ -141,6 +141,306 @@ const ImageUploadSection = ({ importImages, setImportImages }) => {
   );
 };
 
+// Componenta pentru informații nutriționale
+const NutritionSection = ({ nutrition, setNutrition }) => {
+  const handleNutritionChange = (field, value) => {
+    setNutrition(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  return (
+    <div className="space-y-4">
+      <label className="block text-lg font-semibold text-white">Nutrition Information</label>
+      
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-300">Calories</label>
+          <input
+            type="number"
+            value={nutrition.calories}
+            onChange={(e) => handleNutritionChange('calories', e.target.value)}
+            placeholder="0"
+            min="0"
+            className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-300">Protein (g)</label>
+          <input
+            type="number"
+            step="0.1"
+            value={nutrition.protein}
+            onChange={(e) => handleNutritionChange('protein', e.target.value)}
+            placeholder="0"
+            min="0"
+            className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-300">Carbs (g)</label>
+          <input
+            type="number"
+            step="0.1"
+            value={nutrition.carbs}
+            onChange={(e) => handleNutritionChange('carbs', e.target.value)}
+            placeholder="0"
+            min="0"
+            className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-300">Fat (g)</label>
+          <input
+            type="number"
+            step="0.1"
+            value={nutrition.fat}
+            onChange={(e) => handleNutritionChange('fat', e.target.value)}
+            placeholder="0"
+            min="0"
+            className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-300">Fiber (g)</label>
+          <input
+            type="number"
+            step="0.1"
+            value={nutrition.fiber}
+            onChange={(e) => handleNutritionChange('fiber', e.target.value)}
+            placeholder="0"
+            min="0"
+            className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-300">Sugar (g)</label>
+          <input
+            type="number"
+            step="0.1"
+            value={nutrition.sugar}
+            onChange={(e) => handleNutritionChange('sugar', e.target.value)}
+            placeholder="0"
+            min="0"
+            className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Componenta pentru informații despre preparare
+const PreparationSection = ({ preparation, setPreparation }) => {
+  const handlePreparationChange = (field, value) => {
+    setPreparation(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  return (
+    <div className="space-y-4">
+      <label className="block text-lg font-semibold text-white">Preparation Information</label>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-300">Cooking Time</label>
+          <input
+            type="text"
+            value={preparation.cookingTime}
+            onChange={(e) => handlePreparationChange('cookingTime', e.target.value)}
+            placeholder="ex: 15-20 minute"
+            className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-300">Spice Level</label>
+          <select
+            value={preparation.spiceLevel}
+            onChange={(e) => handlePreparationChange('spiceLevel', e.target.value)}
+            className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select spice level</option>
+            <option value="Mild">Mild</option>
+            <option value="Medium 🌶️">Medium 🌶️</option>
+            <option value="Hot 🌶️🌶️">Hot 🌶️🌶️</option>
+            <option value="Very Hot 🌶️🌶️🌶️">Very Hot 🌶️🌶️🌶️</option>
+            <option value="Extreme 🌶️🌶️🌶️🌶️🌶️">Extreme 🌶️🌶️🌶️🌶️🌶️</option>
+          </select>
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-300">Serving Size</label>
+          <input
+            type="text"
+            value={preparation.servingSize}
+            onChange={(e) => handlePreparationChange('servingSize', e.target.value)}
+            placeholder="ex: 350g"
+            className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-300">Difficulty</label>
+          <select
+            value={preparation.difficulty}
+            onChange={(e) => handlePreparationChange('difficulty', e.target.value)}
+            className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select difficulty</option>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Componenta pentru informații dietetice
+const DietaryInfoSection = ({ dietaryInfo, setDietaryInfo }) => {
+  const handleDietaryChange = (field, value) => {
+    setDietaryInfo(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  return (
+    <div className="space-y-4">
+      <label className="block text-lg font-semibold text-white">Dietary Information</label>
+      
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <label className="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:bg-gray-700/70 transition-all duration-200 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={dietaryInfo.isGlutenFree}
+            onChange={(e) => handleDietaryChange('isGlutenFree', e.target.checked)}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <span className="ml-2 text-sm text-white">Gluten Free</span>
+        </label>
+
+        <label className="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:bg-gray-700/70 transition-all duration-200 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={dietaryInfo.isDairyFree}
+            onChange={(e) => handleDietaryChange('isDairyFree', e.target.checked)}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <span className="ml-2 text-sm text-white">Dairy Free</span>
+        </label>
+
+        <label className="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:bg-gray-700/70 transition-all duration-200 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={dietaryInfo.isVegetarian}
+            onChange={(e) => handleDietaryChange('isVegetarian', e.target.checked)}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <span className="ml-2 text-sm text-white">Vegetarian</span>
+        </label>
+
+        <label className="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:bg-gray-700/70 transition-all duration-200 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={dietaryInfo.isSpicy}
+            onChange={(e) => handleDietaryChange('isSpicy', e.target.checked)}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <span className="ml-2 text-sm text-white">Spicy</span>
+        </label>
+
+        <label className="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:bg-gray-700/70 transition-all duration-200 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={dietaryInfo.containsNuts}
+            onChange={(e) => handleDietaryChange('containsNuts', e.target.checked)}
+            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+          />
+          <span className="ml-2 text-sm text-white">Contains Nuts</span>
+        </label>
+      </div>
+    </div>
+  );
+};
+
+// Componenta pentru alergeni
+const AllergensSection = ({ allergens, setAllergens }) => {
+  const [newAllergen, setNewAllergen] = useState("");
+
+  const addAllergen = () => {
+    if (newAllergen.trim() && !allergens.includes(newAllergen.trim())) {
+      setAllergens(prev => [...prev, newAllergen.trim()]);
+      setNewAllergen("");
+    }
+  };
+
+  const removeAllergen = (index) => {
+    setAllergens(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addAllergen();
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <label className="block text-lg font-semibold text-white">Allergens</label>
+      
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={newAllergen}
+          onChange={(e) => setNewAllergen(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="Add allergen (e.g., Nuts, Gluten)"
+          className="flex-1 px-3 py-2 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          type="button"
+          onClick={addAllergen}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-500 transition duration-200"
+        >
+          <Plus size={16} />
+        </button>
+      </div>
+
+      {allergens.length > 0 && (
+        <div className="bg-gray-700/30 rounded-lg p-3">
+          <h4 className="text-sm font-medium text-white mb-2">Added Allergens:</h4>
+          <div className="flex flex-wrap gap-2">
+            {allergens.map((allergen, index) => (
+              <div key={index} className="flex items-center bg-red-600/20 border border-red-500/50 rounded-full px-3 py-1">
+                <span className="text-red-300 text-sm">{allergen}</span>
+                <button
+                  type="button"
+                  onClick={() => removeAllergen(index)}
+                  className="text-red-400 hover:text-red-300 ml-2"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ProductsTable = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [columnFilters, setColumnFilters] = useState({
@@ -170,7 +470,29 @@ const ProductsTable = () => {
         isBestSeller: false,
         isNewAdded: false,
         isVegan: false,
-        extras: []
+        extras: [],
+        nutrition: {
+            calories: 0,
+            protein: 0,
+            carbs: 0,
+            fat: 0,
+            fiber: 0,
+            sugar: 0
+        },
+        preparation: {
+            cookingTime: "",
+            spiceLevel: "",
+            servingSize: "",
+            difficulty: ""
+        },
+        dietaryInfo: {
+            isGlutenFree: false,
+            isDairyFree: false,
+            isVegetarian: false,
+            isSpicy: false,
+            containsNuts: false
+        },
+        allergens: []
     });
     const [extraName, setExtraName] = useState("");
     const [extraPrice, setExtraPrice] = useState("");
@@ -311,6 +633,12 @@ const ProductsTable = () => {
         formData.append("isNewAdded", updatedProduct.isNewAdded);
         formData.append("isVegan", updatedProduct.isVegan);
         formData.append("extras", JSON.stringify(updatedProduct.extras));
+        
+        // Adăugăm noile câmpuri
+        formData.append("nutrition", JSON.stringify(updatedProduct.nutrition));
+        formData.append("preparation", JSON.stringify(updatedProduct.preparation));
+        formData.append("dietaryInfo", JSON.stringify(updatedProduct.dietaryInfo));
+        formData.append("allergens", JSON.stringify(updatedProduct.allergens));
 
         try {
             const response = await axios.post(`${url}/api/food/add`, formData, {
@@ -332,7 +660,29 @@ const ProductsTable = () => {
                     isBestSeller: false,
                     isNewAdded: false,
                     isVegan: false,
-                    extras: []
+                    extras: [],
+                    nutrition: {
+                        calories: 0,
+                        protein: 0,
+                        carbs: 0,
+                        fat: 0,
+                        fiber: 0,
+                        sugar: 0
+                    },
+                    preparation: {
+                        cookingTime: "",
+                        spiceLevel: "",
+                        servingSize: "",
+                        difficulty: ""
+                    },
+                    dietaryInfo: {
+                        isGlutenFree: false,
+                        isDairyFree: false,
+                        isVegetarian: false,
+                        isSpicy: false,
+                        containsNuts: false
+                    },
+                    allergens: []
                 });
                 setExtraName("");
                 setExtraPrice("");
@@ -377,7 +727,29 @@ const ProductsTable = () => {
             isBestSeller: product.isBestSeller,
             isNewAdded: product.isNewAdded,
             isVegan: product.isVegan,
-            extras: product.extras || []
+            extras: product.extras || [],
+            nutrition: product.nutrition || {
+                calories: 0,
+                protein: 0,
+                carbs: 0,
+                fat: 0,
+                fiber: 0,
+                sugar: 0
+            },
+            preparation: product.preparation || {
+                cookingTime: "",
+                spiceLevel: "",
+                servingSize: "",
+                difficulty: ""
+            },
+            dietaryInfo: product.dietaryInfo || {
+                isGlutenFree: false,
+                isDairyFree: false,
+                isVegetarian: false,
+                isSpicy: false,
+                containsNuts: false
+            },
+            allergens: product.allergens || []
         });
         setIsEditing(true);
     };
@@ -396,6 +768,12 @@ const ProductsTable = () => {
         formData.append("isNewAdded", updatedProduct.isNewAdded);
         formData.append("isVegan", updatedProduct.isVegan);
         formData.append("extras", JSON.stringify(updatedProduct.extras));
+        
+        // Adăugăm noile câmpuri
+        formData.append("nutrition", JSON.stringify(updatedProduct.nutrition));
+        formData.append("preparation", JSON.stringify(updatedProduct.preparation));
+        formData.append("dietaryInfo", JSON.stringify(updatedProduct.dietaryInfo));
+        formData.append("allergens", JSON.stringify(updatedProduct.allergens));
         
         if (updatedProduct.image instanceof File) {
             formData.append("image", updatedProduct.image);
@@ -434,24 +812,33 @@ const ProductsTable = () => {
                 isBestSeller: "true",
                 isNewAdded: "false",
                 isVegan: "true",
-                extras: "Extra Cheese:1.50,Olives:0.75"
-            },
-            {
-                name: "Caesar Salad",
-                category: "Salads",
-                price: "8.99",
-                discountPercentage: "0",
-                description: "Fresh salad with caesar dressing",
-                ingredients: "Romaine lettuce, Caesar dressing, Parmesan cheese, Croutons, Chicken",
-                image: "caesar-salad.jpg",
-                isBestSeller: "true",
-                isNewAdded: "true",
-                isVegan: "false",
-                extras: "Extra Chicken:2.00,Extra Dressing:0.50"
+                extras: "Extra Cheese:1.50,Olives:0.75",
+                calories: "285",
+                protein: "12.5",
+                carbs: "35.2",
+                fat: "9.8",
+                fiber: "2.1",
+                sugar: "3.4",
+                cookingTime: "15-20 minute",
+                spiceLevel: "Mild",
+                servingSize: "350g",
+                difficulty: "Easy",
+                isGlutenFree: "false",
+                isDairyFree: "false",
+                isVegetarian: "true",
+                isSpicy: "false",
+                containsNuts: "false",
+                allergens: "Gluten,Dairy"
             }
         ];
 
-        const headers = ["name", "category", "price", "discountPercentage", "description", "ingredients", "image", "isBestSeller", "isNewAdded", "isVegan", "extras"];
+        const headers = [
+            "name", "category", "price", "discountPercentage", "description", "ingredients", "image", 
+            "isBestSeller", "isNewAdded", "isVegan", "extras", "calories", "protein", "carbs", "fat", 
+            "fiber", "sugar", "cookingTime", "spiceLevel", "servingSize", "difficulty", "isGlutenFree", 
+            "isDairyFree", "isVegetarian", "isSpicy", "containsNuts", "allergens"
+        ];
+        
         let csvContent = headers.join(",") + "\n";
         
         templateData.forEach(row => {
@@ -531,8 +918,6 @@ const ProductsTable = () => {
 
         const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
         const products = [];
-        const hasIngredients = headers.includes('ingredients');
-        const hasDiscount = headers.includes('discountPercentage');
 
         for (let i = 1; i < lines.length; i++) {
             let values = [];
@@ -575,6 +960,10 @@ const ProductsTable = () => {
                     });
                 }
 
+                // Parse allergens
+                const parsedAllergens = product.allergens ? 
+                    product.allergens.split(',').map(a => a.trim()).filter(a => a) : [];
+
                 // Calculate discounted price
                 const priceValue = parseFloat(product.price) || 0;
                 const discountValue = parseFloat(product.discountPercentage) || 0;
@@ -583,37 +972,42 @@ const ProductsTable = () => {
                     discountedPrice = priceValue * (1 - discountValue / 100);
                 }
 
-                if (hasIngredients) {
-                    products.push({
-                        name: product.name,
-                        category: product.category,
-                        price: priceValue,
-                        discountPercentage: discountValue,
-                        discountedPrice: discountedPrice,
-                        description: product.description || '',
-                        ingredients: product.ingredients || '',
-                        image: product.image || null,
-                        isBestSeller: product.isBestSeller === 'true',
-                        isNewAdded: product.isNewAdded === 'true',
-                        isVegan: product.isVegan === 'true',
-                        extras: parsedExtras
-                    });
-                } else {
-                    products.push({
-                        name: product.name,
-                        category: product.category,
-                        price: priceValue,
-                        discountPercentage: discountValue,
-                        discountedPrice: discountedPrice,
-                        description: product.description || '',
-                        ingredients: '',
-                        image: product.image || null,
-                        isBestSeller: product.isBestSeller === 'true',
-                        isNewAdded: product.isNewAdded === 'true',
-                        isVegan: product.isVegan === 'true',
-                        extras: parsedExtras
-                    });
-                }
+                products.push({
+                    name: product.name,
+                    category: product.category,
+                    price: priceValue,
+                    discountPercentage: discountValue,
+                    discountedPrice: discountedPrice,
+                    description: product.description || '',
+                    ingredients: product.ingredients || '',
+                    image: product.image || null,
+                    isBestSeller: product.isBestSeller === 'true',
+                    isNewAdded: product.isNewAdded === 'true',
+                    isVegan: product.isVegan === 'true',
+                    extras: parsedExtras,
+                    nutrition: {
+                        calories: parseFloat(product.calories) || 0,
+                        protein: parseFloat(product.protein) || 0,
+                        carbs: parseFloat(product.carbs) || 0,
+                        fat: parseFloat(product.fat) || 0,
+                        fiber: parseFloat(product.fiber) || 0,
+                        sugar: parseFloat(product.sugar) || 0
+                    },
+                    preparation: {
+                        cookingTime: product.cookingTime || '',
+                        spiceLevel: product.spiceLevel || '',
+                        servingSize: product.servingSize || '',
+                        difficulty: product.difficulty || ''
+                    },
+                    dietaryInfo: {
+                        isGlutenFree: product.isGlutenFree === 'true',
+                        isDairyFree: product.isDairyFree === 'true',
+                        isVegetarian: product.isVegetarian === 'true',
+                        isSpicy: product.isSpicy === 'true',
+                        containsNuts: product.containsNuts === 'true'
+                    },
+                    allergens: parsedAllergens
+                });
             }
         }
 
@@ -659,6 +1053,10 @@ const ProductsTable = () => {
                 formData.append("isNewAdded", product.isNewAdded.toString());
                 formData.append("isVegan", product.isVegan.toString());
                 formData.append("extras", JSON.stringify(product.extras || []));
+                formData.append("nutrition", JSON.stringify(product.nutrition || {}));
+                formData.append("preparation", JSON.stringify(product.preparation || {}));
+                formData.append("dietaryInfo", JSON.stringify(product.dietaryInfo || {}));
+                formData.append("allergens", JSON.stringify(product.allergens || []));
 
                 // Găsește imaginea după nume
                 if (product.image && imageMap.has(product.image)) {
@@ -1035,14 +1433,14 @@ const ProductsTable = () => {
                     exit={{ opacity: 0 }}
                 >
                     <motion.div
-                        className="relative bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"
+                        className="relative bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-6xl mx-4 max-h-[95vh] overflow-y-auto"
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
                         transition={{ type: "spring", damping: 25, stiffness: 300 }}
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between p-6 border-b border-gray-700">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-700 sticky top-0 bg-gray-800 z-10">
                             <h3 className="text-2xl font-bold text-white">
                                 Edit Product
                             </h3>
@@ -1117,7 +1515,7 @@ const ProductsTable = () => {
                                 </div>
                             </div>
 
-                            {/* Grid Layout */}
+                            {/* Basic Information Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Name */}
                                 <div className="space-y-2">
@@ -1254,6 +1652,30 @@ const ProductsTable = () => {
                                 <p className="text-gray-400 text-xs">Separate ingredients with commas (e.g., Tomato sauce, Mozzarella, Basil)</p>
                             </div>
 
+                            {/* Nutrition Information */}
+                            <NutritionSection 
+                                nutrition={updatedProduct.nutrition}
+                                setNutrition={(newNutrition) => setUpdatedProduct(prev => ({ ...prev, nutrition: newNutrition }))}
+                            />
+
+                            {/* Preparation Information */}
+                            <PreparationSection 
+                                preparation={updatedProduct.preparation}
+                                setPreparation={(newPreparation) => setUpdatedProduct(prev => ({ ...prev, preparation: newPreparation }))}
+                            />
+
+                            {/* Dietary Information */}
+                            <DietaryInfoSection 
+                                dietaryInfo={updatedProduct.dietaryInfo}
+                                setDietaryInfo={(newDietaryInfo) => setUpdatedProduct(prev => ({ ...prev, dietaryInfo: newDietaryInfo }))}
+                            />
+
+                            {/* Allergens */}
+                            <AllergensSection 
+                                allergens={updatedProduct.allergens}
+                                setAllergens={(newAllergens) => setUpdatedProduct(prev => ({ ...prev, allergens: newAllergens }))}
+                            />
+
                             {/* Extra Options Section */}
                             <ExtraOptionsSection 
                                 extraName={extraName}
@@ -1266,7 +1688,7 @@ const ProductsTable = () => {
                             />
 
                             {/* Actions */}
-                            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-700">
+                            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-700 sticky bottom-0 bg-gray-800 py-4">
                                 <button
                                     type="button"
                                     onClick={() => setIsEditing(false)}
@@ -1298,13 +1720,13 @@ const ProductsTable = () => {
                     exit={{ opacity: 0 }}
                 >
                     <motion.div
-                        className="relative bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto"
+                        className="relative bg-gray-800 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-6xl mx-4 max-h-[95vh] overflow-y-auto"
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}
                         transition={{ type: "spring", damping: 25, stiffness: 300 }}
                     >
-                        <div className="flex items-center justify-between p-6 border-b border-gray-700">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-700 sticky top-0 bg-gray-800 z-10">
                             <h3 className="text-2xl font-bold text-white">Create New Product</h3>
                             <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-white transition-colors duration-200 p-2 rounded-lg hover:bg-gray-700">
                                 <X size={24} />
@@ -1354,7 +1776,7 @@ const ProductsTable = () => {
                                 </label>
                             </div>
 
-                            {/* Grid Layout */}
+                            {/* Basic Information Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Name */}
                                 <div className="space-y-2">
@@ -1499,6 +1921,30 @@ const ProductsTable = () => {
                                 <p className="text-gray-400 text-xs">Separate ingredients with commas (e.g., Tomato sauce, Mozzarella, Basil)</p>
                             </div>
 
+                            {/* Nutrition Information */}
+                            <NutritionSection 
+                                nutrition={updatedProduct.nutrition}
+                                setNutrition={(newNutrition) => setUpdatedProduct(prev => ({ ...prev, nutrition: newNutrition }))}
+                            />
+
+                            {/* Preparation Information */}
+                            <PreparationSection 
+                                preparation={updatedProduct.preparation}
+                                setPreparation={(newPreparation) => setUpdatedProduct(prev => ({ ...prev, preparation: newPreparation }))}
+                            />
+
+                            {/* Dietary Information */}
+                            <DietaryInfoSection 
+                                dietaryInfo={updatedProduct.dietaryInfo}
+                                setDietaryInfo={(newDietaryInfo) => setUpdatedProduct(prev => ({ ...prev, dietaryInfo: newDietaryInfo }))}
+                            />
+
+                            {/* Allergens */}
+                            <AllergensSection 
+                                allergens={updatedProduct.allergens}
+                                setAllergens={(newAllergens) => setUpdatedProduct(prev => ({ ...prev, allergens: newAllergens }))}
+                            />
+
                             {/* Extra Options Section */}
                             <ExtraOptionsSection 
                                 extraName={extraName}
@@ -1511,7 +1957,7 @@ const ProductsTable = () => {
                             />
 
                             {/* Actions */}
-                            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-700">
+                            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-700 sticky bottom-0 bg-gray-800 py-4">
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
@@ -1767,6 +2213,10 @@ const ProductsTable = () => {
                                             <li><code>isNewAdded</code> - true/false</li>
                                             <li><code>isVegan</code> - true/false</li>
                                             <li><code>extras</code> - Format: "Extra1:1.50,Extra2:2.00"</li>
+                                            <li><code>calories, protein, carbs, fat, fiber, sugar</code> - Nutritional info</li>
+                                            <li><code>cookingTime, spiceLevel, servingSize, difficulty</code> - Preparation info</li>
+                                            <li><code>isGlutenFree, isDairyFree, isVegetarian, isSpicy, containsNuts</code> - Dietary info</li>
+                                            <li><code>allergens</code> - Comma separated list</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -1781,7 +2231,7 @@ const ProductsTable = () => {
                                         <strong>Extras Format:</strong> Use "Name:Price,Name:Price" - Example: "Extra Cheese:1.50,Olives:0.75"
                                     </p>
                                     <p className="text-blue-300 text-sm mt-1">
-                                        <strong>Discount:</strong> Enter percentage (0-100). Discounted price will be calculated automatically.
+                                        <strong>Allergens Format:</strong> Comma separated list - Example: "Gluten,Dairy,Nuts"
                                     </p>
                                 </div>
                             </div>
