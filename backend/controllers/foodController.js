@@ -1,7 +1,7 @@
 import foodModel from "../models/foodModel.js";
 import fs from "fs";
 
-// Funcție helper pentru parsing safe ÎMBUNĂTĂȚITĂ
+// În foodController.js - modifică funcția safeParseJSON
 const safeParseJSON = (str, defaultValue = {}) => {
   console.log(`🔄 Parsing:`, str, `Type:`, typeof str);
   
@@ -23,6 +23,13 @@ const safeParseJSON = (str, defaultValue = {}) => {
       // Încearcă parsing direct
       const parsed = JSON.parse(str);
       console.log("✅ Direct JSON parse successful:", parsed);
+      
+      // CORECTARE CRITICĂ: Dacă rezultatul este un array gol, returnează defaultValue
+      if (Array.isArray(parsed) && parsed.length === 0) {
+        console.log("🔄 Empty array detected, returning default object");
+        return defaultValue;
+      }
+      
       return parsed;
     } catch (error) {
       console.log("❌ Direct JSON parse failed, trying cleanup...");
@@ -40,6 +47,13 @@ const safeParseJSON = (str, defaultValue = {}) => {
         
         const parsed = JSON.parse(cleanStr);
         console.log("✅ Cleaned JSON parse successful:", parsed);
+        
+        // CORECTARE CRITICĂ: și aici
+        if (Array.isArray(parsed) && parsed.length === 0) {
+          console.log("🔄 Empty array detected, returning default object");
+          return defaultValue;
+        }
+        
         return parsed;
       } catch (secondError) {
         console.log("❌ Cleaned JSON parse also failed:", secondError);
@@ -241,6 +255,12 @@ const updateFood = async (req, res) => {
       allergens: typeof allergens
     });
     console.log("📥 UPDATE FOOD - Raw nutrition:", nutrition);
+
+
+    console.log("🔍 UPDATE FOOD - Raw nutrition value:", nutrition);
+console.log("🔍 UPDATE FOOD - Raw nutrition type:", typeof nutrition);
+console.log("🔍 UPDATE FOOD - Is nutrition an array?", Array.isArray(nutrition));
+
 
     // Validare câmpuri obligatorii
     if (!id || !name || !description || !price || !category) {
