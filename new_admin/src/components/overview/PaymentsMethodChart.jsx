@@ -16,7 +16,7 @@ const PaymentsMethodChart
                 const response = await axios.get(`${url}/api/order/list`);
                 if (response.data.success) {
                     const orders = response.data.data.filter(order => order.status === 'Delivered');;
-
+console.log(orders)
                     // Count occurrences of each payment method
                     const paymentMethodCounts = orders.reduce((acc, order) => {
                         const method = order.paymentMethod; // Access the paymentMethod

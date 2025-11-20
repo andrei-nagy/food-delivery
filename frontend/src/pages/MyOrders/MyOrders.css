@@ -50,7 +50,8 @@ body.cart-page .navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 0;
+  /* padding: 16px 0; */
+  padding-bottom: 16px;
   /* margin-bottom: 16px; */
   /* border-bottom: 1px solid #e9ecef; */
 }
@@ -373,9 +374,9 @@ body.cart-page .navbar {
   border-bottom: none;
 }
 
-.cart-items-list .cart-item:hover {
+/* .cart-items-list .cart-item:hover {
   background-color: #f8f9fa;
-}
+} */
 
 .cart-items-list .item-image {
   width: 60px;
@@ -398,13 +399,13 @@ body.cart-page .navbar {
 }
 
 .cart-items-list .item-name-button:hover .item-name {
-  color: #e74c3c;
+  color: #e86514;
 }
 
 .cart-items-list .item-price {
   font-size: 15px;
   font-weight: 700;
-  color: #e74c3c;
+  color: #e86514;
   margin-top: 6px;
 }
 
@@ -549,7 +550,7 @@ body.cart-page .navbar {
 .item-price {
   font-size: 16px;
   font-weight: 600;
-  color: #e74c3c;
+  color: #e86514;
   margin-top: 4px;
 }
 
@@ -591,7 +592,7 @@ body.cart-page .navbar {
 }
 
 /* Order Summary */
-.order-summary-section {
+.order-summary-section-cart {
   background: white;
   border-radius: 12px;
   padding: 20px;
@@ -1393,7 +1394,7 @@ body.cart-page .navbar {
   }
 
   .cart-items-list .item-price {
-    font-size: 14px;
+    font-size: 15px;
   }
 
   .cart-items-list .quantity-display-static {
@@ -2067,13 +2068,13 @@ body.cart-page .cart-container .cart-content .cart-items-section .cart-items-lis
 }
 
 .discounted-price {
-  color: #e74c3c;
+  color: #e86514;
   font-size: 16px;
   font-weight: 700;
 }
 
 .discount-badge {
-  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  background: #e86514;
   color: white;
   padding: 2px 8px;
   border-radius: 12px;
@@ -2128,14 +2129,14 @@ body.cart-page .cart-container .cart-content .cart-items-section .cart-items-lis
 .summary-row.promo-discount,
 .summary-row.saved-amount {
   margin: 4px -12px;
-  padding: 8px 12px;
+  padding: 2px 12px;
   border-radius: 8px;
 }
-
+/* 
 .summary-row.saved-amount {
   background: rgba(52, 152, 219, 0.08);
   border: 1px dashed #3498db;
-}
+} */
 
 /* Efecte pentru prețuri cu discount în item-details */
 .item-price-container {
@@ -2157,13 +2158,13 @@ body.cart-page .cart-container .cart-content .cart-items-section .cart-items-lis
 }
 
 .final-price {
-  color: #e74c3c;
+  color: #e86514;
   font-size: 16px;
   font-weight: 700;
 }
 
 .discount-badge {
-  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  background: #e86514;
   color: white;
   padding: 2px 8px;
   border-radius: 12px;
@@ -2218,14 +2219,14 @@ body.cart-page .cart-container .cart-content .cart-items-section .cart-items-lis
 .summary-row.promo-discount,
 .summary-row.saved-amount {
   margin: 4px -12px;
-  padding: 8px 12px;
+  padding: 2px 12px;
   border-radius: 8px;
 }
 
-.summary-row.saved-amount {
+/* .summary-row.saved-amount {
   background: rgba(52, 152, 219, 0.08);
   border: 1px dashed #3498db;
-}
+} */
 
 
 

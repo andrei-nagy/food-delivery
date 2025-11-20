@@ -36,7 +36,8 @@ const Cart = () => {
     clearCart,
     addToCart,
     canAddToCart,
-    billRequested
+    billRequested,
+    userBlocked
   } = useContext(StoreContext);
 
   const { t, i18n } = useTranslation();
@@ -65,6 +66,29 @@ const Cart = () => {
 
   const isCartEmpty = Object.keys(cartItems).length === 0;
 
+  // Combină ambele condiții pentru a bloca interacțiunea
+  const isDisabled = billRequested || userBlocked;
+
+const getBlockedMessage = () => {
+  if (userBlocked) {
+    return {
+      icon: "⏰",
+      text: t("cart.session_expired"),
+      warningText: t("cart.session_expired_warning")
+    };
+  }
+  if (billRequested) {
+    return {
+      icon: "🔒", 
+      text: t("cart.bill_requested"),
+      warningText: t("cart.bill_requested_warning")
+    };
+  }
+  return null;
+};
+
+  const blockedMessage = getBlockedMessage();
+
   useEffect(() => {
     document.body.classList.add("cart-page");
     return () => {
@@ -74,7 +98,7 @@ const Cart = () => {
 
   useEffect(() => {
     setData((data) => ({ ...data, tableNo: tableNumber }));
-    setShowFloatingCheckout(!isCartEmpty && !billRequested);
+    setShowFloatingCheckout(!isCartEmpty && !isDisabled);
 
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -82,8 +106,8 @@ const Cart = () => {
   }, []);
 
   useEffect(() => {
-    setShowFloatingCheckout(!isCartEmpty && !billRequested);
-  }, [isCartEmpty, cartItems, billRequested]);
+    setShowFloatingCheckout(!isCartEmpty && !isDisabled);
+  }, [isCartEmpty, cartItems, isDisabled]);
 
   // Fetch popular products
   useEffect(() => {
@@ -150,23 +174,23 @@ const Cart = () => {
       }
     };
 
-    if (!isCartEmpty && !billRequested) {
+    if (!isCartEmpty && !isDisabled) {
       fetchPopularProducts();
     }
-  }, [url, isCartEmpty, billRequested]);
+  }, [url, isCartEmpty, isDisabled]);
 
   // Select 6 random products from popular products
   useEffect(() => {
-    if (popularProducts.length > 0 && !billRequested) {
+    if (popularProducts.length > 0 && !isDisabled) {
       const shuffled = [...popularProducts].sort(() => 0.5 - Math.random());
       const selected = shuffled.slice(0, 6);
       setDisplayedPopularProducts(selected);
     }
-  }, [popularProducts, billRequested]);
+  }, [popularProducts, isDisabled]);
 
   // Function to handle adding popular product to cart
   const handleAddPopularProduct = (product) => {
-    // ✅ Verifică dacă nota a fost cerută înainte de a adăuga în coș
+    // ✅ Verifică dacă nota a fost cerută sau session-ul a expirat înainte de a adăuga în coș
     if (!canAddToCart()) {
       return;
     }
@@ -322,7 +346,7 @@ const Cart = () => {
   };
 
   const openFoodModal = (itemId, cartItem) => {
-    // ✅ Verifică dacă nota a fost cerută înainte de a deschide modalul
+    // ✅ Verifică dacă nota a fost cerută sau session-ul a expirat înainte de a deschide modalul
     if (!canAddToCart()) {
       return;
     }
@@ -398,9 +422,8 @@ const Cart = () => {
   const placeOrder = async (event) => {
     if (event) event.preventDefault();
 
-    // ✅ Verifică dacă nota a fost cerută înainte de a plasa comanda
-    if (billRequested) {
-      toast.error("Cannot place order - bill has been requested");
+    // ✅ Verifică dacă nota a fost cerută sau session-ul a expirat înainte de a plasa comanda
+    if (!canAddToCart()) {
       return;
     }
 
@@ -504,8 +527,8 @@ const Cart = () => {
   };
 
   const handleTouchStart = (e, id) => {
-    // ✅ Verifică dacă nota a fost cerută înainte de a permite swipe
-    if (billRequested) return;
+    // ✅ Verifică dacă nota a fost cerută sau session-ul a expirat înainte de a permite swipe
+    if (isDisabled) return;
     
     swipeData.current[id] = {
       startX: e.touches[0].clientX,
@@ -515,8 +538,8 @@ const Cart = () => {
   };
 
   const handleTouchMove = (e, id) => {
-    // ✅ Verifică dacă nota a fost cerută
-    if (billRequested) return;
+    // ✅ Verifică dacă nota a fost cerută sau session-ul a expirat
+    if (isDisabled) return;
     
     const current = swipeData.current[id];
     if (!current) return;
@@ -540,8 +563,8 @@ const Cart = () => {
   };
 
   const handleTouchEnd = (id) => {
-    // ✅ Verifică dacă nota a fost cerută
-    if (billRequested) return;
+    // ✅ Verifică dacă nota a fost cerută sau session-ul a expirat
+    if (isDisabled) return;
     
     const current = swipeData.current[id];
     if (!current) return;
@@ -567,14 +590,17 @@ const Cart = () => {
     delete swipeData.current[id];
   };
 
-  const handleDeleteClick = (id) => {
-    // ✅ Verifică dacă nota a fost cerută
+const handleDeleteClick = (id) => {
+  if (isDisabled) {
     if (billRequested) {
-      toast.error("Cannot modify cart - bill has been requested");
-      return;
+      toast.error(t("cart.cannot_modify_cart_bill"));
+    } else if (userBlocked) {
+      toast.error(t("cart.cannot_modify_cart_session"));
     }
-    setItemToDelete(id);
-  };
+    return;
+  }
+  setItemToDelete(id);
+};
 
   const confirmDelete = () => {
     if (itemToDelete) {
@@ -593,210 +619,145 @@ const Cart = () => {
     setSwipeOffsets((prev) => ({ ...prev, [id]: 0 }));
   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.4 }}
-      className="cart-container"
-    >
-      {/* Bill Requested Warning Banner */}
-      {billRequested && (
-        <motion.div
-          className="cart-bill-warning"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="cart-bill-warning-content">
-            <span className="cart-bill-warning-icon">⚠️</span>
-            <div className="cart-bill-warning-text">
-              <strong>Bill Requested</strong>
-              <span>Cannot add new items or modify cart. Please cancel the bill request first.</span>
-            </div>
-          </div>
-        </motion.div>
-      )}
+ return (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    transition={{ duration: 0.4 }}
+    className="cart-container"
+  >
+   
 
-      {/* Header Section */}
-      <div className="cart-header-section">
-        <button className="back-button" onClick={() => navigate(-1)}>
-          <FaArrowLeft />
-          <span>Back</span>
+    {/* Header Section */}
+    <div className="cart-header-section">
+      <button className="back-button" onClick={() => navigate(-1)}>
+        <FaArrowLeft />
+        {/* <span>{t("cart.back")}</span> */}
+      </button>
+
+      <h1 className="cart-title">{t("cart.your_order")}</h1>
+
+      {!isCartEmpty && !isDisabled ? (
+        <button
+          className="clear-cart-button"
+          onClick={() => setShowConfirmClear(true)}
+          aria-label="Clear cart"
+        >
+          <FaTrash />
         </button>
-
-        <h1 className="cart-title">{t("your_order")}</h1>
-
-        {!isCartEmpty && !billRequested ? (
-          <button
-            className="clear-cart-button"
-            onClick={() => setShowConfirmClear(true)}
-            aria-label="Clear cart"
-          >
-            <FaTrash />
-          </button>
-        ) : (
-          <div className="clear-cart-placeholder"></div>
-        )}
-      </div>
-
-      {/* Empty Cart State - SE AFIȘEAZĂ DOAR DACĂ NU E PLASATĂ COMANDA */}
-      {isCartEmpty && !orderPlaced ? (
-        <motion.div
-          className="empty-cart-state"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
-          <div className="empty-cart-illustration-container">
-            <motion.img
-              className="empty-cart-illustration"
-              src={assets.empty_cart3}
-              alt="Empty cart"
-              initial={{ scale: 0.8, rotate: -5 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ duration: 0.7, delay: 0.1 }}
-            />
-            <motion.div
-              className="empty-cart-decoration"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <div className="decoration-circle circle-1"></div>
-              <div className="decoration-circle circle-2"></div>
-              <div className="decoration-circle circle-3"></div>
-            </motion.div>
-          </div>
-
-          <motion.h2
-            className="empty-cart-title"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            Your cart feels lonely
-          </motion.h2>
-
-          <motion.p
-            className="empty-cart-description"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-          >
-            It looks like you haven't added any items to your cart yet. Explore
-            our menu and discover delicious options!
-          </motion.p>
-
-          <motion.button
-            className="browse-menu-button"
-            onClick={() => navigate("/category/All")}
-            whileHover={{
-              scale: 1.05,
-              boxShadow: "0 10px 25px rgba(40, 167, 69, 0.3)",
-            }}
-            whileTap={{ scale: 0.95 }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-          >
-            <span>Browse Menu</span>
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M5 12H19M19 12L12 5M19 12L12 19"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </motion.button>
-        </motion.div>
       ) : (
-        <div className="cart-content">
-          {/* Cart Items List */}
-          <div className="cart-items-section">
-            <div className="cart-items-list">
-              <AnimatePresence>
-                {Object.keys(cartItems).map((itemId) => {
-                  const cartItem = cartItems[itemId];
-                  if (!cartItem || cartItem.quantity <= 0) return null;
+        <div className="clear-cart-placeholder"></div>
+      )}
+    </div>
+ {/* Warning Banner pentru Session Expired sau Bill Requested */}
+    {isDisabled && blockedMessage && (
+      <motion.div
+        className="cart-bill-warning"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="cart-bill-warning-content">
+          <span className="cart-bill-warning-icon">{blockedMessage.icon}</span>
+          <div className="cart-bill-warning-text">
+            <strong>{blockedMessage.text}</strong>
+            <span>{blockedMessage.warningText}</span>
+          </div>
+        </div>
+      </motion.div>
+    )}
 
-                  const foodItem = findFoodItem(itemId, cartItem);
-                  const itemInstructions = getItemInstructions(itemId);
-                  if (!foodItem) {
-                    return (
-                      <React.Fragment key={itemId}>
-                        <motion.div
-                          className="cart-item-container"
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: "auto" }}
-                          exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.3 }}
-                          layout
-                        >
-                          <div className="cart-item">
-                            <div className="item-image placeholder">
-                              <FaCreditCard />
-                            </div>
-                            <div className="item-details">
-                              <div className="item-main-info">
-                                <h3 className="item-name">
-                                  Product Loading...
-                                </h3>
-                                <p className="item-description">
-                                  Please wait while we load product information
-                                </p>
-                              </div>
-                              <div className="item-bottom-row">
-                                <p className="item-price">
-                                  {cartItem.quantity} x ? €
-                                </p>
-                                <div className={`quantity-controls ${billRequested ? 'disabled-controls' : ''}`}>
-                                  <button
-                                    onClick={() => removeFromCart(itemId, 1)}
-                                    className="quantity-button-order decrease"
-                                    aria-label="Decrease quantity"
-                                    disabled={billRequested}
-                                  >
-                                    <FaMinus />
-                                  </button>
-                                  <span className="quantity-display">
-                                    {cartItem.quantity}
-                                  </span>
-                                  <button
-                                    onClick={() =>
-                                      updateCartItemQuantity(
-                                        itemId,
-                                        cartItem.quantity + 1,
-                                        itemInstructions
-                                      )
-                                    }
-                                    className="quantity-button-order increase"
-                                    aria-label="Increase quantity"
-                                    disabled={billRequested}
-                                  >
-                                    <FaPlus />
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                        <div className="item-divider"></div>
-                      </React.Fragment>
-                    );
-                  }
+    {/* Empty Cart State - SE AFIȘEAZĂ DOAR DACĂ NU E PLASATĂ COMANDA */}
+    {isCartEmpty && !orderPlaced ? (
+      <motion.div
+        className="empty-cart-state"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <div className="empty-cart-illustration-container">
+          <motion.img
+            className="empty-cart-illustration"
+            src={assets.empty_cart3}
+            alt="Empty cart"
+            initial={{ scale: 0.8, rotate: -5 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+          />
+          <motion.div
+            className="empty-cart-decoration"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <div className="decoration-circle circle-1"></div>
+            <div className="decoration-circle circle-2"></div>
+            <div className="decoration-circle circle-3"></div>
+          </motion.div>
+        </div>
 
-                  const priceInfo = getItemPriceWithDiscount(foodItem, cartItem);
+        <motion.h2
+          className="empty-cart-title"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          {t("cart.empty_cart_title")}
+        </motion.h2>
 
+        <motion.p
+          className="empty-cart-description"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+        >
+          {t("cart.empty_cart_description")}
+        </motion.p>
+
+        <motion.button
+          className="browse-menu-button"
+          onClick={() => navigate("/category/All")}
+          whileHover={{
+            scale: 1.05,
+            boxShadow: "0 10px 25px rgba(40, 167, 69, 0.3)",
+          }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
+          <span>{t("cart.browse_menu")}</span>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M5 12H19M19 12L12 5M19 12L12 19"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </motion.button>
+      </motion.div>
+    ) : (
+      <div className="cart-content">
+        {/* Cart Items List */}
+        <div className="cart-items-section">
+          <div className="cart-items-list">
+            <AnimatePresence>
+              {Object.keys(cartItems).map((itemId) => {
+                const cartItem = cartItems[itemId];
+                if (!cartItem || cartItem.quantity <= 0) return null;
+
+                const foodItem = findFoodItem(itemId, cartItem);
+                const itemInstructions = getItemInstructions(itemId);
+                if (!foodItem) {
                   return (
                     <React.Fragment key={itemId}>
                       <motion.div
@@ -807,476 +768,530 @@ const Cart = () => {
                         transition={{ duration: 0.3 }}
                         layout
                       >
-                        {!billRequested && (
-                          <div
-                            className="cart-item-swipe-background"
-                            onClick={() => handleDeleteClick(itemId)}
-                          >
-                            <FaTrash className="swipe-trash-icon" />
+                        <div className="cart-item">
+                          <div className="item-image placeholder">
+                            <FaCreditCard />
                           </div>
-                        )}
-
-                        <div
-                          className={`cart-item ${billRequested ? 'bill-requested-item' : ''}`}
-                          onTouchStart={(e) => handleTouchStart(e, itemId)}
-                          onTouchMove={(e) => handleTouchMove(e, itemId)}
-                          onTouchEnd={() => handleTouchEnd(itemId)}
-                          onClick={() => resetSwipe(itemId)}
-                          style={{
-                            transform: `translateX(${
-                              swipeOffsets[itemId] || 0
-                            }px)`,
-                            transition: "transform 0.3s ease",
-                          }}
-                        >
-                          <button
-                            className="item-image-button"
-                            onClick={() => openFoodModal(itemId, cartItem)}
-                            disabled={billRequested}
-                          >
-                            <img
-                              src={url + "/images/" + foodItem.image}
-                              alt={foodItem.name}
-                              className="item-image"
-                              onError={(e) => {
-                                e.target.src = assets.image_coming_soon;
-                                e.target.style.objectFit = "cover";
-                              }}
-                            />
-                          </button>
                           <div className="item-details">
-                            <button
-                              className="item-name-button"
-                              onClick={() => openFoodModal(itemId, cartItem)}
-                              disabled={billRequested}
-                            >
-                              <h3 className={`item-name ${billRequested ? 'disabled-text' : ''}`}>{foodItem.name}</h3>
-                            </button>
-
-                            {/* DESCRIEREA SUB TITLU */}
-                            <button
-                              className="item-description-button"
-                              onClick={() => openFoodModal(itemId, cartItem)}
-                              disabled={billRequested}
-                            >
-                              <p className={`item-description ${billRequested ? 'disabled-text' : ''}`}>
-                                {foodItem.description}
+                            <div className="item-main-info">
+                              <h3 className="item-name">
+                                {t("cart.product_loading")}
+                              </h3>
+                              <p className="item-description">
+                                {t("cart.loading_description")}
                               </p>
-                            </button>
-
-                            {/* NOTE + EXTRAS SUB DESCRIERE */}
-                            {itemInstructions && (
-                              <div className="item-special-instructions">
-                                <span className="instructions-label">
-                                  Note:{" "}
-                                </span>
-                                {itemInstructions}
-                              </div>
-                            )}
-
-                            {cartItem.selectedOptions &&
-                              cartItem.selectedOptions.length > 0 && (
-                                <div className="item-extras">
-                                  <span className="extras-label">Extras: </span>
-                                  {cartItem.selectedOptions.join(", ")}
-                                  <span className="extras-price">
-                                    (+
-                                    {(
-                                      cartItem.itemData?.extrasPrice || 0
-                                    ).toFixed(2)}{" "}
-                                    €)
-                                  </span>
-                                </div>
-                              )}
-
-                            {/* SECȚIUNEA DE PREȚ CU DISCOUNT */}
-                            <div className="item-price-section">
-                              {priceInfo.hasDiscount ? (
-                                <div className="discount-price-wrapper-cart">
-                                  <span className="original-price-line">
-                                    {(priceInfo.originalPrice * cartItem.quantity).toFixed(2)} €
-                                  </span>
-                                  <span className="discounted-price-cart">
-                                    {priceInfo.totalPrice.toFixed(2)} €
-                                  </span>
-                                  <div className="discount-badge-cart">
-                                    -{priceInfo.discountPercentage}%
-                                  </div>
-                                </div>
-                              ) : (
-                                <span className="regular-price-cart">
-                                  {priceInfo.totalPrice.toFixed(2)} €
-                                </span>
-                              )}
                             </div>
-                          </div>
-                          <div className={`quantity-controls ${billRequested ? 'disabled-controls' : ''}`}>
-                            <button
-                              onClick={() => removeFromCart(itemId, 1)}
-                              className="quantity-button-order decrease"
-                              aria-label="Decrease quantity"
-                              disabled={billRequested}
-                            >
-                              <FaMinus />
-                            </button>
-                            <span className="quantity-display">
-                              {cartItem.quantity}
-                            </span>
-                            <button
-                              onClick={() =>
-                                updateCartItemQuantity(
-                                  itemId,
-                                  cartItem.quantity + 1,
-                                  itemInstructions
-                                )
-                              }
-                              className="quantity-button-order increase"
-                              aria-label="Increase quantity"
-                              disabled={billRequested}
-                            >
-                              <FaPlus />
-                            </button>
+                            <div className="item-bottom-row">
+                              <p className="item-price">
+                                {cartItem.quantity} x ? €
+                              </p>
+                              <div className={`quantity-controls ${isDisabled ? 'disabled-controls' : ''}`}>
+                                <button
+                                  onClick={() => removeFromCart(itemId, 1)}
+                                  className="quantity-button-order decrease"
+                                  aria-label="Decrease quantity"
+                                  disabled={isDisabled}
+                                >
+                                  <FaMinus />
+                                </button>
+                                <span className="quantity-display">
+                                  {cartItem.quantity}
+                                </span>
+                                <button
+                                  onClick={() =>
+                                    updateCartItemQuantity(
+                                      itemId,
+                                      cartItem.quantity + 1,
+                                      itemInstructions
+                                    )
+                                  }
+                                  className="quantity-button-order increase"
+                                  aria-label="Increase quantity"
+                                  disabled={isDisabled}
+                                >
+                                  <FaPlus />
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </motion.div>
                       <div className="item-divider"></div>
                     </React.Fragment>
                   );
-                })}
-              </AnimatePresence>
-            </div>
+                }
 
-            {/* Add More Button - doar dacă nota nu este cerută */}
-            {!billRequested && (
-              <div className="add-more-button-container">
-                <button
-                  className="add-more-button-cart"
-                  onClick={() => navigate("/category/All")}
-                >
-                  <FaPlus />
-                  <span>{t("add_more_items")}</span>
-                </button>
-              </div>
-            )}
+                const priceInfo = getItemPriceWithDiscount(foodItem, cartItem);
+
+                return (
+                  <React.Fragment key={itemId}>
+                    <motion.div
+                      className="cart-item-container"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      layout
+                    >
+                      {!isDisabled && (
+                        <div
+                          className="cart-item-swipe-background"
+                          onClick={() => handleDeleteClick(itemId)}
+                        >
+                          <FaTrash className="swipe-trash-icon" />
+                        </div>
+                      )}
+
+                      <div
+                        className={`cart-item ${isDisabled ? 'bill-requested-item' : ''}`}
+                        onTouchStart={(e) => handleTouchStart(e, itemId)}
+                        onTouchMove={(e) => handleTouchMove(e, itemId)}
+                        onTouchEnd={() => handleTouchEnd(itemId)}
+                        onClick={() => resetSwipe(itemId)}
+                        style={{
+                          transform: `translateX(${
+                            swipeOffsets[itemId] || 0
+                          }px)`,
+                          transition: "transform 0.3s ease",
+                        }}
+                      >
+                        <button
+                          className="item-image-button"
+                          onClick={() => openFoodModal(itemId, cartItem)}
+                          disabled={isDisabled}
+                        >
+                          <img
+                            src={url + "/images/" + foodItem.image}
+                            alt={foodItem.name}
+                            className="item-image"
+                            onError={(e) => {
+                              e.target.src = assets.image_coming_soon;
+                              e.target.style.objectFit = "cover";
+                            }}
+                          />
+                        </button>
+                        <div className="item-details">
+                          <button
+                            className="item-name-button"
+                            onClick={() => openFoodModal(itemId, cartItem)}
+                            disabled={isDisabled}
+                          >
+                            <h3 className={`item-name ${isDisabled ? 'disabled-text' : ''}`}>{foodItem.name}</h3>
+                          </button>
+
+                          {/* DESCRIEREA SUB TITLU */}
+                          <button
+                            className="item-description-button"
+                            onClick={() => openFoodModal(itemId, cartItem)}
+                            disabled={isDisabled}
+                          >
+                            <p className={`item-description ${isDisabled ? 'disabled-text' : ''}`}>
+                              {foodItem.description}
+                            </p>
+                          </button>
+
+                          {/* NOTE + EXTRAS SUB DESCRIERE */}
+                          {itemInstructions && (
+                            <div className="item-special-instructions">
+                              <span className="instructions-label">
+                                {t("cart.note")}{" "}
+                              </span>
+                              {itemInstructions}
+                            </div>
+                          )}
+
+                          {cartItem.selectedOptions &&
+                            cartItem.selectedOptions.length > 0 && (
+                              <div className="item-extras">
+                                <span className="extras-label">{t("cart.extras")} </span>
+                                {cartItem.selectedOptions.join(", ")}
+                                <span className="extras-price">
+                                  (+
+                                  {(
+                                    cartItem.itemData?.extrasPrice || 0
+                                  ).toFixed(2)}{" "}
+                                  €)
+                                </span>
+                              </div>
+                            )}
+
+                          {/* SECȚIUNEA DE PREȚ CU DISCOUNT */}
+                          <div className="item-price-section">
+                            {priceInfo.hasDiscount ? (
+                              <div className="discount-price-wrapper-cart">
+                                <span className="original-price-line">
+                                  {(priceInfo.originalPrice * cartItem.quantity).toFixed(2)} €
+                                </span>
+                                <span className="discounted-price-cart">
+                                  {priceInfo.totalPrice.toFixed(2)} €
+                                </span>
+                                <div className="discount-badge-cart">
+                                  -{priceInfo.discountPercentage}%
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="regular-price-cart">
+                                {priceInfo.totalPrice.toFixed(2)} €
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className={`quantity-controls ${isDisabled ? 'disabled-controls' : ''}`}>
+                          <button
+                            onClick={() => removeFromCart(itemId, 1)}
+                            className="quantity-button-order decrease"
+                            aria-label="Decrease quantity"
+                            disabled={isDisabled}
+                          >
+                            <FaMinus />
+                          </button>
+                          <span className="quantity-display">
+                            {cartItem.quantity}
+                          </span>
+                          <button
+                            onClick={() =>
+                              updateCartItemQuantity(
+                                itemId,
+                                cartItem.quantity + 1,
+                                itemInstructions
+                              )
+                            }
+                            className="quantity-button-order increase"
+                            aria-label="Increase quantity"
+                            disabled={isDisabled}
+                          >
+                            <FaPlus />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                    <div className="item-divider"></div>
+                  </React.Fragment>
+                );
+              })}
+            </AnimatePresence>
           </div>
 
-{/* Popular Products Section - DOAR DACĂ COȘUL NU ESTE GOL ȘI NOTA NU ESTE CERUTĂ */}
-{!isCartEmpty && displayedPopularProducts.length > 0 && !billRequested && (
-  <motion.div
-    className="popular-products-section"
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.3 }}
-  >
-    <h2 className="section-title">{t("other_products")}</h2>
-    <p className="section-subtitle">{t("popular_choices")}</p>
-
-    <div className="popular-products-grid">
-      {displayedPopularProducts.map((product, index) => {
-        // Asigură-te că product este un obiect valid înainte de a-l randări
-        if (!product || typeof product !== "object") {
-          return null;
-        }
-
-        const quantityInCart = getPopularProductQuantity(product);
-        
-        // ✅ GĂSEȘTE INFORMAȚIILE COMPLETE DESPRE PRODUS DIN FOOD_LIST
-        const completeFoodItem = food_list.find(item => 
-          item._id === (product.id || product._id) || 
-          item.name === product.name
-        );
-        
-        // ✅ CALCULEAZĂ PREȚUL CU DISCOUNT
-        const getProductPriceInfo = () => {
-          if (!completeFoodItem) {
-            return {
-              hasDiscount: false,
-              originalPrice: product.price || 0,
-              discountedPrice: product.price || 0,
-              discountPercentage: 0
-            };
-          }
-          
-          const rawPrice = parseFloat(completeFoodItem.price) || parseFloat(product.price) || 0;
-          const discountPercentage = parseFloat(completeFoodItem.discountPercentage) || 0;
-          
-          const discountedPrice = discountPercentage > 0 
-            ? rawPrice * (1 - discountPercentage / 100)
-            : rawPrice;
-            
-          return {
-            hasDiscount: discountPercentage > 0,
-            originalPrice: rawPrice,
-            discountedPrice: discountedPrice,
-            discountPercentage: discountPercentage
-          };
-        };
-        
-        const priceInfo = getProductPriceInfo();
-
-        return (
-          <motion.div
-            key={product.id || product.name || `popular-${index}`}
-            className="popular-product-card"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 * index }}
-            whileHover={{
-              scale: 1.02,
-              boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
-            }}
-          >
-            {/* Card-ul întreg este clickable pentru a deschide modalul */}
-            <div
-              className="popular-product-image"
-              onClick={() => handleAddPopularProduct(product)}
-            >
-              <img
-                src={
-                  product.image
-                    ? `${url}/images/${product.image}`
-                    : assets.image_coming_soon
-                }
-                alt={product.name || "Popular product"}
-                onError={(e) => {
-                  e.target.src = assets.image_coming_soon;
-                  e.target.style.objectFit = "contain";
-                  e.target.style.padding = "10px";
-                }}
-              />
-
-              {/* Butonul de add sau cantitatea */}
-              {quantityInCart > 0 ? (
-                <div className="popular-product-quantity-badge emerald">
-                  <span className="quantity-number">
-                    {quantityInCart}
-                  </span>
-                </div>
-              ) : (
-                <button
-                  className="add-popular-product-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAddPopularProduct(product);
-                  }}
-                  aria-label={`Add ${product.name} to cart`}
-                >
-                  <FaPlus />
-                </button>
-              )}
-              
-              {/* ✅ BADGE PENTRU DISCOUNT */}
-              {priceInfo.hasDiscount && (
-                <div className="popular-product-discount-badge">
-                  -{priceInfo.discountPercentage}%
-                </div>
-              )}
-            </div>
-
-            <div className="popular-product-info">
-              <h4
-                className="popular-product-name"
-                onClick={() => handleAddPopularProduct(product)}
+          {/* Add More Button - doar dacă nota nu este cerută sau session-ul nu a expirat */}
+          {!isDisabled && (
+            <div className="add-more-button-container">
+              <button
+                className="add-more-button-cart"
+                onClick={() => navigate("/category/All")}
               >
-                {product.name || "Popular Item"}
-              </h4>
-              
-              {/* ✅ AFIȘEAZĂ PREȚUL CU DISCOUNT - PĂSTRÂND CLASELE ORIGINALE */}
-              <div className="popular-product-price-container">
-                {priceInfo.hasDiscount ? (
-                  <div className="popular-product-price-with-discount">
-                    <span className="popular-product-original-price">
-                      {priceInfo.originalPrice.toFixed(2)} €
-                    </span>
-                    <span className="popular-product-price discounted">
-                      {priceInfo.discountedPrice.toFixed(2)} €
-                    </span>
-                  </div>
-                ) : (
-                  <span className="popular-product-price">
-                    {priceInfo.originalPrice.toFixed(2)} €
-                  </span>
-                )}
-              </div>
-              
-              <div className="popular-product-stats">
-                <span className="order-count">
-                  {t("ordered_times", { count: product.count || 0 })}
-                </span>
-              </div>
-            </div>
-          </motion.div>
-        );
-      })}
-    </div>
-  </motion.div>
-)}
-
-          {/* Special Instructions globale - doar dacă nota nu este cerută */}
-          {!billRequested && (
-            <div className="special-instructions-section">
-              <h2 className="section-title">{t("special_instructions")}</h2>
-              <div className="instructions-input-container">
-                <textarea
-                  value={specialInstructions}
-                  onChange={(e) => setSpecialInstructions(e.target.value)}
-                  placeholder={t("special_instructions_placeholder")}
-                  rows={3}
-                  className="instructions-textarea"
-                />
-              </div>
+                <FaPlus />
+                <span>{t("cart.add_more_items")}</span>
+              </button>
             </div>
           )}
+        </div>
 
-          {/* Order Summary */}
-          <div className="order-summary-section">
-            <h2 className="section-title">{t("order_summary")}</h2>
+        {/* Popular Products Section - DOAR DACĂ COȘUL NU ESTE GOL ȘI NOTA NU ESTE CERUTĂ ȘI SESSION-UL NU A EXPIRAT */}
+        {!isCartEmpty && displayedPopularProducts.length > 0 && !isDisabled && (
+          <motion.div
+            className="popular-products-section"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <h2 className="section-title">{t("cart.other_products")}</h2>
+            <p className="section-subtitle">{t("cart.popular_choices")}</p>
 
-            <div className="summary-details">
-              <div className="summary-row">
-                <span>{t("subtotal")}</span>
-                {/* ✅ Folosim subtotal-ul ORIGINAL (fără discount) */}
-                <span>{getOriginalSubtotal().toFixed(2)} €</span>
-              </div>
+            <div className="popular-products-grid">
+              {displayedPopularProducts.map((product, index) => {
+                if (!product || typeof product !== "object") {
+                  return null;
+                }
 
-              {/* ✅ SECȚIUNEA PENTRU DISCOUNT-UL TOTAL DIN PRODUSELE CU REDUCERE */}
-              {getTotalDiscountAmount() > 0 && (
-                <div className="summary-row discount-row">
-                  <span className="discount-label">
-                    Discount
-                  </span>
-                  <span className="discount-amount">
-                    -{getTotalDiscountAmount().toFixed(2)} €
-                  </span>
-                </div>
-              )}
+                const quantityInCart = getPopularProductQuantity(product);
+                
+                const completeFoodItem = food_list.find(item => 
+                  item._id === (product.id || product._id) || 
+                  item.name === product.name
+                );
+                
+                const getProductPriceInfo = () => {
+                  if (!completeFoodItem) {
+                    return {
+                      hasDiscount: false,
+                      originalPrice: product.price || 0,
+                      discountedPrice: product.price || 0,
+                      discountPercentage: 0
+                    };
+                  }
+                  
+                  const rawPrice = parseFloat(completeFoodItem.price) || parseFloat(product.price) || 0;
+                  const discountPercentage = parseFloat(completeFoodItem.discountPercentage) || 0;
+                  
+                  const discountedPrice = discountPercentage > 0 
+                    ? rawPrice * (1 - discountPercentage / 100)
+                    : rawPrice;
+                    
+                  return {
+                    hasDiscount: discountPercentage > 0,
+                    originalPrice: rawPrice,
+                    discountedPrice: discountedPrice,
+                    discountPercentage: discountPercentage
+                  };
+                };
+                
+                const priceInfo = getProductPriceInfo();
 
-              <div className="summary-divider"></div>
-              <div className="summary-row total">
-                <span>{t("total")}</span>
-                {/* ✅ Totalul este subtotal-ul original minus discount-ul */}
-                <span>
-                  {(getOriginalSubtotal() - getTotalDiscountAmount()).toFixed(2)} €
+                return (
+                  <motion.div
+                    key={product.id || product.name || `popular-${index}`}
+                    className="popular-product-card"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.1 * index }}
+                    whileHover={{
+                      scale: 1.02,
+                      boxShadow: "0 8px 25px rgba(0,0,0,0.15)",
+                    }}
+                  >
+                    <div
+                      className="popular-product-image"
+                      onClick={() => handleAddPopularProduct(product)}
+                    >
+                      <img
+                        src={
+                          product.image
+                            ? `${url}/images/${product.image}`
+                            : assets.image_coming_soon
+                        }
+                        alt={product.name || "Popular product"}
+                        onError={(e) => {
+                          e.target.src = assets.image_coming_soon;
+                          e.target.style.objectFit = "contain";
+                          e.target.style.padding = "10px";
+                        }}
+                      />
+
+                      {quantityInCart > 0 ? (
+                        <div className="popular-product-quantity-badge emerald">
+                          <span className="quantity-number">
+                            {quantityInCart}
+                          </span>
+                        </div>
+                      ) : (
+                        <button
+                          className="add-popular-product-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddPopularProduct(product);
+                          }}
+                          aria-label={`Add ${product.name} to cart`}
+                        >
+                          <FaPlus />
+                        </button>
+                      )}
+                      
+                      {priceInfo.hasDiscount && (
+                        <div className="popular-product-discount-badge">
+                          -{priceInfo.discountPercentage}%
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="popular-product-info">
+                      <h4
+                        className="popular-product-name"
+                        onClick={() => handleAddPopularProduct(product)}
+                      >
+                        {product.name || "Popular Item"}
+                      </h4>
+                      
+                      <div className="popular-product-price-container">
+                        {priceInfo.hasDiscount ? (
+                          <div className="popular-product-price-with-discount">
+                            <span className="popular-product-original-price">
+                              {priceInfo.originalPrice.toFixed(2)} €
+                            </span>
+                            <span className="popular-product-price discounted">
+                              {priceInfo.discountedPrice.toFixed(2)} €
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="popular-product-price">
+                            {priceInfo.originalPrice.toFixed(2)} €
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="popular-product-stats">
+                        <span className="order-count">
+                          {t("cart.ordered_times", { count: product.count || 0 })}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Special Instructions globale - doar dacă nota nu este cerută sau session-ul nu a expirat */}
+        {!isDisabled && (
+          <div className="special-instructions-section">
+            <h2 className="section-title">{t("cart.special_instructions")}</h2>
+            <div className="instructions-input-container">
+              <textarea
+                value={specialInstructions}
+                onChange={(e) => setSpecialInstructions(e.target.value)}
+                placeholder={t("cart.special_instructions_placeholder")}
+                rows={3}
+                className="instructions-textarea"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Order Summary */}
+        <div className="order-summary-section">
+          <h2 className="section-title">{t("cart.order_summary")}</h2>
+
+          <div className="summary-details">
+            <div className="summary-row">
+              <span>{t("cart.subtotal")}</span>
+              <span>{getOriginalSubtotal().toFixed(2)} €</span>
+            </div>
+
+            {getTotalDiscountAmount() > 0 && (
+              <div className="summary-row discount-row">
+                <span className="discount-label">
+                  {t("cart.discount")}
+                </span>
+                <span className="discount-amount">
+                  -{getTotalDiscountAmount().toFixed(2)} €
                 </span>
               </div>
+            )}
+
+            <div className="summary-divider"></div>
+            <div className="summary-row total">
+              <span>{t("cart.total")}</span>
+              <span>
+                {(getOriginalSubtotal() - getTotalDiscountAmount()).toFixed(2)} €
+              </span>
             </div>
           </div>
         </div>
-      )}
+      </div>
+    )}
 
-      {/* Floating Checkout Button - doar dacă nota nu este cerută */}
-      {showFloatingCheckout && !billRequested && (
-        <div
-          className={`floating-checkout ${
-            isPlacingOrder || orderPlaced ? "placing-order" : ""
-          }`}
-          onClick={!(isPlacingOrder || orderPlaced) ? placeOrder : undefined}
-        >
-          <div className="checkout-content">
-            {!(isPlacingOrder || orderPlaced) ? (
-              <>
-                <div className="item-count">{getTotalItemCount()}</div>
-                <div className="checkout-text"> {t("place_order")}</div>
-                <div className="checkout-total">
-                  {/* ✅ Folosim getTotalCartAmount() care deja include discount-urile */}
-                  {getTotalCartAmount().toFixed(2)} €
-                </div>
-              </>
-            ) : (
-              <div className="order-placed-message">
-                <motion.div
-                  className="smooth-spinner"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                />
-                <span>{t("processing_order")}...</span>
+    {/* Floating Checkout Button - doar dacă nota nu este cerută sau session-ul nu a expirat */}
+    {showFloatingCheckout && !isDisabled && (
+      <div
+        className={`floating-checkout ${
+          isPlacingOrder || orderPlaced ? "placing-order" : ""
+        }`}
+        onClick={!(isPlacingOrder || orderPlaced) ? placeOrder : undefined}
+      >
+        <div className="checkout-content">
+          {!(isPlacingOrder || orderPlaced) ? (
+            <>
+              <div className="item-count">{getTotalItemCount()}</div>
+              <div className="checkout-text">{t("cart.place_order")}</div>
+              <div className="checkout-total">
+                {getTotalCartAmount().toFixed(2)} €
               </div>
-            )}
-          </div>
+            </>
+          ) : (
+            <div className="order-placed-message">
+              <motion.div
+                className="smooth-spinner"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              />
+              <span>{t("cart.processing_order")}...</span>
+            </div>
+          )}
         </div>
+      </div>
+    )}
+
+    {/* Confirmation Modals */}
+    <AnimatePresence>
+      {itemToDelete && (
+        <motion.div
+          className="modal-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={cancelDelete}
+        >
+          <motion.div
+            className="confirmation-modal"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>{t("cart.remove_item")}</h3>
+            <p>{t("cart.remove_confirmation")}</p>
+            <div className="modal-actions">
+              <button className="cancel-button" onClick={cancelDelete}>
+                {t("cart.cancel")}
+              </button>
+              <button className="confirm-button" onClick={confirmDelete}>
+                {t("cart.remove")}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
       )}
+    </AnimatePresence>
 
-      {/* Confirmation Modals */}
-      <AnimatePresence>
-        {itemToDelete && (
+    <AnimatePresence>
+      {showConfirmClear && (
+        <motion.div
+          className="modal-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
           <motion.div
-            className="modal-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={cancelDelete}
+            className="confirmation-modal"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            transition={{ duration: 0.2 }}
           >
-            <motion.div
-              className="confirmation-modal"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3>{t("remove_item")}</h3>
-              <p>{t("remove_confirmation")}</p>
-              <div className="modal-actions">
-                <button className="cancel-button" onClick={cancelDelete}>
-                  {t("cancel")}
-                </button>
-                <button className="confirm-button" onClick={confirmDelete}>
-                  {t("remove")}
-                </button>
-              </div>
-            </motion.div>
+            <h3>{t("cart.clear_cart")}</h3>
+            <p>{t("cart.clear_cart_confirmation")}</p>
+            <div className="modal-actions">
+              <button
+                className="cancel-button"
+                onClick={() => setShowConfirmClear(false)}
+              >
+                {t("cart.cancel")}
+              </button>
+              <button className="confirm-button" onClick={handleClearCart}>
+                {t("cart.clear_all")}
+              </button>
+            </div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        </motion.div>
+      )}
+    </AnimatePresence>
 
-      <AnimatePresence>
-        {showConfirmClear && (
-          <motion.div
-            className="modal-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="confirmation-modal"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <h3>{t("clear_cart")}</h3>
-              <p>{t("clear_cart_confirmation")}</p>
-              <div className="modal-actions">
-                <button
-                  className="cancel-button"
-                  onClick={() => setShowConfirmClear(false)}
-                >
-                  {t("cancel")}
-                </button>
-                <button className="confirm-button" onClick={handleClearCart}>
-                  {t("clear_all")}
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Food Modal */}
-      <FoodModal
-        food={selectedFood}
-        closeModal={closeFoodModal}
-        isOpen={isFoodModalOpen}
-        initialQuantity={selectedFoodQuantity}
-        initialInstructions={selectedFoodInstructions}
-        cartItemId={Object.keys(cartItems).find((id) => {
-          const item = cartItems[id];
-          const foodItem = findFoodItem(id, item);
-          return foodItem && foodItem._id === selectedFood?._id;
-        })}
-      />
-    </motion.div>
-  );
+    {/* Food Modal */}
+    <FoodModal
+      food={selectedFood}
+      closeModal={closeFoodModal}
+      isOpen={isFoodModalOpen}
+      initialQuantity={selectedFoodQuantity}
+      initialInstructions={selectedFoodInstructions}
+      cartItemId={Object.keys(cartItems).find((id) => {
+        const item = cartItems[id];
+        const foodItem = findFoodItem(id, item);
+        return foodItem && foodItem._id === selectedFood?._id;
+      })}
+    />
+  </motion.div>
+);
 };
 
 export default Cart;

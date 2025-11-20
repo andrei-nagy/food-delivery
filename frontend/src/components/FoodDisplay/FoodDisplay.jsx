@@ -18,6 +18,7 @@ import "swiper/css";
 const FoodDisplay = ({ category }) => {
   const { food_list, getTotalCartAmount, cartItems } = useContext(StoreContext);
   const navigate = useNavigate();
+  const { t } = useTranslation();
   
   // ✅ Funcția corectată pentru a calcula numărul total de produse din coș
   const getTotalCartItems = () => {
@@ -38,29 +39,25 @@ const FoodDisplay = ({ category }) => {
   const swiperRef = useRef(null);
   const scrollTimeoutRef = useRef(null);
 
-  const { t } = useTranslation();
-
   // Funcție pentru placeholder-uri bazate pe categorie
-const getFoodPlaceholder = (category) => {
-  const placeholders = {
-    'Pizza': '🍕',
-    'Burger': '🍔', 
-    'Salad': '🥗',
-    'Pasta': '🍝',
-    'Dessert': '🍰',
-    'Drink': '🥤',
-    'Soup': '🍲',
-    'Breakfast': '🥞',
-    'Asian': '🍜',
-    'Mexican': '🌮'
+  const getFoodPlaceholder = (category) => {
+    const placeholders = {
+      'Pizza': '🍕',
+      'Burger': '🍔', 
+      'Salad': '🥗',
+      'Pasta': '🍝',
+      'Dessert': '🍰',
+      'Drink': '🥤',
+      'Soup': '🍲',
+      'Breakfast': '🥞',
+      'Asian': '🍜',
+      'Mexican': '🌮'
+    };
+    
+    const emoji = placeholders[category] || '🍽️';
+    return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='150' viewBox='0 0 200 150'><rect width='200' height='150' fill='%23f8f9fa'/><text x='100' y='75' font-family='Arial' font-size='40' text-anchor='middle' dominant-baseline='middle'>${emoji}</text></svg>`;
   };
-  
-  const emoji = placeholders[category] || '🍽️';
-  return `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='150' viewBox='0 0 200 150'><rect width='200' height='150' fill='%23f8f9fa'/><text x='100' y='75' font-family='Arial' font-size='40' text-anchor='middle' dominant-baseline='middle'>${emoji}</text></svg>`;
-};
 
-// Sau folosește acest URL pentru o imagine generică
-const GENERIC_FOOD_PLACEHOLDER = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop";
   // ✅ Funcție pentru a afișa butonul smooth
   const showFloatingButton = () => {
     setIsVisible(true);
@@ -75,13 +72,11 @@ const GENERIC_FOOD_PLACEHOLDER = "https://images.unsplash.com/photo-1546069901-b
   useEffect(() => {
     if (cartItemCount > 0) {
       setShouldRender(true);
-      // Mic delay pentru a permite render-ului să se actualizeze
       setTimeout(() => {
         showFloatingButton();
       }, 100);
     } else {
       hideFloatingButton();
-      // Așteaptă ca animația să se termine înainte de a seta shouldRender pe false
       setTimeout(() => {
         setShouldRender(false);
       }, 400);
@@ -93,18 +88,14 @@ const GENERIC_FOOD_PLACEHOLDER = "https://images.unsplash.com/photo-1546069901-b
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
 
-      // Curăță timeout-ul anterior
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
 
-      // Setează un nou timeout pentru a evita prea multe actualizări
       scrollTimeoutRef.current = setTimeout(() => {
         if (currentScrollY < lastScrollY.current - 50 && shouldRender) {
-          // scroll în sus cu cel puțin 50px - afișează butonul
           showFloatingButton();
         } else if (currentScrollY > lastScrollY.current + 50 && isVisible) {
-          // scroll în jos cu cel puțin 50px - ascunde butonul
           hideFloatingButton();
         }
 
@@ -157,13 +148,15 @@ const GENERIC_FOOD_PLACEHOLDER = "https://images.unsplash.com/photo-1546069901-b
           <>
             <div className="category-header">
               <div className="category-header-left">
-                <span className="category-title">Best Sellers</span>
+                <span className="category-title">
+                  {t("food_display.best_sellers")}
+                </span>
                 <small className="category-subtitle">
-                  Must-try favorites 🔥
+                  {t("food_display.must_try_favorites")}
                 </small>
               </div>
               <Link to={`/category/All`} className="view-more">
-                View more <FaArrowRight className="arrow-icon auto-bounce" />
+                {t("food_display.view_more")} <FaArrowRight className="arrow-icon auto-bounce" />
               </Link>
             </div>
 
@@ -194,7 +187,6 @@ const GENERIC_FOOD_PLACEHOLDER = "https://images.unsplash.com/photo-1546069901-b
                         setSelectedFood(item);
                         setIsModalOpen(true);
                       }}
-                     
                     />
                   </div>
                 </SwiperSlide>
@@ -217,7 +209,7 @@ const GENERIC_FOOD_PLACEHOLDER = "https://images.unsplash.com/photo-1546069901-b
                       to={`/category/${encodeURIComponent(cat)}`}
                       className="view-more"
                     >
-                      View more{" "}
+                      {t("food_display.view_more")}{" "}
                       <FaArrowRight className="arrow-icon auto-bounce" />
                     </Link>
                   </div>
@@ -262,7 +254,7 @@ const GENERIC_FOOD_PLACEHOLDER = "https://images.unsplash.com/photo-1546069901-b
             <span className="cart-count-badge">{cartItemCount}</span>
           </div>
           <div className="cart-total-price">
-            {getTotalCartAmount().toFixed(2)} €
+            {t("food_display.cart_total", { amount: getTotalCartAmount().toFixed(2) })}
           </div>
           <div className="cart-pulse-effect"></div>
         </div>

@@ -14,7 +14,8 @@ const StoreContextProvider = (props) => {
   const [notification, setNotification] = useState(null);
   const [previousOrderStatus, setPreviousOrderStatus] = useState({});
   const [userOrders, setUserOrders] = useState([]);
-  
+  const [userBlocked, setUserBlocked] = useState(false);
+
   // State-uri pentru sistemul de bill (notă de plată) - ACUM SINCRONIZATE
   const [billRequested, setBillRequested] = useState(false);
   const [billRequestTime, setBillRequestTime] = useState(null);
@@ -22,6 +23,7 @@ const StoreContextProvider = (props) => {
   const intervalRef = useRef(null);
   const previousOrderStatusRef = useRef({});
   const ordersIntervalRef = useRef(null);
+  const statusPollingIntervalRef = useRef(null);
 
   const getApiUrl = () => {
     if (
@@ -35,20 +37,89 @@ const StoreContextProvider = (props) => {
 
   const url = getApiUrl();
 
+  // ==================== USER STATUS POLLING SYSTEM ====================
+
+ const checkUserStatus = async () => {
+  const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
+
+  if (!userId || !token) {
+    setUserBlocked(false);
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      `${url}/api/user/check-status`,
+      {},
+      {
+        headers: { userId },
+      }
+    );
+
+    const { isActive, tokenExpiry } = response.data;
+    const now = new Date();
+
+    // ✅ VERIFICĂ DACA STATUSUL S-A SCHIMBAT ÎNAINTE DE A SETA
+    const newBlockedStatus = isActive === false || new Date(tokenExpiry) < now;
+    
+    // ✅ PREVENIRE SETAREA DUPLĂ A ACELUIAȘI STATUS
+    if (userBlocked !== newBlockedStatus) {
+      setUserBlocked(newBlockedStatus);
+    }
+    
+  } catch (error) {
+    console.error(
+      "Eroare la verificarea stării utilizatorului:",
+      error.response?.data || error.message
+    );
+    // ✅ SETEAZĂ DOAR DACĂ E NECESAR
+    if (!userBlocked) {
+      setUserBlocked(true);
+    }
+  }
+};
+
+  const startStatusPolling = () => {
+    // Verifică imediat la start
+    checkUserStatus();
+    
+    statusPollingIntervalRef.current = setInterval(() => {
+      checkUserStatus();
+    }, 30000);
+
+    return statusPollingIntervalRef.current;
+  };
+
+  const stopStatusPolling = () => {
+    if (statusPollingIntervalRef.current) {
+      clearInterval(statusPollingIntervalRef.current);
+      statusPollingIntervalRef.current = null;
+    }
+  };
+
+  const forceStatusCheck = () => {
+    checkUserStatus();
+  };
+
   // ==================== BILL MANAGEMENT SYSTEM ====================
-  
+
   const checkBillStatus = () => {
     const tableNumber = localStorage.getItem("tableNumber");
     if (!tableNumber) return false;
 
-    const savedBillRequest = localStorage.getItem(`billRequested_${tableNumber}`);
-    const savedBillTime = localStorage.getItem(`billRequestTime_${tableNumber}`);
-    
+    const savedBillRequest = localStorage.getItem(
+      `billRequested_${tableNumber}`
+    );
+    const savedBillTime = localStorage.getItem(
+      `billRequestTime_${tableNumber}`
+    );
+
     if (savedBillRequest === "true" && savedBillTime) {
       const requestTime = new Date(savedBillTime);
       const currentTime = new Date();
       const diffInMinutes = (currentTime - requestTime) / (1000 * 60);
-      
+
       if (diffInMinutes < 30) {
         setBillRequested(true);
         setBillRequestTime(requestTime);
@@ -75,15 +146,15 @@ const StoreContextProvider = (props) => {
     const now = new Date();
     setBillRequested(true);
     setBillRequestTime(now);
-    
+
     localStorage.setItem(`billRequested_${tableNumber}`, "true");
     localStorage.setItem(`billRequestTime_${tableNumber}`, now.toISOString());
-    
+
     // Forțează re-renderizarea componentelor
     setTimeout(() => {
-      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new Event("storage"));
     }, 100);
-    
+
     return true;
   };
 
@@ -95,12 +166,12 @@ const StoreContextProvider = (props) => {
     setBillRequestTime(null);
     localStorage.removeItem(`billRequested_${tableNumber}`);
     localStorage.removeItem(`billRequestTime_${tableNumber}`);
-    
+
     // Forțează re-renderizarea componentelor
     setTimeout(() => {
-      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new Event("storage"));
     }, 100);
-    
+
     toast.info("Bill request cancelled");
   };
 
@@ -108,23 +179,35 @@ const StoreContextProvider = (props) => {
   const canAddToCart = (showToast = true) => {
     if (billRequested) {
       if (showToast) {
-        toast.error("Cannot add items. Bill has been requested. Please cancel the bill request first.");
+        toast.error(
+          "Cannot add items. Bill has been requested. Please cancel the bill request first."
+        );
       }
       return false;
     }
+    
+    if (userBlocked) {
+      if (showToast) {
+        toast.error(
+          "Cannot add items. Session has expired. Please refresh the page."
+        );
+      }
+      return false;
+    }
+    
     return true;
   };
 
   const getTimeSinceBillRequest = () => {
     if (!billRequestTime) return null;
-    
+
     const now = new Date();
     const diffInMinutes = Math.floor((now - billRequestTime) / (1000 * 60));
-    
+
     if (diffInMinutes < 1) return "just now";
     if (diffInMinutes === 1) return "1 minute ago";
     if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
-    
+
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours === 1) return "1 hour ago";
     return `${diffInHours} hours ago`;
@@ -177,16 +260,19 @@ const StoreContextProvider = (props) => {
     localStorage.removeItem("userId");
     localStorage.removeItem("tableNumber");
     setToken("");
-    setNotification("Sesiunea a expirat. Vă rugăm să vă autentificați din nou.");
+    setUserBlocked(true);
+    setNotification(
+      "Sesiunea a expirat. Vă rugăm să vă autentificați din nou."
+    );
   };
 
   const getUserId = () => {
-    const userId = localStorage.getItem('userId');
+    const userId = localStorage.getItem("userId");
     if (userId) {
       return userId;
     }
 
-    const tableNumber = localStorage.getItem('tableNumber');
+    const tableNumber = localStorage.getItem("tableNumber");
     if (tableNumber) {
       return "table_" + tableNumber;
     }
@@ -209,6 +295,13 @@ const StoreContextProvider = (props) => {
     } catch (error) {
       return false;
     }
+  };
+
+  const isUserAuthenticated = () => {
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+    const tableNumber = localStorage.getItem("tableNumber");
+    return !!(token && userId && tableNumber);
   };
 
   const startOrdersPolling = () => {
@@ -345,9 +438,9 @@ const StoreContextProvider = (props) => {
 
   // ==================== CART OPERATIONS ====================
 
-  // ✅ SETCARTITEMS SECURIZAT - verifică întotdeauna bill-ul
+  // ✅ SETCARTITEMS SECURIZAT - verifică întotdeauna bill-ul și session-ul
   const secureSetCartItems = (newCartItems) => {
-    if (!canAddToCart()) {
+    if (!canAddToCart(false)) {
       return false;
     }
     setCartItems(newCartItems);
@@ -361,7 +454,7 @@ const StoreContextProvider = (props) => {
     selectedOptions = [],
     itemData = null
   ) => {
-    // ✅ Verifică dacă poate adăuga în coș (bill requested)
+    // ✅ Verifică dacă poate adăuga în coș (bill requested sau session expired)
     if (!canAddToCart()) {
       return false;
     }
@@ -399,7 +492,8 @@ const StoreContextProvider = (props) => {
         newCart[itemId] = {
           ...newCart[itemId],
           quantity: newCart[itemId].quantity + quantity,
-          specialInstructions: specialInstructions || newCart[itemId].specialInstructions,
+          specialInstructions:
+            specialInstructions || newCart[itemId].specialInstructions,
           selectedOptions: selectedOptions || newCart[itemId].selectedOptions,
         };
       }
@@ -417,13 +511,13 @@ const StoreContextProvider = (props) => {
         selectedOptions: selectedOptions,
         itemData: itemData,
       });
-      
+
       // ✅ 4. ACTUALIZEAZĂ CU RĂSPUNSUL SERVERULUI (doar dacă e necesar)
       if (response.data.success && response.data.cartData) {
         const validatedCart = validateCartStructure(response.data.cartData);
         setCartItems(validatedCart);
       }
-      
+
       return true;
     } catch (error) {
       console.error("❌ TABLE CART SYNC ERROR:", error);
@@ -446,17 +540,17 @@ const StoreContextProvider = (props) => {
       }
 
       // ✅ 1. ACTUALIZEAZĂ LOCAL STATE FIRST (pentru feedback imediat)
-      setCartItems(prev => {
+      setCartItems((prev) => {
         const newCart = { ...prev };
         if (newCart[itemId]) {
           const newQuantity = newCart[itemId].quantity - quantity;
-          
+
           if (newQuantity <= 0) {
             delete newCart[itemId];
           } else {
             newCart[itemId] = {
               ...newCart[itemId],
-              quantity: newQuantity
+              quantity: newQuantity,
             };
           }
         }
@@ -467,7 +561,7 @@ const StoreContextProvider = (props) => {
       const response = await axios.post(url + "/api/cart/remove", {
         userId: "table_" + tableNumber,
         itemId,
-        quantity
+        quantity,
       });
 
       return true;
@@ -487,17 +581,20 @@ const StoreContextProvider = (props) => {
       }
 
       // ✅ 1. ȘTERGE IMEDIAT DIN STATE-UL LOCAL
-      setCartItems(prev => {
+      setCartItems((prev) => {
         const newCart = { ...prev };
         delete newCart[itemId];
         return newCart;
       });
 
       // ✅ 2. TRIMITE LA BACKEND PENTRU ȘTERGERE COMPLETĂ CU TABLE NUMBER
-      const response = await axios.post(url + "/api/cart/remove-item-completely", {
-        userId: "table_" + tableNumber,
-        itemId
-      });
+      const response = await axios.post(
+        url + "/api/cart/remove-item-completely",
+        {
+          userId: "table_" + tableNumber,
+          itemId,
+        }
+      );
 
       return true;
     } catch (error) {
@@ -510,7 +607,7 @@ const StoreContextProvider = (props) => {
   const clearCart = async () => {
     try {
       const tableNumber = localStorage.getItem("tableNumber");
-      
+
       if (!tableNumber) {
         toast.error("Please select a table first");
         return false;
@@ -528,12 +625,12 @@ const StoreContextProvider = (props) => {
 
       // ✅ TRIMITE TABLE NUMBER
       const response = await axios.post(url + "/api/cart/clear", {
-        userId: "table_" + tableNumber
+        userId: "table_" + tableNumber,
       });
 
       if (response.data.success) {
         setCartItems(response.data.cartData || {});
-      } 
+      }
 
       // ✅ RESTARTEAZĂ POLLING DUPĂ 3 SECUNDE
       setTimeout(() => {
@@ -543,11 +640,11 @@ const StoreContextProvider = (props) => {
       return true;
     } catch (error) {
       console.error("❌ [STORECONTEXT] Error in clearCart:", error);
-      
+
       setTimeout(() => {
         startCartPolling();
       }, 3000);
-      
+
       throw error;
     }
   };
@@ -557,7 +654,7 @@ const StoreContextProvider = (props) => {
     newQuantity,
     specialInstructions = ""
   ) => {
-    // ✅ Verifică dacă poate modifica coșul (bill requested)
+    // ✅ Verifică dacă poate modifica coșul (bill requested sau session expired)
     if (!canAddToCart()) {
       return false;
     }
@@ -627,14 +724,14 @@ const StoreContextProvider = (props) => {
         await axios.post(url + "/api/cart/remove", {
           userId: "table_" + tableNumber,
           itemId: itemId,
-          quantity: removeQuantity
+          quantity: removeQuantity,
         });
       }
 
       return true;
     } catch (error) {
       console.error("❌ [UPDATE] Error updating cart item:", error);
-      
+
       if (error.response) {
         console.error("❌ [UPDATE] Server error:", error.response.data);
         toast.error("Failed to update quantity");
@@ -651,48 +748,26 @@ const StoreContextProvider = (props) => {
     }
   };
 
- const getTotalCartAmount = () => {
-  let totalAmount = 0;
+  const getTotalCartAmount = () => {
+    let totalAmount = 0;
 
-  Object.keys(cartItems).forEach((itemId) => {
-    const cartItem = cartItems[itemId];
+    Object.keys(cartItems).forEach((itemId) => {
+      const cartItem = cartItems[itemId];
 
-    if (cartItem && cartItem.quantity > 0) {
-      // ✅ FOLOSEȘTE unitPrice DIN itemData DACA EXISTA
-      const unitPrice = cartItem.itemData?.unitPrice || 0;
-      
-      if (unitPrice > 0) {
-        // ✅ Dacă avem unitPrice din itemData, folosim-l
-        let itemTotal = unitPrice * cartItem.quantity;
+      if (cartItem && cartItem.quantity > 0) {
+        // ✅ FOLOSEȘTE unitPrice DIN itemData DACA EXISTA
+        const unitPrice = cartItem.itemData?.unitPrice || 0;
 
-        if (cartItem.selectedOptions && cartItem.selectedOptions.length > 0) {
-          cartItem.selectedOptions.forEach((optionName) => {
-            const extra = cartItem.itemData?.extras?.find(
-              (extra) => extra.name === optionName
-            ) || { price: 0 };
-            
-            if (extra) {
-              itemTotal += extra.price * cartItem.quantity;
-            }
-          });
-        }
-
-        totalAmount += itemTotal;
-      } else {
-        // ✅ FALLBACK: folosește logica veche dacă nu avem unitPrice în itemData
-        const baseFoodId = itemId.split("__")[0];
-        const foodItem = food_list.find((item) => item._id === baseFoodId);
-
-        if (foodItem) {
-          // ✅ Verifică dacă produsul are discount
-          const itemPrice = foodItem.discountedPrice || foodItem.price;
-          let itemTotal = itemPrice * cartItem.quantity;
+        if (unitPrice > 0) {
+          // ✅ Dacă avem unitPrice din itemData, folosim-l
+          let itemTotal = unitPrice * cartItem.quantity;
 
           if (cartItem.selectedOptions && cartItem.selectedOptions.length > 0) {
             cartItem.selectedOptions.forEach((optionName) => {
-              const extra = foodItem.extras?.find(
+              const extra = cartItem.itemData?.extras?.find(
                 (extra) => extra.name === optionName
-              );
+              ) || { price: 0 };
+
               if (extra) {
                 itemTotal += extra.price * cartItem.quantity;
               }
@@ -700,13 +775,38 @@ const StoreContextProvider = (props) => {
           }
 
           totalAmount += itemTotal;
+        } else {
+          // ✅ FALLBACK: folosește logica veche dacă nu avem unitPrice în itemData
+          const baseFoodId = itemId.split("__")[0];
+          const foodItem = food_list.find((item) => item._id === baseFoodId);
+
+          if (foodItem) {
+            // ✅ Verifică dacă produsul are discount
+            const itemPrice = foodItem.discountedPrice || foodItem.price;
+            let itemTotal = itemPrice * cartItem.quantity;
+
+            if (
+              cartItem.selectedOptions &&
+              cartItem.selectedOptions.length > 0
+            ) {
+              cartItem.selectedOptions.forEach((optionName) => {
+                const extra = foodItem.extras?.find(
+                  (extra) => extra.name === optionName
+                );
+                if (extra) {
+                  itemTotal += extra.price * cartItem.quantity;
+                }
+              });
+            }
+
+            totalAmount += itemTotal;
+          }
         }
       }
-    }
-  });
+    });
 
-  return totalAmount;
-};
+    return totalAmount;
+  };
 
   const getTotalItemCount = () => {
     const total = Object.values(cartItems).reduce((total, item) => {
@@ -741,7 +841,7 @@ const StoreContextProvider = (props) => {
   useEffect(() => {
     // Verifică starea notei de plată la inițializare
     checkBillStatus();
-    
+
     const tokenFromStorage = localStorage.getItem("token");
     if (tokenFromStorage) {
       setToken(tokenFromStorage);
@@ -749,17 +849,31 @@ const StoreContextProvider = (props) => {
 
     // Ascultă pentru schimbări în localStorage (pentru sincronizare între tab-uri/componente)
     const handleStorageChange = (e) => {
-      if (e.key && e.key.startsWith('billRequested_')) {
+      if (e.key && e.key.startsWith("billRequested_")) {
         checkBillStatus();
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    
+    window.addEventListener("storage", handleStorageChange);
+
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
+
+  useEffect(() => {
+    // Gestionare polling pentru status utilizator
+    if (isUserAuthenticated()) {
+      startStatusPolling();
+    } else {
+      stopStatusPolling();
+      setUserBlocked(false);
+    }
+
+    return () => {
+      stopStatusPolling();
+    };
+  }, [token]);
 
   useEffect(() => {
     if (token) {
@@ -785,14 +899,11 @@ const StoreContextProvider = (props) => {
     loadData();
   }, []);
 
-  // ==================== CONTEXT VALUE ====================
-
   const contextValue = {
-    // Cart și produse
     food_list,
     foodCategory_list,
     cartItems,
-    setCartItems: secureSetCartItems, // ✅ Înlocuit cu versiunea securizată
+    setCartItems: secureSetCartItems,
     addToCart,
     removeFromCart,
     getTotalCartAmount,
@@ -800,33 +911,34 @@ const StoreContextProvider = (props) => {
     updateCartItemQuantity,
     removeItemCompletely,
     clearCart,
-    
-    // Auth și URL
     url,
     token,
     setToken,
     tableNumber,
-    
-    // Notificări și orders
     notification,
     setNotification,
     userOrders,
     fetchUserOrders,
-    
-    // Utilități
     getUserId,
     clearLocalCartAndLogout,
     fetchCartFromServer,
     clearCartCache,
-    
-    // Bill management system - ACUM COMPLET SINCRONIZAT
+    // User status polling
+    userBlocked,
+    setUserBlocked,
+    checkUserStatus,
+    forceStatusCheck,
+    startStatusPolling,
+    stopStatusPolling,
+    isUserAuthenticated,
+    // Bill management
     billRequested,
     billRequestTime,
     markBillAsRequested,
     resetBillRequest,
-    canAddToCart, // ✅ Exportat pentru a fi folosit în componente
+    canAddToCart,
     getTimeSinceBillRequest,
-    checkBillStatus
+    checkBillStatus,
   };
 
   return (

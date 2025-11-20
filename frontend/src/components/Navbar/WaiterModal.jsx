@@ -148,50 +148,50 @@ const WaiterModalCart = ({ show, onClose, customAction, paymentDetails }) => {
     {
       id: 'order',
       icon: FaUtensils,
-      label: 'I want to order',
-      description: 'Place a new order'
+      label: t('waiter_modal.want_to_order'),
+      description: t('waiter_modal.place_new_order')
     },
     {
       id: 'menu',
       icon: FaQuestion,
-      label: 'Menu explanation',
-      description: 'Need help with the menu'
+      label: t('waiter_modal.menu_explanation'),
+      description: t('waiter_modal.need_help_with_menu')
     },
     {
       id: 'water',
       icon: FaWater,
-      label: 'Need water',
-      description: 'Request water service'
+      label: t('waiter_modal.need_water'),
+      description: t('waiter_modal.request_water_service')
     },
     {
       id: 'drinks',
       icon: FaWineGlass,
-      label: 'Need drinks',
-      description: 'Order beverages'
+      label: t('waiter_modal.need_drinks'),
+      description: t('waiter_modal.order_beverages')
     },
     {
       id: 'bill',
       icon: FaReceipt,
-      label: 'Ask for bill',
-      description: 'Request the check'
+      label: t('waiter_modal.ask_for_bill'),
+      description: t('waiter_modal.request_the_check')
     },
     {
       id: 'cutlery',
       icon: FaConciergeBell,
-      label: 'Need cutlery',
-      description: 'Request utensils'
+      label: t('waiter_modal.need_cutlery'),
+      description: t('waiter_modal.request_utensils')
     },
     {
       id: 'assistance',
       icon: FaQuestion,
-      label: 'General assistance',
-      description: 'Need help with something'
+      label: t('waiter_modal.general_assistance'),
+      description: t('waiter_modal.need_help_with_something')
     },
     {
       id: 'other',
       icon: FaClock,
-      label: 'Other reason',
-      description: 'Something else'
+      label: t('waiter_modal.other_reason'),
+      description: t('waiter_modal.something_else')
     }
   ];
 
@@ -205,16 +205,15 @@ const WaiterModalCart = ({ show, onClose, customAction, paymentDetails }) => {
         <div className="modal-content-waiter" onClick={(e) => e.stopPropagation()}>
           <div className="header-myorders">
             <div className="menu-button-myorders" onClick={() => onClose()}>
-              <FaArrowLeft />
             </div>
-            <h2 className="modal-title">Assistant</h2>
+            <h2 className="modal-title">{t('waiter_modal.need_help')}</h2>
             <div className="close-menu-button-myorders" onClick={onClose}>
               <FaTimes />
             </div>
           </div>
 
           <div className="assistance-message">
-            <p>{t('can_we_assist')}</p>
+            <p>{t('waiter_modal.how_can_we_assist')}</p>
           </div>
 
           <div className="action-buttons">
@@ -222,21 +221,21 @@ const WaiterModalCart = ({ show, onClose, customAction, paymentDetails }) => {
               <div className="action-icon-wrapper">
                 <img className='waiter-icon-actions' src={assets.waiter_icon} alt="" />
               </div>
-              <span className="action-label">{t('call_waiter')}</span>
+              <span className="action-label">{t('waiter_modal.call_waiter')}</span>
             </button>
             
             <button type="button" className="action-btn pay-bill" onClick={() => handleActionClick('I want to pay')}>
               <div className="action-icon-wrapper">
                 <FaMoneyBillWave className="action-icon" />
               </div>
-              <span className="action-label">{t('to_pay')}</span>
+              <span className="action-label">{t('waiter_modal.to_pay')}</span>
             </button>
             
             <button type="button" className="action-btn live-chat" onClick={() => handleActionClick('Ask Diana AI')}>
               <div className="action-icon-wrapper">
                 <FaComments className="action-icon" />
               </div>
-              <span className="action-label">Ask Diana AI</span>
+              <span className="action-label">{t('waiter_modal.ask_diana_ai')}</span>
             </button>
           </div>
         </div>
@@ -250,14 +249,14 @@ const WaiterModalCart = ({ show, onClose, customAction, paymentDetails }) => {
               <div className="menu-button-myorders" onClick={() => setShowPaymentOptions(false)}>
                 <FaArrowLeft />
               </div>
-              <h2 className="modal-title">Payment Method</h2>
+              <h2 className="modal-title">{t('waiter_modal.payment_method')}</h2>
               <div className="close-menu-button-myorders" onClick={() => setShowPaymentOptions(false)}>
                 <FaTimes />
               </div>
             </div>
 
             <div className="assistance-message">
-              <p>How would you like to pay?</p>
+              <p>{t('waiter_modal.how_would_you_like_to_pay')}</p>
             </div>
 
             <div className="payment-options-buttons">
@@ -270,8 +269,8 @@ const WaiterModalCart = ({ show, onClose, customAction, paymentDetails }) => {
                   <FaCreditCard className="payment-icon" />
                 </div>
                 <div className="payment-text-content">
-                  <span className="payment-option-label">Pay by Card</span>
-                  <span className="payment-option-description">POS terminal</span>
+                  <span className="payment-option-label">{t('waiter_modal.pay_by_card')}</span>
+                  <span className="payment-option-description">{t('waiter_modal.pos_terminal')}</span>
                 </div>
               </button>
               
@@ -284,8 +283,8 @@ const WaiterModalCart = ({ show, onClose, customAction, paymentDetails }) => {
                   <FaMoneyBill className="payment-icon" />
                 </div>
                 <div className="payment-text-content">
-                  <span className="payment-option-label">Pay by Cash</span>
-                  <span className="payment-option-description">Cash payment</span>
+                  <span className="payment-option-label">{t('waiter_modal.pay_by_cash')}</span>
+                  <span className="payment-option-description">{t('waiter_modal.cash_payment')}</span>
                 </div>
               </button>
             </div>
@@ -301,14 +300,14 @@ const WaiterModalCart = ({ show, onClose, customAction, paymentDetails }) => {
               <div className="menu-button-myorders" onClick={() => setShowWaiterReasons(false)}>
                 <FaArrowLeft />
               </div>
-              <h2 className="modal-title">Call Waiter</h2>
+              <h2 className="modal-title">{t('waiter_modal.call_waiter_title')}</h2>
               <div className="close-menu-button-myorders" onClick={() => setShowWaiterReasons(false)}>
                 <FaTimes />
               </div>
             </div>
 
             <div className="assistance-message">
-              <p>Why do you need a waiter?</p>
+              <p>{t('waiter_modal.why_need_waiter')}</p>
             </div>
 
             <div className="waiter-reasons-buttons">

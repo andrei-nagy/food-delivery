@@ -17,149 +17,161 @@ import CheckUser from "./components/CheckUser/CheckUser";
 import Welcome from "./components/Welcome/Welcome";
 import { StoreContext } from "./context/StoreContext";
 import axios from "axios";
-import "./i18n"; // Asigură-te că i18n este inițializat înainte de aplicație
+import "./i18n";
 import CategoryPage from "./components/FoodDisplay/CategoryPage";
 import { AnimatePresence } from "framer-motion";
 import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
 import GlobalNotification from "./components/GlobalNotifications/GlobalNotifications";
 import NotFound from "./components/NotFound/NotFound";
+import SessionExpiredModal from "./components/SessionExpiredModal/SessionExpiredModal";
 
 const App = () => {
-  const { url } = useContext(StoreContext);
+  const { 
+    url, 
+    startStatusPolling, 
+    stopStatusPolling, 
+    userBlocked, 
+    setUserBlocked,
+    isUserAuthenticated,
+    checkUserStatus,
+    forceStatusCheck
+  } = useContext(StoreContext);
   const [showLogin, setShowLogin] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isWelcomePage = location.pathname === "/welcome";
+  const isHomePage = location.pathname === "/"; // ✅ Adaugă această verificare
 
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
   const tableNumber = localStorage.getItem("tableNumber");
 
-  // Funcție pentru logout
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("tableNumber");
-    localStorage.removeItem("userId");
-    navigate("/welcome");
-    window.location.reload();
-  };
-
-  // Funcție pentru a verifica dacă utilizatorul este activ
-  const checkUserStatus = async () => {
-    if (!userId || !token) {
-      console.log(
-        "Lipsesc token sau userId. Nu verificăm starea utilizatorului."
-      );
-      return; // Nu continuăm dacă token sau userId nu există
+  // Funcție pentru a extinde timpul session-ului
+  const extendTime = async (minutes) => {
+    if (!userId) {
+      console.error("User ID not found");
+      return false;
     }
 
     try {
-      // Facem request pentru a verifica starea utilizatorului
-      const response = await axios.post(
-        `${url}/api/user/check-status`,
-        {},
-        {
-          headers: { userId },
-        }
-      );
+      const response = await axios.post(`${url}/api/user/extend-time`, {
+        userId: userId,
+        minutes: minutes
+      }, {
+        headers: { token }
+      });
 
-      const { isActive, tokenExpiry } = response.data;
-
-      // Verificăm dacă utilizatorul este inactiv sau dacă token-ul a expirat
-      const now = new Date();
-      if (isActive === false || new Date(tokenExpiry) < now) {
-        // console.log({
-        //   active: isActive === false,
-        //   isActive: isActive,
-        //   tokenExpiry: new Date(tokenExpiry) < now,
-        //   now: now,
-        //   expiry: new Date(tokenExpiry)
-        // })
-        logout();
+      if (response.data.success) {
+        console.log(`Time extended by ${minutes} minutes`);
+        // Forțează o verificare imediată a statusului
+        forceStatusCheck();
+        return true;
+      } else {
+        console.error("Failed to extend time:", response.data.message);
+        return false;
       }
     } catch (error) {
-      console.error(
-        "Eroare la verificarea stării utilizatorului:",
-        error.response?.data || error.message
-      );
+      console.error("Error extending time:", error);
+      return false;
     }
   };
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const table = searchParams.get("table");
+    
     if (location.pathname === "/register" && table) {
       setLoading(true);
       const timer = setTimeout(() => {
         setLoading(false);
-      }, 60000); // 60 de secunde
+      }, 60000);
+      
       if (!tableNumber) {
         localStorage.setItem("tableNumber", table);
       }
-      // Curățăm timer-ul la demontarea componentei
+      
+      // Oprește polling-ul pe pagina de register
+      stopStatusPolling();
+      setUserBlocked(false);
+      setShowSessionExpiredModal(false);
+      
       return () => clearTimeout(timer);
     } else {
       setLoading(false);
+      
+      // Dacă utilizatorul este autentificat, start polling
+      if (isUserAuthenticated()) {
+        startStatusPolling();
+      } else {
+        // Dacă nu este autentificat, asigură-te că userBlocked este false
+        setUserBlocked(false);
+        setShowSessionExpiredModal(false);
+        stopStatusPolling();
+      }
+    }
+  }, [token, userId, tableNumber, location.pathname, location.search, navigate]);
 
-      // if (!token || !userId || !tableNumber) {
-      checkUserStatus();
-      // console.log({
-      //   toke: token,
-      //   user: userId,
-      //   table: tableNumber
-      // })
-      // }
+  // Efect pentru a gestiona polling-ul când utilizatorul se autentifică/deconectează
+  useEffect(() => {
+    if (isUserAuthenticated()) {
+      startStatusPolling();
+    } else {
+      stopStatusPolling();
+      setUserBlocked(false);
+      setShowSessionExpiredModal(false);
     }
 
-    // if (!token || !userId || !tableNumber) {
-    //   console.log('INTRAM PE REGISTER');
-    //   console.log({
-    //     toke: token,
-    //     user: userId,
-    //     table: tableNumber
-    //   })
-    //     if (location.pathname === '/register' && table) {
-    //         // Stochează tableNumber în localStorage pentru utilizare ulterioară
-    //         if (!tableNumber) {
-    //             localStorage.setItem('tableNumber', table);
-    //         }
-    //         return; // Oprește execuția pentru a evita redirecționarea
-    //     }
+    return () => {
+      stopStatusPolling();
+    };
+  }, [token, userId, tableNumber]);
 
-    //     navigate('/welcome'); // Redirecționează doar dacă niciuna dintre condițiile de mai sus nu este îndeplinită
-    // } else {
-    //     // Nu apela checkUserStatus pe /register cu table în query string
-    //     if (!(location.pathname === '/register' && table)) {
-    //         // checkUserStatus();
-    //         console.log('apelam check user status');
-    //         console.log({
-    //           toke: token,
-    //           user: userId,
-    //           table: tableNumber
-    //         })
-    //     }
-    // }
+  // ✅ MODIFICAT: Efect pentru a afișa modal-ul doar pe homepage când session-ul expiră
+  useEffect(() => {
+    if (userBlocked && isHomePage) {
+      setShowSessionExpiredModal(true);
+    } else {
+      setShowSessionExpiredModal(false);
+    }
+  }, [userBlocked, isHomePage]); // ✅ Schimbat din location.pathname în isHomePage
 
-    // if (location.pathname === '/register') {
-    //   setLoading(true);
-    //   const timer = setTimeout(() => {
-    //     setLoading(false);
-    //   }, 60000); // 60 de secunde
+  // Funcție pentru a închide modal-ul
+  const handleCloseSessionModal = () => {
+    setShowSessionExpiredModal(false);
+  };
 
-    //   // Curățăm timer-ul la demontarea componentei
-    //   return () => clearTimeout(timer);
-    // } else {
-    //   setLoading(false);
-    // }
-  }, [
-    token,
-    userId,
-    tableNumber,
-    location.pathname,
-    location.search,
-    navigate,
-  ]);
+  // În App.js, modificați funcția handleExtendTime:
+  const handleExtendTime = async (minutes) => {
+    if (!userId) {
+      console.error("User ID not found");
+      return false;
+    }
+
+    try {
+      // Folosește noua rută pentru session expired
+      const response = await axios.post(`${url}/api/user/extend-session-expired`, {
+        userId: userId,
+        minutes: minutes
+      }, {
+        headers: { token }
+      });
+
+      if (response.data.success) {
+        console.log(`Session reactivated and extended by ${minutes} minutes`);
+        // Forțează o verificare imediată a statusului
+        forceStatusCheck();
+        return true;
+      } else {
+        console.error("Failed to extend session:", response.data.message);
+        return false;
+      }
+    } catch (error) {
+      console.error("Error extending session:", error);
+      return false;
+    }
+  };
 
   return (
     <>
@@ -167,6 +179,16 @@ const App = () => {
       {!loading && (
         <>
           {showLogin ? <LoginPopup setShowLogin={setShowLogin} /> : null}
+          
+          {/* ✅ MODIFICAT: Modal pentru Session Expired - doar pe homepage */}
+          {isHomePage && (
+            <SessionExpiredModal 
+              isOpen={showSessionExpiredModal}
+              onClose={handleCloseSessionModal}
+              onExtendTime={handleExtendTime}
+            />
+          )}
+
           <div className="app">
             <ToastContainer />
             <ScrollToTop />

@@ -29,7 +29,6 @@ const getBaseUrl = (req) => {
 };
 
 const placeOrder = async (req, res) => {
-    // ✅ Folosește funcția cu req ca parametru
     const frontend_url = getBaseUrl(req);
     
     try {
@@ -58,8 +57,6 @@ const placeOrder = async (req, res) => {
         counter.counter += 1;
         await counter.save();
 
-        // ✅ NU se șterge coșul aici pentru card - se va șterge doar după plată cu succes
-
         const line_items = req.body.items.map((item) => ({
             price_data: {
                 currency: "ron",
@@ -83,7 +80,6 @@ const placeOrder = async (req, res) => {
             session_url: session.url
         });
     } catch (error) {
-        console.log("🔴 Error in placeOrder:", error);
         res.json({
             success: false,
             message: "Error placing order"

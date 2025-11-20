@@ -9,8 +9,11 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import { assets } from '../../assets/assets';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const Welcome = () => {
+    const { t } = useTranslation();
+    
     useEffect(() => {
         // Ascunde navbar-ul
         const navbar = document.querySelector('.navbar');
@@ -34,10 +37,10 @@ const Welcome = () => {
     const { url } = useContext(StoreContext);
     const [data, setData] = useState({
         image: '',
-        restaurantName: 'Our Restaurant',
+        restaurantName: t('welcome.our_restaurant'),
         primaryColor: '#2c3e50',
         secondaryColor: '#e74c3c',
-        slogan: 'Exquisite dining experience',
+        slogan: t('welcome.exquisite_dining'),
         contactEmail: '',
         contactPhone: '',
         securityToken: '',
@@ -118,7 +121,7 @@ const Welcome = () => {
                     </motion.div>
 
                     <motion.h1 variants={itemVariants}>
-                        Welcome to <span className="restaurant-name">{data.restaurantName}</span>
+                        {t('welcome.welcome_to')} <span className="restaurant-name">{data.restaurantName}</span>
                     </motion.h1>
                     
                     <motion.p variants={itemVariants} className="slogan">
@@ -126,35 +129,34 @@ const Welcome = () => {
                     </motion.p>
                     
                     <motion.p variants={itemVariants} className="welcome-description">
-                        To enhance your experience, scan the QR code to view the menu, place your order and relax. 
-                        We are committed to providing you with the freshest dishes and an enjoyable dining experience!
+                        {t('welcome.welcome_description')}
                     </motion.p>
 
                     <motion.div variants={itemVariants} className="schedule-container">
-                        <h3>Business Hours</h3>
+                        <h3>{t('welcome.business_hours')}</h3>
                         <div className="schedule-grid">
                             <div className="schedule-item">
-                                <span className="day">Monday - Friday</span>
+                                <span className="day">{t('welcome.monday_friday')}</span>
                                 <span className="hours">
                                     {data.openingHours?.weekdays?.open
                                         ? `${data.openingHours.weekdays.open} AM - ${data.openingHours.weekdays.close} PM`
-                                        : "Closed"}
+                                        : t('welcome.closed')}
                                 </span>
                             </div>
                             <div className="schedule-item">
-                                <span className="day">Saturday</span>
+                                <span className="day">{t('welcome.saturday')}</span>
                                 <span className="hours">
                                     {data.openingHours?.saturday?.open
                                         ? `${data.openingHours.saturday.open} AM - ${data.openingHours.saturday.close} PM`
-                                        : "Closed"}
+                                        : t('welcome.closed')}
                                 </span>
                             </div>
                             <div className="schedule-item">
-                                <span className="day">Sunday</span>
+                                <span className="day">{t('welcome.sunday')}</span>
                                 <span className="hours">
                                     {data.openingHours?.sunday?.open && data.openingHours?.sunday?.close
                                         ? `${data.openingHours.sunday.open} AM - ${data.openingHours.sunday.close} PM`
-                                        : "Closed"}
+                                        : t('welcome.closed')}
                                 </span>
                             </div>
                         </div>
@@ -170,7 +172,7 @@ const Welcome = () => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
-                            Explore Our Menu
+                            {t('welcome.explore_menu')}
                         </motion.button>
                         
                         <motion.button
@@ -179,7 +181,7 @@ const Welcome = () => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
-                            Contact Us
+                            {t('welcome.contact_us')}
                         </motion.button>
                     </motion.div>
                 </motion.div>

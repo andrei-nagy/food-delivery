@@ -18,12 +18,14 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import FoodModal from "../FoodItem/FoodModal";
 import "./CategoryPage.css";
+import { useTranslation } from "react-i18next";
 
 const CategoryPage = () => {
   const { categoryName } = useParams();
   const { food_list, cartItems, url, getTotalCartAmount, foodCategory_list } =
     useContext(StoreContext);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const [categories, setCategories] = useState([]);
   const [selectedFood, setSelectedFood] = useState(null);
@@ -396,7 +398,7 @@ const CategoryPage = () => {
         <div className="category-explorer__header-top">
          <button className="back-button" onClick={() => navigate(-1)}>
                   <FaArrowLeft />
-                  <span>Back</span>
+                  <span>{t("category_page.back")}</span>
                 </button>
 
           <div className="category-explorer__controls">
@@ -455,7 +457,7 @@ const CategoryPage = () => {
                   ref={searchInputRef}
                   type="text"
                   className="category-explorer__search-input"
-                  placeholder="Search dishes, ingredients, descriptions..."
+                  placeholder={t("category_page.search_placeholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => {
@@ -575,13 +577,13 @@ const CategoryPage = () => {
               exit={{ opacity: 0, x: -20 }}
             >
               <div className="category-explorer__sidebar-header">
-                <h3>Filters</h3>
+                <h3>{t("category_page.filters")}</h3>
                 <div className="category-explorer__sidebar-actions">
                   <button
                     className="category-explorer__clear-filters"
                     onClick={clearAllFilters}
                   >
-                    Clear All
+                    {t("category_page.clear_all")}
                   </button>
                   <button
                     className="category-explorer__sidebar-close"
@@ -594,7 +596,7 @@ const CategoryPage = () => {
 
               {/* Sort Options */}
               <div className="category-explorer__filter-section">
-                <h4 className="category-explorer__filter-title">Sort By</h4>
+                <h4 className="category-explorer__filter-title">{t("category_page.sort_by")}</h4>
                 <div className="category-explorer__sort-options">
                   <button
                     className={`category-explorer__sort-option ${
@@ -604,7 +606,7 @@ const CategoryPage = () => {
                     }`}
                     onClick={() => setSortBy("name")}
                   >
-                    Name A-Z
+                    {t("category_page.name_az")}
                   </button>
                   <button
                     className={`category-explorer__sort-option ${
@@ -614,7 +616,7 @@ const CategoryPage = () => {
                     }`}
                     onClick={() => setSortBy("price-low")}
                   >
-                    Price: Low to High
+                    {t("category_page.price_low_high")}
                   </button>
                   <button
                     className={`category-explorer__sort-option ${
@@ -624,7 +626,7 @@ const CategoryPage = () => {
                     }`}
                     onClick={() => setSortBy("price-high")}
                   >
-                    Price: High to Low
+                    {t("category_page.price_high_low")}
                   </button>
                 </div>
               </div>
@@ -632,7 +634,7 @@ const CategoryPage = () => {
               {/* Price Range */}
               <div className="category-explorer__filter-section">
                 <h4 className="category-explorer__filter-title">
-                  Price Range: {priceRange[0]}€ - {priceRange[1]}€
+                  {t("category_page.price_range", { min: priceRange[0], max: priceRange[1] })}
                 </h4>
                 <div 
                   className="category-explorer__price-range"
@@ -669,7 +671,7 @@ const CategoryPage = () => {
               {/* Dietary Filters */}
               <div className="category-explorer__filter-section">
                 <h4 className="category-explorer__filter-title">
-                  Dietary & Features
+                  {t("category_page.dietary_features")}
                 </h4>
                 <div className="category-explorer__dietary-filters">
                   <button
@@ -681,7 +683,7 @@ const CategoryPage = () => {
                     onClick={() => handleDietaryFilter("vegan")}
                   >
                     <FaLeaf />
-                    Vegan
+                    {t("category_page.vegan")}
                   </button>
                   <button
                     className={`category-explorer__dietary-filter ${
@@ -692,7 +694,7 @@ const CategoryPage = () => {
                     onClick={() => handleDietaryFilter("bestSeller")}
                   >
                     <FaFire />
-                    Best Seller
+                    {t("category_page.best_seller")}
                   </button>
                   <button
                     className={`category-explorer__dietary-filter ${
@@ -703,14 +705,14 @@ const CategoryPage = () => {
                     onClick={() => handleDietaryFilter("new")}
                   >
                     <FaStar />
-                    New Items
+                    {t("category_page.new_items")}
                   </button>
                 </div>
               </div>
 
               {/* Categories */}
               <div className="category-explorer__filter-section">
-                <h4 className="category-explorer__filter-title">Categories</h4>
+                <h4 className="category-explorer__filter-title">{t("category_page.categories")}</h4>
                 <div className="category-explorer__category-filters">
                   {categories.map((cat) => (
                     <button
@@ -754,7 +756,7 @@ const CategoryPage = () => {
                       {/* Titlul categoriei */}
                       <div className="category-explorer__food-header">
                         <h2 className="category-explorer__grid-title">
-                          {category} ({categoryFoods.length} {categoryFoods.length === 1 ? 'item' : 'items'})
+                          {category} ({categoryFoods.length} {categoryFoods.length === 1 ? t("category_page.item") : t("category_page.items")})
                         </h2>
                       </div>
                       
@@ -806,12 +808,12 @@ const CategoryPage = () => {
                   <div className="category-explorer__food-header">
                     <h2 className="category-explorer__grid-title">
                       {searchQuery
-                        ? `Search Results for "${searchQuery}" (${filteredFood.length})`
-                        : `${categoryName} (${filteredFood.length} items)`}
+                        ? t("category_page.search_results", { query: searchQuery, count: filteredFood.length })
+                        : `${categoryName} (${filteredFood.length} ${filteredFood.length === 1 ? t("category_page.item") : t("category_page.items")})`}
                     </h2>
                     {activeFilterCount > 0 && (
                       <div className="category-explorer__active-filters">
-                        <span>Active filters: {activeFilterCount}</span>
+                        <span>{t("category_page.active_filters", { count: activeFilterCount })}</span>
                       </div>
                     )}
                   </div>
@@ -861,19 +863,19 @@ const CategoryPage = () => {
             <div className="category-explorer__no-results">
               <div className="category-explorer__no-results-icon">🍕</div>
               <h3 className="category-explorer__no-results-title">
-                No items found
+                {t("category_page.no_items_found")}
               </h3>
               <p className="category-explorer__no-results-message">
                 {searchQuery
-                  ? `No results for "${searchQuery}"`
-                  : `No items in ${categoryName} category`}
+                  ? t("category_page.no_results_for", { query: searchQuery })
+                  : t("category_page.no_items_in_category", { category: categoryName })}
               </p>
               {(searchQuery || activeFilterCount > 0) && (
                 <button
                   className="category-explorer__no-results-action"
                   onClick={clearAllFilters}
                 >
-                  Clear All Filters
+                  {t("category_page.clear_all_filters")}
                 </button>
               )}
             </div>

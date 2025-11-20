@@ -13,7 +13,7 @@ const addWaiterRequest = async (req, res) => {
     const message =
       req.body.action === "I want to pay"
         ? "Payment Request Submitted"
-        : "Waiter Request Submitted";
+        : "Waiter Request Submittedddd";
 
     res.json({
       success: true,

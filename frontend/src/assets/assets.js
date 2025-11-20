@@ -115,6 +115,10 @@ import bestseller_icon from './bestseller_icon.png'
 import new_icon from './new_icon.png'
 import usaFlag from './usaFlag.png'
 import roFlag from './roFlag.png'
+import esFlag from './esFlag.png'
+import deFlag from './deFlag.png'
+import itFlag from './itFlag.png'
+import frFlag from './frFlag.png'
 import arrow_down from './arrow_down.png'
 import desk_bell from './desk_bell.png'
 import menu_all from './menu.png'
@@ -132,6 +136,8 @@ import new_menu_selected from './new_menu_selected.png'
 import empty_cart3 from './empty_cart3.png'
 import no_image from './no_image.png'
 import image_coming_soon from './image_coming_soon.png'
+import orderly_logo2025 from './orderly_logo2025.png'
+
 
 export const assets = {
     logo,
@@ -204,6 +210,10 @@ export const assets = {
     new_icon,
     roFlag,
     usaFlag,
+    frFlag,
+    itFlag,
+    esFlag,
+    deFlag,
     arrow_down,
     desk_bell,
     mainLogo,
@@ -223,7 +233,8 @@ export const assets = {
     new_menu_selected,
     empty_cart3,
     no_image,
-    image_coming_soon
+    image_coming_soon,
+    orderly_logo2025
 }
 
 export const menu_list = [

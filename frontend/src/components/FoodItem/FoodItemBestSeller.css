@@ -81,7 +81,7 @@
   position: absolute;
   top: 8px;
   left: 8px;
-  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  background: #e86514;
   color: white;
   font-weight: bold;
   font-size: 12px;
@@ -122,7 +122,7 @@
 }
 
 .regular-price {
-  color: #e74c3c;
+  color: #e86514;
   font-size: 18px;
   font-weight: 600;
   margin: 0;
@@ -500,7 +500,7 @@ button.close:hover {
   gap: 6px;
   font-size: 12px;
   font-weight: 600;
-  color: #d63031;
+  color: #e86514;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 

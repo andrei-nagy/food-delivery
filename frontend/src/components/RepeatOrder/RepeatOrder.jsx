@@ -13,6 +13,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { toast } from "react-toastify";
 import { FaHeart } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 import "swiper/css";
 import "swiper/css/navigation";
@@ -23,7 +24,17 @@ import "./RepeatOrder.css";
 import { assets } from "../../assets/assets";
 
 const RepeatOrder = () => {
-  const { url, token, addToCart, canAddToCart, billRequested, food_list } = useContext(StoreContext);
+  const { 
+    url, 
+    token, 
+    addToCart, 
+    canAddToCart, 
+    billRequested, 
+    food_list,
+    userBlocked 
+  } = useContext(StoreContext);
+  const { t } = useTranslation();
+  
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasOrders, setHasOrders] = useState(false);
@@ -33,6 +44,9 @@ const RepeatOrder = () => {
   const navigate = useNavigate();
   const swiperRef = useRef(null);
   const autoplayTimeoutRef = useRef(null);
+
+  // Combină ambele condiții pentru a bloca interacțiunea
+  const isDisabled = billRequested || userBlocked;
 
   useEffect(() => {
     fetchRecentOrders();
@@ -145,7 +159,7 @@ const RepeatOrder = () => {
   };
 
   const handleRepeatSingleItem = async (item) => {
-    // ✅ Verifică dacă nota a fost cerută înainte de a adăuga în coș
+    // ✅ Verifică dacă nota a fost cerută sau session-ul a expirat înainte de a adăuga în coș
     if (!canAddToCart()) {
       return;
     }
@@ -168,7 +182,7 @@ const RepeatOrder = () => {
 
       // ✅ SOLUȚIA: Folosește direct parametrul quantity
       addToCart(itemId, quantity);
-      toast.success(`${item.name} x${quantity} added!`, {
+      toast.success(t("repeat_order.item_added", { name: item.name, quantity }), {
         position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
@@ -188,9 +202,13 @@ const RepeatOrder = () => {
   };
 
   const handleQuantityChange = (itemId, change) => {
-    // ✅ Verifică dacă nota a fost cerută înainte de a modifica cantitatea
-    if (billRequested) {
-      toast.error("Cannot modify quantities - bill has been requested");
+    // ✅ Verifică dacă nota a fost cerută sau session-ul a expirat înainte de a modifica cantitatea
+    if (isDisabled) {
+      if (billRequested) {
+        toast.error(t("repeat_order.cannot_modify_quantities_bill"));
+      } else if (userBlocked) {
+        toast.error(t("repeat_order.cannot_modify_quantities_session"));
+      }
       return;
     }
 
@@ -246,6 +264,26 @@ const RepeatOrder = () => {
     return allProducts;
   };
 
+  // Mesajul care va apărea când utilizatorul este blocat
+  const getBlockedMessage = () => {
+    if (userBlocked) {
+      return {
+        icon: "⏰",
+        text: t("repeat_order.session_expired"),
+        warningText: t("repeat_order.session_expired_warning")
+      };
+    }
+    if (billRequested) {
+      return {
+        icon: "🔒", 
+        text: t("repeat_order.bill_requested"),
+        warningText: t("repeat_order.bill_requested_warning")
+      };
+    }
+    return null;
+  };
+
+  const blockedMessage = getBlockedMessage();
   const uniqueProducts = getAllUniqueProducts();
 
   // Dacă toate comenzile sunt plătite, nu afișa componenta
@@ -259,11 +297,11 @@ const RepeatOrder = () => {
         <div className="repeat-order-header">
           <div className="repeat-order-header-left">
             <span className="repeat-order-title">
-              Repeat Your Order{" "}
+              {t("repeat_order.title")}{" "}
             <FaHeart style={{ color: "orange", top: "3px", position: "relative" }} />
             </span>
             <small className="repeat-order-subtitle">
-              Quick reorder from your history
+              {t("repeat_order.subtitle_loading")}
             </small>
           </div>
         </div>
@@ -298,27 +336,14 @@ const RepeatOrder = () => {
 
   return (
     <div className="repeat-order">
-      {/* Bill Requested Warning Banner */}
-      {billRequested && (
-        <div className="repeat-order-bill-warning">
-          <div className="repeat-order-bill-warning-content">
-            <span className="repeat-order-bill-warning-icon">⚠️</span>
-            <div className="repeat-order-bill-warning-text">
-              <strong>Bill Requested</strong>
-              <span>Cannot add new items. Please cancel the bill request first if you want to order again.</span>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="repeat-order-header">
         <div className="repeat-order-header-left">
           <span className="repeat-order-title">
-            Repeat Your Order{" "}
+            {t("repeat_order.title")}{" "}
             <FaHeart style={{ color: "orange", top: "3px", position: "relative" }} />
           </span>{" "}
           <small className="repeat-order-subtitle">
-            Quick reorder from unpaid orders
+            {t("repeat_order.subtitle")}
           </small>
         </div>
       </div>
@@ -364,7 +389,7 @@ const RepeatOrder = () => {
               spaceBetween: 22,
             },
           }}
-          className={`repeat-order-swiper-medium ${billRequested ? 'bill-requested-swiper' : ''}`}
+          className={`repeat-order-swiper-medium ${isDisabled ? 'bill-requested-swiper' : ''}`}
         >
           {uniqueProducts.map((item, index) => {
             const itemId = item.foodId || item._id;
@@ -378,21 +403,21 @@ const RepeatOrder = () => {
 
             return (
               <SwiperSlide key={itemId || index}>
-                <div className={`repeat-product-card-medium ${billRequested ? 'bill-requested-card' : ''}`}>
+                <div className={`repeat-product-card-medium ${isDisabled ? 'bill-requested-card' : ''}`}>
                   <div className="repeat-product-image-section-medium">
                     <div className="repeat-product-image-container-medium">
-                      {/* Bill Requested Overlay */}
-                      {billRequested && (
+                      {/* Overlay pentru Session Expired sau Bill Requested */}
+                      {isDisabled && blockedMessage && (
                         <div className="repeat-product-bill-overlay">
                           <div className="repeat-product-bill-message">
-                            <span className="repeat-product-bill-icon">🔒</span>
-                            <span>Bill Requested</span>
+                            <span className="repeat-product-bill-icon">{blockedMessage.icon}</span>
+                            <span>{blockedMessage.text}</span>
                           </div>
                         </div>
                       )}
                       
                       {/* ✅ BADGE PENTRU DISCOUNT */}
-                      {hasDiscount && !billRequested && (
+                      {hasDiscount && !isDisabled && (
                         <div className="repeat-product-discount-badge">
                           -{priceInfo.discountPercentage}%
                         </div>
@@ -401,7 +426,7 @@ const RepeatOrder = () => {
                       <img
                         src={hasImageError ? assets.image_coming_soon : `${url}/images/${item.image}`}
                         alt={item.name}
-                        className={`repeat-product-image-medium ${billRequested ? 'disabled-image' : ''} ${hasImageError ? 'image-error-fallback' : ''}`}
+                        className={`repeat-product-image-medium ${isDisabled ? 'disabled-image' : ''} ${hasImageError ? 'image-error-fallback' : ''}`}
                         onError={() => handleImageError(itemId)}
                       />
                     </div>
@@ -409,13 +434,13 @@ const RepeatOrder = () => {
 
                   <div className="repeat-product-content-medium">
                     <div className="repeat-product-info-medium">
-                      <h3 className={`repeat-product-name-medium ${billRequested ? 'disabled-text' : ''}`}>
+                      <h3 className={`repeat-product-name-medium ${isDisabled ? 'disabled-text' : ''}`}>
                         {item.name}
                       </h3>
 
                       <div className="repeat-product-meta-medium">
                         {/* ✅ AFIȘEAZĂ PREȚUL CU DISCOUNT */}
-                        {hasDiscount && !billRequested ? (
+                        {hasDiscount && !isDisabled ? (
                           <div className="repeat-product-price-discount-wrapper">
                             <span className="repeat-product-original-price">
                               {priceInfo.originalPrice.toFixed(2)} €
@@ -425,7 +450,7 @@ const RepeatOrder = () => {
                             </span>
                           </div>
                         ) : (
-                          <div className={`repeat-product-price-medium ${billRequested ? 'disabled-text' : ''}`}>
+                          <div className={`repeat-product-price-medium ${isDisabled ? 'disabled-text' : ''}`}>
                             {priceInfo ? priceInfo.unitPrice.toFixed(2) : item.price} €
                           </div>
                         )}
@@ -433,11 +458,11 @@ const RepeatOrder = () => {
                     </div>
 
                     <div className="repeat-product-actions-medium">
-                      <div className={`quantity-selector-medium ${billRequested ? 'disabled-controls' : ''}`}>
+                      <div className={`quantity-selector-medium ${isDisabled ? 'disabled-controls' : ''}`}>
                         <button
                           className="qty-btn-medium qty-minus-medium"
                           onClick={() => handleQuantityChange(itemId, -1)}
-                          disabled={billRequested}
+                          disabled={isDisabled}
                         >
                           <FaMinus />
                         </button>
@@ -445,20 +470,23 @@ const RepeatOrder = () => {
                         <button
                           className="qty-btn-medium qty-plus-medium"
                           onClick={() => handleQuantityChange(itemId, 1)}
-                          disabled={billRequested}
+                          disabled={isDisabled}
                         >
                           <FaPlus />
                         </button>
                       </div>
 
                       <button
-                        className={`repeat-add-btn-medium ${billRequested ? 'repeat-add-btn-disabled' : ''}`}
+                        className={`repeat-add-btn-medium ${isDisabled ? 'repeat-add-btn-disabled' : ''}`}
                         onClick={() => handleRepeatSingleItem(item)}
-                        title={billRequested ? "Bill requested - cannot add items" : `Add ${quantity} ${item.name} to cart`}
+                        title={isDisabled ? 
+                          `${blockedMessage?.text} - ${t("repeat_order.cannot_add_items")}` : 
+                          t("repeat_order.add_item_title", { quantity, name: item.name })
+                        }
                         data-item-id={itemId}
-                        disabled={billRequested}
+                        disabled={isDisabled}
                       >
-                        {billRequested ? "Disabled" : "Add"}
+                        {isDisabled ? t("repeat_order.disabled") : t("repeat_order.add")}
                       </button>
                     </div>
                   </div>

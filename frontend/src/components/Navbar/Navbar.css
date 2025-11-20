@@ -101,7 +101,7 @@
   background-color: white;
   border: 1px solid #ccc;
   width: 100%;
-  z-index: 10;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
  padding: 8px 2px; /* ADAUGĂ MAI MULT SPAȚIU AICI */
@@ -569,7 +569,7 @@ left: -15px;
 
 @media (max-width: 900px) {
   .navbar .logo {
-    width: 115px;
+    width: 110px;
     top: 5px;
     position: relative;
   }

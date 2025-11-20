@@ -228,7 +228,7 @@ const MyOrders = () => {
         setPromoError("");
 
         toast.success(
-          `Promo code applied! ${discountAmount.toFixed(2)}€ discount`
+          t("my_orders.promo_applied", { amount: discountAmount.toFixed(2) })
         );
       } else {
         setPromoError(response.data.message);
@@ -238,7 +238,7 @@ const MyOrders = () => {
       }
     } catch (error) {
       console.error("Error applying promo code:", error);
-      setPromoError("Error validating promo code");
+      setPromoError(t("my_orders.promo_error"));
       setIsPromoApplied(false);
       setAppliedPromoCode("");
       setDiscount(0);
@@ -469,7 +469,7 @@ const MyOrders = () => {
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           />
-          <span>Loading your orders...</span>
+          <span>{t("my_orders.loading_orders")}</span>
         </div>
       </motion.div>
     );
@@ -485,13 +485,13 @@ const MyOrders = () => {
     >
       {/* Header Section */}
       <div className="cart-header-section-orders">
-        <button className="back-button" onClick={() => navigate(-1)}>
-          <FaArrowLeft />
-          <span>Back</span>
-        </button>
+        {/* <button className="back-button" onClick={() => navigate(-1)}>
+          <FaArrowLeft /> */}
+          {/* <span>{t("my_orders.back")}</span> */}
+        {/* </button> */}
 
-        <h1 className="cart-title">Orders</h1>
-        <div className="clear-cart-placeholder"></div>
+        <h1 className="cart-title">{t("my_orders.orders")}</h1>
+        {/* <div className="clear-cart-placeholder"></div> */}
       </div>
 
       {/* Empty Cart State */}
@@ -529,7 +529,7 @@ const MyOrders = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            No unpaid orders
+            {t("my_orders.no_unpaid_orders")}
           </motion.h2>
 
           <motion.p
@@ -538,8 +538,7 @@ const MyOrders = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            You don't have any unpaid orders. All your orders have been paid or
-            you haven't placed any orders yet.
+            {t("my_orders.no_orders_description")}
           </motion.p>
 
           <motion.button
@@ -554,7 +553,7 @@ const MyOrders = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-            <span>Browse Menu</span>
+            <span>{t("my_orders.browse_menu")}</span>
             <svg
               width="16"
               height="16"
@@ -585,10 +584,9 @@ const MyOrders = () => {
               <div className="notification-content">
                 <FaCheckCircle className="notification-icon" />
                 <div className="notification-text">
-                  <h3>Bill Request Sent</h3>
+                  <h3>{t("my_orders.bill_request_sent")}</h3>
                   <p>
-                    Waiter notified {getTimeSinceBillRequest()}. They'll come to
-                    your table shortly.
+                    {t("my_orders.waiter_notified", { time: getTimeSinceBillRequest() })}
                   </p>
                 </div>
               </div>
@@ -598,7 +596,7 @@ const MyOrders = () => {
                 title="Cancel bill request"
               >
                 <FaClock />
-                <span>Cancel Request</span>
+                <span>{t("my_orders.cancel_request")}</span>
               </button>
             </motion.div>
           )}
@@ -615,125 +613,123 @@ const MyOrders = () => {
                     {/* Order Header */}
                     <div className="order-header">
                       <h6 className="order-date-title">
-                        Order from {formatDateTime(order.date)}
+                        {t("my_orders.order_from")} {formatDateTime(order.date)}
                       </h6>
                     </div>
 
- {/* Order Items */}
-{order.items.map((item, itemIndex) => {
-  const uniqueId = `${order._id}_${item._id}_${itemIndex}`;
-  
-  // ✅ FOLOSEȘTE DIRECT baseFoodId PENTRU A GĂSI PRODUSUL
-  const foodItem = food_list.find(food => food._id === item.baseFoodId);
-  
-  // ✅ CALCULEAZĂ PREȚUL
-  let priceInfo = null;
-  
-  if (foodItem) {
-    priceInfo = getItemPriceWithDiscount(foodItem, item);
-  }
+                    {/* Order Items */}
+                    {order.items.map((item, itemIndex) => {
+                      const uniqueId = `${order._id}_${item._id}_${itemIndex}`;
+                      
+                      // ✅ FOLOSEȘTE DIRECT baseFoodId PENTRU A GĂSI PRODUSUL
+                      const foodItem = food_list.find(food => food._id === item.baseFoodId);
+                      
+                      // ✅ CALCULEAZĂ PREȚUL
+                      let priceInfo = null;
+                      
+                      if (foodItem) {
+                        priceInfo = getItemPriceWithDiscount(foodItem, item);
+                      }
 
-  return (
-    <React.Fragment key={uniqueId}>
-      <motion.div
-        className="cart-item-container"
-        initial={{ opacity: 0, height: 0 }}
-        animate={{ opacity: 1, height: "auto" }}
-        exit={{ opacity: 0, height: 0 }}
-        transition={{ duration: 0.3 }}
-        layout
-      >
-        <div className="cart-item">
-          <button
-            className="item-image-button"
-            onClick={() => openFoodModal(uniqueId)}
-          >
-            <img
-              src={
-                url +
-                "/images/" +
-                (foodItem?.image || item.image)
-              }
-              alt={foodItem?.name || item.name}
-              className="item-image"
-              onError={(e) => {
-                e.target.src = assets.image_coming_soon;
-                e.target.style.objectFit = "cover";
-              }}
-            />
-            {/* ✅ BADGE-UL DE DISCOUNT PE POZĂ - POZIȚIE CORECTĂ */}
-            {foodItem && priceInfo && priceInfo.hasDiscount && (
-              <div className="discount-badge-image">
-                -{priceInfo.discountPercentage}%
-              </div>
-            )}
-          </button>
-          <div className="item-details">
-            <button
-              className="item-name-button"
-              onClick={() => openFoodModal(uniqueId)}
-            >
-              <h3 className="item-name">
-                {foodItem?.name || item.name}
-              </h3>
-            </button>
-            {item.specialInstructions && (
-              <div className="item-special-instructions">
-                <span className="instructions-label">
-                  Note:{" "}
-                </span>
-                {item.specialInstructions}
-              </div>
-            )}
+                      return (
+                        <React.Fragment key={uniqueId}>
+                          <motion.div
+                            className="cart-item-container"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            layout
+                          >
+                            <div className="cart-item">
+                              <button
+                                className="item-image-button"
+                                onClick={() => openFoodModal(uniqueId)}
+                              >
+                                <img
+                                  src={
+                                    url +
+                                    "/images/" +
+                                    (foodItem?.image || item.image)
+                                  }
+                                  alt={foodItem?.name || item.name}
+                                  className="item-image"
+                                  onError={(e) => {
+                                    e.target.src = assets.image_coming_soon;
+                                    e.target.style.objectFit = "cover";
+                                  }}
+                                />
+                                {/* ✅ BADGE-UL DE DISCOUNT PE POZĂ - POZIȚIE CORECTĂ */}
+                                {foodItem && priceInfo && priceInfo.hasDiscount && (
+                                  <div className="discount-badge-image">
+                                    -{priceInfo.discountPercentage}%
+                                  </div>
+                                )}
+                              </button>
+                              <div className="item-details">
+                                <button
+                                  className="item-name-button"
+                                  onClick={() => openFoodModal(uniqueId)}
+                                >
+                                  <h3 className="item-name">
+                                    {foodItem?.name || item.name}
+                                  </h3>
+                                </button>
+                                {item.specialInstructions && (
+                                  <div className="item-special-instructions">
+                                    <span className="instructions-label">
+                                      {t("my_orders.note")}{" "}
+                                    </span>
+                                    {item.specialInstructions}
+                                  </div>
+                                )}
 
-            {/* ✅ AFIȘEAZĂ PREȚUL */}
-            {foodItem && priceInfo ? (
-              priceInfo.hasDiscount ? (
-                <div className="item-price-container">
-                  <div className="discount-price-wrapper">
-                    <span className="original-price">
-                      {(priceInfo.originalPrice * item.quantity).toFixed(2)} €
-                    </span>
-                    <span className="final-price">
-                      {priceInfo.totalPrice.toFixed(2)} €
-                    </span>
-                 
-                  </div>
-                </div>
-              ) : (
-                <p className="item-price">
-                  {priceInfo.totalPrice.toFixed(2)} €
-                </p>
-              )
-            ) : (
-              <p className="item-price">
-                {(item.price * item.quantity).toFixed(2)} €
-              </p>
-            )}
-          </div>
-          <div className="myorders-quantity-display">
-            <span className="myorders-quantity-number">
-              x{item.quantity}
-            </span>
-          </div>
-        </div>
-      </motion.div>
-      {itemIndex < order.items.length - 1 && (
-        <div className="item-divider"></div>
-      )}
-    </React.Fragment>
-  );
-})}
+                                {/* ✅ AFIȘEAZĂ PREȚUL */}
+                                {foodItem && priceInfo ? (
+                                  priceInfo.hasDiscount ? (
+                                    <div className="item-price-container">
+                                      <div className="discount-price-wrapper">
+                                        <span className="original-price">
+                                          {(priceInfo.originalPrice * item.quantity).toFixed(2)} €
+                                        </span>
+                                        <span className="final-price">
+                                          {priceInfo.totalPrice.toFixed(2)} €
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <p className="item-price">
+                                      {priceInfo.totalPrice.toFixed(2)} €
+                                    </p>
+                                  )
+                                ) : (
+                                  <p className="item-price">
+                                    {(item.price * item.quantity).toFixed(2)} €
+                                  </p>
+                                )}
+                              </div>
+                              <div className="myorders-quantity-display">
+                                <span className="myorders-quantity-number">
+                                  x{item.quantity}
+                                </span>
+                              </div>
+                            </div>
+                          </motion.div>
+                          {itemIndex < order.items.length - 1 && (
+                            <div className="item-divider"></div>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
                   </div>
                 ))}
               </AnimatePresence>
             </div>
           </div>
 
-          {/* Restul codului rămâne la fel... */}
           {/* Order Summary */}
-          <div className="order-summary-section">
-            <h2 className="section-title">Order Summary</h2>
+          <div className="order-summary-section-cart">
+            <h2 className="section-title">{t("my_orders.order_summary")}</h2>
 
             {/* ✅ SECȚIUNEA PENTRU PROMO CODE */}
             {!billRequested && (
@@ -744,7 +740,7 @@ const MyOrders = () => {
                     <input
                       type="text"
                       className="promo-code-input"
-                      placeholder="Enter promo code"
+                      placeholder={t("my_orders.enter_promo_code")}
                       value={promoCode}
                       onChange={(e) => setPromoCode(e.target.value)}
                       disabled={isPromoApplied}
@@ -754,14 +750,14 @@ const MyOrders = () => {
                         className="apply-promo-button"
                         onClick={applyPromoCode}
                       >
-                        Apply
+                        {t("my_orders.apply")}
                       </button>
                     ) : (
                       <button
                         className="remove-promo-button"
                         onClick={removePromoCode}
                       >
-                        Remove
+                        {t("my_orders.remove")}
                       </button>
                     )}
                   </div>
@@ -771,10 +767,9 @@ const MyOrders = () => {
                   {isPromoApplied && (
                     <div className="promo-success-message">
                       <FaCheck className="success-icon" />
-                      <span>
-                        Promo code <strong>{appliedPromoCode}</strong> applied
-                        successfully!
-                      </span>
+                      <span dangerouslySetInnerHTML={{
+                        __html: t("my_orders.promo_success", { code: appliedPromoCode })
+                      }} />
                     </div>
                   )}
                 </div>
@@ -783,7 +778,7 @@ const MyOrders = () => {
 
             <div className="summary-details">
               <div className="summary-row">
-                <span>Subtotal</span>
+                <span>{t("my_orders.subtotal")}</span>
                 {/* ✅ Folosim subtotal-ul ORIGINAL (fără discount) */}
                 <span>{getOriginalSubtotal().toFixed(2)} €</span>
               </div>
@@ -791,7 +786,7 @@ const MyOrders = () => {
               {/* ✅ SECȚIUNEA PENTRU DISCOUNT-UL TOTAL DIN PRODUSELE CU REDUCERE */}
               {getTotalProductDiscountAmount() > 0 && (
                 <div className="summary-row discount-row">
-                  <span className="discount-label">Product discounts</span>
+                  <span className="discount-label">{t("my_orders.product_discounts")}</span>
                   <span className="discount-amount">
                     -{getTotalProductDiscountAmount().toFixed(2)} €
                   </span>
@@ -801,7 +796,7 @@ const MyOrders = () => {
               {/* ✅ SECȚIUNEA PENTRU REDUCEREA OBTINUTĂ DIN PROMO CODE */}
               {isPromoApplied && (
                 <div className="summary-row promo-discount">
-                  <span className="promo-label">Promo code discount</span>
+                  <span className="promo-label">{t("my_orders.promo_discount")}</span>
                   <span className="promo-discount-amount">
                     -{discount.toFixed(2)}€
                   </span>
@@ -811,7 +806,7 @@ const MyOrders = () => {
               {/* ✅ SECȚIUNEA PENTRU TOTALUL ECONOMISIT */}
               {(getTotalProductDiscountAmount() > 0 || isPromoApplied) && (
                 <div className="summary-row saved-amount">
-                  <span className="saved-label">Total Saved</span>
+                  <span className="saved-label">{t("my_orders.total_saved")}</span>
                   <span className="saved-amount-value">
                     {(getTotalProductDiscountAmount() + discount).toFixed(2)} €
                   </span>
@@ -820,7 +815,7 @@ const MyOrders = () => {
 
               <div className="summary-divider"></div>
               <div className="summary-row total">
-                <span>Total</span>
+                <span>{t("my_orders.total")}</span>
                 <span>{getFinalTotalAmount().toFixed(2)} €</span>
               </div>
             </div>
@@ -836,7 +831,7 @@ const MyOrders = () => {
             >
               <h2 className="cart-tips-title">
                 <FaHandHoldingHeart className="cart-tips-icon" />
-                Add a Tip for Excellent Service
+                {t("my_orders.add_tip")}
               </h2>
 
               <div className="cart-tips-options">
@@ -851,16 +846,14 @@ const MyOrders = () => {
                     />
                     <div className="cart-tips-option-content">
                       <span className="cart-tips-percentage">
-                        {percentage}%
+                        {t("my_orders.tip_percentage", { percentage })}
                       </span>
                       <span className="cart-tips-amount">
                         {percentage === 0
-                          ? "No tip"
-                          : `${(
-                              ((getTotalOrderAmount() - discount) *
-                                percentage) /
-                              100
-                            ).toFixed(2)} €`}
+                          ? t("my_orders.no_tip")
+                          : t("my_orders.tip_amount", { 
+                              amount: (((getTotalOrderAmount() - discount) * percentage) / 100).toFixed(2)
+                            })}
                       </span>
                     </div>
                   </label>
@@ -870,7 +863,7 @@ const MyOrders = () => {
               {/* Custom Tip Section */}
               <div className="custom-tip-section">
                 <label className="custom-tip-label">
-                  Or enter custom amount:
+                  {t("my_orders.custom_tip")}
                 </label>
                 <div className="custom-tip-input-wrapper">
                   <div className="custom-tip-input-container">
@@ -915,19 +908,19 @@ const MyOrders = () => {
 
               <div className="cart-tips-summary">
                 <div className="cart-tips-summary-row">
-                  <span>Subtotal:</span>
+                  <span>{t("my_orders.subtotal_label")}</span>
                   <span>{(getTotalOrderAmount() - discount).toFixed(2)} €</span>
                 </div>
 
                 {calculateTipAmount() > 0 && (
                   <div className="cart-tips-summary-row">
-                    <span>Tip:</span>
+                    <span>{t("my_orders.tip_label")}</span>
                     <span>+{calculateTipAmount().toFixed(2)} €</span>
                   </div>
                 )}
 
                 <div className="cart-tips-summary-row total-with-tip">
-                  <span>Total with tip:</span>
+                  <span>{t("my_orders.total_with_tip")}</span>
                   <span>{getFinalTotalAmount().toFixed(2)} €</span>
                 </div>
               </div>
@@ -937,7 +930,7 @@ const MyOrders = () => {
           {/* Payment Method Section - Hide if bill already requested */}
           {!billRequested && (
             <div className="cart-payment-section" id="payment-method-section">
-              <h2 className="cart-payment-title">Select Payment Method</h2>
+              <h2 className="cart-payment-title">{t("my_orders.select_payment_method")}</h2>
 
               {paymentError && (
                 <div className="cart-payment-error">{paymentError}</div>
@@ -958,10 +951,10 @@ const MyOrders = () => {
                     </div>
                     <div className="cart-payment-details">
                       <span className="cart-payment-option-title">
-                        Credit/Debit Card
+                        {t("my_orders.credit_debit_card")}
                       </span>
                       <span className="cart-payment-option-subtitle">
-                        Pay securely online with your card
+                        {t("my_orders.pay_online")}
                       </span>
                     </div>
                   </div>
@@ -981,10 +974,10 @@ const MyOrders = () => {
                     </div>
                     <div className="cart-payment-details">
                       <span className="cart-payment-option-title">
-                        Cash or POS Terminal
+                        {t("my_orders.cash_pos")}
                       </span>
                       <span className="cart-payment-option-subtitle">
-                        Pay at your table with cash or card terminal
+                        {t("my_orders.pay_at_table")}
                       </span>
                     </div>
                   </div>
@@ -994,7 +987,7 @@ const MyOrders = () => {
               <div className="cart-payment-security">
                 <div className="cart-payment-security-info">
                   <FaLock className="cart-lock-icon" />
-                  <span>Secure & Encrypted Payment</span>
+                  <span>{t("my_orders.secure_payment")}</span>
                 </div>
                 <div className="cart-payment-providers">
                   <div className="cart-provider-logos">
@@ -1028,10 +1021,10 @@ const MyOrders = () => {
               </div>
 
               <div className="cart-payment-features">
-                <div className="cart-payment-feature">SSL Encrypted</div>
-                <div className="cart-payment-feature">PCI Compliant</div>
-                <div className="cart-payment-feature">3D Secure</div>
-                <div className="cart-payment-feature">Money Back Guarantee</div>
+                <div className="cart-payment-feature">{t("my_orders.ssl_encrypted")}</div>
+                <div className="cart-payment-feature">{t("my_orders.pci_compliant")}</div>
+                <div className="cart-payment-feature">{t("my_orders.secure_3d")}</div>
+                <div className="cart-payment-feature">{t("my_orders.money_back")}</div>
               </div>
             </div>
           )}
@@ -1050,7 +1043,7 @@ const MyOrders = () => {
             {!(isPlacingOrder || orderPlaced) ? (
               <>
                 <div className="item-count">{getTotalOrderItemCount()}</div>
-                <div className="checkout-text">Pay Order</div>
+                <div className="checkout-text">{t("my_orders.pay_order")}</div>
                 <div className="checkout-total">
                   {getFinalTotalAmount().toFixed(2)} €
                 </div>
@@ -1062,7 +1055,7 @@ const MyOrders = () => {
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                 />
-                <span>Processing Order...</span>
+                <span>{t("my_orders.processing_order")}...</span>
               </div>
             )}
           </div>
@@ -1085,17 +1078,17 @@ const MyOrders = () => {
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <h3>Clear All Orders</h3>
-              <p>Are you sure you want to remove all unpaid orders?</p>
+              <h3>{t("my_orders.clear_all_orders")}</h3>
+              <p>{t("my_orders.clear_confirmation")}</p>
               <div className="modal-actions">
                 <button
                   className="cancel-button"
                   onClick={() => setShowConfirmClear(false)}
                 >
-                  Cancel
+                  {t("my_orders.cancel")}
                 </button>
                 <button className="confirm-button" onClick={handleClearCart}>
-                  Clear All
+                  {t("my_orders.clear_all")}
                 </button>
               </div>
             </motion.div>

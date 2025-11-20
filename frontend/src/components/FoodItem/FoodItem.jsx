@@ -17,21 +17,27 @@ const FoodItem = ({
   discountedPrice,
   openModal,
 }) => {
-  const { cartItems, addToCart, removeFromCart, url, billRequested } =
-    useContext(StoreContext);
+  const { 
+    cartItems, 
+    addToCart, 
+    removeFromCart, 
+    url, 
+    billRequested,
+    userBlocked 
+  } = useContext(StoreContext);
+  
   const [showCounterControls, setShowCounterControls] = useState(false);
   const [imageError, setImageError] = useState(false);
   const timerRef = useRef(null);
 
-  // Verifică dacă produsul are discount
+  // Combină ambele condiții pentru a bloca interacțiunea
+  const isDisabled = billRequested || userBlocked;
   const hasDiscount = discountPercentage > 0;
 
-  // ✅ FUNCȚIE CORECTĂ: Caută toate variantele produsului în coș
   const getItemQuantity = () => {
     if (!cartItems || !_id) return 0;
 
     let totalQuantity = 0;
-
     Object.keys(cartItems).forEach((key) => {
       if (key.startsWith(_id)) {
         const item = cartItems[key];
@@ -55,7 +61,7 @@ const FoodItem = ({
   const handleCounterClick = (e) => {
     e.stopPropagation();
 
-    if (billRequested) {
+    if (isDisabled) {
       return;
     }
 
@@ -69,7 +75,7 @@ const FoodItem = ({
   };
 
   const handleClick = () => {
-    if (billRequested) {
+    if (isDisabled) {
       return;
     }
     openModal({
@@ -86,7 +92,7 @@ const FoodItem = ({
   const handleAddToCart = (e) => {
     e.stopPropagation();
 
-    if (billRequested) {
+    if (isDisabled) {
       return;
     }
 
@@ -97,7 +103,7 @@ const FoodItem = ({
   const handleRemoveFromCart = (e) => {
     e.stopPropagation();
 
-    if (billRequested) {
+    if (isDisabled) {
       return;
     }
 
@@ -108,7 +114,7 @@ const FoodItem = ({
   const handleSimpleCounterClick = (e) => {
     e.stopPropagation();
 
-    if (billRequested) {
+    if (isDisabled) {
       return;
     }
 
@@ -130,7 +136,7 @@ const FoodItem = ({
   const handleAddIconClick = (e) => {
     e.stopPropagation();
 
-    if (billRequested) {
+    if (isDisabled) {
       return;
     }
 
@@ -145,11 +151,30 @@ const FoodItem = ({
     });
   };
 
+  // Mesajul care va apărea când utilizatorul este blocat
+  const getBlockedMessage = () => {
+    if (userBlocked) {
+      return {
+        icon: "⏰",
+        text: "Session Expired"
+      };
+    }
+    if (billRequested) {
+      return {
+        icon: "🔒", 
+        text: "Bill Requested"
+      };
+    }
+    return null;
+  };
+
+  const blockedMessage = getBlockedMessage();
+
   return (
     <div
-      className={`food-item ${billRequested ? "bill-requested-disabled" : ""}`}
+      className={`food-item ${isDisabled ? "bill-requested-disabled" : ""}`}
       onClick={handleClick}
-      style={{ cursor: billRequested ? "not-allowed" : "pointer" }}
+      style={{ cursor: isDisabled ? "not-allowed" : "pointer" }}
     >
       <div className="food-item-img-container">
         {isNewAdded && (
@@ -166,22 +191,21 @@ const FoodItem = ({
           />
         )}
 
-        {/* Badge pentru discount */}
         {hasDiscount && (
           <div className="discount-badge">-{discountPercentage}%</div>
         )}
 
-        {billRequested && (
+        {isDisabled && blockedMessage && (
           <div className="bill-requested-overlay">
             <div className="bill-requested-message">
-              <span className="repeat-product-bill-icon">🔒</span>
-              <span>Bill Requested</span>
+              <span className="repeat-product-bill-icon">{blockedMessage.icon}</span>
+              <span>{blockedMessage.text}</span>
             </div>
           </div>
         )}
 
         <img
-          className={`food-item-img ${billRequested ? "disabled-image" : ""} ${
+          className={`food-item-img ${isDisabled ? "disabled-image" : ""} ${
             imageError ? "image-error" : ""
           }`}
           src={imageError ? assets.image_coming_soon : url + "/images/" + image}
@@ -189,7 +213,7 @@ const FoodItem = ({
           onError={handleImageError}
         />
 
-        {!billRequested && itemQuantity > 0 ? (
+        {!isDisabled && itemQuantity > 0 ? (
           <AnimatePresence>
             {showCounterControls ? (
               <motion.div
@@ -226,7 +250,7 @@ const FoodItem = ({
               </motion.div>
             )}
           </AnimatePresence>
-        ) : !billRequested ? (
+        ) : !isDisabled ? (
           <img
             className="add"
             onClick={handleAddIconClick}
@@ -237,11 +261,11 @@ const FoodItem = ({
       </div>
       <div className="food-item-info">
         <div className="food-item-name-rating">
-          <p className={billRequested ? "disabled-text" : ""}>{name}</p>
+          <p className={isDisabled ? "disabled-text" : ""}>{name}</p>
         </div>
         <div className="food-item-desc-container">
           <p
-            className={`food-item-desc ${billRequested ? "disabled-text" : ""}`}
+            className={`food-item-desc ${isDisabled ? "disabled-text" : ""}`}
           >
             {description.length > 70
               ? description.slice(0, 70) + "..."
@@ -250,7 +274,7 @@ const FoodItem = ({
         </div>
         <div
           className={`food-item-price-container ${
-            billRequested ? "disabled-text" : ""
+            isDisabled ? "disabled-text" : ""
           }`}
         >
           {hasDiscount ? (

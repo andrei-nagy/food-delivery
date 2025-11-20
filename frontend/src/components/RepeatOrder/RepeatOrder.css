@@ -418,14 +418,24 @@
 }
 
 @keyframes loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 @keyframes itemAdded {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Responsive Design pentru carduri medium */
@@ -433,27 +443,27 @@
   .repeat-order-swiper-container {
     padding: 0 40px;
   }
-  
+
   .swiper-custom-button {
     width: 36px;
     height: 36px;
     font-size: 12px;
   }
-  
+
   .repeat-product-card-medium {
     min-width: 180px;
     max-width: 220px;
   }
-  
+
   .repeat-product-image-section-medium {
     height: 120px;
   }
-  
+
   .repeat-product-content-medium {
     padding: 14px;
     gap: 10px;
   }
-  
+
   .repeat-product-name-medium {
     font-size: 0.95rem;
   }
@@ -463,39 +473,39 @@
   .repeat-order-swiper-container {
     padding: 0 5px;
   }
-  
+
   .repeat-product-card-medium {
     min-width: 160px;
     max-width: 200px;
   }
-  
+
   .repeat-product-image-section-medium {
     height: 110px;
   }
-  
+
   .repeat-product-content-medium {
     padding: 12px;
     gap: 8px;
   }
-  
+
   .repeat-product-name-medium {
     font-size: 0.9rem;
   }
-  
+
   .repeat-product-price-medium {
     font-size: 1rem;
   }
-  
+
   .repeat-add-btn-medium {
     padding: 6px 10px;
     font-size: 0.75rem;
     height: 30px;
   }
-  
+
   .quantity-selector-medium {
     height: 30px;
   }
-  
+
   .qty-btn-medium {
     width: 26px;
   }
@@ -505,11 +515,11 @@
   .repeat-order-swiper-container {
     padding: 0 55px;
   }
-  
+
   .swiper-custom-prev {
     left: 8px;
   }
-  
+
   .swiper-custom-next {
     right: 8px;
   }
@@ -519,8 +529,6 @@
     margin-left: 10px;
     margin-right: 10px !important;
 } */
-
-
 
 /* RepeatOrder.css - ADAUGĂ aceste stiluri */
 
@@ -698,7 +706,7 @@
 }
 
 .repeat-product-bill-message {
-  color: white;
+  /* color: white; */
   text-align: center;
   font-size: 0.8rem;
   font-weight: 600;
@@ -734,7 +742,7 @@
   position: absolute;
   top: 8px;
   left: 8px;
-  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
   color: white;
   padding: 3px 8px;
   border-radius: 12px;
@@ -759,13 +767,13 @@
 }
 
 .repeat-product-final-price {
-  color: #e74c3c;
+  color: #e86514;
   font-size: 15px;
   font-weight: 700;
 }
 
 .repeat-product-price-medium {
-  color: #e74c3c;
+  color: #e86514;
   font-size: 15px;
   font-weight: 600;
 }

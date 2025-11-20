@@ -18,8 +18,12 @@ const FoodItemCategory = ({
   discountedPrice,
   onClick
 }) => {
-  const { cartItems, url, billRequested } = useContext(StoreContext);
+  const { cartItems, url, billRequested, userBlocked } = useContext(StoreContext);
   const [imageError, setImageError] = useState(false);
+  
+  // Combină ambele condiții pentru a bloca interacțiunea
+  const isDisabled = billRequested || userBlocked;
+  const hasDiscount = discountPercentage > 0;
 
   // ✅ CALCULEAZĂ FORȚAT discountPercentage și discountedPrice
   const rawDiscountPercentage = parseFloat(discountPercentage) || 0;
@@ -59,10 +63,29 @@ const FoodItemCategory = ({
     setImageError(true);
   };
 
+  // Mesajul care va apărea când utilizatorul este blocat
+  const getBlockedMessage = () => {
+    if (userBlocked) {
+      return {
+        icon: "⏰",
+        text: "Session Expired"
+      };
+    }
+    if (billRequested) {
+      return {
+        icon: "🔒", 
+        text: "Bill Requested"
+      };
+    }
+    return null;
+  };
+
+  const blockedMessage = getBlockedMessage();
+
   const handleAddIconClick = (e) => {
     e.stopPropagation();
     
-    if (billRequested) {
+    if (isDisabled) {
       return;
     }
     
@@ -89,7 +112,7 @@ const FoodItemCategory = ({
   const handleCounterClick = (e) => {
     e.stopPropagation();
     
-    if (billRequested) {
+    if (isDisabled) {
       return;
     }
     
@@ -114,7 +137,7 @@ const FoodItemCategory = ({
   };
 
   const handleCardClick = () => {
-    if (billRequested) {
+    if (isDisabled) {
       return;
     }
     
@@ -146,8 +169,8 @@ const FoodItemCategory = ({
       transition={{ duration: 0.4 }}
     >
       <div
-        className={`food-item-category ${billRequested ? 'bill-requested-disabled' : ''}`}
-        style={{ cursor: billRequested ? 'not-allowed' : 'pointer' }}
+        className={`food-item-category ${isDisabled ? 'bill-requested-disabled' : ''}`}
+        style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
       >
         <div className="food-item-img-container">
           {isNewAdded && (
@@ -175,24 +198,24 @@ const FoodItemCategory = ({
             </div>
           )}
           
-          {billRequested && (
+          {isDisabled && blockedMessage && (
             <div className="bill-requested-overlay">
               <div className="bill-requested-message">
-                <span className="repeat-product-bill-icon">🔒</span>
-                <span>Bill Requested</span>
+                <span className="repeat-product-bill-icon">{blockedMessage.icon}</span>
+                <span>{blockedMessage.text}</span>
               </div>
             </div>
           )}
           
           <img
-            className={`food-item-img ${billRequested ? 'disabled-image' : ''} ${imageError ? 'image-error' : ''}`}
+            className={`food-item-img ${isDisabled ? 'disabled-image' : ''} ${imageError ? 'image-error' : ''}`}
             src={imageError ? assets.image_coming_soon : (url + "/images/" + image)}
             alt={name}
             onError={handleImageError}
             onClick={handleCardClick}
           />
 
-          {!billRequested && itemQuantity > 0 ? (
+          {!isDisabled && itemQuantity > 0 ? (
             <AnimatePresence>
               <motion.div
                 key="cart"
@@ -206,7 +229,7 @@ const FoodItemCategory = ({
                 {itemQuantity}
               </motion.div>
             </AnimatePresence>
-          ) : !billRequested ? (
+          ) : !isDisabled ? (
             <img
               className="add"
               onClick={handleAddIconClick}
@@ -216,44 +239,34 @@ const FoodItemCategory = ({
           ) : null}
         </div>
 
-        <div className="food-item-info">
-          <div className="food-item-name-price">
-            <p 
-              className={`food-item-name ${billRequested ? 'disabled-text' : ''}`}
-              onClick={handleCardClick}
-            >
-              {name}
-            </p>
-            <div 
-              className={`food-item-price-container ${billRequested ? 'disabled-text' : ''}`}
-              onClick={handleCardClick}
-            >
-              {/* ✅ Afișează prețurile bazat pe calculul FORȚAT */}
-              {shouldShowDiscount ? (
-                <div className="discount-price-wrapper">
-                  <span className="original-price">{rawPrice.toFixed(2)} €</span>
-                  <span className="discounted-price">{calculatedDiscountedPrice.toFixed(2)} €</span>
-                </div>
-              ) : (
-                <span className="regular-price">{rawPrice.toFixed(2)} €</span>
-              )}
-            </div>
-          </div>
-          <p 
-            className={`food-item-desc ${billRequested ? 'disabled-text' : ''}`}
-            onClick={handleCardClick}
+       <div className="food-item-info">
+        <div className="food-item-name-rating">
+          <p className={isDisabled ? "disabled-text" : ""}>{name}</p>
+        </div>
+        <div className="food-item-desc-container">
+          <p
+            className={`food-item-desc ${isDisabled ? "disabled-text" : ""}`}
           >
             {description.length > 70
               ? description.slice(0, 70) + "..."
               : description}
           </p>
-          
-          {billRequested && (
-            <div className="bill-warning-message">
-              Cannot add items - bill requested
+        </div>
+        <div
+          className={`food-item-price-container ${
+            isDisabled ? "disabled-text" : ""
+          }`}
+        >
+          {hasDiscount ? (
+            <div className="discount-price-wrapper">
+              <span className="original-price">{price} €</span>
+              <span className="discounted-price">{discountedPrice} €</span>
             </div>
+          ) : (
+            <span className="regular-price">{price} €</span>
           )}
         </div>
+      </div>
       </div>
     </motion.div>
   );

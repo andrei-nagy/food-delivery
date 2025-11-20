@@ -144,148 +144,116 @@ const ThankYou = () => {
       <div className="thank-you-fullscreen">
         <div className="loading-content">
           <div className="spinner"></div>
-          <p>Finalizing your order...</p>
+          <p>{t('thank_you.finalizing_order')}</p>
         </div>
       </div>
     );
   }
 
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.4 }}
-      className="thank-you-fullscreen"
-    >
-      <motion.div 
-        className="thank-you-container"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {/* Success Header */}
-        <motion.div 
-          className="success-header"
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <motion.div 
-            className="success-icon"
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{
-              type: "spring",
-              stiffness: 200,
-              damping: 15,
-              duration: 0.8
-            }}
-          >
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" fill="rgba(52, 199, 89, 0.1)"/>
-              <path d="M8 12L11 15L16 8" stroke="#38a169" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </motion.div>
-          
-          <motion.h1 variants={itemVariants}>
-            {t('thank_you_title')}
-          </motion.h1>
-          
-          <motion.p variants={itemVariants}>
-            {t('order_placed')}
-          </motion.p>
-        </motion.div>
-
-        {/* Success Content */}
-        <motion.div className="success-content" variants={itemVariants}>
-          <div className="success-message">
-            <p className="bon-appetit">Bon appétit! 🍽️</p>
-          </div>
-
-          {/* Countdown */}
-          <motion.div 
-            className="countdown-section"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.8, duration: 0.5 }}
-          >
-            <div className="countdown-circle">
-              <span>{countdown}</span>
-            </div>
-            <p>Returning home in {countdown}s</p>
-          </motion.div>
-
-          {/* Rating Section */}
-          <motion.div 
-            className="rating-section"
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.9, duration: 0.5 }}
-          >
-            <div className="rating-header">
-              <h3>Rate Your Experience</h3>
-            </div>
-            
-            <div className="star-rating">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <motion.span
-                  key={star}
-                  className={rating >= star ? "star filled" : "star"}
-                  onClick={() => rating === 0 && handleRating(star)}
-                  style={{ cursor: rating > 0 ? "default" : "pointer" }}
-                  variants={starVariants}
-                  whileHover={rating === 0 ? "hover" : ""}
-                  whileTap={rating === 0 ? "tapped" : ""}
-                >
-                  ★
-                </motion.span>
-              ))}
-            </div>
-            
-            {rating > 0 && (
-              <motion.p 
-                className="rating-thank-you"
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.3 }}
-              >
-                Thank you! ⭐
-              </motion.p>
-            )}
-          </motion.div>
-
-          {/* Action Button */}
-          <motion.div 
-            className="action-section"
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 1.1, duration: 0.5 }}
-          >
-            <motion.button
-              onClick={() => navigate("/")}
-              className="home-button"
-              whileHover={{ scale: 1.02, backgroundColor: "#30b352" }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
-              Return Home
-            </motion.button>
-          </motion.div>
-        </motion.div>
-
-        {/* Footer */}
-        <motion.div 
-          className="footer"
-          initial={{ y: 10, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 1.3, duration: 0.5 }}
-        >
-          <p>See you soon!</p>
-        </motion.div>
-      </motion.div>
-    </motion.div>
-  );
+   return (
+     <div className="verify-fullscreen apple-success-white">
+       <div className="apple-container-white">
+         {/* Success Header */}
+         <motion.div 
+           className="apple-header-white success"
+           initial={{ scale: 0.9, opacity: 0, y: 20 }}
+           animate={{ scale: 1, opacity: 1, y: 0 }}
+           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+         >
+           <motion.div 
+             className="apple-icon-white success"
+             initial={{ scale: 0 }}
+             animate={{ scale: 1 }}
+             transition={{ delay: 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+           >
+             <svg width="96" height="96" viewBox="0 0 24 24" fill="none">
+               <circle cx="12" cy="12" r="10" fill="rgba(52, 199, 89, 0.1)"/>
+               <path d="M8 12L11 15L16 8" stroke="#34C759" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+             </svg>
+           </motion.div>
+           
+           <motion.h1 
+             className="apple-title-white success"
+             initial={{ y: 10, opacity: 0 }}
+             animate={{ y: 0, opacity: 1 }}
+             transition={{ delay: 0.3, duration: 0.5 }}
+           >
+             {t('thank_you.order_confirmed')}
+           </motion.h1>
+           
+           <motion.p 
+             className="apple-subtitle-white"
+             initial={{ y: 10, opacity: 0 }}
+             animate={{ y: 0, opacity: 1 }}
+             transition={{ delay: 0.4, duration: 0.5 }}
+           >
+             {t('thank_you.thank_you_purchase')}
+           </motion.p>
+         </motion.div>
+ 
+         {/* Success Content */}
+         <motion.div 
+           className="apple-content-white"
+           initial={{ y: 20, opacity: 0 }}
+           animate={{ y: 0, opacity: 1 }}
+           transition={{ delay: 0.5, duration: 0.5 }}
+         >
+           <div className="apple-success-details-white">
+             <motion.div 
+               className="success-message-white"
+               initial={{ y: 10, opacity: 0 }}
+               animate={{ y: 0, opacity: 1 }}
+               transition={{ delay: 0.6, duration: 0.5 }}
+             >
+               <p>{t('thank_you.order_preparing')}</p>
+               <p className="success-emoji-orange">{t('thank_you.enjoy_meal')}</p>
+             </motion.div>
+ 
+             {/* Countdown */}
+             <motion.div 
+               className="apple-countdown-white"
+               initial={{ scale: 0, opacity: 0 }}
+               animate={{ scale: 1, opacity: 1 }}
+               transition={{ delay: 0.8, duration: 0.5 }}
+             >
+               <div className="countdown-circle-white">
+                 <span>{countdown}</span>
+               </div>
+               <p className="countdown-text-white">{t('thank_you.returning_home')}</p>
+             </motion.div>
+           </div>
+ 
+           {/* Action Button */}
+           <motion.div 
+             className="apple-actions-white"
+             initial={{ y: 10, opacity: 0 }}
+             animate={{ y: 0, opacity: 1 }}
+             transition={{ delay: 0.9, duration: 0.5 }}
+           >
+             <motion.button
+               onClick={() => navigate("/")}
+               className="apple-btn-success-orange"
+               whileHover={{ scale: 1.02, backgroundColor: "#34C759" }}
+               whileTap={{ scale: 0.98 }}
+               transition={{ type: "spring", stiffness: 400, damping: 17 }}
+             >
+               {t('thank_you.return_home_now')}
+             </motion.button>
+           </motion.div>
+         </motion.div>
+ 
+         {/* Footer */}
+         <motion.div 
+           className="apple-footer-white"
+           initial={{ y: 10, opacity: 0 }}
+           animate={{ y: 0, opacity: 1 }}
+           transition={{ delay: 1.1, duration: 0.5 }}
+         >
+           <p>{t('thank_you.order_details_sent')}</p>
+         </motion.div>
+       </div>
+     </div>
+   );
 };
 
 export default ThankYou;

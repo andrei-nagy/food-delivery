@@ -1,5 +1,398 @@
-/* ThankYou.css - Simplified Compact Version */
+/* Verify.css - Combined Styles */
 
+/* Common Styles */
+.verify-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+}
+
+/* ===== ERROR PAGE (Versiunea anterioară care îți place) ===== */
+.verify-fullscreen.payment-failed {
+  background: linear-gradient(135deg, #fef2f2 0%, #fff 100%);
+}
+
+.verify-container {
+  background: white;
+  padding: 3rem;
+  border-radius: 20px;
+  box-shadow: 
+    0 10px 25px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(0, 0, 0, 0.02);
+  text-align: center;
+  max-width: 440px;
+  width: 90%;
+  margin: 2rem;
+}
+
+/* Status Header */
+.status-header {
+  margin-bottom: 2.5rem;
+}
+
+.status-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 1rem 0 0.5rem 0;
+  color: #1f2937;
+}
+
+.status-header.failed h1 {
+  color: #dc2626;
+}
+
+.status-subtitle {
+  color: #6b7280;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+
+.status-icon.failed {
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+}
+
+/* Content Section */
+.content-section {
+  margin-bottom: 2rem;
+}
+
+/* Info Card */
+.info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border-left: 4px solid #3b82f6;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.info-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.info-content h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+}
+
+.info-content p {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.primary-btn {
+  background: #dc2626;
+  color: white;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+}
+
+.primary-btn:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+}
+
+.secondary-btn {
+  background: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.secondary-btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+}
+
+/* Help Section */
+.help-section {
+  padding-top: 1.5rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.help-text {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.help-link {
+  color: #3b82f6;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.help-link:hover {
+  color: #2563eb;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f4f6;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-state p {
+  color: #6b7280;
+  font-size: 1rem;
+  margin: 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ===== SUCCESS PAGE (Fundal alb cu accent portocaliu) ===== */
+.verify-fullscreen.apple-success-white {
+  background: #ffffff;
+  color: #1d1d1f;
+}
+
+.apple-container-white {
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* Apple Header White */
+.apple-header-white {
+  margin-bottom: 3rem;
+}
+
+.apple-title-white.success {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin: 1.5rem 0 0.5rem 0;
+  line-height: 1.1;
+  color: #1d1d1f;
+}
+
+.apple-subtitle-white {
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #86868b;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Apple Icon White */
+.apple-icon-white {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.apple-icon-white.success svg circle {
+  fill: rgba(52, 199, 89, 0.1);
+}
+
+/* Apple Content White */
+.apple-content-white {
+  margin-bottom: 2.5rem;
+}
+
+.apple-success-details-white {
+  margin-bottom: 2.5rem;
+}
+
+.success-message-white p {
+  font-size: 1.125rem;
+  color: #515154;
+  margin: 0.75rem 0;
+  line-height: 1.5;
+}
+
+.success-emoji-orange {
+  font-size: 1.3rem !important;
+  font-weight: 600;
+  color: #e86514 !important;
+}
+
+/* Apple Countdown White */
+.apple-countdown-white {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin: 2.5rem 0;
+}
+
+.countdown-circle-white {
+  width: 64px;
+  height: 64px;
+  border: 1.5px solid rgba(232, 101, 20, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #e86514;
+  background: rgba(232, 101, 20, 0.05);
+}
+
+.countdown-text-white {
+  font-size: 0.9rem;
+  color: #86868b;
+  margin: 0;
+}
+
+/* Apple Actions White */
+.apple-actions-white {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.apple-btn-success-orange {
+  padding: 1.125rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background: #38a169;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.apple-btn-success-orange:hover {
+  background: #30b352;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
+}
+
+/* Apple Footer White */
+.apple-footer-white {
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.apple-footer-white p {
+  color: #86868b;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .verify-container,
+  .apple-container-white {
+    max-width: 350px;
+    padding: 2rem 1.5rem;
+  }
+  
+  .apple-title-white.success {
+    font-size: 2.25rem;
+  }
+  
+  .status-header h1 {
+    font-size: 1.75rem;
+  }
+  
+  .apple-icon-white svg {
+    width: 72px;
+    height: 72px;
+  }
+}
+
+@media (max-width: 480px) {
+  .verify-container,
+  .apple-container-white {
+    max-width: 320px;
+    padding: 1.5rem 1rem;
+  }
+  
+  .apple-title-white.success {
+    font-size: 2rem;
+  }
+  
+  .status-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .btn,
+  .apple-btn-success-orange {
+    padding: 0.875rem 1.5rem;
+  }
+  
+  .countdown-circle-white {
+    width: 56px;
+    height: 56px;
+    font-size: 1.125rem;
+  }
+}
 .thank-you-fullscreen {
   position: fixed;
   top: 0;

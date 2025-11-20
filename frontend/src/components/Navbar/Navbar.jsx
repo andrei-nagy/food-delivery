@@ -46,6 +46,19 @@ const Navbar = ({ setShowLogin }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { t, i18n } = useTranslation();
 
+  // 🔥 CONFIGURAȚIE LIMBI
+  const languageConfig = {
+    en: { flag: assets.usaFlag, code: "EN", name: "English" },
+    fr: { flag: assets.frFlag, code: "FR", name: "Français" },
+    es: { flag: assets.esFlag, code: "ES", name: "Español" },
+    it: { flag: assets.itFlag, code: "IT", name: "Italiano" },
+    de: { flag: assets.deFlag, code: "DE", name: "Deutsch" },
+    ro: { flag: assets.roFlag, code: "RO", name: "Română" }
+
+  };
+
+  const currentLang = languageConfig[i18n.language] || languageConfig.en;
+
   // 🔥 ACTUALIZEAZĂ STARE CÂND SE SCHIMBĂ URL-UL
   useEffect(() => {
     const path = location.pathname;
@@ -71,6 +84,7 @@ const Navbar = ({ setShowLogin }) => {
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
     sessionStorage.setItem("language", lng);
+    setIsDropdownOpen(false);
   };
 
   const [isVisible, setIsVisible] = useState(false);
@@ -278,19 +292,9 @@ const Navbar = ({ setShowLogin }) => {
         <div className="language-switcher">
           <div className="language-dropdown" onClick={toggleDropdown}>
             <span className="language-selected">
-              {i18n.language === "ro" ? (
-                <>
-                  <img src={assets.roFlag} alt="RO" className="flag" />
-                  RO
-                </>
-              ) : (
-                <>
-                  <img src={assets.usaFlag} alt="EN" className="flag" />
-                  EN
-                </>
-              )}
-{/* 
-              <img
+              <img src={currentLang.flag} alt={currentLang.code} className="flag" />
+              {currentLang.code}
+              {/* <img
                 className={`arrow_down_language ${
                   isDropdownOpen ? "rotated" : ""
                 }`}
@@ -308,26 +312,18 @@ const Navbar = ({ setShowLogin }) => {
                   exit={{ opacity: 0, y: -5 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <div
-                    className="dropdown-option"
-                    onClick={() => {
-                      changeLanguage("ro");
-                      toggleDropdown();
-                    }}
-                  >
-                    <img src={assets.roFlag} alt="RO" className="flag" />
-                    RO
-                  </div>
-                  <div
-                    className="dropdown-option"
-                    onClick={() => {
-                      changeLanguage("en");
-                      toggleDropdown();
-                    }}
-                  >
-                    <img src={assets.usaFlag} alt="EN" className="flag" />
-                    EN
-                  </div>
+                  {Object.entries(languageConfig).map(([code, lang]) => (
+                    <div
+                      key={code}
+                      className={`dropdown-option ${
+                        i18n.language === code ? "active" : ""
+                      }`}
+                      onClick={() => changeLanguage(code)}
+                    >
+                      <img src={lang.flag} alt={lang.code} className="flag" />
+                      {lang.code}
+                    </div>
+                  ))}
                 </motion.div>
               )}
             </AnimatePresence>

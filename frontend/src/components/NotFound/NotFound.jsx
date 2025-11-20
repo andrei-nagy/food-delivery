@@ -7,8 +7,12 @@ import { StoreContext } from '../../context/StoreContext';
 import { useEffect } from 'react';
 import { assets } from '../../assets/assets';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
+import axios from 'axios';
 
 const NotFound = () => {
+    const { t } = useTranslation();
+    
     useEffect(() => {
         // Ascunde navbar-ul
         const navbar = document.querySelector('.navbar');
@@ -32,10 +36,10 @@ const NotFound = () => {
     const { url } = useContext(StoreContext);
     const [data, setData] = useState({
         image: '',
-        restaurantName: 'Our Restaurant',
+        restaurantName: t('welcome.our_restaurant'),
         primaryColor: '#2c3e50',
         secondaryColor: '#e74c3c',
-        slogan: 'Exquisite dining experience',
+        slogan: t('welcome.exquisite_dining'),
         contactEmail: '',
         contactPhone: '',
         securityToken: '',
@@ -118,11 +122,11 @@ const NotFound = () => {
                     </motion.div>
 
                     <motion.h1 variants={itemVariants}>
-                        Pagina nu a fost găsită
+                        {t('not_found.page_not_found')}
                     </motion.h1>
                     
                     <motion.p variants={itemVariants} className="slogan">
-                        Ne pare rău, pagina pe care o cauți nu există.
+                        {t('not_found.error_message')}
                     </motion.p>
 
                     <motion.div 
@@ -135,7 +139,7 @@ const NotFound = () => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
-                            Înapoi
+                            {t('not_found.back')}
                         </motion.button>
                         
                         <motion.button
@@ -144,7 +148,7 @@ const NotFound = () => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
-                            Pagina principală
+                            {t('not_found.home_page')}
                         </motion.button>
                     </motion.div>
                 </motion.div>

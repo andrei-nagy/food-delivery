@@ -1,25 +1,31 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { StoreContext } from '../../context/StoreContext';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaFire, FaWeight, FaAllergies, FaClock, FaLeaf, FaInfoCircle, FaUtensils } from 'react-icons/fa';
 import './FoodModal.css';
 import { assets } from "../../assets/assets";
 
 const FoodModal = ({ food, closeModal, isOpen }) => {
-    const { addToCart, url, canAddToCart, billRequested } = useContext(StoreContext);
+    const { addToCart, url, canAddToCart, billRequested, userBlocked } = useContext(StoreContext);
     const [selectedQuantity, setSelectedQuantity] = useState(1);
     const [specialInstructions, setSpecialInstructions] = useState("");
     const [isVisible, setIsVisible] = useState(false);
     const [selectedOptions, setSelectedOptions] = useState([]);
     const [validationError, setValidationError] = useState("");
-    const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-    const [descriptionHeight, setDescriptionHeight] = useState('60px');
     const [imageError, setImageError] = useState(false);
-    const descriptionRef = useRef(null);
+    const [expandedSections, setExpandedSections] = useState({
+        nutrition: false,
+        ingredients: false,
+        preparation: false,
+        allergens: false
+    });
+    
     const modalRef = useRef(null);
-    const optionsRef = useRef(null);
     const dragStartY = useRef(0);
     const currentY = useRef(0);
     const isDragging = useRef(false);
+
+    // Combină ambele condiții pentru a bloca interacțiunea
+    const isDisabled = billRequested || userBlocked;
 
     // Safe access to food properties
     const foodDescription = food?.description || "";
@@ -37,6 +43,67 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     // Verifică dacă produsul are discount
     const hasDiscount = discountPercentage > 0;
 
+    // Date pentru secțiuni
+    const nutritionData = {
+        calories: 450,
+        protein: 25,
+        carbs: 45,
+        fat: 18,
+        fiber: 8,
+        sugar: 12
+    };
+
+    const allergens = [
+        "Lactose",
+        "Gluten", 
+        "Soia",
+        "Nuci"
+    ];
+
+    const preparationInfo = {
+        cookingTime: "15-20 minute",
+        spiceLevel: "Mediu 🌶️",
+        servingSize: "350g",
+        difficulty: "Ușor"
+    };
+
+    const ingredientsList = [
+        "Pui marinat",
+        "Legume proaspete",
+        "Sos teriyaki",
+        "Orez basmati",
+        "Condimente orientale"
+    ];
+
+    const dietaryInfo = {
+        isGlutenFree: false,
+        isDairyFree: true,
+        isVegetarian: false,
+        isSpicy: true,
+        containsNuts: true
+    };
+
+    // Mesajul care va apărea când utilizatorul este blocat
+    const getBlockedMessage = () => {
+        if (userBlocked) {
+            return {
+                icon: "⏰",
+                text: "Session Expired",
+                warningText: "Cannot add items - session expired. Please refresh the page."
+            };
+        }
+        if (billRequested) {
+            return {
+                icon: "🔒", 
+                text: "Bill Requested",
+                warningText: "Cannot add new items. Please cancel the bill request first."
+            };
+        }
+        return null;
+    };
+
+    const blockedMessage = getBlockedMessage();
+
     useEffect(() => {
         if (isOpen && food) {
             document.body.style.overflow = 'hidden';
@@ -50,8 +117,13 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
             setIsVisible(false);
             setSelectedOptions([]);
             setValidationError("");
-            setIsDescriptionExpanded(false);
             setImageError(false);
+            setExpandedSections({
+                nutrition: false,
+                ingredients: false,
+                preparation: false,
+                allergens: false
+            });
             setTimeout(() => {
                 document.body.style.overflow = '';
             }, 300);
@@ -62,23 +134,13 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         };
     }, [isOpen, food]);
 
-    useEffect(() => {
-        if (descriptionRef.current && food) {
-            if (isDescriptionExpanded) {
-                setDescriptionHeight(`${descriptionRef.current.scrollHeight}px`);
-            } else {
-                requestAnimationFrame(() => {
-                    setDescriptionHeight('60px');
-                });
-            }
-        }
-    }, [isDescriptionExpanded, foodDescription, food]);
-
     const handleImageError = () => {
         setImageError(true);
     };
 
     const handleOptionChange = (option) => {
+        if (isDisabled) return;
+        
         setValidationError("");
         
         if (selectedOptions.includes(option)) {
@@ -88,7 +150,20 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         }
     };
 
+    const toggleSection = (section) => {
+        if (isDisabled) return;
+        setExpandedSections(prev => ({
+            ...prev,
+            [section]: !prev[section]
+        }));
+    };
+
     const handleDragStart = (e) => {
+        // Permite swipe doar dacă scroll-ul este în top
+        if (modalRef.current && modalRef.current.scrollTop > 0) {
+            return;
+        }
+        
         isDragging.current = true;
         dragStartY.current = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
         if (modalRef.current) {
@@ -105,6 +180,13 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         if (deltaY > 0) {
             currentY.current = deltaY;
             modalRef.current.style.transform = `translateY(${deltaY}px)`;
+            
+            // Adaugă opacity la overlay pe măsură ce tragi
+            const overlay = document.querySelector('.food-modal-overlay');
+            if (overlay) {
+                const opacity = 1 - (deltaY / 300);
+                overlay.style.backgroundColor = `rgba(0, 0, 0, ${Math.max(0.3, opacity * 0.5)})`;
+            }
         }
     };
 
@@ -113,6 +195,13 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         if (!modalRef.current) return;
         
         modalRef.current.style.transition = 'transform 0.3s ease';
+        
+        // Resetează opacity overlay
+        const overlay = document.querySelector('.food-modal-overlay');
+        if (overlay) {
+            overlay.style.transition = 'background-color 0.3s ease';
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        }
         
         if (currentY.current > 100) {
             modalRef.current.style.transform = 'translateY(100%)';
@@ -124,12 +213,14 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         currentY.current = 0;
     };
 
-    const scrollToOptions = () => {
-        if (optionsRef.current) {
-            optionsRef.current.scrollIntoView({ 
-                behavior: 'smooth',
-                block: 'center'
-            });
+    // Adaugă această funcție pentru a preveni swipe-ul când se face scroll
+    const handleScroll = (e) => {
+        if (e.target.scrollTop > 0 && isDragging.current) {
+            isDragging.current = false;
+            if (modalRef.current) {
+                modalRef.current.style.transform = 'translateY(0)';
+                modalRef.current.style.transition = 'transform 0.3s ease';
+            }
         }
     };
 
@@ -137,9 +228,16 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         const modal = modalRef.current;
         if (!modal) return;
 
+        // Adaugă event listener pentru scroll
+        modal.addEventListener('scroll', handleScroll);
+
         const handleMouseDown = (e) => {
-            if (e.target.classList.contains('food-item-modal-drag-handle') || 
-                e.target.closest('.food-item-modal-drag-handle')) {
+            // Permite swipe doar pe primul 30% din modal sau pe header
+            const modalRect = modal.getBoundingClientRect();
+            const clickY = e.clientY - modalRect.top;
+            const modalHeight = modalRect.height;
+            
+            if (clickY < modalHeight * 0.3 || e.target.closest('.food-modal-header')) {
                 handleDragStart(e);
             }
         };
@@ -155,8 +253,12 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         };
 
         const handleTouchStart = (e) => {
-            if (e.target.classList.contains('food-item-modal-drag-handle') || 
-                e.target.closest('.food-item-modal-drag-handle')) {
+            // Permite swipe doar pe primul 30% din modal sau pe header
+            const modalRect = modal.getBoundingClientRect();
+            const touchY = e.touches[0].clientY - modalRect.top;
+            const modalHeight = modalRect.height;
+            
+            if (touchY < modalHeight * 0.3 || e.target.closest('.food-modal-header')) {
                 handleDragStart(e);
             }
         };
@@ -165,14 +267,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
             if (!isDragging.current) return;
             
             e.preventDefault();
-            
-            const y = e.touches[0].clientY;
-            const deltaY = y - dragStartY.current;
-            
-            if (deltaY > 0 && modalRef.current) {
-                currentY.current = deltaY;
-                modalRef.current.style.transform = `translateY(${deltaY}px)`;
-            }
+            handleDrag(e);
         };
 
         const handleTouchEnd = () => {
@@ -181,6 +276,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
             }
         };
 
+        // Aplică evenimentele pe întregul modal
         modal.addEventListener('mousedown', handleMouseDown);
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
@@ -190,6 +286,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         document.addEventListener('touchend', handleTouchEnd);
 
         return () => {
+            modal.removeEventListener('scroll', handleScroll);
             modal.removeEventListener('mousedown', handleMouseDown);
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
@@ -201,12 +298,12 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     }, []);
 
     const increase = () => {
-        if (billRequested) return;
+        if (isDisabled) return;
         setSelectedQuantity(q => q + 1);
     };
 
     const decrease = () => {
-        if (billRequested) return;
+        if (isDisabled) return;
         setSelectedQuantity(q => Math.max(1, q - 1));
     };
     
@@ -246,39 +343,39 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         return total;
     };
 
-  const handleAddToCart = () => {
-  if (billRequested) {
-    closeModal();
-    return;
-  }
+    const handleAddToCart = () => {
+        if (isDisabled) {
+            closeModal();
+            return;
+        }
 
-  if (!food) {
-    console.error("Food object is undefined!");
-    closeModal();
-    return;
-  }
+        if (!food) {
+            console.error("Food object is undefined!");
+            closeModal();
+            return;
+        }
 
-  const cartItemId = generateCartItemId();
-  
-  // ✅ Calculează prețul extras-urilor
-  const extrasPrice = selectedOptions.reduce((total, optionName) => {
-    const extra = foodExtras.find(extra => extra.name === optionName);
-    return total + (extra?.price || 0);
-  }, 0);
+        const cartItemId = generateCartItemId();
+        
+        // ✅ Calculează prețul extras-urilor
+        const extrasPrice = selectedOptions.reduce((total, optionName) => {
+            const extra = foodExtras.find(extra => extra.name === optionName);
+            return total + (extra?.price || 0);
+        }, 0);
 
-  const cartItemData = {
-    baseFoodId: foodId,
-    quantity: selectedQuantity,
-    specialInstructions: specialInstructions,
-    selectedOptions: selectedOptions,
-    unitPrice: discountedPrice, // ✅ Folosește prețul cu discount
-    extrasPrice: extrasPrice,
-    extras: foodExtras // ✅ Include și lista de extras-uri pentru calcul
-  };
-  
-  addToCart(cartItemId, selectedQuantity, specialInstructions, selectedOptions, cartItemData);
-  closeModal();
-};
+        const cartItemData = {
+            baseFoodId: foodId,
+            quantity: selectedQuantity,
+            specialInstructions: specialInstructions,
+            selectedOptions: selectedOptions,
+            unitPrice: discountedPrice, // ✅ Folosește prețul cu discount
+            extrasPrice: extrasPrice,
+            extras: foodExtras // ✅ Include și lista de extras-uri pentru calcul
+        };
+        
+        addToCart(cartItemId, selectedQuantity, specialInstructions, selectedOptions, cartItemData);
+        closeModal();
+    };
 
     const handleAddButton = (e) => {
         e.preventDefault();
@@ -292,42 +389,33 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         action();
     };
 
-    const truncateDescription = (text, maxLength) => {
-        if (!text || text.length <= maxLength) return text;
-        return text.substring(0, maxLength) + '...';
-    };
-
     // Early return if no food or not open
     if (!isOpen || !food) return null;
 
     return (
-        <div className={`food-item-modal-overlay ${isVisible ? 'active' : ''}`} onClick={closeModal}>
+        <div className={`food-modal-overlay ${isVisible ? 'active' : ''}`} onClick={closeModal}>
             <div 
-                className={`food-item-modal-container ${billRequested ? 'bill-requested-modal' : ''}`} 
+                className={`food-modal-container ${isDisabled ? 'bill-requested-modal' : ''}`} 
                 ref={modalRef}
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="food-item-modal-sticky-header">
-                    <div 
-                        className="food-item-modal-drag-handle"
-                        onMouseDown={handleDragStart}
-                        onTouchStart={handleDragStart}
-                    ></div>
-                    <div className="food-item-modal-header">
-                        <h2 className="food-item-modal-title">{foodName}</h2>
-                        <button className="food-item-modal-close-btn" onClick={closeModal}>✕</button>
+                <div className="food-modal-header">
+                    <div className="food-modal-drag-handle"></div>
+                    <div className="food-modal-title-section">
+                        <h2 className="food-modal-title">{foodName}</h2>
+                        <button className="food-modal-close-btn" onClick={closeModal}>✕</button>
                     </div>
                 </div>
                 
-                <div className="food-item-modal-body">
-                    {/* Bill Requested Warning Banner */}
-                    {billRequested && (
-                        <div className="food-modal-bill-warning">
-                            <div className="food-modal-bill-warning-content">
-                                <span className="food-modal-bill-warning-icon">⚠️</span>
-                                <div className="food-modal-bill-warning-text">
-                                    <strong>Bill Requested</strong>
-                                    <span>Cannot add new items. Please cancel the bill request first.</span>
+                <div className="food-modal-body">
+                    {/* Warning Banner pentru Session Expired sau Bill Requested */}
+                    {isDisabled && blockedMessage && (
+                        <div className="food-modal-warning">
+                            <div className="food-modal-warning-content">
+                                <span className="food-modal-warning-icon">{blockedMessage.icon}</span>
+                                <div className="food-modal-warning-text">
+                                    <strong>{blockedMessage.text}</strong>
+                                    <span>{blockedMessage.warningText}</span>
                                 </div>
                             </div>
                         </div>
@@ -337,151 +425,302 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                     <img 
                         src={imageError ? assets.image_coming_soon : (url + "/images/" + foodImage)} 
                         alt={foodName} 
-                        className={`food-item-modal-image ${billRequested ? 'disabled-image' : ''} ${imageError ? 'image-error' : ''}`}
+                        className={`food-modal-image ${isDisabled ? 'disabled-image' : ''} ${imageError ? 'image-error' : ''}`}
                         onError={handleImageError}
                     />
                     
-                    <div className="food-item-modal-description-wrapper">
-                        <div 
-                            ref={descriptionRef}
-                            className={`food-item-modal-description ${isDescriptionExpanded ? 'expanded' : ''} ${billRequested ? 'disabled-text' : ''}`}
-                            style={{ maxHeight: descriptionHeight }}
-                        >
-                            <div className="food-item-modal-description-content">
-                                {isDescriptionExpanded 
-                                    ? foodDescription
-                                    : truncateDescription(foodDescription, 200)
-                                }
-                            </div>
-                        </div>
-                        
-                        {foodDescription.length > 200 && !billRequested && (
-                            <button 
-                                className="food-item-modal-view-more"
-                                onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                            >
-                                {isDescriptionExpanded ? (
-                                    <span>View less <FaChevronUp className="food-item-modal-chevron" /></span>
-                                ) : (
-                                    <span>View more <FaChevronDown className="food-item-modal-chevron" /></span>
-                                )}
-                            </button>
-                        )}
-                    </div>
-                    
-                    <div className="food-item-modal-price-section">
-                        {hasDiscount ? (
-                            <div className="food-item-modal-discount-price-wrapper">
-                                <div className="food-item-modal-price-row">
-                                    <span className="food-item-modal-original-price">
-                                        {foodPrice.toFixed(2)} €
-                                    </span>
-                                    <span className="food-item-modal-discount-badge">
-                                        -{discountPercentage}%
-                                    </span>
-                                </div>
-                                <span className="food-item-modal-current-price">
-                                    {discountedPrice.toFixed(2)} €
-                                </span>
-                            </div>
-                        ) : (
-                            <span className={`food-item-modal-current-price ${billRequested ? 'disabled-text' : ''}`}>
-                                {foodPrice.toFixed(2)} €
-                            </span>
-                        )}
-                    </div>
-                    
-                    <div className="food-item-modal-ingredients">
-                        <h3 className={`food-item-modal-section-title ${billRequested ? 'disabled-text' : ''}`}>
-                            Ingrediente
-                        </h3>
-                        <p className={`food-item-modal-section-content ${billRequested ? 'disabled-text' : ''}`}>
-                            {foodDescription || "Ingredientele nu sunt disponibile momentan."}
-                        </p>
-                    </div>
-
                     {/* Badge-uri pentru Vegan, Best Seller și New */}
-                    {(isVegan || isBestSeller || isNewAdded) && !billRequested && (
-                        <div className="food-item-modal-badges">
-                            <h3 className="food-item-modal-section-title">Caracteristici</h3>
-                            <div className="food-item-modal-badges-container">
-                                {isNewAdded && (
-                                    <span className="food-item-modal-badge food-item-modal-badge-new">
-                                        <span className="food-item-modal-badge-text">New</span>
-                                    </span>
-                                )}
-                                {isVegan && (
-                                    <span className="food-item-modal-badge food-item-modal-badge-vegan">
-                                        <span className="food-item-modal-badge-text">Vegan</span>
-                                    </span>
-                                )}
-                                {isBestSeller && (
-                                    <span className="food-item-modal-badge food-item-modal-badge-bestseller">
-                                        <span className="food-item-modal-badge-text">Best Seller</span>
-                                    </span>
-                                )}
-                            </div>
+                    {(isVegan || isBestSeller || isNewAdded) && !isDisabled && (
+                        <div className="food-modal-badges">
+                            {isNewAdded && (
+                                <span className="food-modal-badge food-modal-badge-new">New</span>
+                            )}
+                            {isVegan && (
+                                <span className="food-modal-badge food-modal-badge-vegan">Vegan</span>
+                            )}
+                            {isBestSeller && (
+                                <span className="food-modal-badge food-modal-badge-bestseller">Best Seller</span>
+                            )}
                         </div>
                     )}
                     
-                    {foodExtras.length > 0 && !billRequested && (
-                        <div className="food-item-modal-remove-section" ref={optionsRef}>
-                            <h3 className="food-item-modal-section-title">Extra opțiuni (opțional)</h3>
-                            <div className="food-item-modal-remove-options">
+                 <div className="food-modal-price-section">
+    <div className="food-modal-price-main">
+        {hasDiscount ? (
+            <div className="food-modal-price-discount-wrapper">
+                <div className="food-modal-price-row">
+                    <span className="food-modal-current-price">
+                        {discountedPrice.toFixed(2)} €
+                    </span>
+                    <span className="food-modal-discount-badge">
+                        -{discountPercentage}%
+                    </span>
+                </div>
+                <span className="food-modal-original-price">
+                    {foodPrice.toFixed(2)} €
+                </span>
+            </div>
+        ) : (
+            <span className={`food-modal-current-price ${isDisabled ? 'disabled-text' : ''}`}>
+                {foodPrice.toFixed(2)} €
+            </span>
+        )}
+    </div>
+    
+    <div className="food-modal-quick-info">
+        {/* Calorii - mereu afișat */}
+        <div className="food-modal-quick-info-item">
+            <FaFire className="quick-info-icon" />
+            <span>{nutritionData.calories} cal</span>
+        </div>
+        
+        {/* Gramaj - mereu afișat */}
+        <div className="food-modal-quick-info-item">
+            <FaWeight className="quick-info-icon" />
+            <span>{preparationInfo.servingSize}</span>
+        </div>
+        
+        {/* Picant - afișat doar dacă este spicy */}
+        {dietaryInfo.isSpicy && !isDisabled && (
+            <div className="food-modal-quick-info-item">
+                <span className="spicy-icon">🌶️</span>
+                <span>{preparationInfo.spiceLevel.replace('🌶️', '').trim()}</span>
+            </div>
+        )}
+    </div>
+</div>
+
+{/* DESCRIERE - STATICĂ */}
+{foodDescription && (
+    <div className="food-modal-section">
+        <div className="food-modal-description-static">
+            <p className="food-modal-description-text">{foodDescription}</p>
+        </div>
+    </div>
+)}
+
+                    {/* Instrucțiuni speciale */}
+                    {!isDisabled && (
+                        <div className="food-modal-section">
+                            <h3 className="food-modal-section-title">Instrucțiuni speciale (opțional)</h3>
+                            <textarea
+                                className="food-modal-textarea"
+                                placeholder="Ex: fără sos picant, mai puțină sare, etc."
+                                value={specialInstructions}
+                                onChange={(e) => setSpecialInstructions(e.target.value)}
+                                disabled={isDisabled}
+                            />
+                        </div>
+                    )}   
+
+                    {/* ACCORDION: Valori nutritionale */}
+                    <div className="food-modal-section">
+                        <div 
+                            className={`food-modal-accordion ${expandedSections.nutrition ? 'expanded' : ''}`}
+                            onClick={() => toggleSection('nutrition')}
+                        >
+                            <div className="food-modal-accordion-header">
+                                <FaFire className="accordion-icon" />
+                                <span className="food-modal-accordion-title">Valori Nutritionale</span>
+                                {expandedSections.nutrition ? 
+                                    <FaChevronUp className="accordion-chevron" /> : 
+                                    <FaChevronDown className="accordion-chevron" />
+                                }
+                            </div>
+                            {expandedSections.nutrition && (
+                                <div className="food-modal-accordion-content">
+                                    <div className="food-modal-nutrition-grid">
+                                        <div className="nutrition-item">
+                                            <span className="nutrition-label">Calorii</span>
+                                            <span className="nutrition-value">{nutritionData.calories} kcal</span>
+                                        </div>
+                                        <div className="nutrition-item">
+                                            <span className="nutrition-label">Proteine</span>
+                                            <span className="nutrition-value">{nutritionData.protein}g</span>
+                                        </div>
+                                        <div className="nutrition-item">
+                                            <span className="nutrition-label">Carbohidrați</span>
+                                            <span className="nutrition-value">{nutritionData.carbs}g</span>
+                                        </div>
+                                        <div className="nutrition-item">
+                                            <span className="nutrition-label">Grăsimi</span>
+                                            <span className="nutrition-value">{nutritionData.fat}g</span>
+                                        </div>
+                                        <div className="nutrition-item">
+                                            <span className="nutrition-label">Fibre</span>
+                                            <span className="nutrition-value">{nutritionData.fiber}g</span>
+                                        </div>
+                                        <div className="nutrition-item">
+                                            <span className="nutrition-label">Zaharuri</span>
+                                            <span className="nutrition-value">{nutritionData.sugar}g</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* ACCORDION: Ingrediente */}
+                    <div className="food-modal-section">
+                        <div 
+                            className={`food-modal-accordion ${expandedSections.ingredients ? 'expanded' : ''}`}
+                            onClick={() => toggleSection('ingredients')}
+                        >
+                            <div className="food-modal-accordion-header">
+                                <FaUtensils className="accordion-icon" />
+                                <span className="food-modal-accordion-title">Ingrediente</span>
+                                {expandedSections.ingredients ? 
+                                    <FaChevronUp className="accordion-chevron" /> : 
+                                    <FaChevronDown className="accordion-chevron" />
+                                }
+                            </div>
+                            {expandedSections.ingredients && (
+                                <div className="food-modal-accordion-content">
+                                    <ul className="food-modal-ingredients-list">
+                                        {ingredientsList.map((ingredient, index) => (
+                                            <li key={index} className="ingredient-item">
+                                                {ingredient}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    
+                                    <div className="food-modal-dietary-tags">
+                                        {dietaryInfo.isGlutenFree && (
+                                            <span className="dietary-tag gluten-free">Fără Gluten</span>
+                                        )}
+                                        {dietaryInfo.isDairyFree && (
+                                            <span className="dietary-tag dairy-free">Fără Lapte</span>
+                                        )}
+                                        {dietaryInfo.isVegetarian && (
+                                            <span className="dietary-tag vegetarian">Vegetarian</span>
+                                        )}
+                                        {dietaryInfo.containsNuts && (
+                                            <span className="dietary-tag contains-nuts">Conține Nuci</span>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* ACCORDION: Informații preparare */}
+                    <div className="food-modal-section">
+                        <div 
+                            className={`food-modal-accordion ${expandedSections.preparation ? 'expanded' : ''}`}
+                            onClick={() => toggleSection('preparation')}
+                        >
+                            <div className="food-modal-accordion-header">
+                                <FaClock className="accordion-icon" />
+                                <span className="food-modal-accordion-title">Informații Preparare</span>
+                                {expandedSections.preparation ? 
+                                    <FaChevronUp className="accordion-chevron" /> : 
+                                    <FaChevronDown className="accordion-chevron" />
+                                }
+                            </div>
+                            {expandedSections.preparation && (
+                                <div className="food-modal-accordion-content">
+                                    <div className="food-modal-preparation-grid">
+                                        <div className="preparation-item">
+                                            <span className="preparation-label">Timp preparare</span>
+                                            <span className="preparation-value">{preparationInfo.cookingTime}</span>
+                                        </div>
+                                        <div className="preparation-item">
+                                            <span className="preparation-label">Gramaj</span>
+                                            <span className="preparation-value">{preparationInfo.servingSize}</span>
+                                        </div>
+                                        <div className="preparation-item">
+                                            <span className="preparation-label">Dificultate</span>
+                                            <span className="preparation-value">{preparationInfo.difficulty}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* ACCORDION: Alergeni */}
+                    <div className="food-modal-section">
+                        <div 
+                            className={`food-modal-accordion ${expandedSections.allergens ? 'expanded' : ''}`}
+                            onClick={() => toggleSection('allergens')}
+                        >
+                            <div className="food-modal-accordion-header">
+                                <FaAllergies className="accordion-icon" />
+                                <span className="food-modal-accordion-title">Alergeni</span>
+                                {expandedSections.allergens ? 
+                                    <FaChevronUp className="accordion-chevron" /> : 
+                                    <FaChevronDown className="accordion-chevron" />
+                                }
+                            </div>
+                            {expandedSections.allergens && (
+                                <div className="food-modal-accordion-content">
+                                    <div className="food-modal-allergens-list">
+                                        {allergens.map((allergen, index) => (
+                                            <span key={index} className="allergen-tag">
+                                                {allergen}
+                                            </span>
+                                        ))}
+                                    </div>
+                                    <p className="food-modal-allergens-disclaimer">
+                                        *Vă rugăm să ne anunțați dacă aveți alergii sau restricții alimentare.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    
+                    {/* Extra opțiuni */}
+                    {foodExtras.length > 0 && !isDisabled && (
+                        <div className="food-modal-section">
+                            <h3 className="food-modal-section-title">Extra opțiuni (opțional)</h3>
+                            <div className="food-modal-options">
                                 {foodExtras.map((extra) => (
-                                    <label key={extra._id || extra.name} className="food-item-modal-remove-option">
+                                    <label key={extra._id || extra.name} className="food-modal-option">
                                         <input 
                                             type="checkbox" 
                                             checked={selectedOptions.includes(extra.name)}
                                             onChange={() => handleOptionChange(extra.name)}
-                                            disabled={billRequested}
+                                            disabled={isDisabled}
                                         />
-                                        <span className="food-item-modal-option-text">
+                                        <span className="food-modal-option-text">
                                             {extra.name}
-                                            <span className="food-item-modal-option-price">+{extra.price.toFixed(2)} €</span>
+                                            <span className="food-modal-option-price">+{extra.price.toFixed(2)} €</span>
                                         </span>
                                     </label>
                                 ))}
                             </div>
                             {validationError && (
-                                <div className="food-item-modal-error">{validationError}</div>
+                                <div className="food-modal-error">{validationError}</div>
                             )}
                         </div>
                     )}
                     
-                    {!billRequested && (
-                        <textarea
-                            className="food-item-modal-textarea"
-                            placeholder="Instrucțiuni speciale (opțional)"
-                            value={specialInstructions}
-                            onChange={(e) => setSpecialInstructions(e.target.value)}
-                            disabled={billRequested}
-                        />
-                    )}
+                
                     
-                    <div className="food-item-modal-controls">
-                        <div className={`food-item-modal-quantity ${billRequested ? 'disabled-controls' : ''}`}>
+                    {/* Controale */}
+                    <div className="food-modal-controls">
+                        <div className={`food-modal-quantity ${isDisabled ? 'disabled-controls' : ''}`}>
                             <button 
-                                className="food-item-modal-qty-btn" 
+                                className="food-modal-qty-btn" 
                                 onClick={handleQtyButton(decrease)}
                                 onTouchEnd={handleQtyButton(decrease)}
-                                disabled={billRequested}
+                                disabled={isDisabled}
                             >-</button>
-                            <span className="food-item-modal-qty-value">{selectedQuantity}</span>
+                            <span className="food-modal-qty-value">{selectedQuantity}</span>
                             <button 
-                                className="food-item-modal-qty-btn" 
+                                className="food-modal-qty-btn" 
                                 onClick={handleQtyButton(increase)}
                                 onTouchEnd={handleQtyButton(increase)}
-                                disabled={billRequested}
+                                disabled={isDisabled}
                             >+</button>
                         </div>
                         <button 
-                            className={`food-item-modal-add-btn ${billRequested ? 'food-item-modal-add-btn-disabled' : ''}`} 
+                            className={`food-modal-add-btn ${isDisabled ? 'food-modal-add-btn-disabled' : ''}`} 
                             onClick={handleAddButton}
                             onTouchEnd={handleAddButton}
-                            disabled={billRequested}
+                            disabled={isDisabled}
                         >
-                            {billRequested ? 'Bill Requested' : `Add ${calculateTotalPrice().toFixed(2)} €`}
+                            {isDisabled ? blockedMessage?.text : `Add ${calculateTotalPrice().toFixed(2)} €`}
                         </button>
                     </div>
                 </div>

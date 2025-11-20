@@ -1,5 +1,5 @@
 import express from "express";
-import { loginUser, registerUser, autoLogin, autoRegister, checkUserStatus, getUserCount, getAllUsers, updateUserStatus } from "../controllers/userController.js";
+import { loginUser, registerUser, autoLogin, autoRegister, checkUserStatus, getUserCount, getAllUsers, updateUserStatus, extendTokenTime, extendTokenSessionExpired } from "../controllers/userController.js";
 import userModel from "../models/userModel.js";
 
 const userRouter = express.Router();
@@ -20,5 +20,7 @@ userRouter.post('/check-status', checkUserStatus);
 userRouter.get('/count', getUserCount);
 userRouter.get('/list', getAllUsers);
 userRouter.put('/update-status/:id', updateUserStatus);
+userRouter.post('/extend-time', extendTokenTime);
+userRouter.post('/extend-session-expired', extendTokenSessionExpired);
 
 export default userRouter;

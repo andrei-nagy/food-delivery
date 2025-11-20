@@ -3,6 +3,7 @@ import "./FoodItemBestSeller.css";
 import { assets } from "../../assets/assets";
 import { StoreContext } from "../../context/StoreContext";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 const FoodItemBestSeller = ({
   _id,
@@ -18,21 +19,26 @@ const FoodItemBestSeller = ({
   openModal,
   swiperRef,
 }) => {
-  const { cartItems, addToCart, removeFromCart, url, billRequested } =
-    useContext(StoreContext);
+  const { t } = useTranslation();
+  const { 
+    cartItems, 
+    addToCart, 
+    removeFromCart, 
+    url, 
+    billRequested,
+    userBlocked 
+  } = useContext(StoreContext);
   const [showCounterControls, setShowCounterControls] = useState(false);
   const [imageError, setImageError] = useState(false);
   const timerRef = useRef(null);
 
-  // Verifică dacă produsul are discount
+  const isDisabled = billRequested || userBlocked;
   const hasDiscount = discountPercentage > 0;
 
-  // ✅ FUNCȚIE CORECTĂ: Caută toate variantele produsului în coș
   const getItemQuantity = () => {
     if (!cartItems || !_id) return 0;
 
     let totalQuantity = 0;
-
     Object.keys(cartItems).forEach((key) => {
       if (key.startsWith(_id)) {
         const item = cartItems[key];
@@ -43,7 +49,6 @@ const FoodItemBestSeller = ({
         }
       }
     });
-
     return totalQuantity;
   };
 
@@ -55,13 +60,9 @@ const FoodItemBestSeller = ({
 
   const handleCounterClick = (e) => {
     e.stopPropagation();
-
-    if (billRequested) {
-      return;
-    }
+    if (isDisabled) return;
 
     setShowCounterControls(true);
-
     if (timerRef.current) clearTimeout(timerRef.current);
 
     timerRef.current = setTimeout(() => {
@@ -79,9 +80,7 @@ const FoodItemBestSeller = ({
   };
 
   const handleClick = () => {
-    if (billRequested) {
-      return;
-    }
+    if (isDisabled) return;
     openModal({
       _id,
       name,
@@ -95,10 +94,7 @@ const FoodItemBestSeller = ({
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
-
-    if (billRequested) {
-      return;
-    }
+    if (isDisabled) return;
 
     addToCart(_id, 1);
     pauseSwiper();
@@ -107,23 +103,16 @@ const FoodItemBestSeller = ({
 
   const handleRemoveFromCart = (e) => {
     e.stopPropagation();
-
-    if (billRequested) {
-      return;
-    }
+    if (isDisabled) return;
 
     removeFromCart(_id, 1);
     pauseSwiper();
     handleCounterClick(e);
   };
 
-  // ✅ FUNCȚIE pentru butonul PLUS ALB - care deschide modalul
   const handlePlusButtonClick = (e) => {
     e.stopPropagation();
-
-    if (billRequested) {
-      return;
-    }
+    if (isDisabled) return;
 
     openModal({
       _id,
@@ -136,13 +125,9 @@ const FoodItemBestSeller = ({
     });
   };
 
-  // ✅ FUNCȚIE pentru counter (când produsul este deja în coș)
   const handleCounterClickOpenModal = (e) => {
     e.stopPropagation();
-
-    if (billRequested) {
-      return;
-    }
+    if (isDisabled) return;
 
     if (!showCounterControls) {
       openModal({
@@ -159,45 +144,72 @@ const FoodItemBestSeller = ({
     }
   };
 
+  const getBlockedMessage = () => {
+    if (userBlocked) {
+      return {
+        icon: "⏰",
+        text: t("food_item.session_expired")
+      };
+    }
+    if (billRequested) {
+      return {
+        icon: "🔒", 
+        text: t("food_item.bill_requested")
+      };
+    }
+    return null;
+  };
+
+  const blockedMessage = getBlockedMessage();
+
   return (
     <div
       className={`food-item-best ${
-        billRequested ? "bill-requested-disabled" : ""
+        isDisabled ? "bill-requested-disabled" : ""
       }`}
       onClick={handleClick}
-      style={{ cursor: billRequested ? "not-allowed" : "pointer" }}
+      style={{ cursor: isDisabled ? "not-allowed" : "pointer" }}
     >
       <div className="food-item-img-container">
         {isNewAdded && (
-          <img className="new-badge" src={assets.new_icon} alt="New" />
+          <img 
+            className="new-badge" 
+            src={assets.new_icon} 
+            alt={t("food_item.new")} 
+          />
         )}
         {isVegan && (
-          <img className="vegan-badge" src={assets.vegan_icon} alt="Vegan" />
+          <img 
+            className="vegan-badge" 
+            src={assets.vegan_icon} 
+            alt={t("food_item.vegan")} 
+          />
         )}
         {isBestSeller && (
           <img
             className="best-seller-badge"
             src={assets.bestseller_icon}
-            alt="Best Seller"
+            alt={t("food_item.best_seller")}
           />
         )}
 
-        {/* Badge pentru discount */}
         {hasDiscount && (
-          <div className="discount-badge">-{discountPercentage}%</div>
+          <div className="discount-badge">
+            {t("food_item.discount", { percentage: discountPercentage })}
+          </div>
         )}
 
-        {billRequested && (
+        {isDisabled && blockedMessage && (
           <div className="bill-requested-overlay">
             <div className="bill-requested-message">
-              <span className="repeat-product-bill-icon">🔒</span>
-              <span>Bill Requested</span>
+              <span className="repeat-product-bill-icon">{blockedMessage.icon}</span>
+              <span>{blockedMessage.text}</span>
             </div>
           </div>
         )}
 
         <img
-          className={`food-item-img ${billRequested ? "disabled-image" : ""} ${
+          className={`food-item-img ${isDisabled ? "disabled-image" : ""} ${
             imageError ? "image-error" : ""
           }`}
           src={imageError ? assets.image_coming_soon : url + "/images/" + image}
@@ -205,7 +217,7 @@ const FoodItemBestSeller = ({
           onError={handleImageError}
         />
 
-        {!billRequested && itemQuantity > 0 ? (
+        {!isDisabled && itemQuantity > 0 ? (
           <AnimatePresence>
             {showCounterControls ? (
               <motion.div
@@ -219,13 +231,13 @@ const FoodItemBestSeller = ({
                 <img
                   onClick={handleRemoveFromCart}
                   src={assets.remove_icon_red}
-                  alt="Remove"
+                  alt={t("food_item.remove_from_cart")}
                 />
                 <p>{itemQuantity}</p>
                 <img
                   onClick={handleAddToCart}
                   src={assets.add_icon_green}
-                  alt="Add"
+                  alt={t("food_item.add_to_cart")}
                 />
               </motion.div>
             ) : (
@@ -242,48 +254,50 @@ const FoodItemBestSeller = ({
               </motion.div>
             )}
           </AnimatePresence>
-        ) : !billRequested ? (
+        ) : !isDisabled ? (
           <img
             className="add"
             onClick={handlePlusButtonClick}
             src={assets.add_icon_white}
-            alt="Add"
+            alt={t("food_item.add_to_cart")}
           />
         ) : null}
       </div>
       <div className="food-item-info">
         <div className="food-item-name-rating">
-          <p className={billRequested ? "disabled-text" : ""}>{name}</p>
+          <p className={isDisabled ? "disabled-text" : ""}>{name}</p>
         </div>
         <p
           className={`food-item-desc fixed-height ${
-            billRequested ? "disabled-text" : ""
+            isDisabled ? "disabled-text" : ""
           }`}
         >
-          {description.length > 150
-            ? description.slice(0, 150) + "..."
+          {description.length > 100
+            ? t("food_item.description_truncated", { 
+                description: description.slice(0, 100) 
+              })
             : description}
         </p>
         <div
           className={`food-item-price-container ${
-            billRequested ? "disabled-text" : ""
+            isDisabled ? "disabled-text" : ""
           }`}
         >
           {hasDiscount ? (
             <div className="discount-price-wrapper">
-              <span className="original-price">{price} €</span>
-              <span className="discounted-price">{discountedPrice} €</span>
+              <span className="original-price">
+                {t("food_item.price_original", { price })}
+              </span>
+              <span className="discounted-price">
+                {t("food_item.price_discounted", { price: discountedPrice })}
+              </span>
             </div>
           ) : (
-            <span className="regular-price">{price} €</span>
+            <span className="regular-price">
+              {t("food_item.price_original", { price })}
+            </span>
           )}
         </div>
-
-        {billRequested && (
-          <div className="bill-warning-message">
-            Cannot add items - bill requested
-          </div>
-        )}
       </div>
     </div>
   );
