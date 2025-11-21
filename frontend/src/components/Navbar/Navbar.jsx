@@ -3,6 +3,7 @@ import "./Navbar.css";
 import { assets } from "../../assets/assets";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { StoreContext } from "../../context/StoreContext";
+import { useLanguage } from "../../context/LanguageContext";
 import ModalCart from "./ModalCart";
 import WaiterModalCart from "./WaiterModal";
 import ModalMyOrders from "./ModalMyOrders";
@@ -46,15 +47,16 @@ const Navbar = ({ setShowLogin }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { t, i18n } = useTranslation();
 
+  // 🔥 FOLOSEȘTE HOOK-UL PENTRU LIMBĂ
+  const { currentLanguage, setCurrentLanguage } = useLanguage();
+
   // 🔥 CONFIGURAȚIE LIMBI
   const languageConfig = {
     en: { flag: assets.usaFlag, code: "EN", name: "English" },
     fr: { flag: assets.frFlag, code: "FR", name: "Français" },
     es: { flag: assets.esFlag, code: "ES", name: "Español" },
     it: { flag: assets.itFlag, code: "IT", name: "Italiano" },
-    de: { flag: assets.deFlag, code: "DE", name: "Deutsch" },
     ro: { flag: assets.roFlag, code: "RO", name: "Română" }
-
   };
 
   const currentLang = languageConfig[i18n.language] || languageConfig.en;
@@ -82,6 +84,7 @@ const Navbar = ({ setShowLogin }) => {
   };
 
   const changeLanguage = (lng) => {
+    setCurrentLanguage(lng); // 🔥 ACTUALIZEAZĂ LIMBA GLOBALĂ
     i18n.changeLanguage(lng);
     sessionStorage.setItem("language", lng);
     setIsDropdownOpen(false);
@@ -142,11 +145,6 @@ const Navbar = ({ setShowLogin }) => {
   };
 
   useEffect(() => {
-    const savedLanguage = sessionStorage.getItem("language");
-    if (savedLanguage) {
-      i18n.changeLanguage(savedLanguage);
-    }
-
     if (token) {
       fetchOrders();
     }
@@ -168,7 +166,7 @@ const Navbar = ({ setShowLogin }) => {
         observer.unobserve(fabRef.current);
       }
     };
-  }, [token, i18n]);
+  }, [token]);
 
   const handleOpenWaiterModal = () => {
     setIsWaiterModalOpen(true);
@@ -294,13 +292,6 @@ const Navbar = ({ setShowLogin }) => {
             <span className="language-selected">
               <img src={currentLang.flag} alt={currentLang.code} className="flag" />
               {currentLang.code}
-              {/* <img
-                className={`arrow_down_language ${
-                  isDropdownOpen ? "rotated" : ""
-                }`}
-                src={assets.arrow_down}
-                alt="arrow"
-              /> */}
             </span>
 
             <AnimatePresence>

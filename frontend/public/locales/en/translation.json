@@ -222,7 +222,7 @@
     "cancel_request": "Cancel Request"
   },
     "repeat_order": {
-    "title": "Repeat Your Order",
+    "title": "Order Again",
     "subtitle": "Quick reorder from unpaid orders",
     "subtitle_loading": "Quick reorder from your history",
     "add": "Add",

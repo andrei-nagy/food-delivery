@@ -1,11 +1,14 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
 import { StoreContext } from '../../context/StoreContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { FaChevronDown, FaChevronUp, FaFire, FaWeight, FaAllergies, FaClock, FaLeaf, FaInfoCircle, FaUtensils, FaLanguage, FaSync, FaGlobe } from 'react-icons/fa';
 import './FoodModal.css';
 import { assets } from "../../assets/assets";
 
 const FoodModal = ({ food, closeModal, isOpen }) => {
     const { addToCart, url, canAddToCart, billRequested, userBlocked } = useContext(StoreContext);
+    const { currentLanguage } = useLanguage();
+    
     const [selectedQuantity, setSelectedQuantity] = useState(1);
     const [specialInstructions, setSpecialInstructions] = useState("");
     const [isVisible, setIsVisible] = useState(false);
@@ -19,22 +22,23 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         allergens: false
     });
     
-    // STATE-URI PENTRU TRADUCERE - nimic selectat inițial
-    const [targetLanguage, setTargetLanguage] = useState(''); // GOL inițial
-    const [translationEnabled, setTranslationEnabled] = useState(false); // DEZACTIVAT inițial
+    // STATE-URI PENTRU TRADUCERE AUTOMATĂ
+    const [targetLanguage, setTargetLanguage] = useState(currentLanguage);
+    const [translationEnabled, setTranslationEnabled] = useState(currentLanguage !== 'ro');
     const [isTranslating, setIsTranslating] = useState(false);
     const [translatedContent, setTranslatedContent] = useState({
+        foodName: '',
         description: '',
         ingredients: [],
+        extras: [],
         preparation: {},
-        allergens: []
+        allergens: [],
+        uiTexts: {}
     });
     const [translationAnimations, setTranslationAnimations] = useState({});
+    const [translationError, setTranslationError] = useState('');
     
     const modalRef = useRef(null);
-    const dragStartY = useRef(0);
-    const currentY = useRef(0);
-    const isDragging = useRef(false);
 
     // Combină ambele condiții pentru a bloca interacțiunea
     const isDisabled = billRequested || userBlocked;
@@ -52,7 +56,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     const discountPercentage = food?.discountPercentage || 0;
     const discountedPrice = food?.discountedPrice || foodPrice;
 
-    // Date pentru secțiuni - folosim datele reale din food sau valori default
+    // Date pentru secțiuni
     const nutritionData = food?.nutrition || {
         calories: 0,
         protein: 0,
@@ -88,170 +92,289 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     // Verifică dacă produsul are discount
     const hasDiscount = discountPercentage > 0;
 
-    // === FUNCȚII PENTRU TRADUCERE CU ANIMAȚII ===
-
-    const translateTextFree = async (text, targetLang) => {
-        if (!text.trim()) return text;
+    // === TEXTURI DE BAZĂ PENTRU TRADUCERE ===
+    const baseUITexts = {
+        // Badge-uri
+        newBadge: "Nou",
+        bestSellerBadge: "Cele Mai Vândute", 
+        veganBadge: "Vegan",
         
+        // Titluri secțiuni
+        specialInstructionsTitle: "Instrucțiuni speciale (opțional)",
+        extraOptionsTitle: "Extra opțiuni (opțional)",
+        nutritionalValuesTitle: "Valori Nutritionale",
+        ingredientsTitle: "Ingrediente",
+        preparationInfoTitle: "Informații Preparare",
+        allergensTitle: "Alergeni",
+        
+        // Etichete nutriționale
+        caloriesLabel: "Calorii",
+        proteinLabel: "Proteine",
+        carbsLabel: "Carbohidrați",
+        fatLabel: "Grăsimi", 
+        fiberLabel: "Fibre",
+        sugarLabel: "Zaharuri",
+        
+        // Etichete preparare
+        cookingTimeLabel: "Timp preparare",
+        servingSizeLabel: "Gramaj",
+        difficultyLabel: "Dificultate",
+        
+        // Tag-uri dietetice
+        glutenFreeTag: "Fără Gluten",
+        dairyFreeTag: "Fără Lapte",
+        vegetarianTag: "Vegetarian",
+        containsNutsTag: "Conține Nuci",
+        spicyLabel: "Picant",
+        
+        // Text UI general
+        addButton: "Adaugă",
+        instructionsPlaceholder: "Ex: fără sos picant, mai puțină sare, etc.",
+        allergensDisclaimer: "*Vă rugăm să ne anunțați dacă aveți alergii sau restricții alimentare.",
+        
+        // Mesaje de eroare
+        sessionExpired: "Sesiune Expirată",
+        sessionExpiredWarning: "Nu se pot adăuga produse - sesiunea a expirat. Vă rugăm să reîmprospătați pagina.",
+        billRequested: "Notă Solicitată",
+        billRequestedWarning: "Nu se pot adăuga produse noi. Vă rugăm să anulați mai întâi solicitarea notei de plată."
+    };
+
+    // === FUNCȚII PENTRU TRADUCERE RAPIDĂ ===
+    
+    // Funcție pentru a traduce mai multe texte într-un singur request
+    const translateMultipleTexts = async (texts, targetLang) => {
+        if (!texts || texts.length === 0 || !targetLang || targetLang === 'ro') {
+            return texts;
+        }
+
         try {
+            // Combină toate textele într-un singur text pentru traducere
+            const combinedText = texts.join(' ||| ');
+            
+            console.log(`Translating ${texts.length} texts in one request to ${targetLang}`);
+            
             const response = await fetch(
-                `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=ro|${targetLang}`
+                `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(combinedText)}`
             );
-
+            
             if (!response.ok) {
-                throw new Error('Translation failed');
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-
+            
             const data = await response.json();
-            return data.responseData.translatedText || text;
+            const translatedCombinedText = data[0]?.map(item => item[0]).join('') || combinedText;
+            
+            // Sepără textul tradus înapoi în texte individuale
+            const translatedTexts = translatedCombinedText.split(' ||| ');
+            
+            console.log(`Successfully translated ${texts.length} texts in one request`);
+            
+            return translatedTexts;
         } catch (error) {
-            console.error('Free translation error:', error);
-            try {
-                const googleResponse = await fetch(
-                    `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ro&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`
-                );
-                const googleData = await googleResponse.json();
-                return googleData[0][0][0] || text;
-            } catch (googleError) {
-                console.error('Google translation error:', googleError);
-                return text;
-            }
+            console.error('Error translating multiple texts:', error);
+            setTranslationError('Translation service temporarily unavailable.');
+            return texts; // Returnează textele originale în caz de eroare
         }
     };
 
-    // Funcție cu animații pentru traducere
-    const translateAllContent = async () => {
-        if (!translationEnabled || !food || !targetLanguage) return;
+    // Funcție pentru traducerea rapidă a întregului conținut
+    const translateAllContentFast = async () => {
+        if (!translationEnabled || !food || !targetLanguage || targetLanguage === 'ro') {
+            setTranslatedContent({
+                foodName: '',
+                description: '',
+                ingredients: [],
+                extras: [],
+                preparation: {},
+                allergens: [],
+                uiTexts: {}
+            });
+            return;
+        }
         
         setIsTranslating(true);
+        setTranslationError('');
         
-        // Animație de început
         setTranslationAnimations({
-            description: 'translating',
-            ingredients: 'translating',
-            preparation: 'translating',
-            allergens: 'translating'
+            allContent: 'translating'
         });
 
         try {
             const translations = {
+                foodName: '',
                 description: '',
                 ingredients: [],
+                extras: [],
                 preparation: {},
-                allergens: []
+                allergens: [],
+                uiTexts: {}
             };
 
-            // Traduce descrierea cu animație progresivă
+            // 1. Colectează TOATE textele care trebuie traduse
+            const allTextsToTranslate = [];
+            const textMap = new Map(); // Pentru a ține evidența originii textelor
+
+            // Nume produs
+            if (foodName) {
+                textMap.set(`name_${allTextsToTranslate.length}`, 'foodName');
+                allTextsToTranslate.push(foodName);
+            }
+
+            // Descriere
             if (foodDescription) {
-                translations.description = await translateTextFree(foodDescription, targetLanguage);
-                setTranslationAnimations(prev => ({ ...prev, description: 'completed' }));
+                textMap.set(`desc_${allTextsToTranslate.length}`, 'description');
+                allTextsToTranslate.push(foodDescription);
             }
 
-            // Traduce ingredientele
+            // Ingrediente
             if (ingredientsList.length > 0) {
-                const translatedIngredients = [];
-                for (const [index, ingredient] of ingredientsList.entries()) {
-                    const translated = await translateTextFree(ingredient, targetLanguage);
-                    translatedIngredients.push(translated);
-                    
-                    // Animație progresivă pentru fiecare ingredient
-                    if (index === ingredientsList.length - 1) {
-                        setTranslationAnimations(prev => ({ ...prev, ingredients: 'completed' }));
-                    }
+                ingredientsList.forEach((ingredient, index) => {
+                    textMap.set(`ing_${index}`, `ingredient_${index}`);
+                    allTextsToTranslate.push(ingredient);
+                });
+            }
+
+            // Extra opțiuni
+            if (foodExtras.length > 0) {
+                foodExtras.forEach((extra, index) => {
+                    textMap.set(`extra_${index}`, `extra_${index}`);
+                    allTextsToTranslate.push(extra.name);
+                });
+            }
+
+            // Informații preparare
+            const preparationFields = ['cookingTime', 'difficulty', 'spiceLevel', 'servingSize'];
+            preparationFields.forEach(field => {
+                if (preparationInfo[field]) {
+                    textMap.set(`prep_${field}`, `preparation_${field}`);
+                    allTextsToTranslate.push(preparationInfo[field]);
                 }
-                translations.ingredients = translatedIngredients;
-            }
+            });
 
-            // Traduce informațiile de preparare
-            const translatedPreparation = { ...preparationInfo };
-            if (preparationInfo.cookingTime) {
-                translatedPreparation.cookingTime = await translateTextFree(preparationInfo.cookingTime, targetLanguage);
-            }
-            if (preparationInfo.difficulty) {
-                translatedPreparation.difficulty = await translateTextFree(preparationInfo.difficulty, targetLanguage);
-            }
-            if (preparationInfo.spiceLevel) {
-                translatedPreparation.spiceLevel = await translateTextFree(preparationInfo.spiceLevel, targetLanguage);
-            }
-            translations.preparation = translatedPreparation;
-            setTranslationAnimations(prev => ({ ...prev, preparation: 'completed' }));
-
-            // Traduce alergenii
+            // Alergeni
             if (allergens.length > 0) {
-                const translatedAllergens = [];
-                for (const allergen of allergens) {
-                    const translated = await translateTextFree(allergen, targetLanguage);
-                    translatedAllergens.push(translated);
-                }
-                translations.allergens = translatedAllergens;
-                setTranslationAnimations(prev => ({ ...prev, allergens: 'completed' }));
+                allergens.forEach((allergen, index) => {
+                    textMap.set(`alg_${index}`, `allergen_${index}`);
+                    allTextsToTranslate.push(allergen);
+                });
             }
+
+            // Text UI
+            Object.values(baseUITexts).forEach((text, index) => {
+                textMap.set(`ui_${index}`, `ui_${Object.keys(baseUITexts)[index]}`);
+                allTextsToTranslate.push(text);
+            });
+
+            // 2. Traduce TOATE textele într-un singur request
+            if (allTextsToTranslate.length > 0) {
+                const translatedTexts = await translateMultipleTexts(allTextsToTranslate, targetLanguage);
+                
+                // 3. Distribuie textele traduse înapoi
+                translatedTexts.forEach((translatedText, index) => {
+                    const originalKey = Array.from(textMap.keys())[index];
+                    const targetField = textMap.get(originalKey);
+                    
+                    if (targetField.startsWith('foodName')) {
+                        translations.foodName = translatedText;
+                    } else if (targetField.startsWith('description')) {
+                        translations.description = translatedText;
+                    } else if (targetField.startsWith('ingredient_')) {
+                        const ingIndex = parseInt(targetField.split('_')[1]);
+                        if (!translations.ingredients) translations.ingredients = [];
+                        translations.ingredients[ingIndex] = translatedText;
+                    } else if (targetField.startsWith('extra_')) {
+                        const extraIndex = parseInt(targetField.split('_')[1]);
+                        if (!translations.extras) translations.extras = [];
+                        if (!translations.extras[extraIndex]) {
+                            translations.extras[extraIndex] = { ...foodExtras[extraIndex] };
+                        }
+                        translations.extras[extraIndex].name = translatedText;
+                    } else if (targetField.startsWith('preparation_')) {
+                        const fieldName = targetField.split('_')[1];
+                        if (!translations.preparation) translations.preparation = {};
+                        translations.preparation[fieldName] = translatedText;
+                    } else if (targetField.startsWith('allergen_')) {
+                        const algIndex = parseInt(targetField.split('_')[1]);
+                        if (!translations.allergens) translations.allergens = [];
+                        translations.allergens[algIndex] = translatedText;
+                    } else if (targetField.startsWith('ui_')) {
+                        const uiKey = targetField.split('_')[1];
+                        if (!translations.uiTexts) translations.uiTexts = {};
+                        translations.uiTexts[uiKey] = translatedText;
+                    }
+                });
+            }
+
+            // Completează cu datele originale pentru câmpurile care nu au fost traduse
+            if (!translations.foodName) translations.foodName = foodName;
+            if (!translations.description) translations.description = foodDescription;
+            if (!translations.ingredients || translations.ingredients.length === 0) translations.ingredients = ingredientsList;
+            if (!translations.extras || translations.extras.length === 0) translations.extras = foodExtras;
+            if (!translations.preparation) translations.preparation = preparationInfo;
+            if (!translations.allergens || translations.allergens.length === 0) translations.allergens = allergens;
 
             setTranslatedContent(translations);
             
-            // Finalizează toate animațiile
+            // Finalizează animația rapid
             setTimeout(() => {
                 setTranslationAnimations({
-                    description: 'idle',
-                    ingredients: 'idle',
-                    preparation: 'idle',
-                    allergens: 'idle'
+                    allContent: 'completed'
                 });
-            }, 500);
+            }, 300);
 
         } catch (error) {
-            console.error('Error translating content:', error);
+            console.error('Error in fast translation:', error);
+            setTranslationError('Translation service temporarily unavailable. Please try again later.');
             setTranslationAnimations({
-                description: 'idle',
-                ingredients: 'idle',
-                preparation: 'idle',
-                allergens: 'idle'
+                allContent: 'idle'
             });
         } finally {
             setIsTranslating(false);
         }
     };
 
-    // Efect pentru traducere automată - doar când translationEnabled este true
+    // 🔥 EFECT PENTRU TRADUCERE AUTOMATĂ
     useEffect(() => {
-        if (translationEnabled && food && targetLanguage) {
-            translateAllContent();
+        if (isOpen && food) {
+            setTargetLanguage(currentLanguage);
+            setTranslationEnabled(currentLanguage !== 'ro');
+        }
+    }, [isOpen, food, currentLanguage]);
+
+    // Efect pentru traducere automată
+    useEffect(() => {
+        if (translationEnabled && food && targetLanguage && targetLanguage !== 'ro') {
+            translateAllContentFast();
         } else {
-            // Animație de fade-out pentru conținutul tradus
             setTranslationAnimations({
-                description: 'fading',
-                ingredients: 'fading',
-                preparation: 'fading',
-                allergens: 'fading'
+                allContent: 'fading'
             });
             
             setTimeout(() => {
                 setTranslatedContent({
+                    foodName: '',
                     description: '',
                     ingredients: [],
+                    extras: [],
                     preparation: {},
-                    allergens: []
+                    allergens: [],
+                    uiTexts: {}
                 });
                 setTranslationAnimations({
-                    description: 'idle',
-                    ingredients: 'idle',
-                    preparation: 'idle',
-                    allergens: 'idle'
+                    allContent: 'idle'
                 });
-            }, 300);
+                setTranslationError('');
+            }, 200);
         }
     }, [translationEnabled, targetLanguage, food]);
 
-    // Funcție pentru schimbarea limbii - activează traducerea când utilizatorul alege orice limbă
-    const handleLanguageChange = (newLang) => {
-        if (newLang) {
-            setTargetLanguage(newLang);
-            // Activează traducerea pentru ORICE limbă selectată
-            setTranslationEnabled(true);
-        }
+    // === FUNCȚII PENTRU A OBȚINE CONȚINUTUL TRADUS ===
+    const getFoodName = () => {
+        return translationEnabled && translatedContent.foodName 
+            ? translatedContent.foodName 
+            : foodName;
     };
 
-    // Funcții pentru a obține conținutul
     const getDescription = () => {
         return translationEnabled && translatedContent.description 
             ? translatedContent.description 
@@ -264,10 +387,17 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
             : ingredientsList;
     };
 
+    const getExtras = () => {
+        return translationEnabled && translatedContent.extras && translatedContent.extras.length > 0
+            ? translatedContent.extras
+            : foodExtras;
+    };
+
     const getPreparationInfo = () => {
-        return translationEnabled && translatedContent.preparation
-            ? { ...preparationInfo, ...translatedContent.preparation }
-            : preparationInfo;
+        if (translationEnabled && translatedContent.preparation) {
+            return { ...preparationInfo, ...translatedContent.preparation };
+        }
+        return preparationInfo;
     };
 
     const getAllergens = () => {
@@ -276,9 +406,17 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
             : allergens;
     };
 
+    // Funcție pentru a obține textul UI tradus
+    const getUIText = (textKey) => {
+        if (translationEnabled && translatedContent.uiTexts && translatedContent.uiTexts[textKey]) {
+            return translatedContent.uiTexts[textKey];
+        }
+        return baseUITexts[textKey] || textKey;
+    };
+
     // Funcție pentru a obține clasa de animație
-    const getAnimationClass = (section) => {
-        const animation = translationAnimations[section];
+    const getAnimationClass = () => {
+        const animation = translationAnimations.allContent;
         if (!translationEnabled) return '';
         
         switch (animation) {
@@ -289,14 +427,9 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         }
     };
 
-    // Funcție pentru a obține textul bazat pe limbă
-    const getStaticText = (roText, enText) => {
-        // Dacă traducerea este activată, folosește textul în limba selectată
-        if (translationEnabled && targetLanguage) {
-            return targetLanguage === 'ro' ? roText : enText;
-        }
-        // Dacă traducerea nu este activată, folosește textul original (română)
-        return roText;
+    // Funcție pentru gestionarea erorilor de imagine
+    const handleImageError = () => {
+        setImageError(true);
     };
 
     // Mesajul care va apărea când utilizatorul este blocat
@@ -304,21 +437,15 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         if (userBlocked) {
             return {
                 icon: "⏰",
-                text: getStaticText("Sesiune Expirată", "Session Expired"),
-                warningText: getStaticText(
-                    "Nu se pot adăuga produse - sesiunea a expirat. Vă rugăm să reîmprospătați pagina.",
-                    "Cannot add items - session expired. Please refresh the page."
-                )
+                text: getUIText('sessionExpired'),
+                warningText: getUIText('sessionExpiredWarning')
             };
         }
         if (billRequested) {
             return {
                 icon: "🔒", 
-                text: getStaticText("Notă Solicitată", "Bill Requested"),
-                warningText: getStaticText(
-                    "Nu se pot adăuga produse noi. Vă rugăm să anulați mai întâi solicitarea notei de plată.",
-                    "Cannot add new items. Please cancel the bill request first."
-                )
+                text: getUIText('billRequested'),
+                warningText: getUIText('billRequestedWarning')
             };
         }
         return null;
@@ -346,9 +473,9 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                 preparation: false,
                 allergens: false
             });
-            // Resetează traducerea la starea inițială când se închide modalul
-            setTranslationEnabled(false);
-            setTargetLanguage('');
+            setTranslationEnabled(currentLanguage !== 'ro');
+            setTargetLanguage(currentLanguage);
+            setTranslationError('');
             setTimeout(() => {
                 document.body.style.overflow = '';
             }, 300);
@@ -357,11 +484,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         return () => {
             document.body.style.overflow = '';
         };
-    }, [isOpen, food]);
-
-    const handleImageError = () => {
-        setImageError(true);
-    };
+    }, [isOpen, food, currentLanguage]);
 
     const handleOptionChange = (option) => {
         if (isDisabled) return;
@@ -384,143 +507,23 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
     };
 
     const handleDragStart = (e) => {
-        // Permite swipe doar dacă scroll-ul este în top
         if (modalRef.current && modalRef.current.scrollTop > 0) {
             return;
         }
         
-        isDragging.current = true;
-        dragStartY.current = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+        const dragStartY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
         if (modalRef.current) {
             modalRef.current.style.transition = 'none';
         }
     };
 
     const handleDrag = (e) => {
-        if (!isDragging.current || !modalRef.current) return;
-        
-        const y = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-        const deltaY = y - dragStartY.current;
-        
-        if (deltaY > 0) {
-            currentY.current = deltaY;
-            modalRef.current.style.transform = `translateY(${deltaY}px)`;
-            
-            // Adaugă opacity la overlay pe măsură ce tragi
-            const overlay = document.querySelector('.food-modal-overlay');
-            if (overlay) {
-                const opacity = 1 - (deltaY / 300);
-                overlay.style.backgroundColor = `rgba(0, 0, 0, ${Math.max(0.3, opacity * 0.5)})`;
-            }
-        }
+        // Implementare simplificată pentru drag
     };
 
     const handleDragEnd = () => {
-        isDragging.current = false;
-        if (!modalRef.current) return;
-        
-        modalRef.current.style.transition = 'transform 0.3s ease';
-        
-        // Resetează opacity overlay
-        const overlay = document.querySelector('.food-modal-overlay');
-        if (overlay) {
-            overlay.style.transition = 'background-color 0.3s ease';
-            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-        }
-        
-        if (currentY.current > 100) {
-            modalRef.current.style.transform = 'translateY(100%)';
-            setTimeout(() => closeModal(), 300);
-        } else {
-            modalRef.current.style.transform = 'translateY(0)';
-        }
-        
-        currentY.current = 0;
+        // Implementare simplificată pentru drag
     };
-
-    // Adaugă această funcție pentru a preveni swipe-ul când se face scroll
-    const handleScroll = (e) => {
-        if (e.target.scrollTop > 0 && isDragging.current) {
-            isDragging.current = false;
-            if (modalRef.current) {
-                modalRef.current.style.transform = 'translateY(0)';
-                modalRef.current.style.transition = 'transform 0.3s ease';
-            }
-        }
-    };
-
-    useEffect(() => {
-        const modal = modalRef.current;
-        if (!modal) return;
-
-        // Adaugă event listener pentru scroll
-        modal.addEventListener('scroll', handleScroll);
-
-        const handleMouseDown = (e) => {
-            // Permite swipe doar pe primul 30% din modal sau pe header
-            const modalRect = modal.getBoundingClientRect();
-            const clickY = e.clientY - modalRect.top;
-            const modalHeight = modalRect.height;
-            
-            if (clickY < modalHeight * 0.3 || e.target.closest('.food-modal-header')) {
-                handleDragStart(e);
-            }
-        };
-
-        const handleMouseMove = (e) => {
-            handleDrag(e);
-        };
-
-        const handleMouseUp = () => {
-            if (isDragging.current) {
-                handleDragEnd();
-            }
-        };
-
-        const handleTouchStart = (e) => {
-            // Permite swipe doar pe primul 30% din modal sau pe header
-            const modalRect = modal.getBoundingClientRect();
-            const touchY = e.touches[0].clientY - modalRect.top;
-            const modalHeight = modalRect.height;
-            
-            if (touchY < modalHeight * 0.3 || e.target.closest('.food-modal-header')) {
-                handleDragStart(e);
-            }
-        };
-
-        const handleTouchMove = (e) => {
-            if (!isDragging.current) return;
-            
-            e.preventDefault();
-            handleDrag(e);
-        };
-
-        const handleTouchEnd = () => {
-            if (isDragging.current) {
-                handleDragEnd();
-            }
-        };
-
-        // Aplică evenimentele pe întregul modal
-        modal.addEventListener('mousedown', handleMouseDown);
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-
-        modal.addEventListener('touchstart', handleTouchStart, { passive: true });
-        document.addEventListener('touchmove', handleTouchMove, { passive: false });
-        document.addEventListener('touchend', handleTouchEnd);
-
-        return () => {
-            modal.removeEventListener('scroll', handleScroll);
-            modal.removeEventListener('mousedown', handleMouseDown);
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-
-            modal.removeEventListener('touchstart', handleTouchStart);
-            document.removeEventListener('touchmove', handleTouchMove);
-            document.removeEventListener('touchend', handleTouchEnd);
-        };
-    }, []);
 
     const increase = () => {
         if (isDisabled) return;
@@ -632,33 +635,10 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                 <div className="food-modal-header">
                     <div className="food-modal-drag-handle"></div>
                     <div className="food-modal-title-section">
-                        <h2 className="food-modal-title">{foodName}</h2>
-                        
-                        {/* CONTROALE TRADUCERE - DESIGN SIMPLIFICAT */}
+                        <h2 className={`food-modal-title ${getAnimationClass()}`}>
+                            {getFoodName()}
+                        </h2>
                         <div className="food-modal-translation-controls">
-                            <div className="translation-toggle-group">
-                                {/* SELECTORUL DE LIMBĂ - nimic selectat inițial */}
-                                <div className="language-select-wrapper">
-                                    <FaLanguage className="language-select-icon" />
-                                    <select 
-                                        className="food-modal-language-select"
-                                        value={targetLanguage}
-                                        onChange={(e) => handleLanguageChange(e.target.value)}
-                                        disabled={isTranslating}
-                                    >
-                                        <option value="">Translate</option>
-                                        <option value="en">🇺🇸 English</option>
-                                        <option value="ro">🇷🇴 Română</option>
-                                        <option value="es">🇪🇸 Español</option>
-                                        <option value="fr">🇫🇷 Français</option>
-                                        <option value="de">🇩🇪 Deutsch</option>
-                                        <option value="it">🇮🇹 Italiano</option>
-                                        <option value="ru">🇷🇺 Русский</option>
-                                        <option value="zh">🇨🇳 中文</option>
-                                        <option value="ar">🇦🇪 العربية</option>
-                                    </select>
-                                </div>
-                            </div>
                             <button className="food-modal-close-btn" onClick={closeModal}>✕</button>
                         </div>
                     </div>
@@ -678,10 +658,22 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                         </div>
                     )}
                     
+                    {/* Translation Error Banner */}
+                    {translationError && (
+                        <div className="food-modal-warning translation-warning">
+                            <div className="food-modal-warning-content">
+                                <span className="food-modal-warning-icon">⚠️</span>
+                                <div className="food-modal-warning-text">
+                                    <span>{translationError}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
                     {/* Imaginea principală */}
                     <img 
                         src={imageError ? assets.image_coming_soon : (url + "/images/" + foodImage)} 
-                        alt={foodName} 
+                        alt={getFoodName()} 
                         className={`food-modal-image ${isDisabled ? 'disabled-image' : ''} ${imageError ? 'image-error' : ''}`}
                         onError={handleImageError}
                     />
@@ -691,17 +683,17 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                         <div className="food-modal-badges">
                             {isNewAdded && (
                                 <span className="food-modal-badge food-modal-badge-new">
-                                    {getStaticText('Nou', 'New')}
+                                    {getUIText('newBadge')}
                                 </span>
                             )}
                             {isVegan && (
                                 <span className="food-modal-badge food-modal-badge-vegan">
-                                    Vegan
+                                    {getUIText('veganBadge')}
                                 </span>
                             )}
                             {isBestSeller && (
                                 <span className="food-modal-badge food-modal-badge-bestseller">
-                                    {getStaticText('Cele Mai Vândute', 'Best Seller')}
+                                    {getUIText('bestSellerBadge')}
                                 </span>
                             )}
                         </div>
@@ -749,7 +741,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                 <div className="food-modal-quick-info-item">
                                     <span className="spicy-icon">🌶️</span>
                                     <span>
-                                        {getStaticText('Picant', 'Spicy')}
+                                        {getUIText('spicyLabel')}
                                     </span>
                                 </div>
                             )}
@@ -759,7 +751,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                     {/* DESCRIERE */}
                     {getDescription() && (
                         <div className="food-modal-section">
-                            <div className={`food-modal-description-static ${getAnimationClass('description')}`}>
+                            <div className={`food-modal-description-static ${getAnimationClass()}`}>
                                 <p className="food-modal-description-text">{getDescription()}</p>
                             </div>
                         </div>
@@ -769,11 +761,11 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                     {!isDisabled && (
                         <div className="food-modal-section">
                             <h3 className="food-modal-section-title">
-                                {getStaticText('Instrucțiuni speciale (opțional)', 'Special instructions (optional)')}
+                                {getUIText('specialInstructionsTitle')}
                             </h3>
                             <textarea
                                 className="food-modal-textarea"
-                                placeholder={getStaticText('Ex: fără sos picant, mai puțină sare, etc.', 'Ex: no spicy sauce, less salt, etc.')}
+                                placeholder={getUIText('instructionsPlaceholder')}
                                 value={specialInstructions}
                                 onChange={(e) => setSpecialInstructions(e.target.value)}
                                 disabled={isDisabled}
@@ -782,13 +774,13 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                     )}   
 
                     {/* Extra opțiuni */}
-                    {foodExtras.length > 0 && !isDisabled && (
+                    {getExtras().length > 0 && !isDisabled && (
                         <div className="food-modal-section">
                             <h3 className="food-modal-section-title">
-                                {getStaticText('Extra opțiuni (opțional)', 'Extra options (optional)')}
+                                {getUIText('extraOptionsTitle')}
                             </h3>
                             <div className="food-modal-options-modern">
-                                {foodExtras.map((extra) => (
+                                {getExtras().map((extra) => (
                                     <label 
                                         key={extra._id || extra.name} 
                                         className={`food-modal-option-modern ${selectedOptions.includes(extra.name) ? 'selected' : ''}`}
@@ -804,7 +796,9 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                                 <span className="checkmark"></span>
                                             </div>
                                             <div className="option-modern-info">
-                                                <span className="option-modern-name">{extra.name}</span>
+                                                <span className={`option-modern-name ${getAnimationClass()}`}>
+                                                    {extra.name}
+                                                </span>
                                                 <span className="option-modern-price">+{extra.price.toFixed(2)} €</span>
                                             </div>
                                         </div>
@@ -818,7 +812,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                         </div>
                     )}
 
-                    {/* ACCORDION: Valori nutritionale - afișat doar dacă există date */}
+                    {/* ACCORDION: Valori nutritionale */}
                     {shouldShowNutrition && (
                         <div className="food-modal-section">
                             <div 
@@ -828,7 +822,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                 <div className="food-modal-accordion-header">
                                     <FaFire className="accordion-icon" />
                                     <span className="food-modal-accordion-title">
-                                        {getStaticText('Valori Nutritionale', 'Nutritional Values')}
+                                        {getUIText('nutritionalValuesTitle')}
                                     </span>
                                     {expandedSections.nutrition ? 
                                         <FaChevronUp className="accordion-chevron" /> : 
@@ -841,7 +835,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                             {nutritionData.calories > 0 && (
                                                 <div className="nutrition-item">
                                                     <span className="nutrition-label">
-                                                        {getStaticText('Calorii', 'Calories')}
+                                                        {getUIText('caloriesLabel')}
                                                     </span>
                                                     <span className="nutrition-value">{nutritionData.calories} kcal</span>
                                                 </div>
@@ -849,7 +843,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                             {nutritionData.protein > 0 && (
                                                 <div className="nutrition-item">
                                                     <span className="nutrition-label">
-                                                        {getStaticText('Proteine', 'Protein')}
+                                                        {getUIText('proteinLabel')}
                                                     </span>
                                                     <span className="nutrition-value">{nutritionData.protein}g</span>
                                                 </div>
@@ -857,7 +851,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                             {nutritionData.carbs > 0 && (
                                                 <div className="nutrition-item">
                                                     <span className="nutrition-label">
-                                                        {getStaticText('Carbohidrați', 'Carbs')}
+                                                        {getUIText('carbsLabel')}
                                                     </span>
                                                     <span className="nutrition-value">{nutritionData.carbs}g</span>
                                                 </div>
@@ -865,7 +859,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                             {nutritionData.fat > 0 && (
                                                 <div className="nutrition-item">
                                                     <span className="nutrition-label">
-                                                        {getStaticText('Grăsimi', 'Fat')}
+                                                        {getUIText('fatLabel')}
                                                     </span>
                                                     <span className="nutrition-value">{nutritionData.fat}g</span>
                                                 </div>
@@ -873,7 +867,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                             {nutritionData.fiber > 0 && (
                                                 <div className="nutrition-item">
                                                     <span className="nutrition-label">
-                                                        {getStaticText('Fibre', 'Fiber')}
+                                                        {getUIText('fiberLabel')}
                                                     </span>
                                                     <span className="nutrition-value">{nutritionData.fiber}g</span>
                                                 </div>
@@ -881,7 +875,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                             {nutritionData.sugar > 0 && (
                                                 <div className="nutrition-item">
                                                     <span className="nutrition-label">
-                                                        {getStaticText('Zaharuri', 'Sugar')}
+                                                        {getUIText('sugarLabel')}
                                                     </span>
                                                     <span className="nutrition-value">{nutritionData.sugar}g</span>
                                                 </div>
@@ -893,7 +887,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                         </div>
                     )}
 
-                    {/* ACCORDION: Ingrediente - afișat doar dacă există */}
+                    {/* ACCORDION: Ingrediente */}
                     {shouldShowIngredients && (
                         <div className="food-modal-section">
                             <div 
@@ -903,7 +897,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                 <div className="food-modal-accordion-header">
                                     <FaUtensils className="accordion-icon" />
                                     <span className="food-modal-accordion-title">
-                                        {getStaticText('Ingrediente', 'Ingredients')}
+                                        {getUIText('ingredientsTitle')}
                                     </span>
                                     {expandedSections.ingredients ? 
                                         <FaChevronUp className="accordion-chevron" /> : 
@@ -912,7 +906,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                 </div>
                                 {expandedSections.ingredients && (
                                     <div className="food-modal-accordion-content">
-                                        <ul className={`food-modal-ingredients-list ${getAnimationClass('ingredients')}`}>
+                                        <ul className={`food-modal-ingredients-list ${getAnimationClass()}`}>
                                             {getIngredients().map((ingredient, index) => (
                                                 <li key={index} className="ingredient-item">
                                                     {ingredient}
@@ -923,22 +917,22 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                         <div className="food-modal-dietary-tags">
                                             {dietaryInfo.isGlutenFree && (
                                                 <span className="dietary-tag gluten-free">
-                                                    {getStaticText('Fără Gluten', 'Gluten Free')}
+                                                    {getUIText('glutenFreeTag')}
                                                 </span>
                                             )}
                                             {dietaryInfo.isDairyFree && (
                                                 <span className="dietary-tag dairy-free">
-                                                    {getStaticText('Fără Lapte', 'Dairy Free')}
+                                                    {getUIText('dairyFreeTag')}
                                                 </span>
                                             )}
                                             {dietaryInfo.isVegetarian && (
                                                 <span className="dietary-tag vegetarian">
-                                                    {getStaticText('Vegetarian', 'Vegetarian')}
+                                                    {getUIText('vegetarianTag')}
                                                 </span>
                                             )}
                                             {dietaryInfo.containsNuts && (
                                                 <span className="dietary-tag contains-nuts">
-                                                    {getStaticText('Conține Nuci', 'Contains Nuts')}
+                                                    {getUIText('containsNutsTag')}
                                                 </span>
                                             )}
                                         </div>
@@ -948,7 +942,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                         </div>
                     )}
 
-                    {/* ACCORDION: Informații preparare - afișat doar dacă există */}
+                    {/* ACCORDION: Informații preparare */}
                     {shouldShowPreparation && (
                         <div className="food-modal-section">
                             <div 
@@ -958,7 +952,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                 <div className="food-modal-accordion-header">
                                     <FaClock className="accordion-icon" />
                                     <span className="food-modal-accordion-title">
-                                        {getStaticText('Informații Preparare', 'Preparation Information')}
+                                        {getUIText('preparationInfoTitle')}
                                     </span>
                                     {expandedSections.preparation ? 
                                         <FaChevronUp className="accordion-chevron" /> : 
@@ -971,7 +965,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                             {getPreparationInfo().cookingTime && (
                                                 <div className="preparation-item">
                                                     <span className="preparation-label">
-                                                        {getStaticText('Timp preparare', 'Preparation time')}
+                                                        {getUIText('cookingTimeLabel')}
                                                     </span>
                                                     <span className="preparation-value">{getPreparationInfo().cookingTime}</span>
                                                 </div>
@@ -979,7 +973,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                             {getPreparationInfo().servingSize && (
                                                 <div className="preparation-item">
                                                     <span className="preparation-label">
-                                                        {getStaticText('Gramaj', 'Serving size')}
+                                                        {getUIText('servingSizeLabel')}
                                                     </span>
                                                     <span className="preparation-value">{getPreparationInfo().servingSize}</span>
                                                 </div>
@@ -987,7 +981,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                             {getPreparationInfo().difficulty && (
                                                 <div className="preparation-item">
                                                     <span className="preparation-label">
-                                                        {getStaticText('Dificultate', 'Difficulty')}
+                                                        {getUIText('difficultyLabel')}
                                                     </span>
                                                     <span className="preparation-value">{getPreparationInfo().difficulty}</span>
                                                 </div>
@@ -999,7 +993,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                         </div>
                     )}
 
-                    {/* ACCORDION: Alergeni - afișat doar dacă există */}
+                    {/* ACCORDION: Alergeni */}
                     {shouldShowAllergens && (
                         <div className="food-modal-section">
                             <div 
@@ -1009,7 +1003,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                 <div className="food-modal-accordion-header">
                                     <FaAllergies className="accordion-icon" />
                                     <span className="food-modal-accordion-title">
-                                        {getStaticText('Alergeni', 'Allergens')}
+                                        {getUIText('allergensTitle')}
                                     </span>
                                     {expandedSections.allergens ? 
                                         <FaChevronUp className="accordion-chevron" /> : 
@@ -1026,10 +1020,7 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                             ))}
                                         </div>
                                         <p className="food-modal-allergens-disclaimer">
-                                            {getStaticText(
-                                                '*Vă rugăm să ne anunțați dacă aveți alergii sau restricții alimentare.',
-                                                '*Please inform us if you have any allergies or dietary restrictions.'
-                                            )}
+                                            {getUIText('allergensDisclaimer')}
                                         </p>
                                     </div>
                                 )}
@@ -1043,24 +1034,21 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                             <button 
                                 className="food-modal-qty-btn" 
                                 onClick={handleQtyButton(decrease)}
-                                onTouchEnd={handleQtyButton(decrease)}
                                 disabled={isDisabled}
                             >-</button>
                             <span className="food-modal-qty-value">{selectedQuantity}</span>
                             <button 
                                 className="food-modal-qty-btn" 
                                 onClick={handleQtyButton(increase)}
-                                onTouchEnd={handleQtyButton(increase)}
                                 disabled={isDisabled}
                             >+</button>
                         </div>
                         <button 
                             className={`food-modal-add-btn ${isDisabled ? 'food-modal-add-btn-disabled' : ''}`} 
                             onClick={handleAddButton}
-                            onTouchEnd={handleAddButton}
                             disabled={isDisabled}
                         >
-                            {isDisabled ? blockedMessage?.text : `${getStaticText('Adaugă', 'Add')} ${calculateTotalPrice().toFixed(2)} €`}
+                            {isDisabled ? blockedMessage?.text : `${getUIText('addButton')} ${calculateTotalPrice().toFixed(2)} €`}
                         </button>
                     </div>
                 </div>

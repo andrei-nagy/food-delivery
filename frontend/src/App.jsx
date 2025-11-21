@@ -16,6 +16,7 @@ import Loading from "./components/Loading/Loading";
 import CheckUser from "./components/CheckUser/CheckUser";
 import Welcome from "./components/Welcome/Welcome";
 import { StoreContext } from "./context/StoreContext";
+import { LanguageProvider } from "./context/LanguageContext"; // 🔥 ADAUGĂ ACEST IMPORT
 import axios from "axios";
 import "./i18n";
 import CategoryPage from "./components/FoodDisplay/CategoryPage";
@@ -174,7 +175,7 @@ const App = () => {
   };
 
   return (
-    <>
+    <LanguageProvider> {/* 🔥 ÎNVĂLUIRE CU LanguageProvider */}
       {loading && <Loading />}
       {!loading && (
         <>
@@ -216,7 +217,7 @@ const App = () => {
           </div>
         </>
       )}
-    </>
+    </LanguageProvider>
   );
 };
 

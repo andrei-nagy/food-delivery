@@ -6,6 +6,8 @@ import { toast } from "react-toastify";
 import FoodModal from "../../components/FoodItem/FoodModal";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
+import { useLanguage } from "../../context/LanguageContext";
+
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaPlus,
@@ -56,6 +58,11 @@ const MyOrders = () => {
   const [isFoodModalOpen, setIsFoodModalOpen] = useState(false);
   const [selectedFoodQuantity, setSelectedFoodQuantity] = useState(1);
   const [selectedFoodInstructions, setSelectedFoodInstructions] = useState("");
+const { currentLanguage } = useLanguage();
+const [translatedProductNames, setTranslatedProductNames] = useState({});
+const [translatedDescriptions, setTranslatedDescriptions] = useState({});
+const [isTranslatingProductNames, setIsTranslatingProductNames] = useState(false);
+const [isTranslatingDescriptions, setIsTranslatingDescriptions] = useState(false);
 
   // State-uri pentru comenzile neplătite
   const [unpaidOrders, setUnpaidOrders] = useState([]);
@@ -88,6 +95,141 @@ const MyOrders = () => {
       document.body.classList.remove("cart-page");
     };
   }, []);
+
+  // Adaugă funcțiile pentru traducerea numelor produselor
+const translateProductNames = async () => {
+  if (currentLanguage === 'ro' || !food_list.length) {
+    setTranslatedProductNames({});
+    setIsTranslatingProductNames(false);
+    return;
+  }
+
+  setIsTranslatingProductNames(true);
+
+  try {
+    const productNamesToTranslate = [];
+    const productIdMap = {};
+
+    food_list.forEach((food, index) => {
+      if (food?.name?.trim()) {
+        productNamesToTranslate.push(food.name);
+        productIdMap[index] = food._id;
+      }
+    });
+
+    if (productNamesToTranslate.length > 0) {
+      const combinedText = productNamesToTranslate.join(' ||| ');
+      
+      const response = await fetch(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${currentLanguage}&dt=t&q=${encodeURIComponent(combinedText)}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const translatedCombinedText = data[0]?.map(item => item[0]).join('') || combinedText;
+        const translatedNamesArray = translatedCombinedText.split(' ||| ');
+
+        const newTranslatedProductNames = {};
+        Object.keys(productIdMap).forEach((index) => {
+          const foodId = productIdMap[index];
+          const translatedName = translatedNamesArray[index] || productNamesToTranslate[index];
+          if (translatedName && foodId) {
+            newTranslatedProductNames[foodId] = translatedName;
+          }
+        });
+
+        setTranslatedProductNames(newTranslatedProductNames);
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error translating product names:', error);
+  } finally {
+    setIsTranslatingProductNames(false);
+  }
+};
+
+// Adaugă funcția pentru traducerea descrierilor
+const translateProductDescriptions = async () => {
+  if (currentLanguage === 'ro' || !food_list.length) {
+    setTranslatedDescriptions({});
+    setIsTranslatingDescriptions(false);
+    return;
+  }
+
+  setIsTranslatingDescriptions(true);
+
+  try {
+    const descriptionsToTranslate = [];
+    const descriptionIdMap = {};
+
+    food_list.forEach((food, index) => {
+      if (food?.description?.trim()) {
+        descriptionsToTranslate.push(food.description);
+        descriptionIdMap[index] = food._id;
+      }
+    });
+
+    if (descriptionsToTranslate.length > 0) {
+      const combinedText = descriptionsToTranslate.join(' ||| ');
+      
+      const response = await fetch(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${currentLanguage}&dt=t&q=${encodeURIComponent(combinedText)}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const translatedCombinedText = data[0]?.map(item => item[0]).join('') || combinedText;
+        const translatedDescriptionsArray = translatedCombinedText.split(' ||| ');
+
+        const newTranslatedDescriptions = {};
+        Object.keys(descriptionIdMap).forEach((index) => {
+          const foodId = descriptionIdMap[index];
+          const translatedDescription = translatedDescriptionsArray[index] || descriptionsToTranslate[index];
+          if (translatedDescription && foodId) {
+            newTranslatedDescriptions[foodId] = translatedDescription;
+          }
+        });
+
+        setTranslatedDescriptions(newTranslatedDescriptions);
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error translating product descriptions:', error);
+  } finally {
+    setIsTranslatingDescriptions(false);
+  }
+};
+
+// Adaugă efectele pentru traducere
+useEffect(() => {
+  if (food_list.length > 0) {
+    translateProductNames();
+    translateProductDescriptions();
+  }
+}, [currentLanguage, food_list.length]);
+
+// Adaugă funcțiile pentru a obține numele și descrierile traduse
+const getTranslatedProductName = (foodItem) => {
+  if (!foodItem) return "";
+  
+  const foodId = foodItem._id;
+  const translatedName = translatedProductNames[foodId];
+  
+  return currentLanguage !== 'ro' && translatedName 
+    ? translatedName 
+    : foodItem.name || "";
+};
+
+const getTranslatedDescription = (foodItem) => {
+  if (!foodItem) return "";
+  
+  const foodId = foodItem._id;
+  const translatedDescription = translatedDescriptions[foodId];
+  
+  return currentLanguage !== 'ro' && translatedDescription 
+    ? translatedDescription 
+    : foodItem.description || "";
+};
 
   // ✅ FUNCȚIE ÎMBUNĂTĂȚITĂ: Găsește informațiile complete despre mâncare din food_list
   const findFoodItem = (itemId) => {
@@ -672,8 +814,11 @@ const MyOrders = () => {
                                   onClick={() => openFoodModal(uniqueId)}
                                 >
                                   <h3 className="item-name">
-                                    {foodItem?.name || item.name}
-                                  </h3>
+  {getTranslatedProductName(foodItem) || item.name}
+  {isTranslatingProductNames && (
+    <span className="translating-indicator"> 🔄</span>
+  )}
+</h3>
                                 </button>
                                 {item.specialInstructions && (
                                   <div className="item-special-instructions">

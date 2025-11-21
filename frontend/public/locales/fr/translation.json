@@ -222,7 +222,7 @@
     "cancel_request": "Annuler la Demande"
   },
   "repeat_order": {
-    "title": "Répéter Votre Commande",
+    "title": "Commande Rapide",
     "subtitle": "Recommandez rapidement à partir des commandes impayées",
     "subtitle_loading": "Recommandez rapidement depuis votre historique",
     "add": "Ajouter",

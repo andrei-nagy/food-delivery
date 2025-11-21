@@ -1,7 +1,8 @@
-import React, { useContext, useState, useRef } from "react";
+import React, { useContext, useState, useRef, useEffect } from "react";
 import "./FoodItemBestSeller.css";
 import { assets } from "../../assets/assets";
 import { StoreContext } from "../../context/StoreContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
@@ -20,6 +21,8 @@ const FoodItemBestSeller = ({
   swiperRef,
 }) => {
   const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
+  
   const { 
     cartItems, 
     addToCart, 
@@ -28,12 +31,133 @@ const FoodItemBestSeller = ({
     billRequested,
     userBlocked 
   } = useContext(StoreContext);
+  
   const [showCounterControls, setShowCounterControls] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [translatedContent, setTranslatedContent] = useState({
+    foodName: '',
+    description: ''
+  });
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translationError, setTranslationError] = useState('');
   const timerRef = useRef(null);
 
   const isDisabled = billRequested || userBlocked;
   const hasDiscount = discountPercentage > 0;
+  const translationEnabled = currentLanguage !== 'ro';
+
+  // === FUNCȚII PENTRU TRADUCERE ===
+  const translateText = async (text, targetLang) => {
+    if (!text.trim() || !targetLang || targetLang === 'ro') {
+      return text;
+    }
+    
+    // Dacă textul este prea scurt sau conține doar numere/simboluri, nu traduce
+    if (text.length < 2 || /^[\d\s\W]+$/.test(text)) {
+      return text;
+    }
+    
+    try {
+      const response = await fetch(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`
+      );
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const translatedText = data[0]?.[0]?.[0] || text;
+      
+      return translatedText;
+    } catch (error) {
+      console.error('Translation error for text:', text.substring(0, 50), error);
+      setTranslationError('Translation failed');
+      return text;
+    }
+  };
+
+  // Funcție pentru traducerea rapidă a conținutului
+  const translateContent = async () => {
+    if (!translationEnabled || !name || currentLanguage === 'ro') {
+      setTranslatedContent({
+        foodName: '',
+        description: ''
+      });
+      return;
+    }
+    
+    setIsTranslating(true);
+    setTranslationError('');
+
+    try {
+      const translations = {
+        foodName: '',
+        description: ''
+      };
+
+      // Colectează toate textele care trebuie traduse
+      const textsToTranslate = [];
+      if (name) textsToTranslate.push(name);
+      if (description) textsToTranslate.push(description);
+
+      if (textsToTranslate.length > 0) {
+        // Combină toate textele într-un singur request
+        const combinedText = textsToTranslate.join(' ||| ');
+        
+        const response = await fetch(
+          `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${currentLanguage}&dt=t&q=${encodeURIComponent(combinedText)}`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          const translatedCombinedText = data[0]?.map(item => item[0]).join('') || combinedText;
+          const translatedTexts = translatedCombinedText.split(' ||| ');
+          
+          // Distribuie textele traduse
+          if (name && translatedTexts[0]) {
+            translations.foodName = translatedTexts[0];
+          }
+          if (description && translatedTexts[1]) {
+            translations.description = translatedTexts[1];
+          }
+        }
+      }
+
+      setTranslatedContent(translations);
+
+    } catch (error) {
+      console.error('Error translating content:', error);
+      setTranslationError('Translation service unavailable');
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  // Efect pentru traducere automată când se schimbă limba
+  useEffect(() => {
+    if (translationEnabled && name) {
+      translateContent();
+    } else {
+      setTranslatedContent({
+        foodName: '',
+        description: ''
+      });
+    }
+  }, [currentLanguage, name, description, translationEnabled]);
+
+  // === FUNCȚII PENTRU A OBȚINE CONȚINUTUL TRADUS ===
+  const getFoodName = () => {
+    return translationEnabled && translatedContent.foodName 
+      ? translatedContent.foodName 
+      : name;
+  };
+
+  const getDescription = () => {
+    return translationEnabled && translatedContent.description 
+      ? translatedContent.description 
+      : description;
+  };
 
   const getItemQuantity = () => {
     if (!cartItems || !_id) return 0;
@@ -213,7 +337,7 @@ const FoodItemBestSeller = ({
             imageError ? "image-error" : ""
           }`}
           src={imageError ? assets.image_coming_soon : url + "/images/" + image}
-          alt={name}
+          alt={getFoodName()}
           onError={handleImageError}
         />
 
@@ -265,18 +389,26 @@ const FoodItemBestSeller = ({
       </div>
       <div className="food-item-info">
         <div className="food-item-name-rating">
-          <p className={isDisabled ? "disabled-text" : ""}>{name}</p>
+          <p className={isDisabled ? "disabled-text" : ""}>
+            {getFoodName()}
+            {isTranslating && (
+              <span className="translating-indicator"> 🔄</span>
+            )}
+          </p>
         </div>
         <p
           className={`food-item-desc fixed-height ${
             isDisabled ? "disabled-text" : ""
           }`}
         >
-          {description.length > 100
+          {getDescription().length > 100
             ? t("food_item.description_truncated", { 
-                description: description.slice(0, 100) 
+                description: getDescription().slice(0, 100) 
               })
-            : description}
+            : getDescription()}
+          {isTranslating && (
+            <span className="translating-indicator"> 🔄</span>
+          )}
         </p>
         <div
           className={`food-item-price-container ${
@@ -299,6 +431,13 @@ const FoodItemBestSeller = ({
           )}
         </div>
       </div>
+
+      {/* Translation Error Indicator (doar pentru debugging) */}
+      {translationError && (
+        <div className="translation-error-indicator" title={translationError}>
+          ⚠️
+        </div>
+      )}
     </div>
   );
 };

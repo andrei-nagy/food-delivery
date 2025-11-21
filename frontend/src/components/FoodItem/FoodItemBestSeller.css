@@ -582,3 +582,54 @@ button.close:hover {
 .food-item-price-container {
   margin-top: auto;
 }
+
+/* FoodItemBestSeller.css - Adăugări pentru traducere */
+
+.translating-indicator {
+  font-size: 10px;
+  margin-left: 4px;
+  opacity: 0.7;
+  animation: pulse 1.5s infinite;
+  vertical-align: middle;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.3; }
+}
+
+.translation-error-indicator {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 10px;
+  opacity: 0.6;
+  cursor: help;
+  z-index: 2;
+}
+
+/* Asigură-te că textul tradus se afișează corect */
+.food-item-name-rating p,
+.food-item-desc {
+  transition: all 0.3s ease;
+}
+
+.food-item-best:hover .food-item-name-rating p,
+.food-item-best:hover .food-item-desc {
+  transform: translateY(-1px);
+}
+
+/* Ajustări pentru layout-ul best seller */
+.food-item-best .food-item-name-rating p {
+  font-size: 14px;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.food-item-best .food-item-desc.fixed-height {
+  min-height: 40px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

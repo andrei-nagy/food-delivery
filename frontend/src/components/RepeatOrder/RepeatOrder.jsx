@@ -14,6 +14,7 @@ import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { toast } from "react-toastify";
 import { FaHeart } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
+import { useLanguage } from "../../context/LanguageContext";
 
 import "swiper/css";
 import "swiper/css/navigation";
@@ -34,13 +35,23 @@ const RepeatOrder = () => {
     userBlocked 
   } = useContext(StoreContext);
   const { t } = useTranslation();
+  const { currentLanguage } = useLanguage();
   
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasOrders, setHasOrders] = useState(false);
   const [hasUnpaidOrders, setHasUnpaidOrders] = useState(false);
   const [quantities, setQuantities] = useState({});
-  const [imageErrors, setImageErrors] = useState({}); // State pentru erorile de imagine
+  const [imageErrors, setImageErrors] = useState({});
+  const [translatedContent, setTranslatedContent] = useState({
+    title: '',
+    add: '',
+    disabled: ''
+  });
+  const [translatedProducts, setTranslatedProducts] = useState({});
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [isTranslatingProducts, setIsTranslatingProducts] = useState(false);
+  
   const navigate = useNavigate();
   const swiperRef = useRef(null);
   const autoplayTimeoutRef = useRef(null);
@@ -49,6 +60,7 @@ const RepeatOrder = () => {
   const isDisabled = billRequested || userBlocked;
 
   useEffect(() => {
+    console.log("🔄 RepeatOrder - useEffect mount");
     fetchRecentOrders();
     return () => {
       if (autoplayTimeoutRef.current) {
@@ -56,6 +68,212 @@ const RepeatOrder = () => {
       }
     };
   }, []);
+
+  // === FUNCȚII PENTRU TRADUCERE ===
+  const translateText = async (text, targetLang) => {
+    console.log("🌐 translateText called with:", { text: text?.substring(0, 50), targetLang });
+    
+    if (!text?.trim() || !targetLang || targetLang === 'ro') {
+      return text;
+    }
+    
+    if (text.length < 2 || /^[\d\s\W]+$/.test(text)) {
+      return text;
+    }
+    
+    try {
+      const response = await fetch(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`
+      );
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const translatedText = data[0]?.[0]?.[0] || text;
+      
+      return translatedText;
+    } catch (error) {
+      console.error('❌ Translation error for text:', text?.substring(0, 50), error);
+      return text;
+    }
+  };
+
+  // Funcție pentru traducerea textelor componentei
+  const translateComponentTexts = async () => {
+    console.log("🚀 translateComponentTexts STARTED", {
+      currentLanguage,
+      translationEnabled: currentLanguage !== 'ro'
+    });
+
+    if (currentLanguage === 'ro') {
+      setTranslatedContent({
+        title: '',
+        add: '',
+        disabled: ''
+      });
+      setIsTranslating(false);
+      return;
+    }
+    
+    setIsTranslating(true);
+
+    try {
+      const originalTitle = t("repeat_order.title");
+      const originalAdd = t("repeat_order.add"); 
+      const originalDisabled = t("repeat_order.disabled");
+
+      console.log("📝 Original texts:", {
+        originalTitle,
+        originalAdd,
+        originalDisabled
+      });
+
+      const textsToTranslate = [
+        originalTitle,
+        originalAdd,
+        originalDisabled
+      ];
+
+      const combinedText = textsToTranslate.join(' ||| ');
+      
+      const response = await fetch(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${currentLanguage}&dt=t&q=${encodeURIComponent(combinedText)}`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        const translatedCombinedText = data[0]?.map(item => item[0]).join('') || combinedText;
+        const translatedTexts = translatedCombinedText.split(' ||| ');
+        
+        setTranslatedContent({
+          title: translatedTexts[0] || originalTitle,
+          add: translatedTexts[1] || originalAdd,
+          disabled: translatedTexts[2] || originalDisabled
+        });
+      } else {
+        setTranslatedContent({
+          title: originalTitle,
+          add: originalAdd,
+          disabled: originalDisabled
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error translating component texts:', error);
+      const originalTitle = t("repeat_order.title");
+      const originalAdd = t("repeat_order.add");
+      const originalDisabled = t("repeat_order.disabled");
+      
+      setTranslatedContent({
+        title: originalTitle,
+        add: originalAdd,
+        disabled: originalDisabled
+      });
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  // Funcție pentru traducerea numelor produselor
+  const translateProductNames = async (products) => {
+    if (currentLanguage === 'ro' || !products || products.length === 0) {
+      setTranslatedProducts({});
+      setIsTranslatingProducts(false);
+      return;
+    }
+
+    console.log("🚀 translateProductNames STARTED", {
+      currentLanguage,
+      productCount: products.length
+    });
+
+    setIsTranslatingProducts(true);
+
+    try {
+      const productNamesToTranslate = [];
+      const productIdMap = {};
+
+      // Colectează toate numele produselor care trebuie traduse
+      products.forEach((product, index) => {
+        const productId = product.foodId || product._id;
+        if (product.name && product.name.trim()) {
+          productNamesToTranslate.push(product.name);
+          productIdMap[index] = productId;
+        }
+      });
+
+      if (productNamesToTranslate.length > 0) {
+        const combinedText = productNamesToTranslate.join(' ||| ');
+        console.log("📦 Translating product names:", combinedText);
+
+        const response = await fetch(
+          `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${currentLanguage}&dt=t&q=${encodeURIComponent(combinedText)}`
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          const translatedCombinedText = data[0]?.map(item => item[0]).join('') || combinedText;
+          const translatedNames = translatedCombinedText.split(' ||| ');
+
+          // Creează obiectul cu traducerile
+          const newTranslatedProducts = {};
+          Object.keys(productIdMap).forEach((index) => {
+            const productId = productIdMap[index];
+            const translatedName = translatedNames[index] || productNamesToTranslate[index];
+            if (translatedName && productId) {
+              newTranslatedProducts[productId] = translatedName;
+            }
+          });
+
+          console.log("✅ Translated products:", newTranslatedProducts);
+          setTranslatedProducts(newTranslatedProducts);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error translating product names:', error);
+    } finally {
+      setIsTranslatingProducts(false);
+    }
+  };
+
+  // Efect pentru traducere automată când se schimbă limba
+  useEffect(() => {
+    console.log("🎯 useEffect for translation triggered", {
+      currentLanguage,
+      tFunctionAvailable: !!t
+    });
+    translateComponentTexts();
+  }, [currentLanguage, t]);
+
+  // === FUNCȚII PENTRU A OBȚINE TEXTUL TRADUS ===
+  const getTranslatedTitle = () => {
+    return currentLanguage !== 'ro' && translatedContent.title 
+      ? translatedContent.title 
+      : t("repeat_order.title");
+  };
+
+  const getTranslatedAdd = () => {
+    return currentLanguage !== 'ro' && translatedContent.add 
+      ? translatedContent.add 
+      : t("repeat_order.add");
+  };
+
+  const getTranslatedDisabled = () => {
+    return currentLanguage !== 'ro' && translatedContent.disabled 
+      ? translatedContent.disabled 
+      : t("repeat_order.disabled");
+  };
+
+  // Funcție pentru a obține numele tradus al produsului
+  const getTranslatedProductName = (product) => {
+    const productId = product.foodId || product._id;
+    const translatedName = translatedProducts[productId];
+    
+    return currentLanguage !== 'ro' && translatedName 
+      ? translatedName 
+      : product.name;
+  };
 
   const fetchRecentOrders = async () => {
     try {
@@ -73,7 +291,6 @@ const RepeatOrder = () => {
         setRecentOrders(sortedOrders);
         setHasOrders(true);
 
-        // Verifică dacă există comenzi neplătite
         const hasUnpaid = sortedOrders.some(
           (order) =>
             order.payment === false ||
@@ -120,7 +337,6 @@ const RepeatOrder = () => {
     const rawPrice = parseFloat(foodItem.price) || 0;
     const discountPercentage = parseFloat(foodItem.discountPercentage) || 0;
     
-    // Calculează prețul cu discount
     const discountedPrice = discountPercentage > 0 
       ? rawPrice * (1 - discountPercentage / 100)
       : rawPrice;
@@ -159,7 +375,6 @@ const RepeatOrder = () => {
   };
 
   const handleRepeatSingleItem = async (item) => {
-    // ✅ Verifică dacă nota a fost cerută sau session-ul a expirat înainte de a adăuga în coș
     if (!canAddToCart()) {
       return;
     }
@@ -180,7 +395,6 @@ const RepeatOrder = () => {
         return;
       }
 
-      // ✅ SOLUȚIA: Folosește direct parametrul quantity
       addToCart(itemId, quantity);
       toast.success(t("repeat_order.item_added", { name: item.name, quantity }), {
         position: "top-right",
@@ -202,7 +416,6 @@ const RepeatOrder = () => {
   };
 
   const handleQuantityChange = (itemId, change) => {
-    // ✅ Verifică dacă nota a fost cerută sau session-ul a expirat înainte de a modifica cantitatea
     if (isDisabled) {
       if (billRequested) {
         toast.error(t("repeat_order.cannot_modify_quantities_bill"));
@@ -225,19 +438,10 @@ const RepeatOrder = () => {
     });
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "short",
-    });
-  };
-
   const getAllUniqueProducts = () => {
     const allProducts = [];
 
     recentOrders.forEach((order) => {
-      // Include doar produse din comenzi neplătite
       if (
         order.payment === false ||
         order.payment === null ||
@@ -264,6 +468,16 @@ const RepeatOrder = () => {
     return allProducts;
   };
 
+  // Obține produsele unice
+  const uniqueProducts = getAllUniqueProducts();
+
+  // Efect pentru traducerea produselor când se schimbă limba sau produsele
+  useEffect(() => {
+    if (uniqueProducts.length > 0) {
+      translateProductNames(uniqueProducts);
+    }
+  }, [currentLanguage, uniqueProducts.length]);
+
   // Mesajul care va apărea când utilizatorul este blocat
   const getBlockedMessage = () => {
     if (userBlocked) {
@@ -284,7 +498,6 @@ const RepeatOrder = () => {
   };
 
   const blockedMessage = getBlockedMessage();
-  const uniqueProducts = getAllUniqueProducts();
 
   // Dacă toate comenzile sunt plătite, nu afișa componenta
   if (!hasUnpaidOrders) {
@@ -297,7 +510,8 @@ const RepeatOrder = () => {
         <div className="repeat-order-header">
           <div className="repeat-order-header-left">
             <span className="repeat-order-title">
-              {t("repeat_order.title")}{" "}
+              {getTranslatedTitle()}{" "}
+              {isTranslating && <span className="translating-indicator"> 🔄</span>}
             <FaHeart style={{ color: "orange", top: "3px", position: "relative" }} />
             </span>
             <small className="repeat-order-subtitle">
@@ -339,7 +553,8 @@ const RepeatOrder = () => {
       <div className="repeat-order-header">
         <div className="repeat-order-header-left">
           <span className="repeat-order-title">
-            {t("repeat_order.title")}{" "}
+            {getTranslatedTitle()}{" "}
+            {isTranslating && <span className="translating-indicator"> 🔄</span>}
             <FaHeart style={{ color: "orange", top: "3px", position: "relative" }} />
           </span>{" "}
           <small className="repeat-order-subtitle">
@@ -396,7 +611,6 @@ const RepeatOrder = () => {
             const quantity = quantities[itemId] || 1;
             const hasImageError = imageErrors[itemId];
             
-            // ✅ GĂSEȘTE PRODUSUL ÎN FOOD_LIST PENTRU DISCOUNT
             const foodItem = findFoodItem(item.baseFoodId);
             const priceInfo = foodItem ? getItemPriceWithDiscount(foodItem, item) : null;
             const hasDiscount = priceInfo?.hasDiscount;
@@ -406,7 +620,6 @@ const RepeatOrder = () => {
                 <div className={`repeat-product-card-medium ${isDisabled ? 'bill-requested-card' : ''}`}>
                   <div className="repeat-product-image-section-medium">
                     <div className="repeat-product-image-container-medium">
-                      {/* Overlay pentru Session Expired sau Bill Requested */}
                       {isDisabled && blockedMessage && (
                         <div className="repeat-product-bill-overlay">
                           <div className="repeat-product-bill-message">
@@ -416,7 +629,6 @@ const RepeatOrder = () => {
                         </div>
                       )}
                       
-                      {/* ✅ BADGE PENTRU DISCOUNT */}
                       {hasDiscount && !isDisabled && (
                         <div className="repeat-product-discount-badge">
                           -{priceInfo.discountPercentage}%
@@ -425,7 +637,7 @@ const RepeatOrder = () => {
                       
                       <img
                         src={hasImageError ? assets.image_coming_soon : `${url}/images/${item.image}`}
-                        alt={item.name}
+                        alt={getTranslatedProductName(item)}
                         className={`repeat-product-image-medium ${isDisabled ? 'disabled-image' : ''} ${hasImageError ? 'image-error-fallback' : ''}`}
                         onError={() => handleImageError(itemId)}
                       />
@@ -435,11 +647,13 @@ const RepeatOrder = () => {
                   <div className="repeat-product-content-medium">
                     <div className="repeat-product-info-medium">
                       <h3 className={`repeat-product-name-medium ${isDisabled ? 'disabled-text' : ''}`}>
-                        {item.name}
+                        {getTranslatedProductName(item)}
+                        {isTranslatingProducts && (
+                          <span className="translating-indicator"> 🔄</span>
+                        )}
                       </h3>
 
                       <div className="repeat-product-meta-medium">
-                        {/* ✅ AFIȘEAZĂ PREȚUL CU DISCOUNT */}
                         {hasDiscount && !isDisabled ? (
                           <div className="repeat-product-price-discount-wrapper">
                             <span className="repeat-product-original-price">
@@ -481,12 +695,13 @@ const RepeatOrder = () => {
                         onClick={() => handleRepeatSingleItem(item)}
                         title={isDisabled ? 
                           `${blockedMessage?.text} - ${t("repeat_order.cannot_add_items")}` : 
-                          t("repeat_order.add_item_title", { quantity, name: item.name })
+                          t("repeat_order.add_item_title", { quantity, name: getTranslatedProductName(item) })
                         }
                         data-item-id={itemId}
                         disabled={isDisabled}
                       >
-                        {isDisabled ? t("repeat_order.disabled") : t("repeat_order.add")}
+                        {isDisabled ? getTranslatedDisabled() : getTranslatedAdd()}
+                        {isTranslating && <span className="translating-indicator"> 🔄</span>}
                       </button>
                     </div>
                   </div>

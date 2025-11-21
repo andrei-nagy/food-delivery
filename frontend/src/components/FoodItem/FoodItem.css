@@ -602,3 +602,37 @@ button.close:hover {
 .discount-price-wrapper {
   position: relative;
 }
+
+/* FoodItem.css - Adăugări pentru traducere */
+
+.translating-indicator {
+  font-size: 12px;
+  margin-left: 4px;
+  opacity: 0.7;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.3; }
+}
+
+.translation-error-indicator {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 12px;
+  opacity: 0.6;
+  cursor: help;
+}
+
+/* Asigură-te că textul tradus se afișează corect */
+.food-item-name-rating p,
+.food-item-desc {
+  transition: all 0.3s ease;
+}
+
+.food-item:hover .food-item-name-rating p,
+.food-item:hover .food-item-desc {
+  transform: translateY(-1px);
+}
