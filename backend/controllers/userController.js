@@ -370,6 +370,102 @@ const extendTokenSessionExpired = async (req, res) => {
     res.json({ success: false, message: "Error extending time" });
   }
 };
+
+// ✅ FUNCȚIE NOUĂ - verifică statusul prelungirii
+const checkExtensionStatus = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    
+    if (!userId) {
+      return res.json({
+        success: false,
+        message: "User ID required"
+      });
+    }
+
+    const user = await userModel.findById(userId);
+    
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "User not found",
+        extensionInProgress: false
+      });
+    }
+
+    // ✅ VERIFICĂ DACA USERUL ESTE ACTIV
+    if (!user.isActive) {
+      return res.json({
+        success: false,
+        message: "User is not active",
+        extensionInProgress: false
+      });
+    }
+
+    // Returnează statusul prelungirii (folosim un câmp nou sau un câmp temporar)
+    const extensionInProgress = user.extensionInProgress || false;
+
+    res.json({
+      success: true,
+      extensionInProgress
+    });
+
+  } catch (error) {
+    console.error("Error checking extension status:", error);
+    res.json({
+      success: false,
+      message: "Error checking extension status",
+      extensionInProgress: false
+    });
+  }
+};
+
+// ✅ FUNCȚIE NOUĂ - setează statusul prelungirii
+const setExtensionStatus = async (req, res) => {
+  try {
+    const { userId, extensionInProgress } = req.body;
+    
+    if (!userId) {
+      return res.json({
+        success: false,
+        message: "User ID required"
+      });
+    }
+
+    const user = await userModel.findById(userId);
+    
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // ✅ VERIFICĂ DACA USERUL ESTE ACTIV
+    if (!user.isActive) {
+      return res.json({
+        success: false,
+        message: "User is not active"
+      });
+    }
+
+    // Actualizează statusul prelungirii
+    user.extensionInProgress = extensionInProgress;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: `Extension status updated to: ${extensionInProgress}`
+    });
+
+  } catch (error) {
+    console.error("Error setting extension status:", error);
+    res.json({
+      success: false,
+      message: "Error setting extension status"
+    });
+  }
+};
 export {
   loginUser,
   registerUser,
@@ -382,4 +478,6 @@ export {
   updateUserStatus,
   extendTokenTime,
   extendTokenSessionExpired,
+  checkExtensionStatus,
+  setExtensionStatus
 };

@@ -60,7 +60,6 @@ const RepeatOrder = () => {
   const isDisabled = billRequested || userBlocked;
 
   useEffect(() => {
-    console.log("🔄 RepeatOrder - useEffect mount");
     fetchRecentOrders();
     return () => {
       if (autoplayTimeoutRef.current) {
@@ -71,8 +70,6 @@ const RepeatOrder = () => {
 
   // === FUNCȚII PENTRU TRADUCERE ===
   const translateText = async (text, targetLang) => {
-    console.log("🌐 translateText called with:", { text: text?.substring(0, 50), targetLang });
-    
     if (!text?.trim() || !targetLang || targetLang === 'ro') {
       return text;
     }
@@ -95,18 +92,12 @@ const RepeatOrder = () => {
       
       return translatedText;
     } catch (error) {
-      console.error('❌ Translation error for text:', text?.substring(0, 50), error);
       return text;
     }
   };
 
   // Funcție pentru traducerea textelor componentei
   const translateComponentTexts = async () => {
-    console.log("🚀 translateComponentTexts STARTED", {
-      currentLanguage,
-      translationEnabled: currentLanguage !== 'ro'
-    });
-
     if (currentLanguage === 'ro') {
       setTranslatedContent({
         title: '',
@@ -123,12 +114,6 @@ const RepeatOrder = () => {
       const originalTitle = t("repeat_order.title");
       const originalAdd = t("repeat_order.add"); 
       const originalDisabled = t("repeat_order.disabled");
-
-      console.log("📝 Original texts:", {
-        originalTitle,
-        originalAdd,
-        originalDisabled
-      });
 
       const textsToTranslate = [
         originalTitle,
@@ -160,7 +145,6 @@ const RepeatOrder = () => {
         });
       }
     } catch (error) {
-      console.error('❌ Error translating component texts:', error);
       const originalTitle = t("repeat_order.title");
       const originalAdd = t("repeat_order.add");
       const originalDisabled = t("repeat_order.disabled");
@@ -183,11 +167,6 @@ const RepeatOrder = () => {
       return;
     }
 
-    console.log("🚀 translateProductNames STARTED", {
-      currentLanguage,
-      productCount: products.length
-    });
-
     setIsTranslatingProducts(true);
 
     try {
@@ -205,7 +184,6 @@ const RepeatOrder = () => {
 
       if (productNamesToTranslate.length > 0) {
         const combinedText = productNamesToTranslate.join(' ||| ');
-        console.log("📦 Translating product names:", combinedText);
 
         const response = await fetch(
           `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${currentLanguage}&dt=t&q=${encodeURIComponent(combinedText)}`
@@ -226,12 +204,11 @@ const RepeatOrder = () => {
             }
           });
 
-          console.log("✅ Translated products:", newTranslatedProducts);
           setTranslatedProducts(newTranslatedProducts);
         }
       }
     } catch (error) {
-      console.error('❌ Error translating product names:', error);
+      // Error handled silently
     } finally {
       setIsTranslatingProducts(false);
     }
@@ -239,10 +216,6 @@ const RepeatOrder = () => {
 
   // Efect pentru traducere automată când se schimbă limba
   useEffect(() => {
-    console.log("🎯 useEffect for translation triggered", {
-      currentLanguage,
-      tFunctionAvailable: !!t
-    });
     translateComponentTexts();
   }, [currentLanguage, t]);
 
@@ -305,7 +278,6 @@ const RepeatOrder = () => {
         setHasUnpaidOrders(false);
       }
     } catch (error) {
-      console.error("Error fetching recent orders", error);
       setHasOrders(false);
       setHasUnpaidOrders(false);
     } finally {
@@ -386,12 +358,10 @@ const RepeatOrder = () => {
       const quantity = quantities[itemId] || 1;
 
       if (!itemId) {
-        console.error("❌ Invalid item data - no item ID found");
         return;
       }
 
       if (!addToCart) {
-        console.error("❌ addToCart function is not available");
         return;
       }
 
@@ -411,7 +381,7 @@ const RepeatOrder = () => {
         setTimeout(() => button.classList.remove("added"), 500);
       }
     } catch (error) {
-      console.error("❌ Error adding item to cart:", error);
+      // Error handled silently
     }
   };
 

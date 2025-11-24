@@ -1,26 +1,35 @@
 import express from "express";
-import { loginUser, registerUser, autoLogin, autoRegister, checkUserStatus, getUserCount, getAllUsers, updateUserStatus, extendTokenTime, extendTokenSessionExpired } from "../controllers/userController.js";
+import { 
+  loginUser, 
+  registerUser, 
+  autoLogin, 
+  autoRegister, 
+  checkUserStatus, 
+  getUserCount, 
+  getAllUsers, 
+  updateUserStatus, 
+  extendTokenTime, 
+  extendTokenSessionExpired,
+  checkExtensionStatus,
+  setExtensionStatus 
+} from "../controllers/userController.js";
 import userModel from "../models/userModel.js";
 
 const userRouter = express.Router();
 
 // Rute
-// userRouter.post("/register", registerUser);
 userRouter.post("/login", loginUser);
-
-// Noua rută pentru login automat
 userRouter.get("/login", autoLogin);
-
-
-// Noua rută pentru login automat
 userRouter.post("/register", autoRegister);
-
-
 userRouter.post('/check-status', checkUserStatus);
 userRouter.get('/count', getUserCount);
 userRouter.get('/list', getAllUsers);
 userRouter.put('/update-status/:id', updateUserStatus);
 userRouter.post('/extend-time', extendTokenTime);
 userRouter.post('/extend-session-expired', extendTokenSessionExpired);
+
+// ✅ RUTE NOI PENTRU EXTENSION STATUS
+userRouter.get('/extension-status', checkExtensionStatus);
+userRouter.post('/set-extension-status', setExtensionStatus);
 
 export default userRouter;

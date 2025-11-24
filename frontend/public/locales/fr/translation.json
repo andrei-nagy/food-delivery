@@ -16,7 +16,7 @@
   "to_pay": "Je veux payer",
   "need_help": "J'ai besoin d'aide",
   "logout": "Déconnexion",
-  "order_your_food": "Commandez votre nourriture ou boisson préférée.",
+  "order_your_food": "Commandez vos plats ou boissons préférés.",
   "your_food_description": "Envie de quelque chose de délicieux ? Profitez des saveurs que vous aimez, livrées en quelques clics. Dînez sans stress, à chaque fois. Orderly",
   "table": "Table",
   "explore_menu": "Découvrez notre menu",
@@ -223,7 +223,7 @@
   },
   "repeat_order": {
     "title": "Commande Rapide",
-    "subtitle": "Recommandez rapidement à partir des commandes impayées",
+    "subtitle": "Répétez facilement une commande précédente.",
     "subtitle_loading": "Recommandez rapidement depuis votre historique",
     "add": "Ajouter",
     "disabled": "Désactivé",

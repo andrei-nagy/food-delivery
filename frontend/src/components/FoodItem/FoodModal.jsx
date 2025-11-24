@@ -151,8 +151,6 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
             // Combină toate textele într-un singur text pentru traducere
             const combinedText = texts.join(' ||| ');
             
-            console.log(`Translating ${texts.length} texts in one request to ${targetLang}`);
-            
             const response = await fetch(
                 `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(combinedText)}`
             );
@@ -167,11 +165,8 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
             // Sepără textul tradus înapoi în texte individuale
             const translatedTexts = translatedCombinedText.split(' ||| ');
             
-            console.log(`Successfully translated ${texts.length} texts in one request`);
-            
             return translatedTexts;
         } catch (error) {
-            console.error('Error translating multiple texts:', error);
             setTranslationError('Translation service temporarily unavailable.');
             return texts; // Returnează textele originale în caz de eroare
         }
@@ -323,7 +318,6 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
             }, 300);
 
         } catch (error) {
-            console.error('Error in fast translation:', error);
             setTranslationError('Translation service temporarily unavailable. Please try again later.');
             setTranslationAnimations({
                 allContent: 'idle'
@@ -578,7 +572,6 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         }
 
         if (!food) {
-            console.error("Food object is undefined!");
             closeModal();
             return;
         }

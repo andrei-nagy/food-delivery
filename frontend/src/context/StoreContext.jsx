@@ -20,10 +20,15 @@ const StoreContextProvider = (props) => {
   const [billRequested, setBillRequested] = useState(false);
   const [billRequestTime, setBillRequestTime] = useState(null);
 
+  // ✅ NOU: State-uri pentru sistemul de timp de sesiune
+  const [sessionTimeLeft, setSessionTimeLeft] = useState("");
+  const [sessionExpiry, setSessionExpiry] = useState(null);
+
   const intervalRef = useRef(null);
   const previousOrderStatusRef = useRef({});
   const ordersIntervalRef = useRef(null);
   const statusPollingIntervalRef = useRef(null);
+  const sessionTimerRef = useRef(null);
 
   const getApiUrl = () => {
     if (
@@ -37,48 +42,139 @@ const StoreContextProvider = (props) => {
 
   const url = getApiUrl();
 
+  // ==================== SESSION TIME MANAGEMENT SYSTEM ====================
+
+  // ✅ FUNCȚIE PENTRU A ACTUALIZA TIMPUL SESIUNII ÎN CONTEXT
+  const updateSessionTime = (newExpiry) => {
+    setSessionExpiry(newExpiry);
+    
+    // Calculează timpul rămas imediat
+    if (newExpiry) {
+      const now = new Date();
+      const expiry = new Date(newExpiry);
+      const difference = expiry - now;
+
+      if (difference <= 0) {
+        setSessionTimeLeft("Expired");
+      } else {
+        const hours = Math.floor(difference / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+
+        if (hours > 0) {
+          setSessionTimeLeft(`${hours}h ${minutes}m`);
+        } else if (minutes > 0) {
+          setSessionTimeLeft(`${minutes}m`);
+        } else {
+          setSessionTimeLeft("0m");
+        }
+      }
+    } else {
+      setSessionTimeLeft("");
+    }
+  };
+
+  // ✅ FUNCȚIE PENTRU A CALCULA ȘI ACTUALIZA TIMPUL RĂMAS
+  const calculateAndSetTime = (expiryDate = sessionExpiry) => {
+    if (!expiryDate) {
+      setSessionTimeLeft("");
+      return;
+    }
+
+    const now = new Date();
+    const expiry = new Date(expiryDate);
+    const difference = expiry - now;
+
+    if (difference <= 0) {
+      setSessionTimeLeft("Expired");
+    } else {
+      const hours = Math.floor(difference / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+
+      if (hours > 0) {
+        setSessionTimeLeft(`${hours}h ${minutes}m`);
+      } else if (minutes > 0) {
+        setSessionTimeLeft(`${minutes}m`);
+      } else {
+        setSessionTimeLeft("0m");
+      }
+    }
+  };
+
+  // ✅ EFECT PENTRU TIMER-UL AUTOMAT AL SESIUNII
+  useEffect(() => {
+    if (sessionExpiry) {
+      // Actualizează imediat
+      calculateAndSetTime();
+
+      // Setează interval pentru actualizări continue
+      sessionTimerRef.current = setInterval(() => {
+        calculateAndSetTime();
+      }, 60000); // Actualizează la fiecare minut
+
+      return () => {
+        if (sessionTimerRef.current) {
+          clearInterval(sessionTimerRef.current);
+        }
+      };
+    } else {
+      setSessionTimeLeft("");
+      if (sessionTimerRef.current) {
+        clearInterval(sessionTimerRef.current);
+      }
+    }
+  }, [sessionExpiry]);
+
   // ==================== USER STATUS POLLING SYSTEM ====================
 
- const checkUserStatus = async () => {
-  const userId = localStorage.getItem("userId");
-  const token = localStorage.getItem("token");
+  const checkUserStatus = async () => {
+    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
 
-  if (!userId || !token) {
-    setUserBlocked(false);
-    return;
-  }
+    if (!userId || !token) {
+      setUserBlocked(false);
+      setSessionExpiry(null);
+      setSessionTimeLeft("");
+      return;
+    }
 
-  try {
-    const response = await axios.post(
-      `${url}/api/user/check-status`,
-      {},
-      {
-        headers: { userId },
+    try {
+      const response = await axios.post(
+        `${url}/api/user/check-status`,
+        {},
+        {
+          headers: { userId },
+        }
+      );
+
+      const { isActive, tokenExpiry } = response.data;
+      const now = new Date();
+
+      // ✅ VERIFICĂ DACA STATUSUL S-A SCHIMBAT ÎNAINTE DE A SETA
+      const newBlockedStatus = isActive === false || new Date(tokenExpiry) < now;
+      
+      // ✅ PREVENIRE SETAREA DUPLĂ A ACELUIAȘI STATUS
+      if (userBlocked !== newBlockedStatus) {
+        setUserBlocked(newBlockedStatus);
       }
-    );
-
-    const { isActive, tokenExpiry } = response.data;
-    const now = new Date();
-
-    // ✅ VERIFICĂ DACA STATUSUL S-A SCHIMBAT ÎNAINTE DE A SETA
-    const newBlockedStatus = isActive === false || new Date(tokenExpiry) < now;
-    
-    // ✅ PREVENIRE SETAREA DUPLĂ A ACELUIAȘI STATUS
-    if (userBlocked !== newBlockedStatus) {
-      setUserBlocked(newBlockedStatus);
+      
+      // ✅ ACTUALIZEAZĂ TIMPUL SESIUNII
+      if (tokenExpiry) {
+        const newExpiry = new Date(tokenExpiry);
+        setSessionExpiry(newExpiry);
+        calculateAndSetTime(newExpiry);
+      }
+      
+    } catch (error) {
+      console.error(
+        "Eroare la verificarea stării utilizatorului:",
+        error.response?.data || error.message
+      );
+      // ✅ SETEAZĂ DOAR DACĂ E NECESAR
+      if (!userBlocked) {
+        setUserBlocked(true);
+      }
     }
-    
-  } catch (error) {
-    console.error(
-      "Eroare la verificarea stării utilizatorului:",
-      error.response?.data || error.message
-    );
-    // ✅ SETEAZĂ DOAR DACĂ E NECESAR
-    if (!userBlocked) {
-      setUserBlocked(true);
-    }
-  }
-};
+  };
 
   const startStatusPolling = () => {
     // Verifică imediat la start
@@ -261,6 +357,8 @@ const StoreContextProvider = (props) => {
     localStorage.removeItem("tableNumber");
     setToken("");
     setUserBlocked(true);
+    setSessionExpiry(null);
+    setSessionTimeLeft("");
     setNotification(
       "Sesiunea a expirat. Vă rugăm să vă autentificați din nou."
     );
@@ -868,6 +966,8 @@ const StoreContextProvider = (props) => {
     } else {
       stopStatusPolling();
       setUserBlocked(false);
+      setSessionExpiry(null);
+      setSessionTimeLeft("");
     }
 
     return () => {
@@ -887,6 +987,9 @@ const StoreContextProvider = (props) => {
       }
       if (ordersIntervalRef.current) {
         clearInterval(ordersIntervalRef.current);
+      }
+      if (sessionTimerRef.current) {
+        clearInterval(sessionTimerRef.current);
       }
     };
   }, [token]);
@@ -939,6 +1042,11 @@ const StoreContextProvider = (props) => {
     canAddToCart,
     getTimeSinceBillRequest,
     checkBillStatus,
+    // ✅ NOU: Session time management
+    sessionTimeLeft,
+    sessionExpiry,
+    updateSessionTime,
+    calculateAndSetTime,
   };
 
   return (

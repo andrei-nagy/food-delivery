@@ -29,7 +29,6 @@ const Verify = () => {
         const orderIdParam = urlParams.get('orderId');
         const orderIds = urlParams.get('orderIds');
 
-
         if (success === "false") {
           setVerificationStatus('failed');
           setIsLoading(false);
@@ -41,7 +40,6 @@ const Verify = () => {
           orderId: orderIdParam,
           orderIds
         });
-
 
         if (response.data.success) {
           setVerificationStatus('success');
@@ -75,7 +73,7 @@ const Verify = () => {
     };
 
     verifyPayment();
-  }, [orderId, url]); // verificationStatus nu trebuie în dependencies
+  }, [orderId, url]);
 
   // Countdown pentru succes
   useEffect(() => {
@@ -96,8 +94,7 @@ const Verify = () => {
   }, [isLoading, verificationStatus, navigate]);
 
   const handleRating = async (value) => {
-    if (rating > 0) return;
-    
+    // Permite schimbarea rating-ului oricând
     setRating(value);
 
     try {
@@ -332,11 +329,11 @@ const Verify = () => {
                 <motion.span
                   key={star}
                   className={rating >= star ? "star filled" : "star"}
-                  onClick={() => rating === 0 && handleRating(star)}
-                  style={{ cursor: rating > 0 ? "default" : "pointer" }}
+                  onClick={() => handleRating(star)}
+                  style={{ cursor: "pointer" }}
                   variants={starVariants}
-                  whileHover={rating === 0 ? "hover" : ""}
-                  whileTap={rating === 0 ? "tapped" : ""}
+                  whileHover="hover"
+                  whileTap="tapped"
                 >
                   ★
                 </motion.span>

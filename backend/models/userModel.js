@@ -49,8 +49,12 @@ const userSchema = new mongoose.Schema({
         type: String, 
         required: true 
     },
-    // ✅ SOLUȚIE DEFINITIVĂ: Mixed type cu validare manuală
-    cartData: {
+  // ✅ CÂMP NOU PENTRU EXTENSION STATUS
+  extensionInProgress: {
+    type: Boolean,
+    default: false
+  },
+      cartData: {
         type: mongoose.Schema.Types.Mixed,
         default: {},
         // ✅ Validator custom care aplică structura

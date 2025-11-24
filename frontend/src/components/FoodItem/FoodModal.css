@@ -614,11 +614,11 @@
     font-weight: bold;
     transition: all 0.2s ease;
 }
-
+/* 
 .food-modal-qty-btn:hover {
     background: #fff5e6;
     transform: scale(1.1);
-}
+} */
 
 .food-modal-qty-btn:active {
     transform: scale(0.95);
@@ -939,12 +939,12 @@
 }
 
 /* Focus states pentru accesibilitate */
-.food-modal-qty-btn:focus,
+/* .food-modal-qty-btn:focus,
 .food-modal-add-btn:focus,
 .food-modal-close-btn:focus {
     outline: 2px solid #ff6b35;
     outline-offset: 2px;
-}
+} */
 
 .food-modal-textarea:focus,
 .food-modal-option input[type="checkbox"]:focus {

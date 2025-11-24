@@ -45,7 +45,6 @@ const ExploreMenu = ({ category, setCategory }) => {
             
             return translatedText;
         } catch (error) {
-            console.error('Translation error for text:', text?.substring(0, 50), error);
             return text;
         }
     };
@@ -57,11 +56,6 @@ const ExploreMenu = ({ category, setCategory }) => {
             setIsTranslating(false);
             return;
         }
-
-        console.log("🚀 translateCategoryNames STARTED", {
-            currentLanguage,
-            categoryCount: activeCategories.length
-        });
 
         setIsTranslating(true);
 
@@ -79,7 +73,6 @@ const ExploreMenu = ({ category, setCategory }) => {
 
             if (categoryNamesToTranslate.length > 0) {
                 const combinedText = categoryNamesToTranslate.join(' ||| ');
-                console.log("📦 Translating category names:", combinedText);
 
                 const response = await fetch(
                     `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${currentLanguage}&dt=t&q=${encodeURIComponent(combinedText)}`
@@ -100,12 +93,11 @@ const ExploreMenu = ({ category, setCategory }) => {
                         }
                     });
 
-                    console.log("✅ Translated categories:", newTranslatedCategories);
                     setTranslatedCategories(newTranslatedCategories);
                 }
             }
         } catch (error) {
-            console.error('❌ Error translating category names:', error);
+            // Error handled silently
         } finally {
             setIsTranslating(false);
         }

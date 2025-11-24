@@ -313,5 +313,9 @@
     "return_home": "Return Home",
     "see_you_soon": "See you soon!",
     "bon_appetit": "Bon appétit! 🍽️"
-  }
+  },
+  "extension_already_in_progress": "An extension is already in progress on another device",
+  "extension_in_progress_on_other_device": "Session extension in progress on another device", 
+  "extension_in_progress": "Extension in progress...",
+  "user_not_active": "Your session is no longer active. Please log in again."
 }

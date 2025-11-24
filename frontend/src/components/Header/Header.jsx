@@ -7,12 +7,13 @@ import axios from "axios";
 import { useContext } from "react";
 import { StoreContext } from "../../context/StoreContext";
 import SessionExpiredModal from "../SessionExpiredModal/SessionExpiredModal";
+import { FaReceipt, FaTimes, FaLock } from "react-icons/fa";
 
 const Header = () => {
   const tableNumber = localStorage.getItem("tableNumber");
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
-  const { url, userBlocked, forceStatusCheck } = useContext(StoreContext);
+  const { url, userBlocked, forceStatusCheck, billRequested, resetBillRequest, getTimeSinceBillRequest } = useContext(StoreContext);
 
   const images = [
     assets.header_img1,
@@ -35,11 +36,57 @@ const Header = () => {
   const modalOpenedRef = useRef(false);
   const initialRenderRef = useRef(true);
 
+  // ✅ STATE NOU - verifică dacă există deja o prelungire în curs
+  const [extensionInProgress, setExtensionInProgress] = useState(false);
+
   const extensionOptions = [
     { minutes: 30, label: "30 minutes", popular: true },
     { minutes: 60, label: "1 hour", popular: false },
     { minutes: 120, label: "2 hours", popular: false },
   ];
+
+  // ✅ FUNCȚIE NOUĂ - verifică dacă există o prelungire în curs pe server
+  const checkExtensionInProgress = async () => {
+    if (!userId || !token) return false;
+
+    try {
+      const response = await axios.get(`${url}/api/user/extension-status`, {
+        headers: { token },
+        params: { userId }
+      });
+      
+      // ✅ VERIFICĂ DACA RĂSPUNSUL ESTE SUCCES ȘI USERUL ESTE ACTIV
+      if (response.data.success && response.data.extensionInProgress !== undefined) {
+        return response.data.extensionInProgress;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error checking extension status:", error);
+      return false;
+    }
+  };
+
+  // ✅ FUNCȚIE NOUĂ - setează starea de prelungire în curs pe server
+  const setExtensionInProgressOnServer = async (inProgress) => {
+    if (!userId || !token) return;
+
+    try {
+      const response = await axios.post(`${url}/api/user/set-extension-status`, 
+        { 
+          userId, 
+          extensionInProgress: inProgress 
+        },
+        { headers: { token } }
+      );
+      
+      // ✅ VERIFICĂ DACA OPERAȚIA A REUȘIT
+      if (!response.data.success) {
+        console.error("Failed to set extension status:", response.data.message);
+      }
+    } catch (error) {
+      console.error("Error setting extension status:", error);
+    }
+  };
 
   // Funcție pentru a gestiona extend-ul din SessionExpiredModal
   const handleExtendSessionExpired = async (minutes) => {
@@ -48,7 +95,18 @@ const Header = () => {
       return false;
     }
 
+    // ✅ VERIFICĂ DACĂ EXISTĂ DEJA O PRELUNGIRE ÎN CURS
+    const existingExtension = await checkExtensionInProgress();
+    if (existingExtension) {
+      showToast(t("extension_already_in_progress"), "error");
+      return false;
+    }
+
     try {
+      // ✅ SETEAZĂ CĂ EXISTĂ O PRELUNGIRE ÎN CURS
+      await setExtensionInProgressOnServer(true);
+      setExtensionInProgress(true);
+
       const response = await axios.post(
         `${url}/api/user/extend-session-expired`,
         {
@@ -84,12 +142,25 @@ const Header = () => {
         setShowSessionExpiredModal(false);
         return true;
       } else {
-        showToast(t("failed_reactivate", { message: response.data.message }), "error");
+        // ✅ DACA OPERAȚIA A EȘUAT DIN CAUZA CA USERUL NU E ACTIV
+        if (response.data.message && response.data.message.includes("not active")) {
+          showToast(t("user_not_active"), "error");
+          // FORȚEAZĂ RE-LOGIN
+          localStorage.removeItem("token");
+          localStorage.removeItem("userId");
+          window.location.reload();
+        } else {
+          showToast(t("failed_reactivate", { message: response.data.message }), "error");
+        }
         return false;
       }
     } catch (error) {
       showToast(t("error_reactivating"), "error");
       return false;
+    } finally {
+      // ✅ RESETEAZĂ STARE PRELUNGIRE ÎN CURS
+      await setExtensionInProgressOnServer(false);
+      setExtensionInProgress(false);
     }
   };
 
@@ -113,7 +184,8 @@ const Header = () => {
           (user) =>
             user.tableNumber &&
             user.tableNumber.toString() === tableNumber &&
-            user.isActive &&
+            // ✅ VERIFICARE CRITICĂ - DOAR USERI ACTIVI
+            user.isActive === true &&
             user.tokenExpiry
         );
 
@@ -184,9 +256,20 @@ const Header = () => {
       return;
     }
 
+    // ✅ VERIFICĂ DACĂ EXISTĂ DEJA O PRELUNGIRE ÎN CURS
+    const existingExtension = await checkExtensionInProgress();
+    if (existingExtension) {
+      showToast(t("extension_already_in_progress"), "error");
+      return;
+    }
+
     setIsExtending(true);
 
     try {
+      // ✅ SETEAZĂ CĂ EXISTĂ O PRELUNGIRE ÎN CURS
+      await setExtensionInProgressOnServer(true);
+      setExtensionInProgress(true);
+
       const endpoint = userBlocked
         ? "/api/user/extend-session-expired"
         : "/api/user/extend-time";
@@ -202,6 +285,7 @@ const Header = () => {
         }
       );
 
+      // ✅ VERIFICĂ DACA USERUL ESTE ÎNCĂ ACTIV
       if (response.data.success) {
         const newExpiry = new Date(response.data.newExpiry);
         setTokenExpiry(newExpiry);
@@ -231,17 +315,38 @@ const Header = () => {
         }, 500);
         
       } else {
-        showToast(t("failed_extend", { message: response.data.message }), "error");
+        // ✅ DACA OPERAȚIA A EȘUAT DIN CAUZA CA USERUL NU E ACTIV
+        if (response.data.message && response.data.message.includes("not active")) {
+          showToast(t("user_not_active"), "error");
+          // FORȚEAZĂ RE-LOGIN
+          localStorage.removeItem("token");
+          localStorage.removeItem("userId");
+          window.location.reload();
+        } else {
+          showToast(t("failed_extend", { message: response.data.message }), "error");
+        }
       }
     } catch (error) {
+      console.error("Extend time error:", error);
       showToast(t("error_extending"), "error");
     } finally {
       setIsExtending(false);
       setSelectedDuration(30);
+      
+      // ✅ RESETEAZĂ STARE PRELUNGIRE ÎN CURS
+      await setExtensionInProgressOnServer(false);
+      setExtensionInProgress(false);
     }
   };
 
-  const handleTableButtonClick = () => {
+  const handleTableButtonClick = async () => {
+    // ✅ VERIFICĂ DACĂ EXISTĂ DEJA O PRELUNGIRE ÎN CURS ÎNAINTE DE A DESCHIDE MODALUL
+    const existingExtension = await checkExtensionInProgress();
+    if (existingExtension) {
+      showToast(t("extension_already_in_progress"), "error");
+      return;
+    }
+
     if ((userBlocked || timeLeft === t("time_expired")) && !showSessionExpiredModal && !modalOpenedRef.current) {
       modalOpenedRef.current = true;
       setShowSessionExpiredModal(true);
@@ -253,6 +358,23 @@ const Header = () => {
   const handleDurationSelect = (minutes) => {
     setSelectedDuration(minutes);
   };
+
+  // ✅ EFECT NOU - verifică periodic dacă există o prelungire în curs
+  useEffect(() => {
+    if ((userBlocked || showSessionExpiredModal || showTimeModal) && userId) {
+      const checkInterval = setInterval(async () => {
+        const existingExtension = await checkExtensionInProgress();
+        if (existingExtension && !extensionInProgress) {
+          // Dacă există o prelungire în curs pe alt dispozitiv, închide modalul
+          setShowSessionExpiredModal(false);
+          setShowTimeModal(false);
+          showToast(t("extension_in_progress_on_other_device"), "info");
+        }
+      }, 2000); // verifică la fiecare 2 secunde
+
+      return () => clearInterval(checkInterval);
+    }
+  }, [userBlocked, showSessionExpiredModal, showTimeModal, userId, extensionInProgress]);
 
   // Efect pentru a verifica token expiry
   useEffect(() => {
@@ -297,9 +419,17 @@ const Header = () => {
     // 1. userBlocked este true
     // 2. Modalul nu este deja deschis
     // 3. Nu am deschis deja modalul anterior
+    // 4. Nu există o prelungire în curs
     if (userBlocked && !showSessionExpiredModal && !modalOpenedRef.current) {
-      modalOpenedRef.current = true;
-      setShowSessionExpiredModal(true);
+      // Verifică dacă există o prelungire în curs înainte de a deschide
+      checkExtensionInProgress().then(existingExtension => {
+        if (!existingExtension) {
+          modalOpenedRef.current = true;
+          setShowSessionExpiredModal(true);
+        } else {
+          showToast(t("extension_already_in_progress"), "error");
+        }
+      });
     }
   }, [userBlocked]);
 
@@ -340,6 +470,35 @@ const Header = () => {
           </div>
         )}
 
+        {/* Bill Requested Banner - DESIGN NOU SIMPLU ȘI COMPACT */}
+        {billRequested && (
+          <motion.div
+            className="header-bill-requested-banner"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="header-bill-content">
+              <div className="header-bill-icon-text">
+                <FaReceipt className="header-bill-icon" />
+                <div className="header-bill-text">
+                  <span className="header-bill-title">{t("my_orders.bill_request_sent")}</span>
+                  <span className="header-bill-subtitle">
+                    {t("my_orders.waiter_notified", { time: getTimeSinceBillRequest() })}
+                  </span>
+                </div>
+              </div>
+              <button
+                className="header-bill-cancel-btn"
+                onClick={resetBillRequest}
+                title={t("my_orders.cancel_request")}
+              >
+                <FaTimes />
+              </button>
+            </div>
+          </motion.div>
+        )}
+
         <div
           className="header header-radius"
           style={{
@@ -354,7 +513,7 @@ const Header = () => {
                 className={`header-table-button ${
                   timeLeft && !userBlocked ? "with-timer" : ""
                 }`}
-                // onClick={handleTableButtonClick}
+                onClick={handleTableButtonClick}
               >
                 <div className="header-button-content">
                   <div className="header-main-line">
@@ -388,10 +547,10 @@ const Header = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            onClick={() => setShowTimeModal(false)}
+            onClick={() => !extensionInProgress && setShowTimeModal(false)}
           >
             <motion.div
-              className="header-time-modal"
+              className={`header-time-modal ${extensionInProgress ? 'extension-in-progress' : ''}`}
               initial={{ scale: 0.8, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: 20 }}
@@ -404,6 +563,14 @@ const Header = () => {
               }}
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Extension in progress overlay */}
+              {extensionInProgress && (
+                <div className="extension-in-progress-overlay">
+                  <FaLock className="extension-lock-icon" />
+                  <span>{t("extension_in_progress")}</span>
+                </div>
+              )}
+
               {/* Header Section */}
               <div className="header-modal-header">
                 <div className="header-modal-title-section">
@@ -420,10 +587,11 @@ const Header = () => {
                 </div>
                 <motion.button
                   className="header-close-button"
-                  onClick={() => setShowTimeModal(false)}
-                  whileHover={{ scale: 1.05, rotate: 90 }}
-                  whileTap={{ scale: 0.95 }}
+                  onClick={() => !extensionInProgress && setShowTimeModal(false)}
+                  whileHover={!extensionInProgress ? { scale: 1.05, rotate: 90 } : {}}
+                  whileTap={!extensionInProgress ? { scale: 0.95 } : {}}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  disabled={extensionInProgress}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round"/>
@@ -455,8 +623,10 @@ const Header = () => {
                       key={option.minutes}
                       className={`header-extension-option ${
                         selectedDuration === option.minutes ? "header-option-selected" : ""
-                      } ${option.popular ? "header-option-popular" : ""}`}
-                      onClick={() => handleDurationSelect(option.minutes)}
+                      } ${option.popular ? "header-option-popular" : ""} ${
+                        extensionInProgress ? 'header-option-disabled' : ''
+                      }`}
+                      onClick={() => !extensionInProgress && handleDurationSelect(option.minutes)}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ 
@@ -464,12 +634,12 @@ const Header = () => {
                         duration: 0.3,
                         ease: "easeOut"
                       }}
-                      whileHover={{ 
+                      whileHover={!extensionInProgress ? { 
                         scale: 1.02,
                         y: -2,
                         transition: { duration: 0.2 }
-                      }}
-                      whileTap={{ scale: 0.98 }}
+                      } : {}}
+                      whileTap={!extensionInProgress ? { scale: 0.98 } : {}}
                     >
                       {option.popular && (
                         <motion.div 
@@ -519,17 +689,22 @@ const Header = () => {
                 <motion.button
                   className={`header-action-button ${
                     isExtending ? "header-action-loading" : ""
-                  }`}
-                  onClick={extendTime}
-                  disabled={isExtending}
-                  whileHover={!isExtending ? { scale: 1.02, y: -2 } : {}}
-                  whileTap={!isExtending ? { scale: 0.98 } : {}}
+                  } ${extensionInProgress ? 'header-action-disabled' : ''}`}
+                  onClick={extensionInProgress ? undefined : extendTime}
+                  disabled={isExtending || extensionInProgress}
+                  whileHover={(!isExtending && !extensionInProgress) ? { scale: 1.02, y: -2 } : {}}
+                  whileTap={(!isExtending && !extensionInProgress) ? { scale: 0.98 } : {}}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 >
                   {isExtending ? (
                     <>
                       <div className="header-button-loader"></div>
                       {t("extending")}
+                    </>
+                  ) : extensionInProgress ? (
+                    <>
+                      <FaLock className="header-button-lock" />
+                      {t("extension_in_progress")}
                     </>
                   ) : (
                     <>
@@ -555,6 +730,8 @@ const Header = () => {
           setShowSessionExpiredModal(false);
         }}
         onExtendTime={handleExtendSessionExpired}
+        extensionInProgress={extensionInProgress}
+        checkExtensionInProgress={checkExtensionInProgress}
       />
 
       {/* Toast */}
