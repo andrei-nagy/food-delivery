@@ -151,6 +151,15 @@ const FoodItem = ({
       : name;
   };
 
+  // ✅ FUNCȚIE NOUĂ - limitează numele la 15 caractere
+  const getTruncatedFoodName = () => {
+    const foodName = getFoodName();
+    if (foodName.length > 15) {
+      return foodName.substring(0, 15) + '...';
+    }
+    return foodName;
+  };
+
   const getDescription = () => {
     return translationEnabled && translatedContent.description 
       ? translatedContent.description 
@@ -384,8 +393,9 @@ const FoodItem = ({
       </div>
       <div className="food-item-info">
         <div className="food-item-name-rating">
-          <p className={isDisabled ? "disabled-text" : ""}>
-            {getFoodName()}
+          <p className={isDisabled ? "disabled-text" : ""} title={getFoodName()}>
+            {/* ✅ FOLOSEȘTE FUNCȚIA NOUĂ PENTRU NUME TRUNCAT */}
+            {getTruncatedFoodName()}
             {isTranslating && (
               <span className="translating-indicator"> 🔄</span>
             )}

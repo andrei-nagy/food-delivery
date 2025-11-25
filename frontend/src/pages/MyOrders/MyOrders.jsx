@@ -58,11 +58,13 @@ const MyOrders = () => {
   const [isFoodModalOpen, setIsFoodModalOpen] = useState(false);
   const [selectedFoodQuantity, setSelectedFoodQuantity] = useState(1);
   const [selectedFoodInstructions, setSelectedFoodInstructions] = useState("");
-const { currentLanguage } = useLanguage();
-const [translatedProductNames, setTranslatedProductNames] = useState({});
-const [translatedDescriptions, setTranslatedDescriptions] = useState({});
-const [isTranslatingProductNames, setIsTranslatingProductNames] = useState(false);
-const [isTranslatingDescriptions, setIsTranslatingDescriptions] = useState(false);
+  const { currentLanguage } = useLanguage();
+  const [translatedProductNames, setTranslatedProductNames] = useState({});
+  const [translatedDescriptions, setTranslatedDescriptions] = useState({});
+  const [isTranslatingProductNames, setIsTranslatingProductNames] =
+    useState(false);
+  const [isTranslatingDescriptions, setIsTranslatingDescriptions] =
+    useState(false);
 
   // State-uri pentru comenzile neplătite
   const [unpaidOrders, setUnpaidOrders] = useState([]);
@@ -97,139 +99,149 @@ const [isTranslatingDescriptions, setIsTranslatingDescriptions] = useState(false
   }, []);
 
   // Adaugă funcțiile pentru traducerea numelor produselor
-const translateProductNames = async () => {
-  if (currentLanguage === 'ro' || !food_list.length) {
-    setTranslatedProductNames({});
-    setIsTranslatingProductNames(false);
-    return;
-  }
-
-  setIsTranslatingProductNames(true);
-
-  try {
-    const productNamesToTranslate = [];
-    const productIdMap = {};
-
-    food_list.forEach((food, index) => {
-      if (food?.name?.trim()) {
-        productNamesToTranslate.push(food.name);
-        productIdMap[index] = food._id;
-      }
-    });
-
-    if (productNamesToTranslate.length > 0) {
-      const combinedText = productNamesToTranslate.join(' ||| ');
-      
-      const response = await fetch(
-        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${currentLanguage}&dt=t&q=${encodeURIComponent(combinedText)}`
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        const translatedCombinedText = data[0]?.map(item => item[0]).join('') || combinedText;
-        const translatedNamesArray = translatedCombinedText.split(' ||| ');
-
-        const newTranslatedProductNames = {};
-        Object.keys(productIdMap).forEach((index) => {
-          const foodId = productIdMap[index];
-          const translatedName = translatedNamesArray[index] || productNamesToTranslate[index];
-          if (translatedName && foodId) {
-            newTranslatedProductNames[foodId] = translatedName;
-          }
-        });
-
-        setTranslatedProductNames(newTranslatedProductNames);
-      }
+  const translateProductNames = async () => {
+    if (currentLanguage === "ro" || !food_list.length) {
+      setTranslatedProductNames({});
+      setIsTranslatingProductNames(false);
+      return;
     }
-  } catch (error) {
-    console.error('❌ Error translating product names:', error);
-  } finally {
-    setIsTranslatingProductNames(false);
-  }
-};
 
-// Adaugă funcția pentru traducerea descrierilor
-const translateProductDescriptions = async () => {
-  if (currentLanguage === 'ro' || !food_list.length) {
-    setTranslatedDescriptions({});
-    setIsTranslatingDescriptions(false);
-    return;
-  }
+    setIsTranslatingProductNames(true);
 
-  setIsTranslatingDescriptions(true);
+    try {
+      const productNamesToTranslate = [];
+      const productIdMap = {};
 
-  try {
-    const descriptionsToTranslate = [];
-    const descriptionIdMap = {};
+      food_list.forEach((food, index) => {
+        if (food?.name?.trim()) {
+          productNamesToTranslate.push(food.name);
+          productIdMap[index] = food._id;
+        }
+      });
 
-    food_list.forEach((food, index) => {
-      if (food?.description?.trim()) {
-        descriptionsToTranslate.push(food.description);
-        descriptionIdMap[index] = food._id;
+      if (productNamesToTranslate.length > 0) {
+        const combinedText = productNamesToTranslate.join(" ||| ");
+
+        const response = await fetch(
+          `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${currentLanguage}&dt=t&q=${encodeURIComponent(
+            combinedText
+          )}`
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          const translatedCombinedText =
+            data[0]?.map((item) => item[0]).join("") || combinedText;
+          const translatedNamesArray = translatedCombinedText.split(" ||| ");
+
+          const newTranslatedProductNames = {};
+          Object.keys(productIdMap).forEach((index) => {
+            const foodId = productIdMap[index];
+            const translatedName =
+              translatedNamesArray[index] || productNamesToTranslate[index];
+            if (translatedName && foodId) {
+              newTranslatedProductNames[foodId] = translatedName;
+            }
+          });
+
+          setTranslatedProductNames(newTranslatedProductNames);
+        }
       }
-    });
-
-    if (descriptionsToTranslate.length > 0) {
-      const combinedText = descriptionsToTranslate.join(' ||| ');
-      
-      const response = await fetch(
-        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${currentLanguage}&dt=t&q=${encodeURIComponent(combinedText)}`
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        const translatedCombinedText = data[0]?.map(item => item[0]).join('') || combinedText;
-        const translatedDescriptionsArray = translatedCombinedText.split(' ||| ');
-
-        const newTranslatedDescriptions = {};
-        Object.keys(descriptionIdMap).forEach((index) => {
-          const foodId = descriptionIdMap[index];
-          const translatedDescription = translatedDescriptionsArray[index] || descriptionsToTranslate[index];
-          if (translatedDescription && foodId) {
-            newTranslatedDescriptions[foodId] = translatedDescription;
-          }
-        });
-
-        setTranslatedDescriptions(newTranslatedDescriptions);
-      }
+    } catch (error) {
+      console.error("❌ Error translating product names:", error);
+    } finally {
+      setIsTranslatingProductNames(false);
     }
-  } catch (error) {
-    console.error('❌ Error translating product descriptions:', error);
-  } finally {
-    setIsTranslatingDescriptions(false);
-  }
-};
+  };
 
-// Adaugă efectele pentru traducere
-useEffect(() => {
-  if (food_list.length > 0) {
-    translateProductNames();
-    translateProductDescriptions();
-  }
-}, [currentLanguage, food_list.length]);
+  // Adaugă funcția pentru traducerea descrierilor
+  const translateProductDescriptions = async () => {
+    if (currentLanguage === "ro" || !food_list.length) {
+      setTranslatedDescriptions({});
+      setIsTranslatingDescriptions(false);
+      return;
+    }
 
-// Adaugă funcțiile pentru a obține numele și descrierile traduse
-const getTranslatedProductName = (foodItem) => {
-  if (!foodItem) return "";
-  
-  const foodId = foodItem._id;
-  const translatedName = translatedProductNames[foodId];
-  
-  return currentLanguage !== 'ro' && translatedName 
-    ? translatedName 
-    : foodItem.name || "";
-};
+    setIsTranslatingDescriptions(true);
 
-const getTranslatedDescription = (foodItem) => {
-  if (!foodItem) return "";
-  
-  const foodId = foodItem._id;
-  const translatedDescription = translatedDescriptions[foodId];
-  
-  return currentLanguage !== 'ro' && translatedDescription 
-    ? translatedDescription 
-    : foodItem.description || "";
-};
+    try {
+      const descriptionsToTranslate = [];
+      const descriptionIdMap = {};
+
+      food_list.forEach((food, index) => {
+        if (food?.description?.trim()) {
+          descriptionsToTranslate.push(food.description);
+          descriptionIdMap[index] = food._id;
+        }
+      });
+
+      if (descriptionsToTranslate.length > 0) {
+        const combinedText = descriptionsToTranslate.join(" ||| ");
+
+        const response = await fetch(
+          `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${currentLanguage}&dt=t&q=${encodeURIComponent(
+            combinedText
+          )}`
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          const translatedCombinedText =
+            data[0]?.map((item) => item[0]).join("") || combinedText;
+          const translatedDescriptionsArray =
+            translatedCombinedText.split(" ||| ");
+
+          const newTranslatedDescriptions = {};
+          Object.keys(descriptionIdMap).forEach((index) => {
+            const foodId = descriptionIdMap[index];
+            const translatedDescription =
+              translatedDescriptionsArray[index] ||
+              descriptionsToTranslate[index];
+            if (translatedDescription && foodId) {
+              newTranslatedDescriptions[foodId] = translatedDescription;
+            }
+          });
+
+          setTranslatedDescriptions(newTranslatedDescriptions);
+        }
+      }
+    } catch (error) {
+      console.error("❌ Error translating product descriptions:", error);
+    } finally {
+      setIsTranslatingDescriptions(false);
+    }
+  };
+
+  // Adaugă efectele pentru traducere
+  useEffect(() => {
+    if (food_list.length > 0) {
+      translateProductNames();
+      translateProductDescriptions();
+    }
+  }, [currentLanguage, food_list.length]);
+
+  // Adaugă funcțiile pentru a obține numele și descrierile traduse
+  const getTranslatedProductName = (foodItem) => {
+    if (!foodItem) return "";
+
+    const foodId = foodItem._id;
+    const translatedName = translatedProductNames[foodId];
+
+    return currentLanguage !== "ro" && translatedName
+      ? translatedName
+      : foodItem.name || "";
+  };
+
+  const getTranslatedDescription = (foodItem) => {
+    if (!foodItem) return "";
+
+    const foodId = foodItem._id;
+    const translatedDescription = translatedDescriptions[foodId];
+
+    return currentLanguage !== "ro" && translatedDescription
+      ? translatedDescription
+      : foodItem.description || "";
+  };
 
   // ✅ FUNCȚIE ÎMBUNĂTĂȚITĂ: Găsește informațiile complete despre mâncare din food_list
   const findFoodItem = (itemId) => {
@@ -552,8 +564,9 @@ const getTranslatedDescription = (foodItem) => {
       tipPercentage: tipPercentage,
       specialInstructions: specialInstructions,
       orders: orderIds,
-      promoCode: isPromoApplied ? appliedPromoCode : null,
+      promoCode: isPromoApplied ? appliedPromoCode : null, // ✅ Asigură-te că este trimis
       promoDiscount: discount,
+      userId: token,
     };
 
     try {
@@ -629,7 +642,7 @@ const getTranslatedDescription = (foodItem) => {
       <div className="cart-header-section-orders">
         {/* <button className="back-button" onClick={() => navigate(-1)}>
           <FaArrowLeft /> */}
-          {/* <span>{t("my_orders.back")}</span> */}
+        {/* <span>{t("my_orders.back")}</span> */}
         {/* </button> */}
 
         <h1 className="cart-title">{t("my_orders.orders")}</h1>
@@ -728,7 +741,9 @@ const getTranslatedDescription = (foodItem) => {
                 <div className="notification-text">
                   <h3>{t("my_orders.bill_request_sent")}</h3>
                   <p>
-                    {t("my_orders.waiter_notified", { time: getTimeSinceBillRequest() })}
+                    {t("my_orders.waiter_notified", {
+                      time: getTimeSinceBillRequest(),
+                    })}
                   </p>
                 </div>
               </div>
@@ -762,13 +777,15 @@ const getTranslatedDescription = (foodItem) => {
                     {/* Order Items */}
                     {order.items.map((item, itemIndex) => {
                       const uniqueId = `${order._id}_${item._id}_${itemIndex}`;
-                      
+
                       // ✅ FOLOSEȘTE DIRECT baseFoodId PENTRU A GĂSI PRODUSUL
-                      const foodItem = food_list.find(food => food._id === item.baseFoodId);
-                      
+                      const foodItem = food_list.find(
+                        (food) => food._id === item.baseFoodId
+                      );
+
                       // ✅ CALCULEAZĂ PREȚUL
                       let priceInfo = null;
-                      
+
                       if (foodItem) {
                         priceInfo = getItemPriceWithDiscount(foodItem, item);
                       }
@@ -802,11 +819,13 @@ const getTranslatedDescription = (foodItem) => {
                                   }}
                                 />
                                 {/* ✅ BADGE-UL DE DISCOUNT PE POZĂ - POZIȚIE CORECTĂ */}
-                                {foodItem && priceInfo && priceInfo.hasDiscount && (
-                                  <div className="discount-badge-image">
-                                    -{priceInfo.discountPercentage}%
-                                  </div>
-                                )}
+                                {foodItem &&
+                                  priceInfo &&
+                                  priceInfo.hasDiscount && (
+                                    <div className="discount-badge-image">
+                                      -{priceInfo.discountPercentage}%
+                                    </div>
+                                  )}
                               </button>
                               <div className="item-details">
                                 <button
@@ -814,11 +833,15 @@ const getTranslatedDescription = (foodItem) => {
                                   onClick={() => openFoodModal(uniqueId)}
                                 >
                                   <h3 className="item-name">
-  {getTranslatedProductName(foodItem) || item.name}
-  {isTranslatingProductNames && (
-    <span className="translating-indicator"> 🔄</span>
-  )}
-</h3>
+                                    {getTranslatedProductName(foodItem) ||
+                                      item.name}
+                                    {isTranslatingProductNames && (
+                                      <span className="translating-indicator">
+                                        {" "}
+                                        🔄
+                                      </span>
+                                    )}
+                                  </h3>
                                 </button>
                                 {item.specialInstructions && (
                                   <div className="item-special-instructions">
@@ -835,7 +858,11 @@ const getTranslatedDescription = (foodItem) => {
                                     <div className="item-price-container">
                                       <div className="discount-price-wrapper">
                                         <span className="original-price">
-                                          {(priceInfo.originalPrice * item.quantity).toFixed(2)} €
+                                          {(
+                                            priceInfo.originalPrice *
+                                            item.quantity
+                                          ).toFixed(2)}{" "}
+                                          €
                                         </span>
                                         <span className="final-price">
                                           {priceInfo.totalPrice.toFixed(2)} €
@@ -912,9 +939,13 @@ const getTranslatedDescription = (foodItem) => {
                   {isPromoApplied && (
                     <div className="promo-success-message">
                       <FaCheck className="success-icon" />
-                      <span dangerouslySetInnerHTML={{
-                        __html: t("my_orders.promo_success", { code: appliedPromoCode })
-                      }} />
+                      <span
+                        dangerouslySetInnerHTML={{
+                          __html: t("my_orders.promo_success", {
+                            code: appliedPromoCode,
+                          }),
+                        }}
+                      />
                     </div>
                   )}
                 </div>
@@ -931,7 +962,9 @@ const getTranslatedDescription = (foodItem) => {
               {/* ✅ SECȚIUNEA PENTRU DISCOUNT-UL TOTAL DIN PRODUSELE CU REDUCERE */}
               {getTotalProductDiscountAmount() > 0 && (
                 <div className="summary-row discount-row">
-                  <span className="discount-label">{t("my_orders.product_discounts")}</span>
+                  <span className="discount-label">
+                    {t("my_orders.product_discounts")}
+                  </span>
                   <span className="discount-amount">
                     -{getTotalProductDiscountAmount().toFixed(2)} €
                   </span>
@@ -941,7 +974,9 @@ const getTranslatedDescription = (foodItem) => {
               {/* ✅ SECȚIUNEA PENTRU REDUCEREA OBTINUTĂ DIN PROMO CODE */}
               {isPromoApplied && (
                 <div className="summary-row promo-discount">
-                  <span className="promo-label">{t("my_orders.promo_discount")}</span>
+                  <span className="promo-label">
+                    {t("my_orders.promo_discount")}
+                  </span>
                   <span className="promo-discount-amount">
                     -{discount.toFixed(2)}€
                   </span>
@@ -951,7 +986,9 @@ const getTranslatedDescription = (foodItem) => {
               {/* ✅ SECȚIUNEA PENTRU TOTALUL ECONOMISIT */}
               {(getTotalProductDiscountAmount() > 0 || isPromoApplied) && (
                 <div className="summary-row saved-amount">
-                  <span className="saved-label">{t("my_orders.total_saved")}</span>
+                  <span className="saved-label">
+                    {t("my_orders.total_saved")}
+                  </span>
                   <span className="saved-amount-value">
                     {(getTotalProductDiscountAmount() + discount).toFixed(2)} €
                   </span>
@@ -996,8 +1033,12 @@ const getTranslatedDescription = (foodItem) => {
                       <span className="cart-tips-amount">
                         {percentage === 0
                           ? t("my_orders.no_tip")
-                          : t("my_orders.tip_amount", { 
-                              amount: (((getTotalOrderAmount() - discount) * percentage) / 100).toFixed(2)
+                          : t("my_orders.tip_amount", {
+                              amount: (
+                                ((getTotalOrderAmount() - discount) *
+                                  percentage) /
+                                100
+                              ).toFixed(2),
                             })}
                       </span>
                     </div>
@@ -1075,7 +1116,9 @@ const getTranslatedDescription = (foodItem) => {
           {/* Payment Method Section - Hide if bill already requested */}
           {!billRequested && (
             <div className="cart-payment-section" id="payment-method-section">
-              <h2 className="cart-payment-title">{t("my_orders.select_payment_method")}</h2>
+              <h2 className="cart-payment-title">
+                {t("my_orders.select_payment_method")}
+              </h2>
 
               {paymentError && (
                 <div className="cart-payment-error">{paymentError}</div>
@@ -1166,10 +1209,18 @@ const getTranslatedDescription = (foodItem) => {
               </div>
 
               <div className="cart-payment-features">
-                <div className="cart-payment-feature">{t("my_orders.ssl_encrypted")}</div>
-                <div className="cart-payment-feature">{t("my_orders.pci_compliant")}</div>
-                <div className="cart-payment-feature">{t("my_orders.secure_3d")}</div>
-                <div className="cart-payment-feature">{t("my_orders.money_back")}</div>
+                <div className="cart-payment-feature">
+                  {t("my_orders.ssl_encrypted")}
+                </div>
+                <div className="cart-payment-feature">
+                  {t("my_orders.pci_compliant")}
+                </div>
+                <div className="cart-payment-feature">
+                  {t("my_orders.secure_3d")}
+                </div>
+                <div className="cart-payment-feature">
+                  {t("my_orders.money_back")}
+                </div>
               </div>
             </div>
           )}

@@ -4,6 +4,7 @@ import OrderCounter from "../models/orderCounter.js";
 import Stripe from "stripe";
 import dotenv from 'dotenv';
 import { clearUserCart } from "./cartHelper.js";
+import PromoCode from "../models/promoCodeModel.js";
 
 dotenv.config();
 
@@ -92,10 +93,28 @@ const payOrder = async (req, res) => {
     const frontend_url = getBaseUrl(req);
 
     try {
-        const { orders, amount, userId } = req.body;
+        const { orders, amount, userId, promoCode, promoDiscount } = req.body;
 
         if (!orders || orders.length === 0) {
             return res.status(400).json({ success: false, message: "No orders provided." });
+        }
+
+        // ✅ INCREMENTEAZĂ USAGE-UL PENTRU PROMO CODE (dacă există)
+        if (promoCode) {
+            try {
+                const promoCodeDoc = await PromoCode.findOne({ code: promoCode });
+                if (promoCodeDoc) {
+                    // Incrementează contorul de utilizări
+                    await PromoCode.findByIdAndUpdate(
+                        promoCodeDoc._id,
+                        { $inc: { usedCount: 1 } }
+                    );
+                    console.log(`✅ Promo code usage incremented: ${promoCode}`);
+                }
+            } catch (promoError) {
+                console.error("❌ Error incrementing promo code usage:", promoError);
+                // Nu aruncăm eroare aici pentru a nu întrerupe procesul de plată
+            }
         }
 
         // ✅ NU se șterge coșul aici pentru card
@@ -114,7 +133,7 @@ const payOrder = async (req, res) => {
         const session = await stripe.checkout.sessions.create({
             line_items: line_items,
             mode: "payment",
-            success_url: `${frontend_url}/verify?success=true&orderIds=${orders.join(",")}`,
+            success_url: `${frontend_url}/verify?success=true&orderIds=${orders.join(",")}&promoCode=${promoCode || ''}`,
             cancel_url: `${frontend_url}/verify?success=false`,
         });
 
@@ -122,7 +141,6 @@ const payOrder = async (req, res) => {
             success: true,
             session_url: session.url
         });
-        const result = await clearUserCart(userId);
 
     } catch (error) {
         console.log("🔴 [payOrder] Error:", error);
@@ -135,6 +153,8 @@ const payOrder = async (req, res) => {
 
 const placeOrderCash = async (req, res) => {
     try {
+        const { promoCode } = req.body;
+
         let counter = await OrderCounter.findOne();
 
         if (!counter) {
@@ -153,12 +173,29 @@ const placeOrderCash = async (req, res) => {
             orderNumber: orderNumber,
             payment: false,
             paymentMethod: 'Cash / POS',
-            specialInstructions: req.body.specialInstructions
+            specialInstructions: req.body.specialInstructions,
+            promoCode: promoCode || null
         });
 
         await newOrder.save();
         counter.counter += 1;
         await counter.save();
+
+        // ✅ INCREMENTEAZĂ PROMO CODE USAGE PENTRU CASH
+        if (promoCode) {
+            try {
+                const promoCodeDoc = await PromoCode.findOne({ code: promoCode });
+                if (promoCodeDoc) {
+                    await PromoCode.findByIdAndUpdate(
+                        promoCodeDoc._id,
+                        { $inc: { usedCount: 1 } }
+                    );
+                    console.log(`✅ Promo code usage incremented for cash: ${promoCode}`);
+                }
+            } catch (promoError) {
+                console.error("❌ Error incrementing promo code usage for cash:", promoError);
+            }
+        }
 
         // ✅ ȘTERGE cartItems după salvarea comenzii - pentru cash
         if (req.body.userId) {
@@ -180,9 +217,25 @@ const placeOrderCash = async (req, res) => {
 };
 
 const verifyOrder = async (req, res) => {
-    const { orderId, success, orderIds } = req.body;
+    const { orderId, success, orderIds, promoCode } = req.body;
     try {
         if (success == "true") {
+            // ✅ INCREMENTEAZĂ PROMO CODE USAGE (dacă nu s-a făcut deja în payOrder)
+            if (promoCode) {
+                try {
+                    const promoCodeDoc = await PromoCode.findOne({ code: promoCode });
+                    if (promoCodeDoc) {
+                        await PromoCode.findByIdAndUpdate(
+                            promoCodeDoc._id,
+                            { $inc: { usedCount: 1 } }
+                        );
+                        console.log(`✅ Promo code usage incremented in verify: ${promoCode}`);
+                    }
+                } catch (promoError) {
+                    console.error("❌ Error incrementing promo code usage in verify:", promoError);
+                }
+            }
+
             // Procesează un singur orderId
             if (orderId) {
                 await orderModel.findByIdAndUpdate(orderId, { payment: true });
@@ -228,7 +281,6 @@ const verifyOrder = async (req, res) => {
         res.json({ success: false, message: "Error verifying order" });
     }
 };
-
 const getOrderRating = async (req, res) => {
     const { orderId } = req.params;
     try {
