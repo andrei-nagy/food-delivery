@@ -1,7 +1,8 @@
 import express from "express";
-import { addFood, listFood, removeFood, updateFood } from "../controllers/foodController.js";
+import { addFood, listFood, removeFood, removeMultipleFoods, updateFood } from "../controllers/foodController.js";
 import multer from "multer";
 import path from 'path';
+import authMiddleware from "../middleware/auth.js";
 
 const foodRouter = express.Router();
 
@@ -21,11 +22,6 @@ const upload = multer({ storage: storage });
 
 // Middleware pentru a parsa JSON string din form-data
 const parseExtras = (req, res, next) => {
-  console.log("=== PARSING EXTRAS MIDDLEWARE ===");
-  console.log("Request body keys:", Object.keys(req.body));
-  console.log("Extras field exists:", 'extras' in req.body);
-  console.log("Extras field type:", typeof req.body.extras);
-  console.log("Extras field value:", req.body.extras);
   
   if (req.body.extras && typeof req.body.extras === 'string') {
     try {
@@ -43,24 +39,14 @@ const parseExtras = (req, res, next) => {
 
 // Rute modificate - parseExtras vine DUPĂ upload.single()
 foodRouter.post("/add", upload.single("image"), parseExtras, (req, res, next) => {
-  console.log("=== /add REQUEST DETAILS ===");
-  console.log("Files:", req.file);
-  console.log("Body:", req.body);
-  console.log("Extras after parsing:", req.body.extras);
-  console.log("============================");
   next();
 }, addFood);
 
 foodRouter.get('/list', listFood);
 
 foodRouter.post('/remove', removeFood);
-
+foodRouter.post('/remove-multiple', removeMultipleFoods);
 foodRouter.post('/update', upload.single("image"), parseExtras, (req, res, next) => {
-  console.log("=== /update REQUEST DETAILS ===");
-  console.log("Files:", req.file);
-  console.log("Body:", req.body);
-  console.log("Extras after parsing:", req.body.extras);
-  console.log("==============================");
   next();
 }, updateFood);
 

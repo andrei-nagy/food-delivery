@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Search } from "lucide-react";
+import { Search, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -22,6 +22,8 @@ const ProductsTable = () => {
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentProduct, setCurrentProduct] = useState(null);
+    const [selectedProducts, setSelectedProducts] = useState([]);
+    const [selectAll, setSelectAll] = useState(false);
     const { url } = useUrl();
     const productsPerPage = 10;
 
@@ -31,6 +33,8 @@ const ProductsTable = () => {
             if (response.data.success && Array.isArray(response.data.data)) {
                 setProducts(response.data.data);
                 setFilteredProducts(response.data.data);
+                setSelectedProducts([]);
+                setSelectAll(false);
             }
         } catch (error) {
             console.error("Error fetching products:", error);
@@ -52,6 +56,33 @@ const ProductsTable = () => {
         }
     };
 
+    const removeMultipleFoods = async () => {
+        if (selectedProducts.length === 0) {
+            toast.warning("Please select at least one product to delete", { theme: "dark" });
+            return;
+        }
+
+        if (!window.confirm(`Are you sure you want to delete ${selectedProducts.length} product(s)? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            const response = await axios.post(`${url}/api/food/remove-multiple`, {
+                ids: selectedProducts
+            });
+            
+            if (response.data.success) {
+                toast.success(`Successfully deleted ${selectedProducts.length} product(s)`, { theme: "dark" });
+                fetchProducts();
+            } else {
+                toast.error(response.data.message, { theme: "dark" });
+            }
+        } catch (error) {
+            console.error("Error removing multiple products:", error);
+            toast.error("Error deleting products", { theme: "dark" });
+        }
+    };
+
     const editProduct = (product) => {
         setCurrentProduct(product);
         setIsEditing(true);
@@ -61,18 +92,45 @@ const ProductsTable = () => {
         fetchProducts();
     }, []);
 
-    const handleSearch = (e) => {
-        const term = e.target.value.toLowerCase();
-        setSearchTerm(term);
-        applyFilters(term, columnFilters);
+    // Calculează produsele curente pentru paginare
+    const indexOfLastProduct = currentPage * productsPerPage;
+    const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+    const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+    const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+
+    // Handler pentru checkbox individual
+    const handleProductSelect = (productId, isSelected) => {
+        if (isSelected) {
+            setSelectedProducts(prev => [...prev, productId]);
+        } else {
+            setSelectedProducts(prev => prev.filter(id => id !== productId));
+        }
     };
 
-    const handleColumnFilter = (column, value) => {
-        const newFilters = { ...columnFilters, [column]: value.toLowerCase() };
-        setColumnFilters(newFilters);
-        applyFilters(searchTerm, newFilters);
+    // Handler pentru Select All
+    const handleSelectAll = () => {
+        if (selectAll) {
+            setSelectedProducts([]);
+        } else {
+            const allIdsOnPage = currentProducts.map(product => product._id);
+            setSelectedProducts(allIdsOnPage);
+        }
+        setSelectAll(!selectAll);
     };
 
+    // Actualizează selectAll când se schimbă selectedProducts
+    useEffect(() => {
+        if (currentProducts.length > 0) {
+            const allSelected = currentProducts.every(product => 
+                selectedProducts.includes(product._id)
+            );
+            setSelectAll(allSelected);
+        } else {
+            setSelectAll(false);
+        }
+    }, [selectedProducts, currentProducts]);
+
+    // Funcția de aplicare a filtrelor
     const applyFilters = (globalSearch, columnFilters) => {
         let filtered = products;
 
@@ -105,6 +163,20 @@ const ProductsTable = () => {
 
         setFilteredProducts(filtered);
         setCurrentPage(1);
+        setSelectedProducts([]);
+        setSelectAll(false);
+    };
+
+    const handleSearch = (e) => {
+        const term = e.target.value.toLowerCase();
+        setSearchTerm(term);
+        applyFilters(term, columnFilters);
+    };
+
+    const handleColumnFilter = (column, value) => {
+        const newFilters = { ...columnFilters, [column]: value.toLowerCase() };
+        setColumnFilters(newFilters);
+        applyFilters(searchTerm, newFilters);
     };
 
     const resetFilters = () => {
@@ -114,14 +186,15 @@ const ProductsTable = () => {
         });
         setFilteredProducts(products);
         setCurrentPage(1);
+        setSelectedProducts([]);
+        setSelectAll(false);
     };
 
-    const indexOfLastProduct = currentPage * productsPerPage;
-    const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-    const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
-    const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
-
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    const paginate = (pageNumber) => {
+        setCurrentPage(pageNumber);
+        setSelectedProducts([]);
+        setSelectAll(false);
+    };
 
     return (
         <motion.div
@@ -147,6 +220,16 @@ const ProductsTable = () => {
                         </svg>
                         Import Products
                     </button>
+                    
+                    {selectedProducts.length > 0 && (
+                        <button
+                            className="bg-red-700 text-white font-semibold rounded-md px-6 py-3 border-2 border-red-600 hover:bg-red-600 transition-all duration-200 flex items-center gap-2"
+                            onClick={removeMultipleFoods}
+                        >
+                            <Trash2 className="w-5 h-5" />
+                            Delete Selected ({selectedProducts.length})
+                        </button>
+                    )}
                 </div>
                 <div className='relative'>
                     <input
@@ -160,6 +243,34 @@ const ProductsTable = () => {
                 </div>
             </div>
 
+            {selectedProducts.length > 0 && (
+                <div className="mb-4 p-3 bg-blue-900 bg-opacity-30 border border-blue-700 rounded-lg">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <span className="text-blue-300 font-medium">
+                                {selectedProducts.length} product(s) selected
+                            </span>
+                            <button
+                                onClick={() => {
+                                    setSelectedProducts([]);
+                                    setSelectAll(false);
+                                }}
+                                className="text-sm text-gray-400 hover:text-white"
+                            >
+                                Clear selection
+                            </button>
+                        </div>
+                        <button
+                            onClick={removeMultipleFoods}
+                            className="text-red-400 hover:text-red-300 text-sm font-medium flex items-center gap-1"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                            Delete all selected
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <ProductFilters 
                 columnFilters={columnFilters}
                 onColumnFilter={handleColumnFilter}
@@ -170,6 +281,16 @@ const ProductsTable = () => {
                 <table className='min-w-full divide-y divide-gray-700'>
                     <thead>
                         <tr>
+                            <th className='px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>
+                                <div className="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={selectAll && currentProducts.length > 0}
+                                        onChange={handleSelectAll}
+                                        className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500 border-gray-600 bg-gray-700"
+                                    />
+                                </div>
+                            </th>
                             <th className='px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>Name</th>
                             <th className='px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>Category</th>
                             <th className='px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>Price</th>
@@ -187,6 +308,8 @@ const ProductsTable = () => {
                                 onEdit={editProduct}
                                 onRemove={removeFood}
                                 url={url}
+                                isSelected={selectedProducts.includes(product._id)}
+                                onSelect={handleProductSelect}
                             />
                         ))}
                     </tbody>

@@ -449,7 +449,72 @@ const listFood = async (req, res) => {
     });
   }
 };
+const removeMultipleFoods = async (req, res) => {
+    try {
+        const { ids } = req.body;
+        
+        console.log("🗑️ REMOVE MULTIPLE - Received IDs:", ids);
+        
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No products selected for deletion'
+            });
+        }
 
+        // Validează că toate ID-urile sunt string-uri valide
+        const validIds = ids.filter(id => 
+            id && typeof id === 'string' && id.length === 24
+        );
+
+        if (validIds.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No valid product IDs provided'
+            });
+        }
+
+        console.log(`🗑️ REMOVE MULTIPLE - Valid IDs to delete: ${validIds.length}`);
+
+        // Găsește produsele pentru a șterge imaginile
+        const foodsToDelete = await foodModel.find({ _id: { $in: validIds } });
+        
+        // Șterge imaginile din sistemul de fișiere
+        foodsToDelete.forEach(food => {
+            if (food.image) {
+                const imagePath = `uploads/${food.image}`;
+                if (fs.existsSync(imagePath)) {
+                    fs.unlink(imagePath, (err) => {
+                        if (err) {
+                            console.error(`❌ Error deleting image for ${food.name}:`, err);
+                        } else {
+                            console.log(`✅ Image deleted for: ${food.name}`);
+                        }
+                    });
+                }
+            }
+        });
+
+        // Șterge produsele din baza de date
+        const result = await foodModel.deleteMany({ _id: { $in: validIds } });
+        
+        console.log(`✅ REMOVE MULTIPLE - Deleted ${result.deletedCount} products`);
+
+        res.json({
+            success: true,
+            message: `Successfully deleted ${result.deletedCount} product(s)`,
+            deletedCount: result.deletedCount,
+            productIds: validIds
+        });
+    } catch (error) {
+        console.error('❌ Error removing multiple products:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete products',
+            error: error.message
+        });
+    }
+};
 const removeFood = async (req, res) => {
   try {
     const { id } = req.body;
@@ -494,4 +559,4 @@ const removeFood = async (req, res) => {
   }
 };
 
-export { addFood, listFood, removeFood, updateFood };
+export { addFood, listFood, removeFood, updateFood, removeMultipleFoods };
