@@ -1,0 +1,697 @@
+/* OrderCompleted.css - Clase Unice Fără Countdown */
+
+/* Reset & Base Styles */
+.ocu-main-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  background: #ffffff;
+  color: #1d1d1f;
+  padding: 40px 20px; /* Mărit padding top și bottom */
+  overflow-y: auto; /* Permite scroll dacă conținutul este prea mare */
+}
+
+/* Error Mode */
+.ocu-main-container.ocu-error-mode {
+  background: linear-gradient(135deg, #fef2f2 0%, #fff 100%);
+}
+
+.ocu-content-wrapper {
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  margin: auto; /* Centrare suplimentară */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%; /* Ocupă toată înălțimea disponibilă */
+}
+
+/* Loading Screen */
+.ocu-loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #ffffff;
+  z-index: 1000;
+  padding: 40px 20px; /* Aceleași dimensiuni ca main container */
+}
+
+.ocu-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin: auto; /* Centrare perfectă */
+}
+
+.ocu-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top: 3px solid #38a169;
+  border-radius: 50%;
+  animation: ocu-spin-animation 1s linear infinite;
+}
+
+.ocu-loading-text {
+  color: #86868b;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Header Section */
+.ocu-header-section {
+  margin-bottom: 32px; /* Redus puțin pentru mai mult spațiu */
+  padding-top: 20px; /* Adăugat padding top */
+}
+
+/* Icons */
+.ocu-icon-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.ocu-success-icon svg circle {
+  fill: rgba(52, 199, 89, 0.1);
+}
+
+.ocu-error-icon svg circle {
+  fill: rgba(255, 59, 48, 0.1);
+}
+
+/* Titles */
+.ocu-main-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin: 24px 0 12px 0;
+  line-height: 1.1;
+}
+
+.ocu-success-title {
+  color: #1d1d1f;
+}
+
+.ocu-error-title {
+  color: #FF3B30;
+}
+
+/* Subtitles */
+.ocu-subtitle-text {
+  font-size: 1.25rem;
+  font-weight: 400;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.ocu-success-subtitle {
+  color: #86868b;
+}
+
+.ocu-error-subtitle {
+  color: #6b7280;
+}
+
+/* Content Section */
+.ocu-content-section {
+  margin-bottom: 24px; /* Redus puțin */
+  padding: 20px 0; /* Adăugat padding vertical */
+}
+
+/* Order Details Card */
+.ocu-order-card {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 20px;
+  padding: 32px;
+  margin-bottom: 20px; /* Redus puțin */
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+.ocu-order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.ocu-order-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #86868b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ocu-order-number {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  letter-spacing: 1px;
+}
+
+/* Info Grid */
+.ocu-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.ocu-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ocu-info-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #86868b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ocu-info-value {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.ocu-info-value.ocu-total-highlight {
+  color: #e86514;
+  font-size: 1rem;
+}
+
+.ocu-info-value.ocu-session-status {
+  color: #38a169;
+  font-weight: 700;
+}
+
+/* Message Container */
+.ocu-message-container {
+  margin-bottom: 20px; /* Redus puțin */
+  padding: 0 10px; /* Adăugat padding orizontal */
+}
+
+.ocu-message-text {
+  font-size: 1.125rem;
+  color: #515154;
+  margin: 12px 0;
+  line-height: 1.5;
+}
+
+.ocu-bon-appetit {
+  font-size: 1.3rem !important;
+  font-weight: 600;
+  color: #e86514 !important;
+  margin-top: 12px !important;
+}
+
+/* Status Message (în loc de countdown) */
+.ocu-status-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0; /* Redus puțin */
+  padding: 15px 0; /* Adăugat padding */
+}
+
+.ocu-status-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(52, 199, 89, 0.1);
+  border-radius: 50%;
+  border: 1px solid rgba(52, 199, 89, 0.2);
+  animation: ocu-pulse-animation 2s infinite ease-in-out;
+  position: relative;
+}
+
+.ocu-status-icon svg {
+  position: relative;
+  z-index: 2;
+}
+
+.ocu-status-icon::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  background: rgba(52, 199, 89, 0.15);
+  border-radius: 50%;
+  z-index: 1;
+  animation: ocu-pulse-ring 2s infinite ease-in-out;
+}
+
+.ocu-status-text {
+  font-size: 1rem;
+  color: #515154;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Actions Container */
+.ocu-actions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px; /* Redus puțin */
+  padding: 15px 0; /* Adăugat padding */
+}
+
+/* Buttons */
+.ocu-primary-button {
+  padding: 18px 32px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ocu-view-orders-button {
+  background: #38a169;
+  color: white;
+}
+
+.ocu-view-orders-button:hover {
+  background: #30b352;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
+}
+
+.ocu-error-button {
+  background: #FF3B30;
+  color: white;
+}
+
+.ocu-error-button:hover {
+  background: #e03e31;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 59, 48, 0.3);
+}
+
+.ocu-secondary-button {
+  padding: 18px 32px;
+  border: 2px solid #e86514;
+  border-radius: 12px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background: transparent;
+  color: #e86514;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ocu-new-session-button:hover {
+  background: rgba(232, 101, 20, 0.05);
+  transform: translateY(-1px);
+  border-color: #e86514;
+}
+
+/* Footer Section */
+.ocu-footer-section {
+  padding: 20px 0; /* Mărit padding */
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  margin-top: 10px; /* Adăugat margin */
+}
+
+.ocu-footer-text {
+  color: #86868b;
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.5;
+  padding: 0 10px; /* Adăugat padding orizontal */
+}
+
+/* Animations */
+@keyframes ocu-spin-animation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes ocu-pulse-animation {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(52, 199, 89, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(52, 199, 89, 0);
+  }
+}
+
+@keyframes ocu-pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ocu-main-container {
+    padding: 30px 15px; /* Padding mai mic pe mobile */
+  }
+  
+  .ocu-content-wrapper {
+    max-width: 380px;
+  }
+  
+  .ocu-main-title {
+    font-size: 2.25rem;
+  }
+  
+  .ocu-icon-wrapper svg {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .ocu-info-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .ocu-status-icon {
+    width: 56px;
+    height: 56px;
+    animation: ocu-pulse-animation-mobile 2s infinite ease-in-out;
+  }
+  
+  .ocu-status-icon svg {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .ocu-status-icon::before {
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ocu-main-container {
+    padding: 5px 12px; /* Padding ajustat pentru mobile mic */
+  }
+  
+  .ocu-content-wrapper {
+    max-width: 340px;
+  }
+  
+  .ocu-main-title {
+    font-size: 2rem;
+  }
+  
+  .ocu-subtitle-text {
+    font-size: 1.125rem;
+  }
+  
+  .ocu-icon-wrapper svg {
+    width: 72px;
+    height: 72px;
+  }
+  
+  .ocu-order-card {
+    padding: 20px; /* Redus padding pe mobile */
+    margin-bottom: 16px;
+  }
+  
+  .ocu-primary-button,
+  .ocu-secondary-button {
+    padding: 16px 24px;
+    font-size: 1rem;
+  }
+  
+  .ocu-message-text {
+    font-size: 1rem;
+  }
+  
+  .ocu-status-text {
+    font-size: 0.9375rem;
+  }
+  
+  .ocu-status-icon {
+    width: 52px;
+    height: 52px;
+  }
+  
+  .ocu-status-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .ocu-status-icon::before {
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+  }
+  
+  /* Ajustări suplimentare pentru centrare pe mobile */
+  .ocu-header-section {
+    padding-top: 10px;
+    margin-bottom: 24px;
+  }
+  
+  .ocu-content-section {
+    padding: 15px 0;
+  }
+  
+  .ocu-actions-container {
+    padding: 10px 0;
+  }
+}
+
+/* Animatie specifică pentru mobile (mai subtilă) */
+@keyframes ocu-pulse-animation-mobile {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.3);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 0 0 8px rgba(52, 199, 89, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(52, 199, 89, 0);
+  }
+}
+
+/* Hide navbar */
+/* .navbar {
+  display: none !important;
+} */
+
+/* Prevent body scroll */
+body.ocu-open {
+  overflow: hidden;
+}
+
+/* Modal Styles */
+.ocu-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.ocu-modal-container {
+  background: white;
+  border-radius: 20px;
+  max-width: 440px;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.ocu-modal-header {
+  text-align: center;
+  padding: 32px 32px 16px;
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.05), rgba(52, 199, 89, 0.1));
+  border-bottom: 1px solid rgba(52, 199, 89, 0.2);
+}
+
+.ocu-modal-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.ocu-modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.3px;
+}
+
+.ocu-modal-subtitle {
+  font-size: 1rem;
+  color: #515154;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.ocu-modal-content {
+  padding: 24px 32px;
+}
+
+.ocu-modal-message {
+  font-size: 1rem;
+  color: #515154;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.ocu-modal-details {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.ocu-modal-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.ocu-modal-detail:not(:last-child) {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.ocu-modal-detail-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #86868b;
+}
+
+.ocu-modal-detail-value {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.ocu-modal-actions {
+  display: flex;
+  gap: 12px;
+  padding: 24px 32px 32px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.ocu-modal-button {
+  flex: 1;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.ocu-modal-cancel {
+  background: #f5f5f7;
+  color: #515154;
+  border: 1px solid #e5e5e7;
+}
+
+.ocu-modal-cancel:hover {
+  background: #ebebed;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ocu-modal-confirm {
+  background: #38a169;
+  color: white;
+  border: 1px solid #50ad7b;
+}
+
+.ocu-modal-confirm:hover {
+  background: #38a169;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3);
+}
+
+/* Responsive Modal */
+@media (max-width: 480px) {
+  .ocu-modal-container {
+    max-width: 340px;
+  }
+  
+  .ocu-modal-header {
+    padding: 24px 24px 16px;
+  }
+  
+  .ocu-modal-content {
+    padding: 20px 24px;
+  }
+  
+  .ocu-modal-actions {
+    padding: 20px 24px 24px;
+    flex-direction: column;
+  }
+  
+  .ocu-modal-button {
+    padding: 14px 20px;
+  }
+}

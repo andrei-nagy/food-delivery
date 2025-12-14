@@ -15,46 +15,246 @@ const ImportProductsModal = ({ isOpen, onClose, onProductsImported }) => {
     const [importImages, setImportImages] = useState([]);
     const { url } = useUrl();
 
-    const downloadTemplate = () => {
-        const templateData = [
-            {
-                name: "Margherita Pizza", category: "Pizza", price: "12.99", discountPercentage: "10",
-                description: "Classic pizza with tomato sauce and mozzarella",
-                ingredients: "Tomato sauce, Mozzarella cheese, Fresh basil, Olive oil",
-                image: "pizza-margherita.jpg", isBestSeller: "true", isNewAdded: "false", isVegan: "true",
-                extras: "Extra Cheese:1.50,Olives:0.75", calories: "285", protein: "12.5", carbs: "35.2",
-                fat: "9.8", fiber: "2.1", sugar: "3.4", cookingTime: "15-20 minute", spiceLevel: "Mild",
-                servingSize: "350g", difficulty: "Easy", isGlutenFree: "false", isDairyFree: "false",
-                isVegetarian: "true", isSpicy: "false", containsNuts: "false", allergens: "Gluten,Dairy"
-            }
-        ];
+   const downloadTemplate = () => {
+    const templateData = [
+        {
+            name: "Margherita Pizza", category: "Pizza", price: "12.99", discountPercentage: "10",
+            description: "Classic pizza with tomato sauce and mozzarella",
+            ingredients: "Tomato sauce, Mozzarella cheese, Fresh basil, Olive oil",
+            image: "pizza-margherita.jpg", isBestSeller: "true", isNewAdded: "false", isVegan: "true",
+            extras: "Extra Cheese:1.50,Olives:0.75", calories: "285", protein: "12.5", carbs: "35.2",
+            fat: "9.8", fiber: "2.1", sugar: "3.4", cookingTime: "15-20 minute", spiceLevel: "Mild",
+            servingSize: "350g", difficulty: "Easy", isGlutenFree: "false", isDairyFree: "false",
+            isVegetarian: "true", isSpicy: "false", containsNuts: "false", allergens: "Gluten,Dairy"
+        },
+        {
+            name: "Pepperoni Pizza", category: "Pizza", price: "14.50", discountPercentage: "0",
+            description: "Spicy pepperoni with melted mozzarella",
+            ingredients: "Tomato sauce, Mozzarella, Pepperoni slices, Oregano",
+            image: "pizza-pepperoni.jpg", isBestSeller: "true", isNewAdded: "false", isVegan: "false",
+            extras: "Extra Cheese:1.50,Extra Pepperoni:2.00", calories: "320", protein: "15.8", carbs: "38.5",
+            fat: "14.2", fiber: "2.3", sugar: "4.1", cookingTime: "15-20 minute", spiceLevel: "Medium",
+            servingSize: "380g", difficulty: "Easy", isGlutenFree: "false", isDairyFree: "false",
+            isVegetarian: "true", isSpicy: "true", containsNuts: "false", allergens: "Gluten,Dairy"
+        },
+        {
+            name: "Vegan Burger", category: "Burgers", price: "13.75", discountPercentage: "15",
+            description: "Plant-based patty with fresh veggies",
+            ingredients: "Vegan patty, Lettuce, Tomato, Vegan mayo, Whole wheat bun",
+            image: "vegan-burger.jpg", isBestSeller: "false", isNewAdded: "true", isVegan: "true",
+            extras: "Avocado:1.75, Vegan Cheese:2.00", calories: "420", protein: "18.3", carbs: "45.6",
+            fat: "22.4", fiber: "8.7", sugar: "6.2", cookingTime: "10-12 minute", spiceLevel: "Mild",
+            servingSize: "320g", difficulty: "Easy", isGlutenFree: "false", isDairyFree: "true",
+            isVegetarian: "true", isSpicy: "false", containsNuts: "true", allergens: "Soy,Nuts"
+        },
+        {
+            name: "Spicy Chicken Tacos", category: "Mexican", price: "10.99", discountPercentage: "5",
+            description: "Three soft tacos with spicy chicken",
+            ingredients: "Corn tortillas, Spicy chicken, Lettuce, Pico de gallo, Sour cream",
+            image: "tacos-spicy-chicken.jpg", isBestSeller: "true", isNewAdded: "false", isVegan: "false",
+            extras: "Guacamole:2.50,Extra Chicken:3.00", calories: "380", protein: "24.5", carbs: "32.8",
+            fat: "16.7", fiber: "4.2", sugar: "5.3", cookingTime: "8-10 minute", spiceLevel: "Hot",
+            servingSize: "280g", difficulty: "Easy", isGlutenFree: "true", isDairyFree: "false",
+            isVegetarian: "false", isSpicy: "true", containsNuts: "false", allergens: "Dairy"
+        },
+        {
+            name: "Caesar Salad", category: "Salads", price: "11.25", discountPercentage: "0",
+            description: "Fresh romaine with Caesar dressing",
+            ingredients: "Romaine lettuce, Caesar dressing, Parmesan, Croutons, Anchovies",
+            image: "caesar-salad.jpg", isBestSeller: "true", isNewAdded: "false", isVegan: "false",
+            extras: "Grilled Chicken:4.00, Shrimp:5.50", calories: "285", protein: "12.8", carbs: "18.4",
+            fat: "19.2", fiber: "3.1", sugar: "4.8", cookingTime: "5-7 minute", spiceLevel: "Mild",
+            servingSize: "300g", difficulty: "Easy", isGlutenFree: "false", isDairyFree: "false",
+            isVegetarian: "true", isSpicy: "false", containsNuts: "true", allergens: "Gluten,Dairy,Anchovies"
+        },
+        {
+            name: "Chocolate Brownie", category: "Desserts", price: "6.50", discountPercentage: "10",
+            description: "Warm chocolate brownie with nuts",
+            ingredients: "Flour, Chocolate, Butter, Sugar, Walnuts, Eggs",
+            image: "chocolate-brownie.jpg", isBestSeller: "false", isNewAdded: "false", isVegan: "false",
+            extras: "Ice Cream:2.50,Caramel Sauce:1.00", calories: "480", protein: "7.2", carbs: "58.9",
+            fat: "28.4", fiber: "3.8", sugar: "42.7", cookingTime: "25-30 minute", spiceLevel: "Mild",
+            servingSize: "180g", difficulty: "Medium", isGlutenFree: "false", isDairyFree: "false",
+            isVegetarian: "true", isSpicy: "false", containsNuts: "true", allergens: "Gluten,Dairy,Nuts,Eggs"
+        },
+        {
+            name: "Vegetable Stir Fry", category: "Asian", price: "12.99", discountPercentage: "20",
+            description: "Mixed vegetables in soy-ginger sauce",
+            ingredients: "Broccoli, Bell peppers, Carrots, Soy sauce, Ginger, Garlic",
+            image: "vegetable-stirfry.jpg", isBestSeller: "false", isNewAdded: "true", isVegan: "true",
+            extras: "Tofu:2.50, Shrimp:4.00", calories: "320", protein: "9.8", carbs: "42.3",
+            fat: "14.6", fiber: "7.9", sugar: "12.4", cookingTime: "12-15 minute", spiceLevel: "Medium",
+            servingSize: "350g", difficulty: "Medium", isGlutenFree: "true", isDairyFree: "true",
+            isVegetarian: "true", isSpicy: "false", containsNuts: "false", allergens: "Soy"
+        },
+        {
+            name: "BBQ Chicken Wings", category: "Appetizers", price: "9.99", discountPercentage: "0",
+            description: "Crispy wings with BBQ glaze",
+            ingredients: "Chicken wings, BBQ sauce, Spices, Oil",
+            image: "bbq-wings.jpg", isBestSeller: "true", isNewAdded: "false", isVegan: "false",
+            extras: "Blue Cheese Dip:1.00,Celery Sticks:0.50", calories: "450", protein: "32.5", carbs: "18.7",
+            fat: "28.9", fiber: "1.2", sugar: "15.8", cookingTime: "20-25 minute", spiceLevel: "Medium",
+            servingSize: "250g", difficulty: "Medium", isGlutenFree: "true", isDairyFree: "false",
+            isVegetarian: "false", isSpicy: "false", containsNuts: "false", allergens: "None"
+        },
+        {
+            name: "Quinoa Bowl", category: "Healthy", price: "14.25", discountPercentage: "5",
+            description: "Nutritious bowl with quinoa and vegetables",
+            ingredients: "Quinoa, Avocado, Cherry tomatoes, Cucumber, Lemon dressing",
+            image: "quinoa-bowl.jpg", isBestSeller: "false", isNewAdded: "true", isVegan: "true",
+            extras: "Grilled Salmon:6.00, Falafel:3.50", calories: "380", protein: "14.9", carbs: "52.4",
+            fat: "16.8", fiber: "11.3", sugar: "7.2", cookingTime: "10-15 minute", spiceLevel: "Mild",
+            servingSize: "400g", difficulty: "Easy", isGlutenFree: "true", isDairyFree: "true",
+            isVegetarian: "true", isSpicy: "false", containsNuts: "false", allergens: "None"
+        },
+        {
+            name: "Beef Lasagna", category: "Pasta", price: "16.50", discountPercentage: "0",
+            description: "Layered pasta with beef and cheese",
+            ingredients: "Lasagna sheets, Ground beef, Tomato sauce, Ricotta, Mozzarella",
+            image: "beef-lasagna.jpg", isBestSeller: "true", isNewAdded: "false", isVegan: "false",
+            extras: "Garlic Bread:3.00, Side Salad:4.50", calories: "520", protein: "28.7", carbs: "45.8",
+            fat: "29.4", fiber: "4.2", sugar: "9.8", cookingTime: "40-45 minute", spiceLevel: "Medium",
+            servingSize: "450g", difficulty: "Hard", isGlutenFree: "false", isDairyFree: "false",
+            isVegetarian: "false", isSpicy: "false", containsNuts: "false", allergens: "Gluten,Dairy,Eggs"
+        },
+        {
+            name: "Smoothie Bowl", category: "Breakfast", price: "8.99", discountPercentage: "10",
+            description: "Blended fruit topped with granola",
+            ingredients: "Banana, Berries, Yogurt, Granola, Honey, Chia seeds",
+            image: "smoothie-bowl.jpg", isBestSeller: "false", isNewAdded: "false", isVegan: "false",
+            extras: "Protein Powder:1.50,Extra Fruit:2.00", calories: "320", protein: "11.4", carbs: "58.7",
+            fat: "7.9", fiber: "8.4", sugar: "34.2", cookingTime: "5-7 minute", spiceLevel: "Mild",
+            servingSize: "350g", difficulty: "Easy", isGlutenFree: "false", isDairyFree: "false",
+            isVegetarian: "true", isSpicy: "false", containsNuts: "true", allergens: "Dairy,Nuts"
+        },
+        {
+            name: "Fish & Chips", category: "Seafood", price: "15.75", discountPercentage: "0",
+            description: "Beer-battered fish with fries",
+            ingredients: "Cod fillet, Beer batter, Potatoes, Tartar sauce",
+            image: "fish-chips.jpg", isBestSeller: "true", isNewAdded: "false", isVegan: "false",
+            extras: "Mushy Peas:2.00,Extra Tartar:0.75", calories: "680", protein: "32.8", carbs: "65.4",
+            fat: "35.2", fiber: "5.8", sugar: "3.4", cookingTime: "15-18 minute", spiceLevel: "Mild",
+            servingSize: "500g", difficulty: "Medium", isGlutenFree: "false", isDairyFree: "false",
+            isVegetarian: "false", isSpicy: "false", containsNuts: "false", allergens: "Gluten,Dairy,Fish"
+        },
+        {
+            name: "Mushroom Risotto", category: "Italian", price: "13.99", discountPercentage: "15",
+            description: "Creamy arborio rice with mushrooms",
+            ingredients: "Arborio rice, Mushrooms, Parmesan, White wine, Butter",
+            image: "mushroom-risotto.jpg", isBestSeller: "false", isNewAdded: "true", isVegan: "false",
+            extras: "Truffle Oil:3.50, Grilled Veggies:4.00", calories: "420", protein: "11.2", carbs: "58.9",
+            fat: "16.4", fiber: "3.8", sugar: "4.2", cookingTime: "25-30 minute", spiceLevel: "Mild",
+            servingSize: "380g", difficulty: "Hard", isGlutenFree: "false", isDairyFree: "false",
+            isVegetarian: "true", isSpicy: "false", containsNuts: "false", allergens: "Gluten,Dairy"
+        },
+        {
+            name: "Chicken Curry", category: "Indian", price: "14.99", discountPercentage: "5",
+            description: "Aromatic chicken in curry sauce",
+            ingredients: "Chicken, Onions, Tomatoes, Curry spices, Cream",
+            image: "chicken-curry.jpg", isBestSeller: "true", isNewAdded: "false", isVegan: "false",
+            extras: "Naan Bread:2.50, Rice:3.00", calories: "480", protein: "35.8", carbs: "28.4",
+            fat: "26.7", fiber: "4.1", sugar: "8.9", cookingTime: "30-35 minute", spiceLevel: "Hot",
+            servingSize: "400g", difficulty: "Medium", isGlutenFree: "true", isDairyFree: "false",
+            isVegetarian: "false", isSpicy: "true", containsNuts: "true", allergens: "Dairy,Nuts"
+        },
+        {
+            name: "Greek Yogurt Parfait", category: "Healthy", price: "7.50", discountPercentage: "0",
+            description: "Layered yogurt with fruits and nuts",
+            ingredients: "Greek yogurt, Granola, Mixed berries, Honey",
+            image: "yogurt-parfait.jpg", isBestSeller: "false", isNewAdded: "false", isVegan: "false",
+            extras: "Extra Honey:0.50,Protein Powder:1.50", calories: "280", protein: "18.9", carbs: "34.2",
+            fat: "8.7", fiber: "4.2", sugar: "24.8", cookingTime: "3-5 minute", spiceLevel: "Mild",
+            servingSize: "250g", difficulty: "Easy", isGlutenFree: "true", isDairyFree: "false",
+            isVegetarian: "true", isSpicy: "false", containsNuts: "true", allergens: "Dairy,Nuts"
+        },
+        {
+            name: "Shrimp Scampi", category: "Seafood", price: "18.50", discountPercentage: "0",
+            description: "Garlic butter shrimp with linguine",
+            ingredients: "Shrimp, Linguine, Garlic, Butter, White wine, Parsley",
+            image: "shrimp-scampi.jpg", isBestSeller: "true", isNewAdded: "false", isVegan: "false",
+            extras: "Extra Shrimp:5.00,Bread:2.50", calories: "520", protein: "36.4", carbs: "52.8",
+            fat: "22.9", fiber: "3.2", sugar: "4.8", cookingTime: "15-20 minute", spiceLevel: "Mild",
+            servingSize: "420g", difficulty: "Medium", isGlutenFree: "false", isDairyFree: "false",
+            isVegetarian: "false", isSpicy: "false", containsNuts: "false", allergens: "Gluten,Dairy,Shellfish"
+        },
+        {
+            name: "Veggie Wrap", category: "Sandwiches", price: "9.99", discountPercentage: "10",
+            description: "Grilled vegetables in whole wheat wrap",
+            ingredients: "Whole wheat wrap, Grilled veggies, Hummus, Spinach",
+            image: "veggie-wrap.jpg", isBestSeller: "false", isNewAdded: "true", isVegan: "true",
+            extras: "Feta Cheese:1.50,Avocado:1.75", calories: "320", protein: "10.8", carbs: "45.6",
+            fat: "12.4", fiber: "9.2", sugar: "7.8", cookingTime: "6-8 minute", spiceLevel: "Mild",
+            servingSize: "280g", difficulty: "Easy", isGlutenFree: "false", isDairyFree: "true",
+            isVegetarian: "true", isSpicy: "false", containsNuts: "true", allergens: "Gluten,Sesame"
+        },
+        {
+            name: "New York Cheesecake", category: "Desserts", price: "8.25", discountPercentage: "0",
+            description: "Creamy cheesecake with berry compote",
+            ingredients: "Cream cheese, Graham crackers, Sugar, Eggs, Berries",
+            image: "cheesecake-ny.jpg", isBestSeller: "true", isNewAdded: "false", isVegan: "false",
+            extras: "Extra Compote:1.00,Whipped Cream:0.75", calories: "450", protein: "7.8", carbs: "42.9",
+            fat: "29.4", fiber: "1.2", sugar: "35.8", cookingTime: "60+ minute", spiceLevel: "Mild",
+            servingSize: "200g", difficulty: "Hard", isGlutenFree: "false", isDairyFree: "false",
+            isVegetarian: "true", isSpicy: "false", containsNuts: "true", allergens: "Gluten,Dairy,Eggs"
+        },
+        {
+            name: "Lentil Soup", category: "Soups", price: "7.99", discountPercentage: "20",
+            description: "Hearty lentil and vegetable soup",
+            ingredients: "Lentils, Carrots, Celery, Onions, Vegetable broth",
+            image: "lentil-soup.jpg", isBestSeller: "false", isNewAdded: "true", isVegan: "true",
+            extras: "Crusty Bread:2.00,Cheese:1.50", calories: "280", protein: "14.7", carbs: "42.8",
+            fat: "4.9", fiber: "15.4", sugar: "8.7", cookingTime: "25-30 minute", spiceLevel: "Mild",
+            servingSize: "350g", difficulty: "Easy", isGlutenFree: "true", isDairyFree: "true",
+            isVegetarian: "true", isSpicy: "false", containsNuts: "false", allergens: "None"
+        },
+        {
+            name: "Pesto Pasta", category: "Pasta", price: "12.50", discountPercentage: "5",
+            description: "Pasta with fresh basil pesto",
+            ingredients: "Pasta, Basil pesto, Pine nuts, Parmesan, Olive oil",
+            image: "pesto-pasta.jpg", isBestSeller: "false", isNewAdded: "false", isVegan: "true",
+            extras: "Grilled Chicken:4.50,Shrimp:5.00", calories: "480", protein: "16.4", carbs: "58.2",
+            fat: "22.8", fiber: "5.8", sugar: "4.2", cookingTime: "12-15 minute", spiceLevel: "Mild",
+            servingSize: "400g", difficulty: "Easy", isGlutenFree: "false", isDairyFree: "false",
+            isVegetarian: "true", isSpicy: "false", containsNuts: "true", allergens: "Gluten,Dairy,Nuts"
+        },
+        {
+            name: "Breakfast Burrito", category: "Breakfast", price: "10.50", discountPercentage: "0",
+            description: "Morning burrito with eggs and sausage",
+            ingredients: "Tortilla, Eggs, Sausage, Cheese, Potatoes, Salsa",
+            image: "breakfast-burrito.jpg", isBestSeller: "true", isNewAdded: "false", isVegan: "false",
+            extras: "Bacon:2.00,Guacamole:2.50", calories: "520", protein: "24.8", carbs: "38.9",
+            fat: "32.4", fiber: "4.8", sugar: "5.2", cookingTime: "8-10 minute", spiceLevel: "Medium",
+            servingSize: "350g", difficulty: "Easy", isGlutenFree: "false", isDairyFree: "false",
+            isVegetarian: "false", isSpicy: "true", containsNuts: "false", allergens: "Gluten,Dairy,Eggs"
+        }
+    ];
 
-        const headers = [
-            "name", "category", "price", "discountPercentage", "description", "ingredients", "image", 
-            "isBestSeller", "isNewAdded", "isVegan", "extras", "calories", "protein", "carbs", "fat", 
-            "fiber", "sugar", "cookingTime", "spiceLevel", "servingSize", "difficulty", "isGlutenFree", 
-            "isDairyFree", "isVegetarian", "isSpicy", "containsNuts", "allergens"
-        ];
-        
-        let csvContent = headers.join(",") + "\n";
-        
-        templateData.forEach(row => {
-            const rowData = headers.map(header => `"${row[header]}"`).join(",");
-            csvContent += rowData + "\n";
-        });
+    const headers = [
+        "name", "category", "price", "discountPercentage", "description", "ingredients", "image", 
+        "isBestSeller", "isNewAdded", "isVegan", "extras", "calories", "protein", "carbs", "fat", 
+        "fiber", "sugar", "cookingTime", "spiceLevel", "servingSize", "difficulty", "isGlutenFree", 
+        "isDairyFree", "isVegetarian", "isSpicy", "containsNuts", "allergens"
+    ];
+    
+    let csvContent = headers.join(",") + "\n";
+    
+    templateData.forEach(row => {
+        const rowData = headers.map(header => `"${row[header]}"`).join(",");
+        csvContent += rowData + "\n";
+    });
 
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'products_template.csv';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-        
-        toast.info("Template downloaded successfully!", { theme: "dark" });
-    };
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'products_template.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    toast.info("Template with 21 products downloaded successfully!", { theme: "dark" });
+};
 
     const handleFileUpload = async (event) => {
         const file = event.target.files[0];

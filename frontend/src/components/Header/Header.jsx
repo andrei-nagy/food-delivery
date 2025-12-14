@@ -9,6 +9,10 @@ import { StoreContext } from "../../context/StoreContext";
 import SessionExpiredModal from "../SessionExpiredModal/SessionExpiredModal";
 import { FaReceipt, FaTimes, FaLock } from "react-icons/fa";
 
+// ✅ Import react-toastify
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const Header = () => {
   const tableNumber = localStorage.getItem("tableNumber");
   const token = localStorage.getItem("token");
@@ -29,7 +33,6 @@ const Header = () => {
   const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false);
   const [isExtending, setIsExtending] = useState(false);
   const [selectedDuration, setSelectedDuration] = useState(30);
-  const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const { t, i18n } = useTranslation();
 
   // ✅ REF PENTRU A PREVENI DESCHIDEREA DUPLĂ
@@ -55,7 +58,6 @@ const Header = () => {
         params: { userId }
       });
       
-      // ✅ VERIFICĂ DACA RĂSPUNSUL ESTE SUCCES ȘI USERUL ESTE ACTIV
       if (response.data.success && response.data.extensionInProgress !== undefined) {
         return response.data.extensionInProgress;
       }
@@ -79,7 +81,6 @@ const Header = () => {
         { headers: { token } }
       );
       
-      // ✅ VERIFICĂ DACA OPERAȚIA A REUȘIT
       if (!response.data.success) {
         console.error("Failed to set extension status:", response.data.message);
       }
@@ -91,14 +92,14 @@ const Header = () => {
   // Funcție pentru a gestiona extend-ul din SessionExpiredModal
   const handleExtendSessionExpired = async (minutes) => {
     if (!userId) {
-      alert("User ID not found. Please log in again.");
+      toast.error("User ID not found. Please log in again.");
       return false;
     }
 
     // ✅ VERIFICĂ DACĂ EXISTĂ DEJA O PRELUNGIRE ÎN CURS
     const existingExtension = await checkExtensionInProgress();
     if (existingExtension) {
-      showToast(t("extension_already_in_progress"), "error");
+      toast.error(t("extension_already_in_progress"));
       return false;
     }
 
@@ -135,7 +136,7 @@ const Header = () => {
           fetchTokenExpiry();
         }, 1000);
 
-        showToast(t("session_reactivated", { minutes }), "success");
+        toast.success(t("session_reactivated", { minutes }));
         
         // ✅ RESETEAZĂ REF-UL CÂND MODAL-UL SE ÎNCHIDE
         modalOpenedRef.current = false;
@@ -144,29 +145,24 @@ const Header = () => {
       } else {
         // ✅ DACA OPERAȚIA A EȘUAT DIN CAUZA CA USERUL NU E ACTIV
         if (response.data.message && response.data.message.includes("not active")) {
-          showToast(t("user_not_active"), "error");
+          toast.error(t("user_not_active"));
           // FORȚEAZĂ RE-LOGIN
           localStorage.removeItem("token");
           localStorage.removeItem("userId");
           window.location.reload();
         } else {
-          showToast(t("failed_reactivate", { message: response.data.message }), "error");
+          toast.error(t("failed_reactivate", { message: response.data.message }));
         }
         return false;
       }
     } catch (error) {
-      showToast(t("error_reactivating"), "error");
+      toast.error(t("error_reactivating"));
       return false;
     } finally {
       // ✅ RESETEAZĂ STARE PRELUNGIRE ÎN CURS
       await setExtensionInProgressOnServer(false);
       setExtensionInProgress(false);
     }
-  };
-
-  const showToast = (message, type = "success") => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: "", type: "" }), 3000);
   };
 
   const fetchTokenExpiry = async () => {
@@ -184,7 +180,6 @@ const Header = () => {
           (user) =>
             user.tableNumber &&
             user.tableNumber.toString() === tableNumber &&
-            // ✅ VERIFICARE CRITICĂ - DOAR USERI ACTIVI
             user.isActive === true &&
             user.tokenExpiry
         );
@@ -252,14 +247,14 @@ const Header = () => {
 
   const extendTime = async () => {
     if (!userId) {
-      alert("User ID not found. Please log in again.");
+      toast.error("User ID not found. Please log in again.");
       return;
     }
 
     // ✅ VERIFICĂ DACĂ EXISTĂ DEJA O PRELUNGIRE ÎN CURS
     const existingExtension = await checkExtensionInProgress();
     if (existingExtension) {
-      showToast(t("extension_already_in_progress"), "error");
+      toast.error(t("extension_already_in_progress"));
       return;
     }
 
@@ -302,11 +297,10 @@ const Header = () => {
         // ✅ RE-FETCH PENTRU CONFIRMARE
         await fetchTokenExpiry();
 
-        showToast(
+        toast.success(
           userBlocked 
             ? t("session_reactivated", { minutes: selectedDuration })
-            : t("session_extended", { minutes: selectedDuration }),
-          "success"
+            : t("session_extended", { minutes: selectedDuration })
         );
 
         // ✅ ÎNTÂRZIE ÎNCHIDEREA MODAL-ULUI PENTRU A VEDEA ACTUALIZAREA
@@ -317,18 +311,18 @@ const Header = () => {
       } else {
         // ✅ DACA OPERAȚIA A EȘUAT DIN CAUZA CA USERUL NU E ACTIV
         if (response.data.message && response.data.message.includes("not active")) {
-          showToast(t("user_not_active"), "error");
+          toast.error(t("user_not_active"));
           // FORȚEAZĂ RE-LOGIN
           localStorage.removeItem("token");
           localStorage.removeItem("userId");
           window.location.reload();
         } else {
-          showToast(t("failed_extend", { message: response.data.message }), "error");
+          toast.error(t("failed_extend", { message: response.data.message }));
         }
       }
     } catch (error) {
       console.error("Extend time error:", error);
-      showToast(t("error_extending"), "error");
+      toast.error(t("error_extending"));
     } finally {
       setIsExtending(false);
       setSelectedDuration(30);
@@ -343,7 +337,7 @@ const Header = () => {
     // ✅ VERIFICĂ DACĂ EXISTĂ DEJA O PRELUNGIRE ÎN CURS ÎNAINTE DE A DESCHIDE MODALUL
     const existingExtension = await checkExtensionInProgress();
     if (existingExtension) {
-      showToast(t("extension_already_in_progress"), "error");
+      toast.error(t("extension_already_in_progress"));
       return;
     }
 
@@ -368,7 +362,7 @@ const Header = () => {
           // Dacă există o prelungire în curs pe alt dispozitiv, închide modalul
           setShowSessionExpiredModal(false);
           setShowTimeModal(false);
-          showToast(t("extension_in_progress_on_other_device"), "info");
+          toast.info(t("extension_in_progress_on_other_device"));
         }
       }, 2000); // verifică la fiecare 2 secunde
 
@@ -427,7 +421,7 @@ const Header = () => {
           modalOpenedRef.current = true;
           setShowSessionExpiredModal(true);
         } else {
-          showToast(t("extension_already_in_progress"), "error");
+          toast.error(t("extension_already_in_progress"));
         }
       });
     }
@@ -657,7 +651,6 @@ const Header = () => {
                         </div>
                         <div className="header-option-details">
                           <div className="header-option-time">{option.label}</div>
-                          <div className="header-option-price">Free</div>
                         </div>
                       </div>
                       <div className="header-option-check">
@@ -733,31 +726,6 @@ const Header = () => {
         extensionInProgress={extensionInProgress}
         checkExtensionInProgress={checkExtensionInProgress}
       />
-
-      {/* Toast */}
-      <AnimatePresence>
-        {toast.show && (
-          <motion.div
-            className={`header-toast header-toast-${toast.type}`}
-            initial={{ opacity: 0, x: 300, scale: 0.8 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 300, scale: 0.8 }}
-            transition={{ 
-              type: "spring", 
-              stiffness: 500, 
-              damping: 30,
-              duration: 0.3 
-            }}
-          >
-            <div className="header-toast-content">
-              <span className="header-toast-icon">
-                {toast.type === "success" ? "✓" : "✕"}
-              </span>
-              <span>{toast.message}</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </>
   );
 };

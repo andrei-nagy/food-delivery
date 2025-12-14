@@ -75,7 +75,7 @@
   "error_reactivating": "Eroare la reactivarea sesiunii",
   "error_extending": "Eroare la extinderea timpului",
   "most_popular": "Cel mai popular",
-    "food_item": {
+  "food_item": {
     "new": "Nou",
     "vegan": "Vegan",
     "best_seller": "Best Seller",
@@ -92,10 +92,10 @@
     "out_of_stock": "Stoc epuizat",
     "unavailable": "Indisponibil"
   },
-   "session": {
+  "session": {
     "expired_message": "Sesiunea dvs. a expirat. Vă rugăm să reîmprospătați pagina pentru a continua comanda."
   },
-   "food_display": {
+  "food_display": {
     "best_sellers": "Produse Populare",
     "must_try_favorites": "Trebuie să încerci 🔥",
     "view_more": "Mai mult",
@@ -111,7 +111,7 @@
     "new_additions": "Noutăți",
     "categories": "Categorii"
   },
-   "cart": {
+  "cart": {
     "your_order": "Comanda ta",
     "back": "Înapoi",
     "clear_cart": "Golește Coșul",
@@ -148,7 +148,7 @@
     "other_products": "Ce au mai comandat și alții",
     "popular_choices": "Produse populare care ți-ar putea plăcea"
   },
-   "category_page": {
+  "category_page": {
     "back": "Înapoi",
     "search_placeholder": "Caută preparate, ingrediente, descrieri...",
     "filters": "Filtre",
@@ -219,9 +219,44 @@
     "clear_all": "Șterge Tot",
     "bill_request_sent": "Solicitare Notă Trimisă",
     "waiter_notified": "Ospătar notificat acum {{time}}. Va veni la masa ta în curând.",
-    "cancel_request": "Anulează Solicitarea"
+    "cancel_request": "Anulează Solicitarea",
+     "split_bill": "Împarte Factura",
+    "split_bill_description": "Selectează produsele pentru care vrei să plătești. Poți și să împarți cantitățile.",
+    "items_selected": "produse selectate",
+    "select_all": "Selectează Tot",
+    "deselect_all": "Deselectează tot",
+    "your_total": "Totalul Tău",
+    "pay_selected": "Plătește Produsele Selectate",
+    "split_bill_success": "Ai plătit cu succes partea ta de {amount} €",
+    "bill_progress": "{paid} din {total} plătit de {count} persoane",
+    "split_payment_success": "Partea ta din factură a fost plătită!",
+    "split_payment_pending": "Așteptăm ceilalți oaspeți să își plătească partea",
+      "unpaid_items": "Produse Neplătite",
+    "paid_items": "Produse Plătite",
+    "paid_items_description": "Produse care au fost deja plătite",
+    "select_items_to_pay": "Selectați produsele pe care doriți să le plătiți",
+    "all_items_paid": "Toate produsele plătite! 🎉",
+    "nothing_to_pay": "Nu aveți nimic de plătit momentan.",
+    "card": "Card",
+    "cash": "Numerar",
+    "paid": "Plătit",
+    "payment_breakdown": "Detalii Plată",
+    "remaining": "rămase",
+        "already_paid": "Deja Plătite",
+    "paid_items_description": "Aceste produse sunt deja achitate",
+    "paid_orders": "Comenzi Plătite",
+    "paid_order": "Comandă Plătită",
+    "paid": "Plătit",
+    "settled_items": "Produse Achitate",
+    "paid_with": "Plătit cu",
+    "payment_settled": "Plată Finalizată",
+    "already_settled": "Deja Achitat",
+    "total_paid": "Total Plătit",
+       "items": "produse",
+           "split_bill_marketing_title": "Împarte cu Prietenii, Plătește Doar Ce Ai Consumat!",
+    "split_bill_marketing_text": "Împarte nota ușor cu prietenii. Fiecare persoană plătește doar pentru ce a consumat. Rapid, corect și distractiv!"
   },
-    "repeat_order": {
+  "repeat_order": {
     "title": "Comanda din nou",
     "subtitle": "Recomandă rapidă din comenzile neplătite",
     "subtitle_loading": "Recomandă rapidă din istoric",
@@ -237,7 +272,7 @@
     "add_item_title": "Adaugă {{quantity}} {{name}} în coș",
     "cannot_add_items": "nu se pot adăuga produse"
   },
-   "waiter_modal": {
+  "waiter_modal": {
     "need_help": "Asistență",
     "how_can_we_assist": "Cu ce vă putem ajuta astăzi? Vă rugăm să selectați o opțiune de mai jos.",
     "call_waiter": "Cheamă un ospătar",
@@ -268,26 +303,29 @@
     "other_reason": "Alt motiv",
     "something_else": "Altceva"
   },
-    "welcome": {
-    "welcome_to": "Bun venit la",
+  "welcome": {
     "our_restaurant": "Restaurantul Nostru",
-    "exquisite_dining": "Experiență culinară rafinată",
-    "welcome_description": "Pentru a-ți îmbunătăți experiența, scanează codul QR pentru a vizualiza meniul, plasează-ți comanda și relaxează-te. Suntem dedicați să-ți oferim cele mai proaspete preparate și o experiență culinară plăcută!",
+    "exquisite_dining": "Experiență Gastronomică Rafinată",
+    "welcome_to": "Bun venit la",
+    "welcome_description": "Descoperiți o călătorie culinară de neuitat, unde tradiția întâlnește inovația. Bucătarii noștri creează fiecare preparat cu pasiune și cele mai bune ingrediente.",
     "business_hours": "Program de Funcționare",
     "monday_friday": "Luni - Vineri",
     "saturday": "Sâmbătă",
     "sunday": "Duminică",
     "closed": "Închis",
     "explore_menu": "Explorează Meniul",
-    "contact_us": "Contactează-ne"
+    "contact_us": "Contactează-ne",
+    "click_to_view": "Apasă pentru a vedea orele",
+    "click_to_hide": "Apasă pentru a ascunde orele",
+    "hours_note": "*Programul poate varia în zilele de sărbătoare"
   },
-   "not_found": {
+  "not_found": {
     "page_not_found": "Pagina nu a fost găsită",
     "error_message": "Ne pare rău, pagina pe care o cauți nu există.",
     "back": "Înapoi",
     "home_page": "Pagina principală"
   },
-    "thank_you": {
+  "thank_you": {
     "finalizing_order": "Se finalizează comanda ta...",
     "order_confirmed": "Comandă Confirmată",
     "thank_you_purchase": "Vă mulțumim pentru achiziție",
@@ -297,7 +335,7 @@
     "return_home_now": "Înapoi Acasă Acum",
     "order_details_sent": "Detaliile comenzii au fost trimise pe email"
   },
-    "verify": {
+  "verify": {
     "finalizing_order": "Se finalizează comanda ta...",
     "payment_failed": "Plata a Eșuat",
     "payment_failed_subtitle": "Nu am putut procesa plata dvs.",
@@ -315,7 +353,60 @@
     "bon_appetit": "Poftă bună! 🍽️"
   },
   "extension_already_in_progress": "An extension is already in progress on another device",
-  "extension_in_progress_on_other_device": "Session extension in progress on another device", 
+  "extension_in_progress_on_other_device": "Session extension in progress on another device",
   "extension_in_progress": "Extension in progress...",
-  "user_not_active": "Your session is no longer active. Please log in again."
+  "user_not_active": "Your session is no longer active. Please log in again.",
+  "select_duration": "Selecteaza durata",
+  "extend_session": "Extinde sesiunea",
+  "order_completed": {
+    "title": "Comandă Plașată cu Succes!",
+    "subtitle": "Comanda ta a fost procesată și va fi pregătită în curând.",
+    "order_details": "Detalii Comandă",
+    "date_time": "Data și Ora",
+    "status": "Status",
+    "pending": "În așteptare",
+    "confirmed": "Confirmată",
+    "preparing": "Se prepară",
+    "ready": "Gata",
+    "delivered": "Livrată",
+    "payment_method": "Modalitate Plată",
+    "card": "Card",
+    "cash": "Cash",
+    "table": "Masă",
+    "items": "Produse Comandate",
+    "special_instructions": "Instrucțiuni speciale",
+    "subtotal": "Subtotal",
+    "delivery": "Livrare",
+    "tax": "TVA",
+    "total": "Total",
+    "view_orders": "Vezi Comenzile",
+    "print": "Printează",
+    "share": "Partajează",
+    "redirect_message": "Vei fi redirecționat în",
+    "seconds": "secunde",
+    "skip_now": "Sari acum",
+    "thank_you": "Îți mulțumim!",
+    "thank_you_message": "Apreciem încrederea acordată. Pentru orice întrebări, contactează-ne.",
+    "restaurant_address": "Strada Exemplu nr. 123, București",
+    "loading": "Se încarcă detaliile comenzii...",
+    "not_found": "Comanda nu a fost găsită",
+    "not_found_message": "Nu am putut găsi detaliile comenzii. Te rugăm să încerci din nou.",
+    "go_home": "Mergi la Acasă"
+  },
+  "welcome": {
+    "our_restaurant": "Our Restaurant",
+    "exquisite_dining": "Exquisite Dining Experience",
+    "welcome_to": "Welcome to",
+    "welcome_description": "Discover an unforgettable culinary journey where tradition meets innovation. Our chefs craft each dish with passion and the finest ingredients.",
+    "business_hours": "Business Hours",
+    "monday_friday": "Monday - Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday",
+    "closed": "Closed",
+    "explore_menu": "Explore Menu",
+    "contact_us": "Contact Us",
+    "click_to_view": "Click to view hours",
+    "click_to_hide": "Click to hide hours",
+    "hours_note": "*Hours may vary during holidays"
+  }
 }

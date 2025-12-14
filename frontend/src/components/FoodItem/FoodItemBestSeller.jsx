@@ -421,7 +421,7 @@ const FoodItemBestSeller = ({
                 {t("food_item.price_original", { price })}
               </span>
               <span className="discounted-price">
-                {t("food_item.price_discounted", { price: discountedPrice })}
+                {parseFloat(discountedPrice).toFixed(2)}
               </span>
             </div>
           ) : (

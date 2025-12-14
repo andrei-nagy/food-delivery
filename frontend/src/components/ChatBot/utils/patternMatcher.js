@@ -1,9 +1,11 @@
-import { patterns } from "./ChatPatterns";
+import { patternsRO, patternsEN } from "./ChatPatterns";
 import { fetchPopularCategories } from "../services/apiService";
 
 export const findBestMatch = async (question, lang, url) => {
   const lowerQuestion = question.toLowerCase().trim();
-  const langPatterns = patterns[lang];
+  
+  // Folosim pattern-urile specifice limbii
+  const langPatterns = lang === 'ro' ? patternsRO : patternsEN;
 
   // Verifică toate categoriile existente...
   const isLanguageQuestion = langPatterns.language.some((pattern) =>
@@ -15,10 +17,9 @@ export const findBestMatch = async (question, lang, url) => {
   const isRecommendationQuestion = langPatterns.recommendation.some(
     (pattern) => pattern.test(lowerQuestion)
   );
-  const isBestSellerQuestion =
-    /best.*seller|cel.*mai.*vandut|popular|top.*product|cele.*mai.*comandate/i.test(
-      lowerQuestion
-    );
+  const isBestSellerQuestion = langPatterns.best_seller.some((pattern) =>
+    pattern.test(lowerQuestion)
+  );
   const isMenuQuestion = langPatterns.menu.some((pattern) =>
     pattern.test(lowerQuestion)
   );
@@ -70,6 +71,12 @@ export const findBestMatch = async (question, lang, url) => {
     pattern.test(lowerQuestion)
   );
   const isFeedbackQuestion = langPatterns.feedback.some((pattern) =>
+    pattern.test(lowerQuestion)
+  );
+  const isReservationQuestion = langPatterns.reservation.some((pattern) =>
+    pattern.test(lowerQuestion)
+  );
+  const isTakeawayQuestion = langPatterns.takeaway.some((pattern) =>
     pattern.test(lowerQuestion)
   );
 
@@ -237,6 +244,14 @@ export const findBestMatch = async (question, lang, url) => {
 
     if (isFeedbackQuestion) {
       return "💬 **Feedback și sugestii:**\n\nApreciem foarte mult părerea dvs.! \n\n• ⭐ **Recenzii online** - scrieți-ne pe Google sau Tripadvisor\n• 📝 **Formular feedback** - în aplicația noastră\n• 🗣️ **Direct la manager** - cereți să vorbiți cu managerul de tură\n• 💡 **Sugestii** - le putem discuta acum sau prin email\n\nFeedback-ul dvs. ne ajută să devenim mai buni zilnic!";
+    }
+
+    if (isReservationQuestion) {
+      return "📅 **Rezervări:**\n\n• 📞 **Telefonic** - 0722 123 456\n• 📱 **Online** - prin aplicația noastră\n• ⏰ **Program rezervări** - Luni-Duminică 9:00-23:00\n• 👥 **Grupuri mari** - cu minim 48h în avans\n• 🎉 **Evenimente speciale** - consultanță personalizată\n• 💰 **Avans** - necesar pentru evenimente peste 20 persoane\n\nVă așteptăm cu drag!";
+    }
+
+    if (isTakeawayQuestion) {
+      return "🥡 **Takeaway & Livrare:**\n\n• 🛵 **Livrare acasă** - în 45 minute\n• 🏃 **Ridicare personală** - în 20 minute\n• 💰 **Livrare gratuită** - pentru comenzi peste 100 lei\n• 📱 **Comandă online** - prin aplicație sau website\n• 🕒 **Program livrări** - 10:00-23:00\n• 🗺️ **Zonă de livrare** - întreg orașul\n\nComandați acum și primiți 10% reducere!";
     }
 
     if (isIngredientsQuestion) {
@@ -445,6 +460,14 @@ export const findBestMatch = async (question, lang, url) => {
 
     if (isFeedbackQuestion) {
       return "💬 **Feedback and Suggestions:**\n\nWe greatly appreciate your opinion!\n\n• ⭐ **Online reviews** - write to us on Google or Tripadvisor\n• 📝 **Feedback form** - in our application\n• 🗣️ **Direct to manager** - ask to speak with the shift manager\n• 💡 **Suggestions** - we can discuss now or by email\n\nYour feedback helps us become better every day!";
+    }
+
+    if (isReservationQuestion) {
+      return "📅 **Reservations:**\n\n• 📞 **Phone** - 0722 123 456\n• 📱 **Online** - through our application\n• ⏰ **Reservation hours** - Monday-Sunday 9:00-23:00\n• 👥 **Large groups** - minimum 48h in advance\n• 🎉 **Special events** - personalized consultation\n• 💰 **Deposit** - required for events over 20 people\n\nWe look forward to welcoming you!";
+    }
+
+    if (isTakeawayQuestion) {
+      return "🥡 **Takeaway & Delivery:**\n\n• 🛵 **Home delivery** - within 45 minutes\n• 🏃 **Pickup** - within 20 minutes\n• 💰 **Free delivery** - for orders over 100 lei\n• 📱 **Online ordering** - through app or website\n• 🕒 **Delivery hours** - 10:00-23:00\n• 🗺️ **Delivery area** - entire city\n\nOrder now and get 10% discount!";
     }
 
     if (isIngredientsQuestion) {

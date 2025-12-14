@@ -1,0 +1,102 @@
+ /* OrderList.css - Styles for OrderList component */
+.orders-list-minimal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.order-group-minimal {
+  background: #FFFFFF;
+  border-radius: 12px;
+  border: 1px solid #F0F0F0;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+
+.order-group-header {
+  background: #F8F8F8;
+  padding: 12px 16px;
+  border-bottom: 1px solid #F0F0F0;
+}
+
+.order-group-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #555555;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.order-date {
+  font-size: 13px;
+  color: #777777;
+  font-weight: 400;
+}
+
+.order-group-items {
+  padding: 16px;
+}
+
+.order-group-footer {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #F0F0F0;
+}
+
+.order-total-minimal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.order-total-label {
+  font-size: 14px;
+  color: #555555;
+  font-weight: 500;
+}
+
+.order-total-amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333333;
+}
+
+.order-divider {
+  height: 1px;
+  background: #F0F0F0;
+  margin: 8px 0;
+}
+
+/* Responsive pentru OrderList */
+@media (max-width: 640px) {
+  .orders-list-minimal {
+    gap: 12px;
+  }
+  
+  .order-group-header {
+    padding: 10px 14px;
+  }
+  
+  .order-group-items {
+    padding: 14px;
+  }
+  
+  .order-group-title {
+    font-size: 13px;
+  }
+  
+  .order-date {
+    font-size: 12px;
+  }
+  
+  .order-total-label {
+    font-size: 13px;
+  }
+  
+  .order-total-amount {
+    font-size: 15px;
+  }
+}

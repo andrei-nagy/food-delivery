@@ -1,251 +1,488 @@
-.welcome-page {
+/* Welcome.css - Minimal White Design with Accordion */
+
+.welcome-minimal {
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
     overflow: hidden;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    padding: 20px;
+    background: #ffffff;
 }
 
-.welcome-background {
+.welcome-minimal-canvas {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    z-index: -2;
+    z-index: 0;
+    opacity: 0.3;
 }
 
-.welcome-background::before {
+.welcome-minimal-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.welcome-bg-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 50%, #f0f0f0 100%);
+}
+
+.welcome-bg-light {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.8) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255,255,255,0.6) 0%, transparent 50%);
+}
+
+.welcome-floating-shapes {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.welcome-shape {
+    position: absolute;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(10px);
+}
+
+.welcome-shape-circle {
+    width: 150px;
+    height: 150px;
+    top: 10%;
+    left: 10%;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.welcome-shape-square {
+    width: 100px;
+    height: 100px;
+    bottom: 15%;
+    right: 15%;
+    transform: rotate(45deg);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.welcome-shape-triangle {
+    width: 0;
+    height: 0;
+    top: 70%;
+    left: 15%;
+    border-left: 60px solid transparent;
+    border-right: 60px solid transparent;
+    border-bottom: 104px solid rgba(255, 255, 255, 0.4);
+    transform: rotate(30deg);
+    border: none;
+}
+
+.welcome-minimal-content {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 520px;
+    padding: 20px;
+}
+
+.welcome-minimal-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 28px;
+    padding: 48px 40px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.03),
+        0 0 0 1px rgba(255, 255, 255, 1),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-minimal-card::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.07)"/></svg>');
-    background-size: cover;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(0, 0, 0, 0.05), 
+        transparent);
 }
 
-.background-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: -1;
+.welcome-logo-minimal {
+    margin-bottom: 36px;
 }
 
-.welcome-container {
-    width: 100%;
-    max-width: 1200px;
-    padding: 2rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.welcome-logo-frame-minimal {
+    display: inline-flex;
+    padding: 20px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 
+        0 8px 30px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.03);
 }
 
-.welcome-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border-radius: 24px;
-    padding: 3rem;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.1);
-    text-align: center;
-    max-width: 600px;
-    width: 100%;
+.welcome-logo-img-minimal {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.05));
 }
 
-.logo-container {
-    margin-bottom: 2rem;
-    display: flex;
-    justify-content: center;
+.welcome-title-minimal {
+    margin-bottom: 28px;
 }
 
-.welcome-logo {
-    width: 120px;
-    /* height: 120px;
-    border-radius: 50%; */
-    object-fit: cover;
-    /* border: 4px solid #fff;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); */
+.welcome-subtitle-minimal {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.4);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
 }
 
-.welcome-card h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 0.5rem;
-    line-height: 1.2;
+.welcome-main-title {
+    font-size: 2.8rem;
+    font-weight: 300;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    color: rgba(0, 0, 0, 0.9);
+    letter-spacing: -0.02em;
 }
 
-.restaurant-name {
-    color: #e74c3c;
-    font-weight: 800;
+.welcome-title-line {
+    height: 1.5px;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(0, 0, 0, 0.2), 
+        transparent);
+    margin: 0 auto;
+    max-width: 100px;
 }
 
-.slogan {
-    font-size: 1.2rem;
-    color: #7f8c8d;
+.welcome-slogan-minimal {
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: rgba(0, 0, 0, 0.6);
+    margin-bottom: 24px;
     font-style: italic;
-    margin-bottom: 1.5rem;
+    letter-spacing: 0.02em;
 }
 
-.welcome-description {
+.welcome-desc-minimal {
     font-size: 1.1rem;
-    color: #5a6c7d;
-    line-height: 1.6;
-    margin-bottom: 2.5rem;
+    line-height: 1.7;
+    color: rgba(0, 0, 0, 0.5);
+    margin-bottom: 40px;
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
+    font-weight: 300;
 }
 
-.schedule-container {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 16px;
-    padding: 1.5rem;
-    margin-bottom: 2.5rem;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+/* Accordion Styles */
+.welcome-hours-accordion {
+    background: rgba(250, 250, 250, 0.8);
+    border-radius: 20px;
+    margin-bottom: 40px;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+    position: relative;
 }
 
-.schedule-container h3 {
-    font-size: 1.3rem;
-    color: #2c3e50;
-    margin-bottom: 1.2rem;
-    font-weight: 600;
+.welcome-hours-accordion::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 2px;
+    background: rgba(0, 0, 0, 0.1);
 }
 
-.schedule-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-
-.schedule-item {
+.welcome-accordion-header {
+    width: 100%;
+    padding: 24px 32px;
+    border: none;
+    background: transparent;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.8rem 1rem;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.day {
-    font-weight: 600;
-    color: #2c3e50;
-}
-
-.hours {
-    color: #e74c3c;
-    font-weight: 500;
-}
-
-.button-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.explore-button, .contact-button {
-    padding: 1rem 2rem;
-    border: none;
-    border-radius: 12px;
-    font-size: 1.1rem;
-    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    text-transform: none;
+    text-align: left;
+    gap: 16px;
 }
 
-.explore-button {
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+.accordion-header-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 4px;
+}
+
+.accordion-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.7);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.accordion-hint {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: rgba(0, 0, 0, 0.4);
+    letter-spacing: 0.02em;
+    transition: color 0.3s ease;
+}
+
+.welcome-accordion-header:hover .accordion-hint {
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.accordion-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(0, 0, 0, 0.5);
+    transition: color 0.3s ease;
+    flex-shrink: 0;
+}
+
+.welcome-accordion-header:hover .accordion-icon {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.accordion-content-welcome {
+    overflow: hidden;
+    padding: 0 32px;
+}
+
+.welcome-hours-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px 0;
+}
+
+.welcome-hour-item-minimal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 20px;
+    background: white;
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    transition: all 0.25s ease;
+}
+
+.welcome-hour-day-minimal {
+    font-weight: 400;
+    color: rgba(0, 0, 0, 0.7);
+    font-size: 1.05rem;
+    letter-spacing: 0.01em;
+}
+
+.welcome-hour-time-minimal {
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.8);
+    font-size: 1.05rem;
+    letter-spacing: 0.01em;
+}
+
+.accordion-footer {
+    padding: 20px 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.03);
+    margin-top: 8px;
+}
+
+.footer-note {
+    font-size: 0.9rem;
+    color: rgba(0, 0, 0, 0.4);
+    font-style: italic;
+    text-align: center;
+    line-height: 1.5;
+}
+
+/* Buttons */
+.welcome-buttons-minimal {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+.welcome-btn-primary,
+.welcome-btn-secondary {
+    padding: 20px 36px;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.15rem;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    letter-spacing: 0.02em;
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-btn-primary {
+    background: rgba(0, 0, 0, 0.85);
     color: white;
-    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    position: relative;
 }
 
-.contact-button {
+.welcome-btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.1), 
+        transparent);
+    transition: 0.5s;
+}
+
+.welcome-btn-primary:hover::before {
+    left: 100%;
+}
+
+.welcome-btn-secondary {
     background: transparent;
-    color: #2c3e50;
-    border: 2px solid #2c3e50;
+    color: rgba(0, 0, 0, 0.7);
+    border: 1.5px solid rgba(0, 0, 0, 0.1);
 }
 
-.explore-button:hover {
-    background: linear-gradient(135deg, #c0392b 0%, #a23526 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+.welcome-btn-secondary:hover {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.2);
+    color: rgba(0, 0, 0, 0.9);
 }
 
-.contact-button:hover {
-    background: #2c3e50;
-    color: white;
-    transform: translateY(-2px);
+.welcome-dots-minimal {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(0, 0, 0, 0.03);
 }
 
-/* Ascunde navbar-ul pe pagina de welcome */
-.welcome-page ~ .navbar {
-    display: none !important;
+.welcome-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.1);
 }
 
-/* Responsive design */
+.welcome-scroll-minimal {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.welcome-scroll-line {
+    width: 1px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-    .welcome-container {
-        padding: 1rem;
+    .welcome-minimal-card {
+        padding: 36px 28px;
+        border-radius: 24px;
     }
     
-    .welcome-card {
-        padding: 2rem 1.5rem;
+    .welcome-main-title {
+        font-size: 2.2rem;
     }
     
-    .welcome-card h1 {
-        font-size: 2rem;
+    .welcome-accordion-header {
+        padding: 20px 24px;
     }
     
-    .schedule-item {
+    .accordion-content-welcome {
+        padding: 0 24px;
+    }
+    
+    .welcome-hour-item-minimal {
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 8px;
         text-align: center;
+        padding: 16px;
     }
     
-    .button-container {
-        flex-direction: column;
+    .welcome-btn-primary,
+    .welcome-btn-secondary {
+        padding: 18px 28px;
+        font-size: 1.1rem;
     }
 }
 
 @media (max-width: 480px) {
-    .welcome-card {
-        padding: 1.5rem 1rem;
+    .welcome-minimal {
+        padding: 16px;
     }
     
-    .welcome-card h1 {
-        font-size: 1.8rem;
+    .welcome-main-title {
+        font-size: 1.9rem;
     }
     
-    .welcome-description {
+    .welcome-slogan-minimal {
+        font-size: 1.15rem;
+    }
+    
+    .welcome-desc-minimal {
         font-size: 1rem;
     }
     
-    .explore-button, .contact-button {
-        padding: 0.8rem 1.5rem;
-        font-size: 1rem;
+    .welcome-accordion-header {
+        padding: 18px 20px;
+    }
+    
+    .accordion-content-welcome {
+        padding: 0 20px;
     }
 }
 
-.welcome-page #footer {
-    display: none;
-}
-
-/* Stilul normal al .app */
-.app {
-    max-width: 1200px;
-    margin: 0 auto;
-    /* alte stiluri */
-}
-
-/* Stilul special pentru Welcome page */
-.app.welcome-page-active {
+.welcome-clean-active {
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;

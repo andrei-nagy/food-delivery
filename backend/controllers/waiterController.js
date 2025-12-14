@@ -12,8 +12,8 @@ const addWaiterRequest = async (req, res) => {
     await waiterReq.save();
     const message =
       req.body.action === "I want to pay"
-        ? "Payment Request Submitted"
-        : "Waiter Request Submittedddd";
+        ? "Payment request submitted"
+        : "Waiter request submitted";
 
     res.json({
       success: true,
@@ -23,7 +23,7 @@ const addWaiterRequest = async (req, res) => {
     console.log(error);
     res.json({
       success: false,
-      message: "Errore",
+      message: "Error",
     });
   }
 };

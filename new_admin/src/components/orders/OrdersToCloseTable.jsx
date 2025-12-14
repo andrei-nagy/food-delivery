@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Grid, Table, Clock, Users, AlertCircle, CheckCircle, XCircle, DollarSign } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useUrl } from "../context/UrlContext";
@@ -27,10 +27,22 @@ const OrdersToCloseTable = () => {
   const [selectedTableNo, setSelectedTableNo] = useState(null);
   const [selectedToken, setSelectedToken] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [viewMode, setViewMode] = useState("map"); // "map" or "table"
+  const [tableTimers, setTableTimers] = useState({});
+  const [urgentTables, setUrgentTables] = useState([]);
+  const [tableTotals, setTableTotals] = useState({});
 
   const navigate = useNavigate();
   const { url } = useUrl();
   const ordersPerPage = 10;
+
+  // Layout configuration for tables
+  const tableLayout = [
+    [1, 2, 3, 4, 5],
+    [6, 7, 8, 9, 10],
+    [11, 12, 13, 14, 15],
+    [16, 17, 18, 19, 20]
+  ];
 
   // Fetch orders and users from the API
   const fetchData = async () => {
@@ -64,25 +76,152 @@ const OrdersToCloseTable = () => {
         );
 
         setCombinedOrders(sortedCombined);
-        // Apelarea lui getUniqueUsers aici
-        const uniqueUsers = getUniqueUsers(sortedCombined);
-        setFilteredOrders(uniqueUsers);
+        
+        // Apelarea lui getUniqueUsers aici - DOAR pentru useri activi
+        const activeUsersOrders = sortedCombined.filter(
+          (order) => order.user?.isActive === true
+        );
+        const uniqueUsers = getUniqueUsers(activeUsersOrders);
+        
+        // Calculate totals for each table
+        const totals = {};
+        const timers = {};
+        const urgent = [];
+        
+        uniqueUsers.forEach((userOrder) => {
+          // Get all orders for this user/table
+          const userOrders = sortedCombined.filter(
+            (order) => order.userId === userOrder.userId
+          );
+          
+          // Calculate total amount for this table
+          let totalAmount = 0;
+          userOrders.forEach((order) => {
+            if (order.items && Array.isArray(order.items)) {
+              order.items.forEach((item) => {
+                const price = parseFloat(item.price) || 0;
+                const quantity = parseInt(item.quantity) || 1;
+                totalAmount += price * quantity;
+              });
+            }
+          });
+          
+          totals[userOrder.tableNo] = totalAmount.toFixed(2);
+          
+          // Calculate timer
+          if (userOrder.user?.tokenExpiry) {
+            const expiryTime = new Date(userOrder.user.tokenExpiry).getTime();
+            const now = new Date().getTime();
+            const timeLeft = expiryTime - now;
+            
+            timers[userOrder.tableNo] = {
+              expiryTime,
+              timeLeft,
+              formatted: formatTimeLeft(timeLeft)
+            };
+            
+            // If less than 15 minutes left, mark as urgent
+            if (timeLeft > 0 && timeLeft < 15 * 60 * 1000) {
+              urgent.push(userOrder.tableNo);
+            }
+          }
+        });
+        
+        // Add total amount to each user order
+        const usersWithTotals = uniqueUsers.map(userOrder => ({
+          ...userOrder,
+          totalAmount: totals[userOrder.tableNo] || "0.00"
+        }));
+        
+        setFilteredOrders(usersWithTotals);
+        setTableTimers(timers);
+        setUrgentTables(urgent);
+        setTableTotals(totals);
       } else {
         console.error("Failed to fetch data.");
         setFilteredOrders([]);
+        setTableTimers({});
+        setUrgentTables([]);
+        setTableTotals({});
       }
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
 
+  // Update timers every second
   useEffect(() => {
     fetchData();
-    const intervalId = setInterval(() => {
+    const dataIntervalId = setInterval(() => {
       fetchData();
     }, 5000);
-    return () => clearInterval(intervalId);
+
+    const timerIntervalId = setInterval(() => {
+      updateTimers();
+    }, 1000);
+
+    return () => {
+      clearInterval(dataIntervalId);
+      clearInterval(timerIntervalId);
+    };
   }, []);
+
+  // Update timers function
+  const updateTimers = () => {
+    const updatedTimers = { ...tableTimers };
+    const updatedUrgent = [];
+    let hasChanges = false;
+
+    Object.keys(updatedTimers).forEach(tableNo => {
+      const timer = updatedTimers[tableNo];
+      const now = new Date().getTime();
+      const timeLeft = timer.expiryTime - now;
+      
+      if (timeLeft !== timer.timeLeft) {
+        hasChanges = true;
+        updatedTimers[tableNo] = {
+          ...timer,
+          timeLeft,
+          formatted: formatTimeLeft(timeLeft)
+        };
+        
+        // Check if table becomes urgent (less than 15 minutes)
+        if (timeLeft > 0 && timeLeft < 15 * 60 * 1000) {
+          updatedUrgent.push(tableNo);
+        }
+      }
+    });
+
+    if (hasChanges) {
+      setTableTimers(updatedTimers);
+      setUrgentTables(updatedUrgent);
+    }
+  };
+
+  // Format time left
+  const formatTimeLeft = (timeLeft) => {
+    if (timeLeft <= 0) return "Expired";
+    
+    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${seconds}s`;
+    } else {
+      return `${seconds}s`;
+    }
+  };
+
+  // Get timer color based on time left
+  const getTimerColor = (timeLeft) => {
+    if (timeLeft <= 0) return "text-red-500";
+    if (timeLeft < 5 * 60 * 1000) return "text-red-400 animate-pulse";
+    if (timeLeft < 15 * 60 * 1000) return "text-yellow-400";
+    return "text-green-400";
+  };
 
   // Handle Global Search
   const handleSearch = (e) => {
@@ -103,7 +242,32 @@ const OrdersToCloseTable = () => {
 
   // Function to apply all filters
   const applyFilters = (globalSearch, columnFilters) => {
-    let filtered = getUniqueUsers(combinedOrders);
+    // Întotdeauna începem cu comenzile pentru useri activi
+    let filtered = getUniqueUsers(
+      combinedOrders.filter(order => order.user?.isActive === true)
+    );
+
+    // Calculate totals for filtered tables
+    const totals = {};
+    filtered.forEach((userOrder) => {
+      const userOrders = combinedOrders.filter(
+        (order) => order.userId === userOrder.userId
+      );
+      
+      let totalAmount = 0;
+      userOrders.forEach((order) => {
+        if (order.items && Array.isArray(order.items)) {
+          order.items.forEach((item) => {
+            const price = parseFloat(item.price) || 0;
+            const quantity = parseInt(item.quantity) || 1;
+            totalAmount += price * quantity;
+          });
+        }
+      });
+      
+      totals[userOrder.tableNo] = totalAmount.toFixed(2);
+      userOrder.totalAmount = totals[userOrder.tableNo];
+    });
 
     // Global search
     if (globalSearch) {
@@ -112,13 +276,15 @@ const OrdersToCloseTable = () => {
         const paymentMethod = userOrder.paymentMethod ? String(userOrder.paymentMethod) : "";
         const status = userOrder.status ? String(userOrder.status) : "";
         const date = userOrder.date ? new Date(userOrder.date).toLocaleDateString("ro-RO") : "";
-        const tableStatus = userOrder.user?.isActive ? "in service" : "closed";
+        const total = userOrder.totalAmount || "0.00";
+        const tableStatus = "in service"; // Toate sunt active acum
 
         return (
           tableNo.toLowerCase().includes(globalSearch) ||
           paymentMethod.toLowerCase().includes(globalSearch) ||
           status.toLowerCase().includes(globalSearch) ||
           date.includes(globalSearch) ||
+          total.includes(globalSearch) ||
           tableStatus.includes(globalSearch)
         );
       });
@@ -151,7 +317,7 @@ const OrdersToCloseTable = () => {
 
     if (columnFilters.tableStatus) {
       filtered = filtered.filter(userOrder => {
-        const tableStatus = userOrder.user?.isActive ? "in service" : "closed";
+        const tableStatus = "in service";
         return tableStatus.includes(columnFilters.tableStatus);
       });
     }
@@ -170,22 +336,36 @@ const OrdersToCloseTable = () => {
       date: "",
       tableStatus: ""
     });
-    const uniqueUsers = getUniqueUsers(combinedOrders);
+    // Resetează la comenzile active
+    const activeUsersOrders = combinedOrders.filter(
+      (order) => order.user?.isActive === true
+    );
+    const uniqueUsers = getUniqueUsers(activeUsersOrders);
+    
+    // Calculate totals
+    const totals = {};
+    uniqueUsers.forEach((userOrder) => {
+      const userOrders = combinedOrders.filter(
+        (order) => order.userId === userOrder.userId
+      );
+      
+      let totalAmount = 0;
+      userOrders.forEach((order) => {
+        if (order.items && Array.isArray(order.items)) {
+          order.items.forEach((item) => {
+            const price = parseFloat(item.price) || 0;
+            const quantity = parseInt(item.quantity) || 1;
+            totalAmount += price * quantity;
+          });
+        }
+      });
+      
+      totals[userOrder.tableNo] = totalAmount.toFixed(2);
+      userOrder.totalAmount = totals[userOrder.tableNo];
+    });
+    
     setFilteredOrders(uniqueUsers);
     setCurrentPage(1);
-  };
-
-  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
-
-  // Get CSS class for status
-  const getStatusClass = (isActive) => {
-    if (isActive === true) {
-      return "bg-green-500";
-    } else if (isActive === false) {
-      return "bg-red-500";
-    } else {
-      return "bg-gray-500";
-    }
   };
 
   // Function to get unique users based on orders
@@ -199,11 +379,73 @@ const OrdersToCloseTable = () => {
           orderCount: 1,
         });
       } else if (userMap.has(order.userId)) {
-        userMap.get(order.userId).orderCount++;
+        const existingOrder = userMap.get(order.userId);
+        existingOrder.orderCount++;
       }
     });
 
     return Array.from(userMap.values());
+  };
+
+  // Check if a table is active
+  const isTableActive = (tableNumber) => {
+    const tableOrder = filteredOrders.find(order => 
+      order.tableNo === tableNumber
+    );
+    return !!tableOrder;
+  };
+
+  // Get table details for a specific table
+  const getTableDetails = (tableNumber) => {
+    return filteredOrders.find(order => 
+      order.tableNo === tableNumber
+    );
+  };
+
+  // Handle table click
+  const handleTableClick = (tableNumber) => {
+    const tableDetails = getTableDetails(tableNumber);
+    if (tableDetails) {
+      handleCheckOrderClick(tableDetails);
+    }
+  };
+
+  // Function to handle opening the modal and setting the selected order items
+  const handleCheckOrderClick = (userOrder) => {
+    console.log("User order object:", userOrder);
+
+    setSelectedUserId(userOrder.userId);
+    setSelectedTableNo(userOrder.tableNo);
+
+    if (userOrder.user && userOrder.user.token) {
+      setSelectedToken(userOrder.user.token);
+      console.log("Token set from user object:", userOrder.user.token);
+    } else {
+      const fallbackToken = localStorage.getItem("token");
+      setSelectedToken(fallbackToken);
+      console.log("Using fallback token from localStorage:", fallbackToken);
+    }
+
+    const ordersForUser = combinedOrders.filter(
+      (order) => order.userId === userOrder.userId
+    );
+    setRelatedOrders(ordersForUser);
+    setIsModalOpen(true);
+  };
+
+  // Calculate total for related orders in modal
+  const calculateModalTotal = () => {
+    let total = 0;
+    relatedOrders.forEach((order) => {
+      if (order.items && Array.isArray(order.items)) {
+        order.items.forEach((item) => {
+          const price = parseFloat(item.price) || 0;
+          const quantity = parseInt(item.quantity) || 1;
+          total += price * quantity;
+        });
+      }
+    });
+    return total.toFixed(2);
   };
 
   // Handle updating isActive status
@@ -217,13 +459,13 @@ const OrdersToCloseTable = () => {
       );
 
       if (response.data.success) {
-        toast.success("User status updated successfully.", { theme: "dark" });
+        toast.success("Table closed successfully.", { theme: "dark" });
         fetchData();
       } else {
-        toast.error("Failed to update user status.", { theme: "dark" });
+        toast.error("Failed to update table status.", { theme: "dark" });
       }
     } catch (error) {
-      toast.error("Error updating user status.", { theme: "dark" });
+      toast.error("Error updating table status.", { theme: "dark" });
     }
   };
 
@@ -245,7 +487,7 @@ const OrdersToCloseTable = () => {
     await processPaymentAndCloseTable(paymentStatus, userId, newIsActiveStatus);
   };
 
-  // FUNCȚIE NOUĂ pentru procesarea plății și închiderea mesei
+  // FUNCȚIE pentru procesarea plății și închiderea mesei
   const processPaymentAndCloseTable = async (paymentStatus, userId, newIsActiveStatus) => {
     const promises = relatedOrders.map((order) =>
       axios.post(`${url}/api/order/payment-status`, {
@@ -295,263 +537,177 @@ const OrdersToCloseTable = () => {
     toast.info("Table closure cancelled.", { theme: "dark" });
   };
 
-  // Handle updating payment status
-  const handlePaymentStatusChange = async (orderId, paymentStatus) => {
-    try {
-      const response = await axios.post(`${url}/api/order/payment-status`, {
-        orderId: orderId,
-        payment: paymentStatus,
-      });
-
-      if (response.data.success) {
-        setRelatedOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order._id === orderId ? { ...order, payment: paymentStatus } : order
-          )
-        );
-        toast.success("Payment status updated successfully.", {
-          theme: "dark",
-        });
-        fetchData();
-      } else {
-        toast.error("Failed to update payment status.", { theme: "dark" });
-      }
-    } catch (error) {
-      toast.error("Error updating payment status.", { theme: "dark" });
-    }
-  };
-
-  // Function to handle opening the modal and setting the selected order items
-  const handleCheckOrderClick = (userOrder) => {
-    console.log("User order object:", userOrder);
-
-    setSelectedUserId(userOrder.userId);
-    setSelectedTableNo(userOrder.tableNo);
-
-    if (userOrder.user && userOrder.user.token) {
-      setSelectedToken(userOrder.user.token);
-      console.log("Token set from user object:", userOrder.user.token);
-    } else {
-      const fallbackToken = localStorage.getItem("token");
-      setSelectedToken(fallbackToken);
-      console.log("Using fallback token from localStorage:", fallbackToken);
-    }
-
-    const ordersForUser = combinedOrders.filter(
-      (order) => order.userId === userOrder.userId
-    );
-    setRelatedOrders(ordersForUser);
-    setIsModalOpen(true);
-  };
-
   // Function to close modal
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedOrderItems(null);
-    setShowConfirmation(false); // Resetează și confirmarea
+    setShowConfirmation(false);
   };
 
-  // Pagination logic
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  // Render Table View
+  const renderTableView = () => {
+    const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
+    const indexOfLastOrder = currentPage * ordersPerPage;
+    const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+    const currentUsers = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
 
-  const indexOfLastOrder = currentPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentUsers = filteredOrders.slice(
-    indexOfFirstOrder,
-    indexOfLastOrder
-  );
-
-  return (
-    <motion.div
-      className="bg-gray-800 bg-opacity-50 backdrop-blur-md shadow-lg rounded-xl p-6 border border-gray-700 mb-8"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4 }}
-    >
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-gray-100">Active Orders</h2>
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search all orders..."
-            className="bg-gray-700 text-white placeholder-gray-400 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={searchTerm}
-            onChange={handleSearch}
-          />
-          <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
-        </div>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-700">
-          <thead>
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-1">
-                    <Filter size={14} />
-                    Table No.
+    return (
+      <>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-700">
+            <thead>
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-1">
+                      <Filter size={14} />
+                      Table No.
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Filter table..."
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={columnFilters.tableNo}
+                      onChange={(e) => handleColumnFilter('tableNo', e.target.value)}
+                    />
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Filter table..."
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={columnFilters.tableNo}
-                    onChange={(e) => handleColumnFilter('tableNo', e.target.value)}
-                  />
-                </div>
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                <div className="space-y-2">
-                  <div>Payment Method</div>
-                  <input
-                    type="text"
-                    placeholder="Filter method..."
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={columnFilters.paymentMethod}
-                    onChange={(e) => handleColumnFilter('paymentMethod', e.target.value)}
-                  />
-                </div>
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                <div className="space-y-2">
-                  <div>Status</div>
-                  <input
-                    type="text"
-                    placeholder="Filter status..."
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={columnFilters.status}
-                    onChange={(e) => handleColumnFilter('status', e.target.value)}
-                  />
-                </div>
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                <div className="space-y-2">
-                  <div>Date</div>
-                  <input
-                    type="text"
-                    placeholder="Filter date..."
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={columnFilters.date}
-                    onChange={(e) => handleColumnFilter('date', e.target.value)}
-                  />
-                </div>
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                <div className="space-y-2">
-                  <div>Table status</div>
-                  <input
-                    type="text"
-                    placeholder="Type 'in service' or 'closed'"
-                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={columnFilters.tableStatus}
-                    onChange={(e) => handleColumnFilter('tableStatus', e.target.value)}
-                  />
-                </div>
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Items
-              </th>
-            </tr>
-          </thead>
-
-          <tbody className="divide divide-gray-700">
-            {currentUsers.map((userOrder) => (
-              <motion.tr
-                key={userOrder._id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                className="border-b border-gray-700"
-              >
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
-                  <div className="h-10 w-10 rounded-lg border-2 border-gray-700 flex items-center justify-center text-white font-semibold hover:bg-gray-700 focus:ring-2 focus:ring-blue-100 focus:outline-none">
-                    {userOrder.tableNo}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <div className="space-y-2">
+                    <div>Total Amount</div>
                   </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
-                  {userOrder.paymentMethod || "Unknown"}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
-                  {userOrder.status}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
-                  {new Date(userOrder.date).toLocaleDateString("ro-RO")}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
-                  {userOrder.user?.isActive ? (
-                    <span className="text-green-500">In service</span>
-                  ) : (
-                    <span className="text-red-500">Closed</span>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                  <button
-                    className="bg-gray-800 text-white font-semibold rounded-md px-6 py-3 border-2 border-gray-700 hover:bg-gray-700 focus:ring-2 focus:ring-blue-100 focus:outline-none"
-                    onClick={() => handleCheckOrderClick(userOrder)}
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <div className="space-y-2">
+                    <div>Time Left</div>
+                    <select
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={columnFilters.date}
+                      onChange={(e) => handleColumnFilter('date', e.target.value)}
+                    >
+                      <option value="">All</option>
+                      <option value="urgent">Urgent (&lt;15min)</option>
+                      <option value="expired">Expired</option>
+                    </select>
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <div className="space-y-2">
+                    <div>Orders</div>
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  <div className="space-y-2">
+                    <div>Status</div>
+                    <input
+                      type="text"
+                      placeholder="Filter status..."
+                      className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      value={columnFilters.status}
+                      onChange={(e) => handleColumnFilter('status', e.target.value)}
+                    />
+                  </div>
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+
+            <tbody className="divide divide-gray-700">
+              {currentUsers.map((userOrder) => {
+                const timer = tableTimers[userOrder.tableNo];
+                const isUrgent = urgentTables.includes(userOrder.tableNo);
+                const isExpired = timer?.timeLeft <= 0;
+                
+                return (
+                  <motion.tr
+                    key={userOrder._id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className={`border-b ${isUrgent ? 'bg-red-900 bg-opacity-20' : ''} ${isExpired ? 'bg-gray-900 bg-opacity-30' : ''}`}
                   >
-                    Close order
-                  </button>
-                </td>
-              </motion.tr>
-            ))}
-          </tbody>
-        </table>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <div className={`h-10 w-10 rounded-lg border-2 flex items-center justify-center text-white font-semibold hover:opacity-90 focus:ring-2 focus:ring-blue-100 focus:outline-none ${
+                          isExpired ? 'bg-red-600 border-red-500' :
+                          isUrgent ? 'bg-yellow-600 border-yellow-500 animate-pulse' :
+                          'bg-green-600 border-green-500'
+                        }`}>
+                          {userOrder.tableNo}
+                        </div>
+                        {isUrgent && (
+                          <AlertCircle className="w-5 h-5 text-yellow-500 animate-pulse" />
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-green-400" />
+                        <span className="text-lg font-bold text-green-300">
+                          ${userOrder.totalAmount || "0.00"}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <Clock className={`w-4 h-4 ${getTimerColor(timer?.timeLeft)}`} />
+                        <span className={`text-sm font-medium ${getTimerColor(timer?.timeLeft)}`}>
+                          {timer?.formatted || "No timer"}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm font-medium text-gray-100">
+                          {userOrder.orderCount || 1}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
+                      {userOrder.status || "Active"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      <button
+                        className="bg-gray-800 text-white font-semibold rounded-md px-6 py-3 border-2 border-gray-700 hover:bg-gray-700 focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                        onClick={() => handleCheckOrderClick(userOrder)}
+                      >
+                        Manage
+                      </button>
+                    </td>
+                  </motion.tr>
+                );
+              })}
+            </tbody>
+          </table>
 
-        {/* No results message */}
-        {currentUsers.length === 0 && (
-          <div className="text-center py-8 text-gray-400">
-            No orders found matching your filters.
-          </div>
-        )}
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center mt-6 space-x-2">
-          {/* Buton Previous */}
-          <button
-            onClick={() => paginate(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
-            className={`px-3 py-2 rounded-lg ${
-              currentPage === 1
-                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-          >
-            ←
-          </button>
-
-          {/* Prima pagină */}
-          {currentPage > 3 && (
-            <>
-              <button
-                onClick={() => paginate(1)}
-                className="px-3 py-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600"
-              >
-                1
-              </button>
-              {currentPage > 4 && <span className="px-2 text-gray-400">...</span>}
-            </>
+          {currentUsers.length === 0 && (
+            <div className="text-center py-8 text-gray-400">
+              No active tables at the moment.
+            </div>
           )}
+        </div>
 
-          {/* Paginile din mijloc */}
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            let pageNum;
-            if (currentPage <= 3) {
-              pageNum = i + 1;
-            } else if (currentPage >= totalPages - 2) {
-              pageNum = totalPages - 4 + i;
-            } else {
-              pageNum = currentPage - 2 + i;
-            }
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center mt-6 space-x-2">
+            <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className={`px-3 py-2 rounded-lg ${
+                currentPage === 1
+                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              ←
+            </button>
 
-            if (pageNum < 1 || pageNum > totalPages) return null;
-
-            return (
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNum => (
               <button
                 key={pageNum}
-                onClick={() => paginate(pageNum)}
+                onClick={() => setCurrentPage(pageNum)}
                 className={`px-3 py-2 rounded-lg ${
                   currentPage === pageNum
                     ? 'bg-blue-600 text-white'
@@ -560,48 +716,395 @@ const OrdersToCloseTable = () => {
               >
                 {pageNum}
               </button>
+            ))}
+
+            <button
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className={`px-3 py-2 rounded-lg ${
+                currentPage === totalPages
+                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              →
+            </button>
+          </div>
+        )}
+      </>
+    );
+  };
+
+  // Render Map View
+  const renderMapView = () => {
+    return (
+      <div className="p-4 bg-gray-900 bg-opacity-30 rounded-xl border border-gray-700">
+        {/* Legend */}
+        <div className="mb-6">
+          <div className="flex flex-wrap items-center gap-4 mb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <span className="text-sm text-gray-300">Active (Normal)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+              <span className="text-sm text-gray-300">Urgent (&lt;15min)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
+              <span className="text-sm text-gray-300">Expired/Critical (&lt;5min)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-gray-600"></div>
+              <span className="text-sm text-gray-300">Available</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Tables Grid */}
+        <div className="grid grid-cols-1 gap-6">
+          {tableLayout.map((row, rowIndex) => (
+            <div key={rowIndex} className="flex justify-center gap-6">
+              {row.map(tableNumber => {
+                const isActive = isTableActive(tableNumber);
+                const tableDetails = getTableDetails(tableNumber);
+                const timer = tableTimers[tableNumber];
+                const isUrgent = urgentTables.includes(tableNumber);
+                const isExpired = timer?.timeLeft <= 0;
+                const isCritical = timer?.timeLeft > 0 && timer?.timeLeft < 5 * 60 * 1000;
+                const totalAmount = tableDetails?.totalAmount || "0.00";
+                
+                // Determine table color
+                let tableColor = "bg-gray-800 border-gray-700";
+                let shadowColor = "";
+                
+                if (isActive) {
+                  if (isExpired) {
+                    tableColor = "bg-red-600 border-red-500";
+                    shadowColor = "shadow-lg shadow-red-500/20";
+                  } else if (isCritical) {
+                    tableColor = "bg-red-600 border-red-500 animate-pulse";
+                    shadowColor = "shadow-lg shadow-red-500/30";
+                  } else if (isUrgent) {
+                    tableColor = "bg-yellow-600 border-yellow-500";
+                    shadowColor = "shadow-lg shadow-yellow-500/20";
+                  } else {
+                    tableColor = "bg-green-600 border-green-500";
+                    shadowColor = "shadow-lg shadow-green-500/20";
+                  }
+                }
+                
+                return (
+                  <motion.div
+                    key={tableNumber}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="relative"
+                  >
+                    <button
+                      onClick={() => handleTableClick(tableNumber)}
+                      disabled={!isActive}
+                      className={`
+                        w-24 h-24 rounded-xl flex flex-col items-center justify-center
+                        border-2 transition-all duration-200 ${tableColor} ${shadowColor}
+                        ${isActive ? 'cursor-pointer hover:opacity-90' : 'cursor-not-allowed'}
+                      `}
+                    >
+                      <div className="text-2xl font-bold text-white mb-1">
+                        {tableNumber}
+                      </div>
+                      
+                      <div className="text-xs text-gray-200 mb-1">
+                        {isActive ? (
+                          timer?.formatted ? (
+                            <div className={`flex items-center gap-1 ${getTimerColor(timer.timeLeft)}`}>
+                              <Clock className="w-3 h-3" />
+                              <span>{timer.formatted}</span>
+                            </div>
+                          ) : "Active"
+                        ) : "Available"}
+                      </div>
+                      
+                      {isActive && (
+                        <>
+                          <div className="absolute -top-2 -right-2 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                            <span className="text-xs font-bold text-white">
+                              {tableDetails?.orderCount || 1}
+                            </span>
+                          </div>
+                          <div className="mt-1 text-xs">
+                            <div className="text-white font-medium flex items-center gap-1">
+                              <DollarSign className="w-3 h-3" />
+                              <span>{totalAmount}</span>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </button>
+                    
+                    {/* Warning icon for urgent/critical tables */}
+                    {(isUrgent || isCritical || isExpired) && (
+                      <div className="absolute -top-3 -left-3">
+                        <AlertCircle className={`w-6 h-6 ${
+                          isExpired ? 'text-red-500' :
+                          isCritical ? 'text-red-500 animate-pulse' :
+                          'text-yellow-500'
+                        }`} />
+                      </div>
+                    )}
+                    
+                    {/* Table legs for visual effect */}
+                    <div className="flex justify-between mt-1">
+                      <div className={`w-4 h-2 ${
+                        isExpired ? 'bg-red-700' :
+                        isCritical ? 'bg-red-700' :
+                        isUrgent ? 'bg-yellow-700' :
+                        isActive ? 'bg-green-700' : 'bg-gray-700'
+                      } rounded-sm`}></div>
+                      <div className={`w-4 h-2 ${
+                        isExpired ? 'bg-red-700' :
+                        isCritical ? 'bg-red-700' :
+                        isUrgent ? 'bg-yellow-700' :
+                        isActive ? 'bg-green-700' : 'bg-gray-700'
+                      } rounded-sm`}></div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        {/* Summary Cards */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          {filteredOrders.map((activeOrder) => {
+            const timer = tableTimers[activeOrder.tableNo];
+            const isUrgent = urgentTables.includes(activeOrder.tableNo);
+            const isExpired = timer?.timeLeft <= 0;
+            
+            return (
+              <div 
+                key={activeOrder._id} 
+                className={`bg-gray-800 p-4 rounded-lg border cursor-pointer transition-all hover:scale-[1.02] ${
+                  isExpired ? 'border-red-500 bg-red-900 bg-opacity-20' :
+                  isUrgent ? 'border-yellow-500 bg-yellow-900 bg-opacity-20' :
+                  'border-gray-700 hover:bg-gray-750'
+                }`}
+                onClick={() => handleCheckOrderClick(activeOrder)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full ${
+                      isExpired ? 'bg-red-500' :
+                      isUrgent ? 'bg-yellow-500 animate-pulse' :
+                      'bg-green-500'
+                    }`}></div>
+                    <div>
+                      <div className="font-semibold text-white">Table {activeOrder.tableNo}</div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <DollarSign className="w-3 h-3 text-green-400" />
+                        <span className="text-sm text-green-300 font-bold">
+                          ${activeOrder.totalAmount || "0.00"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-sm font-medium ${getTimerColor(timer?.timeLeft)}`}>
+                      {timer?.formatted || "No timer"}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {new Date(activeOrder.date).toLocaleDateString("ro-RO")}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-gray-700">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-300">{activeOrder.orderCount || 1} orders</span>
+                    </div>
+                    <button className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-1 rounded-lg text-sm transition-colors">
+                      Manage
+                    </button>
+                  </div>
+                </div>
+              </div>
             );
           })}
-
-          {/* Ultima pagină */}
-          {currentPage < totalPages - 2 && (
-            <>
-              {currentPage < totalPages - 3 && <span className="px-2 text-gray-400">...</span>}
-              <button
-                onClick={() => paginate(totalPages)}
-                className="px-3 py-2 rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600"
-              >
-                {totalPages}
-              </button>
-            </>
-          )}
-
-          {/* Buton Next */}
-          <button
-            onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage === totalPages}
-            className={`px-3 py-2 rounded-lg ${
-              currentPage === totalPages
-                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-          >
-            →
-          </button>
         </div>
-      )}
+
+        {filteredOrders.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-4">No active tables at the moment</div>
+            <div className="text-sm text-gray-500">All tables are available for new customers</div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <motion.div
+      className="bg-gray-800 bg-opacity-50 shadow-lg rounded-xl p-6 border border-gray-700 mb-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4 }}
+    >
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-100">Restaurant Tables Map</h2>
+          <p className="text-sm text-gray-400 mt-1">
+            Showing {filteredOrders.length} active table{filteredOrders.length !== 1 ? 's' : ''}
+            {urgentTables.length > 0 && (
+              <span className="ml-2 text-yellow-400">
+                • {urgentTables.length} urgent table{urgentTables.length !== 1 ? 's' : ''}
+              </span>
+            )}
+          </p>
+        </div>
+        
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4">
+          <div className="flex items-center gap-2 bg-gray-900 bg-opacity-50 p-1 rounded-lg">
+            <button
+              onClick={() => setViewMode("map")}
+              className={`px-4 py-2 rounded-md transition-colors ${
+                viewMode === "map" 
+                  ? "bg-blue-600 text-white" 
+                  : "text-gray-400 hover:text-white hover:bg-gray-700"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Grid size={18} />
+                <span>Map View</span>
+              </div>
+            </button>
+            <button
+              onClick={() => setViewMode("table")}
+              className={`px-4 py-2 rounded-md transition-colors ${
+                viewMode === "table" 
+                  ? "bg-blue-600 text-white" 
+                  : "text-gray-400 hover:text-white hover:bg-gray-700"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Table size={18} />
+                <span>Table View</span>
+              </div>
+            </button>
+          </div>
+          
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search tables or amounts..."
+              className="bg-gray-700 text-white placeholder-gray-400 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64"
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+            <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+          </div>
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-gray-900 bg-opacity-30 p-4 rounded-xl border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-400">Active Tables</div>
+                <div className="text-2xl font-bold text-green-400">
+                  {filteredOrders.length}
+                </div>
+              </div>
+              <Users className="w-8 h-8 text-green-500" />
+            </div>
+          </div>
+          
+          <div className="bg-gray-900 bg-opacity-30 p-4 rounded-xl border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-400">Urgent Tables</div>
+                <div className="text-2xl font-bold text-yellow-400">
+                  {urgentTables.length}
+                </div>
+              </div>
+              <AlertCircle className="w-8 h-8 text-yellow-500" />
+            </div>
+          </div>
+          
+          <div className="bg-gray-900 bg-opacity-30 p-4 rounded-xl border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-400">Total Revenue</div>
+                <div className="text-2xl font-bold text-blue-400">
+                  ${filteredOrders.reduce((sum, order) => sum + parseFloat(order.totalAmount || 0), 0).toFixed(2)}
+                </div>
+              </div>
+              <DollarSign className="w-8 h-8 text-blue-500" />
+            </div>
+          </div>
+          
+          <div className="bg-gray-900 bg-opacity-30 p-4 rounded-xl border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-400">Available Tables</div>
+                <div className="text-2xl font-bold text-gray-400">
+                  {20 - filteredOrders.length}
+                </div>
+              </div>
+              <XCircle className="w-8 h-8 text-gray-500" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Render the selected view */}
+      {viewMode === "map" ? renderMapView() : renderTableView()}
 
       {/* Modal for related orders */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-gray-800 rounded-lg p-6 relative max-w-6xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold text-gray-100 mb-4">
-              Related Orders for Table {selectedTableNo}
-            </h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold text-gray-100">
+                Orders for Table {selectedTableNo}
+              </h2>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 bg-green-900 bg-opacity-30 px-3 py-1 rounded-lg">
+                  <DollarSign className="w-4 h-4 text-green-400" />
+                  <span className="text-lg font-bold text-green-300">
+                    Total: ${calculateModalTotal()}
+                  </span>
+                </div>
+              </div>
+            </div>
             
-            {/* AFIȘEAZĂ ALERTĂ PENTRU COMENZI NEPLĂTITE */}
+            {/* Timer info */}
+            {tableTimers[selectedTableNo] && (
+              <div className={`mb-4 p-3 rounded-lg border ${
+                tableTimers[selectedTableNo].timeLeft <= 0 ? 'bg-red-900 bg-opacity-30 border-red-500' :
+                tableTimers[selectedTableNo].timeLeft < 5 * 60 * 1000 ? 'bg-red-900 bg-opacity-20 border-red-500' :
+                tableTimers[selectedTableNo].timeLeft < 15 * 60 * 1000 ? 'bg-yellow-900 bg-opacity-20 border-yellow-500' :
+                'bg-green-900 bg-opacity-20 border-green-500'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className={`w-5 h-5 ${getTimerColor(tableTimers[selectedTableNo].timeLeft)}`} />
+                    <span className={`font-medium ${getTimerColor(tableTimers[selectedTableNo].timeLeft)}`}>
+                      Time remaining: {tableTimers[selectedTableNo].formatted}
+                    </span>
+                  </div>
+                  {urgentTables.includes(selectedTableNo) && (
+                    <AlertCircle className="w-5 h-5 text-yellow-500 animate-pulse" />
+                  )}
+                </div>
+              </div>
+            )}
+            
             {relatedOrders.some(order => !order.payment) && (
-              <div className="mb-4 p-3 bg-yellow-600 bg-opacity-20 border  rounded-lg">
+              <div className="mb-4 p-3 bg-yellow-600 bg-opacity-20 border border-yellow-500 rounded-lg">
                 <p className="text-yellow-300 text-sm">
                   ⚠️ There are {relatedOrders.filter(order => !order.payment).length} unpaid order(s). 
                   Make sure payment is received before closing the table.
@@ -613,68 +1116,98 @@ const OrdersToCloseTable = () => {
               <thead>
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Order Number
+                    Order #
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Items
+                    Items & Quantity
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Instructions
+                    Item Price
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Payment Method
+                    Total
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Is paid?
+                    Payment
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                    Date
-                  </th>
                 </tr>
               </thead>
               <tbody className="divide divide-gray-700">
-                {relatedOrders.map((order) => (
-                  <tr key={order._id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
-                      {order.orderNumber || "Unknown"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {order.items.length > 0 ? (
-                        order.items.map((item, index) => (
-                          <div key={index}>
-                            {item.name} x {item.quantity}
+                {relatedOrders.map((order) => {
+                  // Calculate order total
+                  let orderTotal = 0;
+                  if (order.items && Array.isArray(order.items)) {
+                    order.items.forEach((item) => {
+                      const price = parseFloat(item.price) || 0;
+                      const quantity = parseInt(item.quantity) || 1;
+                      orderTotal += price * quantity;
+                    });
+                  }
+                  
+                  return (
+                    <tr key={order._id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
+                        {order.orderNumber || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-300">
+                        {order.items && order.items.length > 0 ? (
+                          <div className="space-y-1">
+                            {order.items.map((item, index) => (
+                              <div key={index} className="flex justify-between">
+                                <span>{item.name} x {item.quantity}</span>
+                              </div>
+                            ))}
                           </div>
-                        ))
-                      ) : (
-                        <p>No items</p>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
-                      {order.specialInstructions || "Unknown"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
-                      {order.paymentMethod || "Unknown"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
-                      {order.payment ? (
-                        <span className="text-green-500">Successful</span>
-                      ) : (
-                        <span className="text-red-500">Not paid</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
-                      {order.status || "Unknown"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {new Date(order.date).toLocaleDateString("ro-RO") ||
-                        "Unknown"}
-                    </td>
-                  </tr>
-                ))}
+                        ) : (
+                          <p>No items</p>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-300">
+                        {order.items && order.items.length > 0 ? (
+                          <div className="space-y-1">
+                            {order.items.map((item, index) => (
+                              <div key={index}>
+                                ${parseFloat(item.price || 0).toFixed(2)}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p>-</p>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-300">
+                        ${orderTotal.toFixed(2)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          order.payment 
+                            ? 'bg-green-900 text-green-200' 
+                            : 'bg-red-900 text-red-200'
+                        }`}>
+                          {order.payment ? "Paid" : "Unpaid"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-100">
+                        {order.status || "Pending"}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
+              <tfoot className="bg-gray-900">
+                <tr>
+                  <td colSpan="3" className="px-6 py-4 text-right text-sm font-medium text-gray-400">
+                    Grand Total:
+                  </td>
+                  <td className="px-6 py-4 text-lg font-bold text-green-300">
+                    ${calculateModalTotal()}
+                  </td>
+                  <td colSpan="2"></td>
+                </tr>
+              </tfoot>
             </table>
             <button
               className="absolute top-4 right-4 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-red-700 border-2 border-red-500"
@@ -715,22 +1248,23 @@ const OrdersToCloseTable = () => {
                   handleAllPaymentStatusChange(true, selectedUserId, false)
                 }
               >
-                Order completed
+                Complete Order & Close Table
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* MODAL DE CONFIRMARE */}
+      {/* CONFIRMATION MODAL */}
       {showConfirmation && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-70">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-md border">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md border border-gray-700">
             <h3 className="text-lg font-semibold mb-4">
               Confirm Table Closure
             </h3>
             <p className="text-gray-300 mb-6">
-              There are {relatedOrders.filter(order => !order.payment).length} unpaid order(s). 
+              There are {relatedOrders.filter(order => !order.payment).length} unpaid order(s) 
+              totaling ${calculateModalTotal()}. 
               Are you sure you want to close the table and mark all orders as paid?
             </p>
             <div className="flex justify-end space-x-3">

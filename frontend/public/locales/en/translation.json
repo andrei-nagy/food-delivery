@@ -75,9 +75,9 @@
   "error_reactivating": "Error reactivating session",
   "error_extending": "Error extending time",
   "most_popular": "Most Popular",
- "food_item": {
+  "food_item": {
     "new": "New",
-    "vegan": "Vegan", 
+    "vegan": "Vegan",
     "best_seller": "Best Seller",
     "discount": "-{{percentage}}%",
     "session_expired": "Session Expired",
@@ -92,10 +92,10 @@
     "out_of_stock": "Out of stock",
     "unavailable": "Unavailable"
   },
-   "session": {
+  "session": {
     "expired_message": "Your session has expired. Please refresh the page to continue ordering."
   },
-    "food_display": {
+  "food_display": {
     "best_sellers": "Best Sellers",
     "must_try_favorites": "Must-try favorites 🔥",
     "view_more": "View more",
@@ -107,11 +107,11 @@
   },
   "sections": {
     "best_sellers": "Best Sellers",
-    "must_try_now": "Must Try Now", 
+    "must_try_now": "Must Try Now",
     "new_additions": "New Additions",
     "categories": "Categories"
   },
-   "cart": {
+  "cart": {
     "your_order": "Your Order",
     "back": "Back",
     "clear_cart": "Clear Cart",
@@ -148,7 +148,7 @@
     "other_products": "What others also ordered",
     "popular_choices": "Popular choices you might like"
   },
-   "category_page": {
+  "category_page": {
     "back": "Back",
     "search_placeholder": "Search dishes, ingredients, descriptions...",
     "filters": "Filters",
@@ -172,7 +172,7 @@
     "no_items_in_category": "No items in {{category}} category",
     "clear_all_filters": "Clear All Filters"
   },
-   "my_orders": {
+  "my_orders": {
     "back": "Back",
     "orders": "Orders",
     "loading_orders": "Loading your orders...",
@@ -199,7 +199,7 @@
     "tip_percentage": "{{percentage}}%",
     "tip_amount": "{{amount}} €",
     "subtotal_label": "Subtotal:",
-    "tip_label": "Tip:",
+    "tip_label": "Tips:",
     "total_with_tip": "Total with tip:",
     "select_payment_method": "Select Payment Method",
     "credit_debit_card": "Credit/Debit Card",
@@ -219,9 +219,44 @@
     "clear_all": "Clear All",
     "bill_request_sent": "Bill Request Sent",
     "waiter_notified": "Waiter notified {{time}}. They'll come to your table shortly.",
-    "cancel_request": "Cancel Request"
+    "cancel_request": "Cancel Request",
+    "split_bill": "Split Bill",
+    "split_bill_description": "Select items to pay for. You can also split quantities if sharing.",
+    "items_selected": "items selected",
+    "select_all": "Select All",
+    "deselect_all": "Deselect All",
+    "your_total": "Your Total",
+    "pay_selected": "Pay Selected Items",
+    "split_bill_success": "Successfully paid your part of {amount} €",
+    "bill_progress": "{paid} of {total} paid by {count} people",
+    "split_payment_success": "Your part of the bill has been paid!",
+    "split_payment_pending": "Waiting for other guests to pay their share",
+    "unpaid_items": "Unpaid Items",
+    "paid_items": "Paid Items",
+    "paid_items_description": "Items that have been paid for",
+    "select_items_to_pay": "Select items you want to pay for",
+    "all_items_paid": "All items paid! 🎉",
+    "nothing_to_pay": "You have nothing to pay at the moment.",
+    "card": "Card",
+    "cash": "Cash",
+    "paid": "Paid",
+    "payment_breakdown": "Payment Breakdown",
+    "remaining": "remaining",
+    "already_paid": "Already Paid",
+    "paid_items_description": "These items are already settled",
+    "paid_orders": "Paid Orders",
+    "paid_order": "Paid Order",
+    "paid": "Paid",
+    "settled_items": "Settled Items",
+    "paid_with": "Paid with",
+    "payment_settled": "Payment Settled",
+    "already_settled": "Already Settled",
+    "total_paid": "Total Paid",
+    "items": "items",
+    "split_bill_marketing_title": "Split with Friends, Pay Only What You Ate!",
+    "split_bill_marketing_text": "Divide the bill easily with friends. Each person pays only for what they consumed. Fast, fair, and fun!"
   },
-    "repeat_order": {
+  "repeat_order": {
     "title": "Order Again",
     "subtitle": "Quick reorder from unpaid orders",
     "subtitle_loading": "Quick reorder from your history",
@@ -237,7 +272,7 @@
     "add_item_title": "Add {{quantity}} {{name}} to cart",
     "cannot_add_items": "cannot add items"
   },
-   "waiter_modal": {
+  "waiter_modal": {
     "need_help": "Need help?",
     "how_can_we_assist": "How can we assist you today? Please select an option below.",
     "call_waiter": "Call a waiter",
@@ -268,26 +303,29 @@
     "other_reason": "Other reason",
     "something_else": "Something else"
   },
-    "welcome": {
-    "welcome_to": "Welcome to",
+  "welcome": {
     "our_restaurant": "Our Restaurant",
-    "exquisite_dining": "Exquisite dining experience",
-    "welcome_description": "To enhance your experience, scan the QR code to view the menu, place your order and relax. We are committed to providing you with the freshest dishes and an enjoyable dining experience!",
+    "exquisite_dining": "Exquisite Dining Experience",
+    "welcome_to": "Welcome to",
+    "welcome_description": "Discover an unforgettable culinary journey where tradition meets innovation. Our chefs craft each dish with passion and the finest ingredients.",
     "business_hours": "Business Hours",
     "monday_friday": "Monday - Friday",
     "saturday": "Saturday",
     "sunday": "Sunday",
     "closed": "Closed",
-    "explore_menu": "Explore Our Menu",
-    "contact_us": "Contact Us"
+    "explore_menu": "Explore Menu",
+    "contact_us": "Contact Us",
+    "click_to_view": "Click to view hours",
+    "click_to_hide": "Click to hide hours",
+    "hours_note": "*Hours may vary during holidays"
   },
-   "not_found": {
+  "not_found": {
     "page_not_found": "Page Not Found",
     "error_message": "Sorry, the page you're looking for doesn't exist.",
     "back": "Go Back",
     "home_page": "Home Page"
   },
-   "thank_you": {
+  "thank_you": {
     "finalizing_order": "Finalizing your order...",
     "order_confirmed": "Order Confirmed",
     "thank_you_purchase": "Thank you for your purchase",
@@ -297,7 +335,7 @@
     "return_home_now": "Return Home Now",
     "order_details_sent": "Order details have been sent to your email"
   },
-    "verify": {
+  "verify": {
     "finalizing_order": "Finalizing your order...",
     "payment_failed": "Payment Failed",
     "payment_failed_subtitle": "We couldn't process your payment",
@@ -315,7 +353,44 @@
     "bon_appetit": "Bon appétit! 🍽️"
   },
   "extension_already_in_progress": "An extension is already in progress on another device",
-  "extension_in_progress_on_other_device": "Session extension in progress on another device", 
+  "extension_in_progress_on_other_device": "Session extension in progress on another device",
   "extension_in_progress": "Extension in progress...",
-  "user_not_active": "Your session is no longer active. Please log in again."
+  "user_not_active": "Your session is no longer active. Please log in again.",
+  "select_duration": "Select duration",
+  "extend_session": "Extend session",
+  "order_completed": {
+    "title": "Order Successfully Placed!",
+    "subtitle": "Your order has been processed and will be ready soon.",
+    "order_details": "Order Details",
+    "date_time": "Date & Time",
+    "status": "Status",
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "preparing": "Preparing",
+    "ready": "Ready",
+    "delivered": "Delivered",
+    "payment_method": "Payment Method",
+    "card": "Card",
+    "cash": "Cash",
+    "table": "Table",
+    "items": "Ordered Items",
+    "special_instructions": "Special instructions",
+    "subtotal": "Subtotal",
+    "delivery": "Delivery",
+    "tax": "Tax",
+    "total": "Total",
+    "view_orders": "View Orders",
+    "print": "Print",
+    "share": "Share",
+    "redirect_message": "You will be redirected in",
+    "seconds": "seconds",
+    "skip_now": "Skip now",
+    "thank_you": "Thank you!",
+    "thank_you_message": "We appreciate your trust. For any questions, please contact us.",
+    "restaurant_address": "Example Street 123, Bucharest",
+    "loading": "Loading order details...",
+    "not_found": "Order not found",
+    "not_found_message": "We couldn't find the order details. Please try again.",
+    "go_home": "Go to Home"
+  }
 }

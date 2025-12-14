@@ -4,6 +4,9 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import validator from "validator";
 import mongoose from "mongoose";
+import orderModel from "../models/orderModel.js";
+// La începutul fișierului, după celelalte imports
+import SplitPayment from "../models/splitPaymentModel.js"; // sau numele corect al modelului
 
 // Funcție pentru a seta isActive pe false pentru utilizatorii cu token-uri expirate
 const deactivateExpiredUsers = async () => {
@@ -150,8 +153,8 @@ const autoRegister = async (req, res) => {
     const token = createToken(tempUser._id);
 
     // Setează expirarea tokenului
-    // const tokenExpiry = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 ore
-    const tokenExpiry = new Date(Date.now() + 2 * 60 * 1000); // 2 minute
+    const tokenExpiry = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 ore
+    // const tokenExpiry = new Date(Date.now() + 2 * 60 * 1000); // 2 minute
 
     // Creează utilizatorul cu toate câmpurile necesare
     const newUser = new userModel({
@@ -294,7 +297,189 @@ const registerUser = async (req, res) => {
     res.json({ success: false, message: "Error" });
   }
 };
+const checkInactiveOrders = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    
+    if (!userId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'User ID is required' 
+      });
+    }
 
+    // 1. Verifică dacă utilizatorul există
+    const user = await userModel.findOne({ 
+      _id: userId
+    });
+
+    if (!user) {
+      return res.json({ 
+        success: true, 
+        shouldRedirectToOrderCompleted: false,
+        message: "User not found"
+      });
+    }
+
+    // 2. Dacă userul este deja inactiv
+    if (user.isActive === false) {
+      console.log(`ℹ️ [BACKEND] User ${userId} is already inactive.`);
+      return res.json({ 
+        success: true, 
+        shouldRedirectToOrderCompleted: true,
+        message: "User is already inactive",
+        isActive: false,
+        reason: "user_inactive"
+      });
+    }
+
+    // 3. Verifică dacă există comenzi pentru acest utilizator
+    const orders = await orderModel.find({ userId: userId });
+
+    if (orders.length === 0) {
+      return res.json({ 
+        success: true, 
+        shouldRedirectToOrderCompleted: false,
+        message: "No orders found"
+      });
+    }
+
+    // 4. ✅ VERIFICĂ NOU: DACĂ TOATE COMENZILE SUNT COMPLET PLATITE
+    let allOrdersFullyPaid = true;
+    let paymentDetails = [];
+    
+    for (const order of orders) {
+      // Folosește metoda nouă sau vechea logică
+      const isFullyPaid = order.isFullyPaid ? order.isFullyPaid() : 
+        (order.payment === true && (!order.items || order.items.length === 0 || 
+          order.items.every(item => {
+            if (!item.paidBy || item.paidBy.length === 0) return false;
+            const totalPaid = item.paidBy.reduce((sum, payment) => 
+              sum + (payment.amount || 0), 0);
+            const itemTotal = (item.price || 0) * (item.quantity || 1);
+            return totalPaid >= itemTotal;
+          })));
+      
+      paymentDetails.push({
+        orderId: order._id,
+        payment: order.payment,
+        isFullyPaid: isFullyPaid,
+        itemsCount: order.items?.length || 0,
+        paidItems: order.items?.filter(item => {
+          if (!item.paidBy || item.paidBy.length === 0) return false;
+          const totalPaid = item.paidBy.reduce((sum, payment) => 
+            sum + (payment.amount || 0), 0);
+          const itemTotal = (item.price || 0) * (item.quantity || 1);
+          return totalPaid >= itemTotal;
+        }).length || 0
+      });
+      
+      if (!isFullyPaid) {
+        allOrdersFullyPaid = false;
+      }
+    }
+    
+    console.log(`📊 [BACKEND] User ${userId} payment details:`, paymentDetails);
+
+    if (!allOrdersFullyPaid) {
+      console.log(`❌ [BACKEND] User ${userId} has orders that are NOT fully paid`);
+      return res.json({ 
+        success: true, 
+        shouldRedirectToOrderCompleted: false,
+        message: "Not all orders are fully paid",
+        allOrdersFullyPaid: false,
+        paymentDetails: paymentDetails
+      });
+    }
+
+    // 5. ✅ TOATE COMENZILE SUNT COMPLET PLATITE - Verifică dacă sunt plătite de același user
+    
+    // Verifică dacă există split bill payments
+    let hasSplitBillPayments = false;
+    try {
+      const splitPayments = await SplitPayment.find({
+        userId: userId,
+        status: { $in: ['pending', 'completed'] }
+      });
+      
+      if (splitPayments.length > 0) {
+        hasSplitBillPayments = true;
+        console.log(`🔍 [BACKEND] User ${userId} has ${splitPayments.length} split bill payments`);
+      }
+    } catch (splitError) {
+      console.log("⚠️ Could not check split payments:", splitError);
+    }
+
+    // 6. ✅ VERIFICĂ DACA USERUL A PLATIT PERSONAL TOATE ITEM-ELE
+    let userPaidForEverything = true;
+    let paidByOthers = false;
+    
+    for (const order of orders) {
+      if (order.items && order.items.length > 0) {
+        for (const item of order.items) {
+          if (item.paidBy && item.paidBy.length > 0) {
+            // Găsește plățile făcute de acest user
+            const userPayments = item.paidBy.filter(payment => 
+              payment.userId === userId);
+            const totalPaidByUser = userPayments.reduce((sum, payment) => 
+              sum + (payment.amount || 0), 0);
+            const itemTotal = (item.price || 0) * (item.quantity || 1);
+            
+            // Verifică dacă userul a plătit tot pentru acest item
+            if (totalPaidByUser < itemTotal) {
+              userPaidForEverything = false;
+              paidByOthers = true;
+              console.log(`💰 User ${userId} did NOT pay fully for item "${item.name}": ${totalPaidByUser}/${itemTotal}`);
+            }
+          } else {
+            // Item fără plăți (nu ar trebui să ajungă aici dacă order-ul e fully paid)
+            userPaidForEverything = false;
+          }
+        }
+      }
+    }
+
+    // 7. ✅ DECIZIE FINALĂ:
+    if (userPaidForEverything) {
+      // ✅ USERUL A PLATIT PERSONAL PENTRU TOATE ITEM-ELE
+      console.log(`✅ [BACKEND] User ${userId} paid personally for ALL items. REDIRECT.`);
+      
+      await userModel.findByIdAndUpdate(userId, { isActive: false });
+      
+      return res.json({ 
+        success: true, 
+        shouldRedirectToOrderCompleted: true,
+        message: `User paid personally for all items`,
+        isActive: false,
+        paymentType: 'full_personal_payment',
+        allOrdersFullyPaid: true,
+        userPaidForEverything: true,
+        paidByOthers: false
+      });
+    } else {
+      // ✅ COMENZILE SUNT PLATITE, DAR NU DE ACEST USER (split bill cu alții)
+      console.log(`⚠️ [BACKEND] User ${userId}: Orders paid but NOT by this user (split bill). NO REDIRECT.`);
+      
+      return res.json({ 
+        success: true, 
+        shouldRedirectToOrderCompleted: false,
+        message: `Orders paid but not by this user`,
+        isActive: user.isActive,
+        paymentType: 'split_bill_with_others',
+        allOrdersFullyPaid: true,
+        userPaidForEverything: false,
+        paidByOthers: true
+      });
+    }
+
+  } catch (error) {
+    console.error('Error checking inactive orders:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Server error checking user status' 
+    });
+  }
+};
 // Extend token expiry time
 const extendTokenTime = async (req, res) => {
   const { userId, minutes } = req.body;
@@ -467,6 +652,7 @@ const setExtensionStatus = async (req, res) => {
   }
 };
 export {
+  checkInactiveOrders,
   loginUser,
   registerUser,
   autoLogin,

@@ -1,0 +1,361 @@
+/* TipsSection.css - Styles for TipsSection component */
+
+.cart-tips-section {
+  background: white;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+  border: 1px solid #e9ecef;
+  position: relative;
+  overflow: hidden;
+  display: none;
+}
+
+.cart-tips-section.active {
+  display: block;
+  animation: slideInUp 0.4s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cart-tips-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #e86514, #ff9c5a, #e86514);
+}
+
+.cart-tips-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  justify-content: center;
+}
+
+.cart-tips-icon {
+  color: #e86514;
+  font-size: 20px;
+}
+
+.cart-tips-options {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.cart-tips-option {
+  display: block;
+  cursor: pointer;
+}
+
+.cart-tips-option input {
+  display: none;
+}
+
+.cart-tips-option-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 6px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  background: white;
+  text-align: center;
+  position: relative;
+  min-height: 55px;
+}
+
+.cart-tips-option:hover .cart-tips-option-content {
+  border-color: #e86514;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(232, 101, 20, 0.15);
+}
+
+.cart-tips-option input:checked + .cart-tips-option-content {
+  border-color: #e86514;
+  background: linear-gradient(135deg, #e86514, #ff8c42);
+  color: white;
+  box-shadow: 0 2px 12px rgba(232, 101, 20, 0.25);
+  transform: translateY(-1px);
+}
+
+.cart-tips-percentage {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 2px;
+  transition: color 0.2s ease;
+}
+
+.cart-tips-option input:checked + .cart-tips-option-content .cart-tips-percentage {
+  color: white;
+}
+
+.cart-tips-amount {
+  font-size: 11px;
+  transition: color 0.2s ease;
+}
+
+.cart-tips-option input:checked + .cart-tips-option-content .cart-tips-amount {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Custom Tip Section */
+.custom-tip-section {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.custom-tip-label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+.custom-tip-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.custom-tip-input-container {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.custom-tip-input {
+  width: 140px;
+  padding: 12px 15px 12px 16px; 
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: right;
+  background: white;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.custom-tip-input:focus {
+  outline: none;
+  border-color: #e86514;
+  box-shadow: 0 0 0 3px rgba(232, 101, 20, 0.1);
+}
+
+.custom-tip-input::placeholder {
+  color: #9ca3af;
+  opacity: 0.7;
+  text-align: right;
+  padding-right: 20px; /* Padding suplimentar pentru placeholder */
+}
+
+/* Când input-ul are valoare, placeholder-ul dispare */
+.custom-tip-input:not(:placeholder-shown)::placeholder {
+  opacity: 0;
+}
+
+.currency-symbol {
+  position: absolute;
+  right: 20px; /* Schimbat: de la 12px la 20px */
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  font-weight: 500;
+  pointer-events: none;
+  width: 16px;
+  text-align: center;
+}
+
+.custom-tip-hint {
+  font-size: 12px;
+  color: #6b7280;
+  font-style: italic;
+  flex: 1;
+}
+
+/* Tips Summary */
+.cart-tips-summary {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.cart-tips-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #495057;
+  padding: 2px 0;
+}
+
+.cart-tips-summary-row:last-child {
+  margin-bottom: 0;
+  padding-top: 8px;
+  border-top: 1px solid #dee2e6;
+  font-weight: 700;
+  font-size: 16px;
+  color: #e86514;
+}
+
+.cart-tips-summary-row.total-with-tip {
+  background: #fff5f5;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-top: 6px;
+  border: 1px solid #fed7aa;
+}
+
+/* Responsive Design for TipsSection */
+@media (max-width: 768px) {
+  .cart-tips-section {
+    padding: 16px;
+    border-radius: 12px;
+  }
+  
+  .cart-tips-title {
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+  
+  .cart-tips-options {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  
+  .cart-tips-option-content {
+    padding: 10px 4px;
+    min-height: 50px;
+  }
+  
+  .cart-tips-percentage {
+    font-size: 13px;
+  }
+  
+  .cart-tips-amount {
+    font-size: 10px;
+  }
+  
+  .custom-tip-section {
+    padding: 12px;
+  }
+  
+  .custom-tip-input {
+    width: 120px;
+    padding: 10px 15px 10px 14px; /* Ajustat pentru mobile */
+    font-size: 15px;
+  }
+  
+  .currency-symbol {
+    right: 16px; /* Ajustat pentru mobile */
+  }
+  
+  .cart-tips-summary {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cart-tips-options {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+  
+  .cart-tips-section {
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+  
+  .cart-tips-title {
+    font-size: 15px;
+    gap: 8px;
+  }
+  
+  .cart-tips-icon {
+    font-size: 18px;
+  }
+  
+  .custom-tip-input-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .custom-tip-input {
+    width: 100%;
+    padding: 10px 15px 10px 12px; /* Ajustat pentru mobile mic */
+  }
+  
+  .currency-symbol {
+    right: 14px; /* Ajustat pentru mobile mic */
+  }
+  
+  .cart-tips-summary-row {
+    font-size: 13px;
+  }
+  
+  .cart-tips-summary-row:last-child {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 360px) {
+  .cart-tips-options {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .cart-tips-option-content {
+    padding: 8px 3px;
+    min-height: 45px;
+  }
+  
+  .cart-tips-percentage {
+    font-size: 12px;
+  }
+  
+  .cart-tips-amount {
+    font-size: 9px;
+  }
+  
+  .custom-tip-input {
+    padding: 8px 15px 8px 10px; /* Ajustat pentru ecrane foarte mici */
+  }
+  
+  .currency-symbol {
+    right: 12px; /* Ajustat pentru ecrane foarte mici */
+    font-size: 14px;
+  }
+}
+
+/* Remove dark mode styles since you want white background */

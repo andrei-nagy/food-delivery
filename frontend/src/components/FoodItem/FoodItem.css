@@ -1,7 +1,7 @@
 .food-item {
   min-width: 170px;
   width: 170px;
-  height: 280px;
+  height: 290px;
   display: flex;
   flex-direction: column;
   background-color: #fff;

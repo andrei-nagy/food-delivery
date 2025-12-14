@@ -550,20 +550,28 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         }
     };
 
-    const calculateTotalPrice = () => {
+   const calculateTotalPrice = () => {
+    try {
         if (!food) return 0;
         
-        let total = discountedPrice * selectedQuantity;
+        // Verificați toate valorile pentru a evita NaN
+        const basePrice = hasDiscount && discountedPrice ? discountedPrice : foodPrice || 0;
+        let total = (basePrice || 0) * (selectedQuantity || 1);
         
         selectedOptions.forEach(optionName => {
             const extra = foodExtras.find(extra => extra.name === optionName);
-            if (extra) {
-                total += extra.price * selectedQuantity;
+            if (extra && extra.price) {
+                total += (extra.price || 0) * (selectedQuantity || 1);
             }
         });
         
-        return total;
-    };
+        // Asigurați-vă că returnați un număr valid
+        return isNaN(total) ? 0 : total;
+    } catch (error) {
+        console.error("Error calculating total price:", error);
+        return 0;
+    }
+};
 
     const handleAddToCart = () => {
         if (isDisabled) {
@@ -1036,13 +1044,13 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                 disabled={isDisabled}
                             >+</button>
                         </div>
-                        <button 
-                            className={`food-modal-add-btn ${isDisabled ? 'food-modal-add-btn-disabled' : ''}`} 
-                            onClick={handleAddButton}
-                            disabled={isDisabled}
-                        >
-                            {isDisabled ? blockedMessage?.text : `${getUIText('addButton')} ${calculateTotalPrice().toFixed(2)} €`}
-                        </button>
+                      <button 
+    className={`food-modal-add-btn ${isDisabled ? 'food-modal-add-btn-disabled' : ''}`} 
+    onClick={handleAddButton}
+    disabled={isDisabled}
+>
+    {isDisabled ? blockedMessage?.text : `${translationEnabled && currentLanguage === 'en' ? 'Add' : 'Adaugă'} ${calculateTotalPrice().toFixed(2)} €`}
+</button>
                     </div>
                 </div>
             </div>

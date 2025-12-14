@@ -29,12 +29,15 @@ const Verify = () => {
         const orderIdParam = urlParams.get('orderId');
         const orderIds = urlParams.get('orderIds');
 
+        console.log('🔍 [Verify] URL params:', { success, orderIdParam, orderIds });
+
         if (success === "false") {
           setVerificationStatus('failed');
           setIsLoading(false);
           return;
         }
 
+        // Folosește ACELAȘI endpoint pentru TOATE plățile
         const response = await axios.post(`${url}/api/order/verify`, {
           success,
           orderId: orderIdParam,
@@ -42,13 +45,17 @@ const Verify = () => {
         });
 
         if (response.data.success) {
+          console.log('✅ [Verify] Payment verification successful');
           setVerificationStatus('success');
           localStorage.removeItem('cartItems');
           window.dispatchEvent(new Event('storage'));
           
-          // Fetch rating doar pentru succes
-          await fetchRating();
+          // Fetch rating doar pentru succes (dacă există orderId)
+          if (orderIdParam) {
+            await fetchRating(orderIdParam);
+          }
         } else {
+          console.log('❌ [Verify] Payment verification failed');
           setVerificationStatus('failed');
         }
       } catch (error) {
@@ -59,9 +66,7 @@ const Verify = () => {
       }
     };
 
-    const fetchRating = async () => {
-      if (!orderId) return;
-      
+    const fetchRating = async (orderId) => {
       try {
         const response = await axios.get(`${url}/api/order/${orderId}/rating`);
         if (response.data.success && response.data.rating > 0) {
@@ -246,7 +251,7 @@ const Verify = () => {
     );
   }
 
-  // Succes
+  // Success State
   return (
     <motion.div
       initial={{ opacity: 0 }}

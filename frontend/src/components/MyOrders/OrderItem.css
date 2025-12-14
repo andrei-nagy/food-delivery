@@ -1,0 +1,203 @@
+ /* OrderItem.css - Minimalist Order Item Styles */
+.order-item {
+  background: #FFFFFF;
+  border-radius: 12px;
+  border: 1px solid #F0F0F0;
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.order-item:hover {
+  border-color: #E0E0E0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.order-item.paid {
+  background: #F9F9F9;
+  border-color: #E8F5E9;
+}
+
+.order-item-content {
+  display: flex;
+  align-items: flex-start;
+  padding: 16px;
+  gap: 16px;
+}
+
+/* Imagine */
+.order-item-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.order-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.order-image.paid {
+  opacity: 0.85;
+}
+
+.order-paid-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+
+/* Detalii produs */
+.order-item-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.order-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+
+.order-item-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: #333333;
+  line-height: 1.4;
+  margin: 0;
+  flex: 1;
+}
+
+.translating-badge {
+  font-size: 12px;
+  margin-left: 6px;
+  opacity: 0.7;
+}
+
+/* Prețuri */
+.order-item-price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.order-price {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.order-price-discounted {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.order-price-original {
+  font-size: 13px;
+  color: #999999;
+  text-decoration: line-through;
+}
+
+.order-discount-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #DC2626;
+  background: #FEE2E2;
+  padding: 2px 6px;
+  border-radius: 10px;
+  letter-spacing: 0.3px;
+}
+
+/* Note */
+.order-item-notes {
+  background: #F8F8F8;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin: 8px 0;
+  font-size: 13px;
+  color: #666666;
+}
+
+.notes-label {
+  font-weight: 500;
+  color: #555555;
+  margin-right: 4px;
+}
+
+/* Footer */
+.order-item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #F0F0F0;
+}
+
+.order-quantity {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.quantity-label {
+  font-size: 13px;
+  color: #777777;
+}
+
+.quantity-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.order-status-badge {
+  background: #E8F5E9;
+  color: #059669;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .order-item-content {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .order-item-image {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .order-item-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .order-item-price-row {
+    align-self: flex-start;
+  }
+  
+  .order-price,
+  .order-price-discounted {
+    font-size: 15px;
+  }
+}

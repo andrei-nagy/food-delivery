@@ -1,0 +1,154 @@
+/* ===== BILL REQUEST NOTIFICATION ===== */
+.bill-requested-notification {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.75rem 1rem;
+  margin: 0 0.5rem 0.75rem 0.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  animation: slideIn 0.5s ease;
+}
+
+/* Pseudo-element pentru efect de adâncime */
+.bill-requested-notification::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Conținutul notificării */
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.notification-icon {
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.9);
+  flex-shrink: 0;
+}
+
+.notification-text {
+  flex: 1;
+}
+
+.notification-text h3 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.notification-text p {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.4;
+}
+
+/* Buton de resetare cerere */
+.reset-request-button {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.reset-request-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.reset-request-button:active {
+  transform: translateY(0);
+}
+
+.reset-request-button svg {
+  font-size: 12px;
+}
+
+/* Animație de intrare */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive pentru mobil */
+@media (max-width: 480px) {
+  .bill-requested-notification {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin: 0 0.75rem 0.75rem 0.75rem;
+  }
+  
+  .notification-content {
+    width: 100%;
+  }
+  
+  .reset-request-button {
+    width: 100%;
+    justify-content: center;
+    padding: 8px;
+  }
+}
+
+/* Variantă pentru întuneric (dacă e nevoie) */
+@media (prefers-color-scheme: dark) {
+  .bill-requested-notification {
+    background: linear-gradient(135deg, #20c997, #0d9668);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  .reset-request-button {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Animație de ieșire (pentru eventuale tranziții) */
+.bill-requested-notification.exiting {
+  animation: slideOut 0.3s ease forwards;
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}

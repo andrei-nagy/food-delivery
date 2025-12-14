@@ -41,7 +41,7 @@ const SIDEBAR_ITEMS = [
 	{ name: "Customization", icon: PenBox, color: "#3B82F6", href: "/customization" },
 	{ name: "Accounts", icon: BookUser, color: "#3B82F6", href: "/accounts" },
 	// { name: "Close order", icon: UtensilsCrossed, color: "red", href: "/close-order" },
-	// { name: "Settings", icon: Settings, color: "#6EE7B7", href: "/settings" },
+	{ name: "Settings", icon: Settings, color: "#6EE7B7", href: "/settings" },
 	{ name: "Create an account", icon: User2Icon, color: "#EC4899", href: "/create-account" },
 	{ name: "Submit a ticket", icon: HelpCircle, color: "#6EE7B7", href: "/support" },
 	{ name: "Release notes", icon: HelpCircle, color: "#3B82F6", href: "/release-notes" },

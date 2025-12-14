@@ -1,0 +1,519 @@
+/* PaidItemsSection.css - Styles for PaidItemsSection component */
+.paid-items-accordion {
+  margin: 1.5rem 0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* Header */
+.paid-accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  cursor: pointer;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.paid-accordion-header:hover {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+.paid-accordion-header-main {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.paid-accordion-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  transition: all 0.3s ease;
+}
+
+.paid-accordion-icon {
+  color: white;
+  font-size: 1.25rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.paid-accordion-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.paid-accordion-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  letter-spacing: -0.01em;
+}
+
+.paid-accordion-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.paid-accordion-item-count {
+  color: #64748b;
+  font-weight: 500;
+  background: rgba(100, 116, 139, 0.08);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.paid-accordion-separator {
+  color: #cbd5e1;
+  font-weight: 300;
+}
+
+.paid-accordion-amount {
+  color: #10b981;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+}
+
+/* Controls */
+.paid-accordion-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.paid-accordion-total {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.paid-accordion-total:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.paid-accordion-total-label {
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.paid-accordion-total-value {
+  color: #10b981;
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: -0.01em;
+}
+
+.paid-accordion-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.paid-accordion-chevron svg {
+  color: #64748b;
+  font-size: 0.875rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.paid-accordion-chevron:hover {
+  background: #f8fafc;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.paid-accordion-chevron-expanded {
+  transform: rotate(180deg);
+  background: #f1f5f9;
+}
+
+.paid-accordion-chevron-expanded svg {
+  color: #10b981;
+}
+
+/* Content Animation */
+.accordion-content {
+  overflow: hidden;
+  background: #FFFFFF;
+}
+
+.paid-items-list {
+  padding: 0;
+  border-top: 1px solid #F0F0F0;
+}
+
+/* Ajustări pentru item-uri în accordion */
+.accordion-content .order-item {
+  margin-bottom: 12px;
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+  box-shadow: none;
+}
+
+.accordion-content .order-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Divider între item-uri în accordion */
+.accordion-content .order-item + .order-item {
+  border-top: 1px solid #F8F8F8;
+  padding-top: 12px;
+}
+
+/* Informații adiționale pentru item-uri plătite */
+.paid-item-extra-info {
+  margin: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.paid-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: #888888;
+}
+
+.order-number {
+  background: #F0F0F0;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.order-date {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Payment info */
+.paid-payment-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.payment-method-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.payment-method-badge.card {
+  background: #E0F2FE;
+  color: #0369A1;
+  border: 1px solid #BAE6FD;
+}
+
+.payment-method-badge.cash {
+  background: #DCFCE7;
+  color: #166534;
+  border: 1px solid #BBF7D0;
+}
+
+.payment-method-badge.unknown {
+  background: #F3F4F6;
+  color: #6B7280;
+  border: 1px solid #E5E7EB;
+}
+
+.method-icon {
+  font-size: 10px;
+}
+
+.method-text {
+  font-size: 10px;
+}
+
+.payment-time {
+  font-size: 11px;
+  color: #888888;
+  background: #F9F9F9;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* Payment breakdown pentru plăți multiple */
+.payment-breakdown {
+  margin-top: 12px;
+  padding: 12px;
+  background: #F9F9F9;
+  border-radius: 8px;
+  border: 1px solid #F0F0F0;
+}
+
+.breakdown-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #555555;
+  margin-bottom: 8px;
+}
+
+.breakdown-items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.breakdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #F0F0F0;
+  font-size: 12px;
+}
+
+.breakdown-method {
+  font-size: 14px;
+  width: 20px;
+  text-align: center;
+}
+
+.breakdown-amount {
+  font-weight: 600;
+  color: #333333;
+  flex: 1;
+}
+
+.breakdown-date {
+  color: #888888;
+  font-size: 11px;
+}
+
+/* Responsive pentru PaidItemsSection */
+@media (max-width: 768px) {
+  .paid-items-accordion {
+    border-radius: 12px;
+    margin: 1rem 0;
+  }
+  
+  .paid-accordion-header {
+    padding: 1rem 1.25rem;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .paid-accordion-controls {
+    /* width: 100%; */
+    justify-content: space-between;
+  }
+  
+  .paid-accordion-total {
+    padding: 0.375rem 0.75rem;
+  }
+  
+  .paid-accordion-total-label {
+    font-size: 0.8125rem;
+  }
+  
+  .paid-accordion-total-value {
+    font-size: 1rem;
+  }
+  
+  .paid-accordion-icon-wrapper {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+  
+  .paid-accordion-title {
+    font-size: 1rem;
+  }
+  
+  .paid-accordion-stats {
+    font-size: 0.8125rem;
+  }
+  
+  .paid-items-list {
+    padding: 0;
+  }
+  
+  .accordion-content .order-item + .order-item {
+    padding-top: 10px;
+  }
+}
+
+@media (max-width: 640px) {
+  .paid-accordion-header {
+    padding: 0.875rem 1rem;
+  }
+  
+  .paid-accordion-controls {
+    gap: 2rem;
+  }
+  
+  .paid-accordion-total {
+    padding: 0.25rem 0.625rem;
+  }
+  
+  .paid-accordion-total-label {
+    font-size: 0.75rem;
+  }
+  
+  .paid-accordion-total-value {
+    font-size: 0.875rem;
+  }
+  
+  .paid-accordion-chevron {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .paid-payment-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  
+  .payment-breakdown {
+    padding: 10px;
+  }
+}
+
+/* Dark mode support (opțional) */
+@media (prefers-color-scheme: dark) {
+  .paid-items-accordion {
+    background: #1e293b;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  }
+  
+  .paid-accordion-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-bottom: 1px solid #334155;
+  }
+  
+  .paid-accordion-header:hover {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  }
+  
+  .paid-accordion-title {
+    color: #f8fafc;
+  }
+  
+  .paid-accordion-item-count {
+    color: #cbd5e1;
+    background: rgba(203, 213, 225, 0.1);
+  }
+  
+  .paid-accordion-amount {
+    background: rgba(16, 185, 129, 0.15);
+  }
+  
+  .paid-accordion-total {
+    background: #334155;
+  }
+  
+  .paid-accordion-total-label {
+    color: #cbd5e1;
+  }
+  
+  .paid-accordion-chevron {
+    background: #334155;
+  }
+  
+  .paid-accordion-chevron:hover {
+    background: #475569;
+  }
+  
+  .paid-accordion-content {
+    background: #0f172a;
+  }
+  
+  .paid-items-list {
+    border-top-color: #334155;
+  }
+  
+  .payment-method-badge.card {
+    background: #1e3a5f;
+    color: #93c5fd;
+    border-color: #1e40af;
+  }
+  
+  .payment-method-badge.cash {
+    background: #064e3b;
+    color: #86efac;
+    border-color: #065f46;
+  }
+  
+  .payment-method-badge.unknown {
+    background: #374151;
+    color: #d1d5db;
+    border-color: #4b5563;
+  }
+  
+  .payment-breakdown {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  
+  .breakdown-item {
+    background: #111827;
+    border-color: #374151;
+  }
+}
+
+/* Animation pentru hover pe întreg header */
+.paid-accordion-header {
+  position: relative;
+}
+
+.paid-accordion-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.paid-accordion-header:hover::before {
+  opacity: 1;
+}

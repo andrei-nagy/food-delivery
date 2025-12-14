@@ -12,6 +12,8 @@ import adminRouter from "./routes/adminRoute.js"
 import customizationRoute from "./routes/customizationRoute.js"
 import validateAuthRouter from "./routes/validateAuthRoute.js"
 import { deactivateExpiredUsers } from "./controllers/userController.js"
+import splitBillRouter from './routes/splitBillRoute.js';
+
 import cron from "node-cron"
 import dotenv from "dotenv"
 
@@ -105,6 +107,7 @@ app.use("/api/waiterorders", waiterRouter)
 app.use("/admin", adminRouter)
 app.use("/admin/personalization", customizationRoute)
 app.use("/api", validateAuthRouter)
+app.use('/api/split-bill', splitBillRouter);
 
 // Static files
 app.use("/images", express.static("uploads"))

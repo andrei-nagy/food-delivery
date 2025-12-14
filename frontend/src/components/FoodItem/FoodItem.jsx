@@ -421,7 +421,7 @@ const FoodItem = ({
           {hasDiscount ? (
             <div className="discount-price-wrapper">
               <span className="original-price">{price} €</span>
-              <span className="discounted-price">{discountedPrice} €</span>
+              <span className="discounted-price">{parseFloat(discountedPrice).toFixed(2)} €</span>
             </div>
           ) : (
             <span className="regular-price">{price} €</span>
