@@ -73,18 +73,11 @@ const App = () => {
     if (restaurantData?.defaultLanguage) {
       const defaultLangCode = getLanguageCode(restaurantData.defaultLanguage);
       const savedLanguage = sessionStorage.getItem("language");
-      
-      console.log("🌍 App.js - Restaurant language:", {
-        defaultLanguage: restaurantData.defaultLanguage,
-        defaultLangCode,
-        savedLanguage,
-        shouldChange: !savedLanguage
-      });
+
       
       // Dacă nu există limbă salvată, setează limba default
       if (!savedLanguage) {
         sessionStorage.setItem("language", defaultLangCode);
-        console.log("🌍 App.js - Set default language to:", defaultLangCode);
       }
     }
   }, [restaurantData]);
@@ -101,13 +94,11 @@ const App = () => {
         }
       );
 
-      console.log("🔍 Redirect check response:", response.data);
       
       // ✅ LOGICA REVISATĂ: Verifică toate scenariile
       if (response.data.success) {
         // 1. Dacă userul este DEJA INACTIV - REDIRECT (e deja pe order-completed)
         if (response.data.isActive === false && response.data.reason === 'user_inactive') {
-          console.log(`✅ User is already inactive - redirecting to order-completed`);
           return true;
         }
         
@@ -116,12 +107,10 @@ const App = () => {
           // Verifică dacă e split bill cu alții
           if (response.data.paymentType === 'split_bill_with_others' || 
               response.data.userPaidForEverything === false) {
-            console.log(`⚠️ Split bill with others - NO redirect`);
             return false;
           }
           
           // Dacă ajunge aici, înseamnă că e plată completă personală
-          console.log(`✅ Full personal payment - redirecting to order-completed`);
           return true;
         }
       }

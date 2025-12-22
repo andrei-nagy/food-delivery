@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FaTimes, FaCheck } from "react-icons/fa";
 import "./SplitBillModal.css";
 
@@ -16,14 +16,14 @@ const SplitBillModal = ({
   url = "",
   assets = {}
 }) => {
-  // ✅ Toate hook-urile trebuie să fie la început, fără condiții înainte
   const [selectedItems, setSelectedItems] = useState({});
   const [selectAll, setSelectAll] = useState(false);
   const hasInitialized = useRef(false);
   const itemCounterRef = useRef(0);
-  const itemIdMap = useRef({}); // ✅ Mutat aici, înainte de orice condiție
+  const itemIdMap = useRef({});
+  const [selectedTotal, setSelectedTotal] = useState(0);
+  const [selectedCount, setSelectedCount] = useState(0);
 
-  // ✅ Funcție pentru a grupa item-ele după order
   const groupItemsByOrder = () => {
     if (!orderItems || !Array.isArray(orderItems)) return {};
     
@@ -45,7 +45,6 @@ const SplitBillModal = ({
     return grouped;
   };
 
-  // ✅ Funcție pentru a obține item-ele disponibile
   const getAvailableItems = (items, paidItemsList) => {
     if (!items || !Array.isArray(items)) return [];
     
@@ -73,7 +72,6 @@ const SplitBillModal = ({
     });
   };
 
-  // ✅ Funcție pentru a formata data
   const formatDateTime = (dateString) => {
     if (!dateString) return 'No date';
     const date = new Date(dateString);
@@ -85,11 +83,61 @@ const SplitBillModal = ({
     return `${formattedDate} ${formattedTime}`;
   };
 
-  // ✅ Inițializare item-e pentru selecție
+  const findFoodItemForItem = (item) => {
+    if (item.uniqueId) {
+      const found = findFoodItem(item.uniqueId);
+      if (found) return found;
+    }
+    
+    if (item._id) {
+      const found = findFoodItem(item._id);
+      if (found) return found;
+    }
+    
+    if (item.baseFoodId) {
+      const found = findFoodItem(item.baseFoodId);
+      if (found) return found;
+    }
+    
+    if (item.foodId) {
+      const found = findFoodItem(item.foodId);
+      if (found) return found;
+    }
+    
+    if (item.name) {
+      const found = findFoodItem(item.name);
+      if (found) return found;
+    }
+    
+    return null;
+  };
+
+  const calculateItemPriceForQuantity = useCallback((item, quantity) => {
+    const foodItem = findFoodItemForItem(item);
+    
+    if (!foodItem) {
+      return (item.price || 0) * quantity;
+    }
+    
+    const priceInfo = getItemPriceWithDiscount(foodItem, item);
+    
+    if (!priceInfo) {
+      return (item.price || 0) * quantity;
+    }
+    
+    const unitPriceWithDiscount = priceInfo.unitPrice;
+    
+    return unitPriceWithDiscount * quantity;
+  }, [findFoodItem, getItemPriceWithDiscount]);
+
+  const getItemKey = (item) => {
+    return `${item._id}_${item.orderId}_${item.quantity}_${item.price}_${item.foodId}`;
+  };
+
   useEffect(() => {
     if (isOpen && !hasInitialized.current) {
-      itemCounterRef.current = 0; // Reset counter
-      itemIdMap.current = {}; // Reset map
+      itemCounterRef.current = 0;
+      itemIdMap.current = {};
       
       const groupedOrders = groupItemsByOrder();
       const allAvailableItems = [];
@@ -99,20 +147,54 @@ const SplitBillModal = ({
         allAvailableItems.push(...availableInOrder);
       });
       
-      console.log('📊 All available items for split:', allAvailableItems);
-      
       if (allAvailableItems.length > 0) {
         const initialSelection = {};
+        
         allAvailableItems.forEach((item) => {
-          const stableId = `item_${item._id}_${item.orderId}_${itemCounterRef.current++}`;
+          const itemKey = getItemKey(item);
+          const stableId = `item_${itemCounterRef.current++}`;
+          
+          itemIdMap.current[itemKey] = stableId;
           
           let remainingQuantity = item.quantity;
           
           if (item.paidBy && item.paidBy.length > 0) {
             const totalPaid = item.paidBy.reduce((sum, payment) => sum + (payment.amount || 0), 0);
-            const itemPrice = item.price || 0;
-            const paidQuantity = Math.floor(totalPaid / itemPrice);
-            remainingQuantity = Math.max(0, item.quantity - paidQuantity);
+            const foodItem = findFoodItemForItem(item);
+            
+            if (foodItem) {
+              const priceInfo = getItemPriceWithDiscount(foodItem, item);
+              if (priceInfo && priceInfo.unitPrice > 0) {
+                const pricePerUnit = priceInfo.unitPrice;
+                const paidQuantity = Math.floor(totalPaid / pricePerUnit);
+                remainingQuantity = Math.max(0, item.quantity - paidQuantity);
+              } else {
+                const itemPrice = item.price || 0;
+                const paidQuantity = Math.floor(totalPaid / itemPrice);
+                remainingQuantity = Math.max(0, item.quantity - paidQuantity);
+              }
+            } else {
+              const itemPrice = item.price || 0;
+              const paidQuantity = Math.floor(totalPaid / itemPrice);
+              remainingQuantity = Math.max(0, item.quantity - paidQuantity);
+            }
+          }
+          
+          const foodItem = findFoodItemForItem(item);
+          let itemPrice = item.price || 0;
+          let originalPrice = itemPrice;
+          let hasDiscount = false;
+          let discountPercentage = 0;
+          let unitPriceWithDiscount = itemPrice;
+          
+          if (foodItem) {
+            const priceInfo = getItemPriceWithDiscount(foodItem, item);
+            if (priceInfo) {
+              unitPriceWithDiscount = priceInfo.unitPrice;
+              originalPrice = priceInfo.originalPrice;
+              hasDiscount = priceInfo.hasDiscount;
+              discountPercentage = priceInfo.discountPercentage;
+            }
           }
           
           initialSelection[stableId] = {
@@ -124,38 +206,54 @@ const SplitBillModal = ({
             isPartiallyPaid: remainingQuantity < item.quantity,
             orderId: item.orderId,
             orderNumber: item.orderNumber,
-            stableId: stableId
+            stableId: stableId,
+            unitPriceWithDiscount: unitPriceWithDiscount,
+            unitPriceOriginal: originalPrice,
+            hasDiscount: hasDiscount,
+            discountPercentage: discountPercentage,
+            itemKey: itemKey
           };
-          
-          // ✅ Salvează mapping-ul
-          const itemKey = `${item._id}_${item.orderId}_${item.quantity}_${item.price}`;
-          itemIdMap.current[itemKey] = stableId;
         });
         
         setSelectedItems(initialSelection);
         setSelectAll(false);
         hasInitialized.current = true;
-        
-        console.log('🎯 Initial selection:', initialSelection);
       } else {
-        console.log('⚠️ No available items for split');
         setSelectedItems({});
         setSelectAll(false);
       }
     }
   }, [isOpen, orderItems, paidItems]);
 
-  // Resetare când se închide modalul
   useEffect(() => {
     if (!isOpen) {
       hasInitialized.current = false;
       itemCounterRef.current = 0;
       itemIdMap.current = {};
+      setSelectedTotal(0);
+      setSelectedCount(0);
     }
   }, [isOpen]);
 
-  // Efect pentru a sincroniza selectAll
   useEffect(() => {
+    let total = 0;
+    let count = 0;
+    
+    Object.keys(selectedItems).forEach(itemId => {
+      const itemSelection = selectedItems[itemId];
+      if (itemSelection?.selected) {
+        const selectedQuantity = itemSelection.quantity || 1;
+        const unitPrice = itemSelection.unitPriceWithDiscount || 
+                         itemSelection.itemData.price || 0;
+        
+        total += unitPrice * selectedQuantity;
+        count++;
+      }
+    });
+    
+    setSelectedTotal(total);
+    setSelectedCount(count);
+    
     const selectedKeys = Object.keys(selectedItems);
     if (selectedKeys.length > 0) {
       const allSelected = selectedKeys.every(
@@ -167,38 +265,9 @@ const SplitBillModal = ({
     }
   }, [selectedItems]);
 
-  const calculateSelectedTotal = () => {
-    let total = 0;
-    
-    Object.keys(selectedItems).forEach(itemId => {
-      const itemSelection = selectedItems[itemId];
-      if (itemSelection?.selected) {
-        const itemData = itemSelection.itemData;
-        if (itemData) {
-          const foodItem = findFoodItem(itemData.uniqueId);
-          if (foodItem) {
-            const priceInfo = getItemPriceWithDiscount(foodItem, itemData);
-            const selectedQuantity = itemSelection.quantity || 1;
-            const originalQuantity = itemData.quantity;
-            
-            const proportion = selectedQuantity / originalQuantity;
-            total += priceInfo.totalPrice * proportion;
-          } else {
-            const selectedQuantity = itemSelection.quantity || 1;
-            total += (itemData.price || 0) * selectedQuantity;
-          }
-        }
-      }
-    });
-    
-    return total;
-  };
-
   const handleItemToggle = (stableId) => {
     setSelectedItems(prev => {
-      if (!prev[stableId]) {
-        return prev;
-      }
+      if (!prev[stableId]) return prev;
       
       return {
         ...prev,
@@ -246,68 +315,88 @@ const SplitBillModal = ({
     setSelectedItems(updatedSelection);
   };
 
-const handlePaySelected = () => {
-  // ✅ Verifică dacă payment method este card
-  if (!paymentMethod || paymentMethod !== "creditCard") {
-    // Închide modalul și arată secțiunea de payment
-    onClose();
-    setTimeout(() => {
-      const paymentSection = document.getElementById("payment-method-section");
-      if (paymentSection) {
-        paymentSection.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }
-    }, 100);
-    
-    // ✅ Arată un mesaj informativ
-    setTimeout(() => {
-      alert("Split bill is only available with card payment. Please select 'Card Payment' as your payment method.");
-    }, 150);
-    
-    return;
-  }
-  
-  const itemsToPay = Object.keys(selectedItems)
-    .filter(itemId => selectedItems[itemId]?.selected)
-    .map(itemId => {
-      const itemSelection = selectedItems[itemId];
-      const itemData = itemSelection.itemData;
-      const selectedQuantity = itemSelection.quantity || 1;
-      const remainingQuantity = itemSelection.remainingQuantity || itemData.quantity;
+  const handlePaySelected = () => {
+    if (!paymentMethod || paymentMethod !== "creditCard") {
+      onClose();
+      setTimeout(() => {
+        const paymentSection = document.getElementById("payment-method-section");
+        if (paymentSection) {
+          paymentSection.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+        }
+      }, 100);
       
-      const finalQuantity = Math.min(selectedQuantity, remainingQuantity);
+      setTimeout(() => {
+        alert("Split bill is only available with card payment. Please select 'Card Payment' as your payment method.");
+      }, 150);
       
-      return {
-        ...itemData,
-        quantity: finalQuantity,
-        originalQuantity: itemData.quantity,
-        remainingQuantity: remainingQuantity,
-        _id: itemData._id,
-        foodId: itemData.foodId,
-        baseFoodId: itemData.baseFoodId,
-        price: itemData.price,
-        name: itemData.name,
-        image: itemData.image
-      };
+      return;
+    }
+    
+    const itemsToPay = Object.keys(selectedItems)
+      .filter(itemId => selectedItems[itemId]?.selected)
+      .map(itemId => {
+        const itemSelection = selectedItems[itemId];
+        const itemData = itemSelection.itemData;
+        const selectedQuantity = itemSelection.quantity || 1;
+        const remainingQuantity = itemSelection.remainingQuantity || itemData.quantity;
+        
+        const finalQuantity = Math.min(selectedQuantity, remainingQuantity);
+        
+        const unitPriceWithDiscount = itemSelection.unitPriceWithDiscount || 
+                                     itemData.price || 0;
+        
+        const originalPrice = itemSelection.unitPriceOriginal || 
+                             itemData.price || 0;
+        
+        const hasDiscount = itemSelection.hasDiscount || false;
+        const discountPercentage = itemSelection.discountPercentage || 0;
+        
+        const totalPriceForQuantity = unitPriceWithDiscount * finalQuantity;
+        
+        return {
+          ...itemData,
+          quantity: finalQuantity,
+          originalQuantity: itemData.quantity,
+          remainingQuantity: remainingQuantity,
+          _id: itemData._id,
+          foodId: itemData.foodId,
+          baseFoodId: itemData.baseFoodId,
+          price: unitPriceWithDiscount,
+          originalPriceValue: originalPrice,
+          totalPrice: totalPriceForQuantity,
+          hasDiscount: hasDiscount,
+          discountPercentage: discountPercentage,
+          name: itemData.name,
+          image: itemData.image,
+          isDiscountedPriceApplied: true
+        };
+      });
+    
+    if (itemsToPay.length === 0) {
+      alert("Please select at least one item to pay");
+      return;
+    }
+    
+    console.log('💰 FINAL - Sending to placeSplitBillOrder:', {
+      itemsCount: itemsToPay.length,
+      total: selectedTotal,
+      paymentMethod: paymentMethod,
+      itemsDetails: itemsToPay.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        totalPrice: item.totalPrice,
+        hasDiscount: item.hasDiscount,
+        discountPercentage: item.discountPercentage
+      }))
     });
-  
-  if (itemsToPay.length === 0) {
-    alert("Please select at least one item to pay");
-    return;
-  }
-  
-  const selectedTotal = calculateSelectedTotal();
-  console.log('💰 Sending to placeSplitBillOrder:', {
-    items: itemsToPay,
-    total: selectedTotal,
-    paymentMethod: paymentMethod
-  });
-  
-  placeSplitBillOrder(itemsToPay, selectedTotal);
-  onClose();
-};
+    
+    placeSplitBillOrder(itemsToPay, selectedTotal);
+    handleClose();
+  };
 
   const handleClose = () => {
     hasInitialized.current = false;
@@ -315,16 +404,13 @@ const handlePaySelected = () => {
     itemIdMap.current = {};
     setSelectedItems({});
     setSelectAll(false);
+    setSelectedTotal(0);
+    setSelectedCount(0);
     onClose();
   };
 
-  // ✅ RETURN-ul cu condiția la sfârșit, după toate hook-urile
   if (!isOpen) return null;
-
-  const selectedTotal = calculateSelectedTotal();
-  const selectedCount = Object.values(selectedItems).filter(s => s?.selected).length;
   
-  // ✅ Obținem order-ele care au item-e disponibile
   const groupedOrders = groupItemsByOrder();
   const ordersWithAvailableItems = Object.values(groupedOrders)
     .map(orderGroup => ({
@@ -377,13 +463,12 @@ const handlePaySelected = () => {
           )}
         </div>
 
-        {/* Items List - Grupate după order */}
+        {/* Items List */}
         <div className="split-items-list">
           {ordersWithAvailableItems.length > 0 ? (
             <div className="orders-container">
               {ordersWithAvailableItems.map((orderGroup, orderIndex) => (
-                <div key={orderGroup.orderId} className="order-group-section">
-                  {/* Order Header */}
+                <div key={orderGroup.orderId || orderIndex} className="order-group-section">
                   <div className="order-header">
                     <h4 className="order-title">
                       <span>Order #{orderGroup.orderNumber || 'N/A'}</span>
@@ -391,29 +476,34 @@ const handlePaySelected = () => {
                     </h4>
                   </div>
 
-                  {/* Items din order */}
                   <div className="order-items-container">
                     {orderGroup.availableItems.map((item) => {
-                      const itemKey = `${item._id}_${item.orderId}_${item.quantity}_${item.price}`;
+                      const itemKey = getItemKey(item);
                       const stableId = itemIdMap.current[itemKey];
                       
                       if (!stableId) {
-                        console.error('❌ No stableId found for item:', item);
                         return null;
                       }
                       
                       const itemSelection = selectedItems[stableId];
-                      const isSelected = itemSelection?.selected === true;
-                      const selectedQuantity = itemSelection?.quantity || 1;
-                      const remainingQuantity = itemSelection?.remainingQuantity || item.quantity;
-                      const foodItem = findFoodItem(item.uniqueId);
-                      const priceInfo = foodItem ? getItemPriceWithDiscount(foodItem, item) : null;
+                      
+                      if (!itemSelection) {
+                        return null;
+                      }
+                      
+                      const isSelected = itemSelection.selected === true;
+                      const selectedQuantity = itemSelection.quantity || 1;
+                      const remainingQuantity = itemSelection.remainingQuantity || item.quantity;
+                      const foodItem = findFoodItemForItem(item);
                       const isPartiallyPaid = remainingQuantity < item.quantity;
                       
-                      const originalPrice = item.price * item.quantity;
-                      const discountedPrice = priceInfo ? priceInfo.totalPrice : originalPrice;
-                      const pricePerUnit = discountedPrice / item.quantity;
-                      const selectedPrice = pricePerUnit * selectedQuantity;
+                      const unitPriceWithDiscount = itemSelection.unitPriceWithDiscount || item.price || 0;
+                      const unitPriceOriginal = itemSelection.unitPriceOriginal || item.price || 0;
+                      const hasDiscount = itemSelection.hasDiscount || false;
+                      const discountPercentage = itemSelection.discountPercentage || 0;
+                      
+                      const originalPriceForSelected = unitPriceOriginal * selectedQuantity;
+                      const discountedPriceForSelected = unitPriceWithDiscount * selectedQuantity;
 
                       const imageUrl = url + "/images/" + (foodItem?.image || item.image);
 
@@ -454,41 +544,54 @@ const handlePaySelected = () => {
                               </div>
                             )}
                             
-                           {remainingQuantity > 1 && (
-  <div className="split-qty-compact" onClick={(e) => e.stopPropagation()}>
-    <button
-      className="split-qty-btn-compact"
-      onClick={(e) => {
-        e.stopPropagation();
-        handleQuantityChange(stableId, selectedQuantity - 1);
-      }}
-      disabled={selectedQuantity <= 1}
-    >
-      -
-    </button>
-    <span className="split-qty-value-compact">
-      {selectedQuantity} / {remainingQuantity}
-    </span>
-    <button
-      className="split-qty-btn-compact"
-      onClick={(e) => {
-        e.stopPropagation();
-        handleQuantityChange(stableId, selectedQuantity + 1);
-      }}
-      disabled={selectedQuantity >= remainingQuantity}
-    >
-      +
-    </button>
-  </div>
-)}
+                            {/* ✅ STRUCTURA ORIGINALĂ pentru quantity controls */}
+                            {remainingQuantity > 1 && (
+                              <div className="split-qty-compact" onClick={(e) => e.stopPropagation()}>
+                                <button
+                                  className="split-qty-btn-compact"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleQuantityChange(stableId, selectedQuantity - 1);
+                                  }}
+                                  disabled={selectedQuantity <= 1}
+                                >
+                                  -
+                                </button>
+                                <span className="split-qty-value-compact">
+                                  {selectedQuantity} / {remainingQuantity}
+                                </span>
+                                <button
+                                  className="split-qty-btn-compact"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleQuantityChange(stableId, selectedQuantity + 1);
+                                  }}
+                                  disabled={selectedQuantity >= remainingQuantity}
+                                >
+                                  +
+                                </button>
+                              </div>
+                            )}
                             
                             <div className="item-price-section">
-                              {priceInfo?.hasDiscount && (
-                                <span className="original-price">
-                                  {originalPrice.toFixed(2)} €
+                              {hasDiscount && discountPercentage > 0 && (
+                                <div className="discount-price-display">
+                                  <span className="original-price-line">
+                                    {originalPriceForSelected.toFixed(2)} €
+                                  </span>
+                                  <span className="discounted-price">
+                                    {discountedPriceForSelected.toFixed(2)} €
+                                  </span>
+                                  <span className="discount-percentage-badge">
+                                    -{discountPercentage}%
+                                  </span>
+                                </div>
+                              )}
+                              {!hasDiscount && (
+                                <span className="regular-price">
+                                  {discountedPriceForSelected.toFixed(2)} €
                                 </span>
                               )}
-                              <span className="final-price">{selectedPrice.toFixed(2)} €</span>
                             </div>
                           </div>
                         </div>
