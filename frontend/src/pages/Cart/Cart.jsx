@@ -21,8 +21,86 @@ import {
   FaTag,
   FaCheckCircle,
   FaPercent,
+  FaShoppingCart
 } from "react-icons/fa";
 import { assets } from "../../assets/assets";
+
+// Component pentru noul design al butonului floating checkout
+const ModernCheckoutButton = ({ 
+  show, 
+  isDisabled, 
+  isProcessing, 
+  itemCount, 
+  totalAmount, 
+  onClick,
+  t,
+  formatPrice 
+}) => {
+  const createRipple = (event) => {
+    const button = event.currentTarget;
+    const circle = document.createElement("span");
+    const diameter = Math.max(button.clientWidth, button.clientHeight);
+    const radius = diameter / 2;
+
+    circle.style.width = circle.style.height = `${diameter}px`;
+    circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
+    circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
+    circle.classList.add("mc-ripple");
+
+    const ripple = button.getElementsByClassName("mc-ripple")[0];
+    if (ripple) {
+      ripple.remove();
+    }
+
+    button.appendChild(circle);
+  };
+
+  if (!show || isDisabled) return null;
+
+  return (
+    <div className="modern-checkout-container">
+      <button
+        className={`modern-checkout-button ${isProcessing ? 'mc-processing' : ''}`}
+        onClick={(e) => {
+          createRipple(e);
+          if (!isProcessing) onClick();
+        }}
+        disabled={isProcessing}
+      >
+        {isProcessing ? (
+          <div className="mc-processing-state">
+            <div className="mc-spinner"></div>
+            <span className="mc-processing-text">{t("cart.processing_order")}</span>
+          </div>
+        ) : (
+          <div className="mc-content">
+            <div className="mc-left">
+              <div className="mc-icon">
+               <FaShoppingCart />
+
+              </div>
+              <div className="mc-text">
+                <span className="mc-title">{t("cart.place_order")}</span>
+                <span className="mc-subtitle">{itemCount} {t("cart.items")}</span>
+              </div>
+            </div>
+            <div className="mc-right">
+              {/* {itemCount > 0 && (
+                <div className="mc-item-count">
+                  <span className="mc-count-number">{itemCount}</span>
+                  <span className="mc-count-label">{t("cart.items")}</span>
+                </div>
+              )} */}
+              <div className="mc-total-amount">
+                {formatPrice(totalAmount)}
+              </div>
+            </div>
+          </div>
+        )}
+      </button>
+    </div>
+  );
+};
 
 const Cart = () => {
   const {
@@ -40,6 +118,7 @@ const Cart = () => {
     canAddToCart,
     billRequested,
     userBlocked,
+    restaurantData,
   } = useContext(StoreContext);
 
   const { t, i18n } = useTranslation();
@@ -80,8 +159,32 @@ const Cart = () => {
 
   const isCartEmpty = Object.keys(cartItems).length === 0;
 
-  // Combină ambele condiții pentru a bloca interacțiunea
   const isDisabled = billRequested || userBlocked;
+  
+  const currency = restaurantData?.currency || '€';
+  const currencyPosition = restaurantData?.currencyPosition || 'after';
+
+  const formatPrice = (priceValue, showCurrency = true) => {
+    if (!priceValue && priceValue !== 0) return '';
+    
+    const numericPrice = typeof priceValue === 'string' 
+      ? parseFloat(priceValue) 
+      : priceValue;
+    
+    const formattedPrice = numericPrice.toFixed(2);
+    
+    if (!showCurrency) {
+      return formattedPrice;
+    }
+    
+    const nbsp = '\u00A0';
+    
+    if (currencyPosition === 'before') {
+      return `${currency}${nbsp}${formattedPrice}`;
+    } else {
+      return `${formattedPrice}${nbsp}${currency}`;
+    }
+  };
 
   const getBlockedMessage = () => {
     if (userBlocked) {
@@ -123,7 +226,6 @@ const Cart = () => {
     setShowFloatingCheckout(!isCartEmpty && !isDisabled);
   }, [isCartEmpty, cartItems, isDisabled]);
 
-  // Adaugă funcția pentru traducerea numelor produselor
   const translateProductNames = async () => {
     if (currentLanguage === "ro" || !food_list.length) {
       setTranslatedProductNames({});
@@ -179,14 +281,12 @@ const Cart = () => {
     }
   };
 
-  // Adaugă efectul pentru traducerea numelor produselor
   useEffect(() => {
     if (food_list.length > 0 && !isDisabled) {
       translateProductNames();
     }
   }, [currentLanguage, food_list.length, isDisabled]);
 
-  // Adaugă funcția pentru a obține numele tradus
   const getTranslatedProductName = (foodItem) => {
     if (!foodItem) return "";
 
@@ -198,7 +298,6 @@ const Cart = () => {
       : foodItem.name || "";
   };
 
-  // Adaugă funcția pentru traducerea descrierilor
   const translateProductDescriptions = async () => {
     if (currentLanguage === "ro" || !food_list.length) {
       setTranslatedDescriptions({});
@@ -256,14 +355,12 @@ const Cart = () => {
     }
   };
 
-  // Adaugă efectul pentru traducerea descrierilor
   useEffect(() => {
     if (food_list.length > 0 && !isDisabled) {
       translateProductDescriptions();
     }
   }, [currentLanguage, food_list.length, isDisabled]);
 
-  // Adaugă funcția pentru a obține descrierea tradusă
   const getTranslatedDescription = (foodItem) => {
     if (!foodItem) return "";
 
@@ -275,7 +372,6 @@ const Cart = () => {
       : foodItem.description || "";
   };
 
-  // Adaugă funcțiile de traducere pentru produsele populare
   const translatePopularProductNames = async () => {
     if (currentLanguage === "ro" || !displayedPopularProducts.length) {
       setTranslatedPopularProducts({});
@@ -331,14 +427,12 @@ const Cart = () => {
     }
   };
 
-  // Adaugă efectul pentru traducerea produselor populare
   useEffect(() => {
     if (displayedPopularProducts.length > 0 && !isDisabled) {
       translatePopularProductNames();
     }
   }, [currentLanguage, displayedPopularProducts.length, isDisabled]);
 
-  // Adaugă funcția pentru a obține numele tradus
   const getTranslatedPopularProductName = (product) => {
     const productId = product.id || product.name;
     const translatedName = translatedPopularProducts[productId];
@@ -348,7 +442,6 @@ const Cart = () => {
       : product.name;
   };
 
-  // Fetch popular products
   useEffect(() => {
     const fetchPopularProducts = async () => {
       try {
@@ -358,14 +451,12 @@ const Cart = () => {
             (order) => order.status === "Delivered"
           );
 
-          // Count products
           const productCountMap = {};
           const productDetailsMap = {};
 
           orders.forEach((order) => {
             if (order.items && Array.isArray(order.items)) {
               order.items.forEach((item) => {
-                // Asigură-te că item este un obiect valid
                 if (item && typeof item === "object") {
                   const productName = item.name;
                   const productId = item.baseFoodId || item.foodId;
@@ -374,7 +465,6 @@ const Cart = () => {
                     productCountMap[productName] =
                       (productCountMap[productName] || 0) + 1;
 
-                    // Store product details for the first occurrence
                     if (!productDetailsMap[productName]) {
                       productDetailsMap[productName] = {
                         id: productId,
@@ -390,11 +480,9 @@ const Cart = () => {
             }
           });
 
-          // Combine count with details and get top 20
           const popularProductsData = Object.entries(productCountMap)
             .map(([name, count]) => {
               const product = productDetailsMap[name];
-              // Asigură-te că fiecare produs este un obiect valid
               return product
                 ? {
                     ...product,
@@ -402,7 +490,7 @@ const Cart = () => {
                   }
                 : null;
             })
-            .filter(Boolean) // Elimină orice valori null
+            .filter(Boolean)
             .sort((a, b) => b.count - a.count)
             .slice(0, 20);
 
@@ -418,7 +506,6 @@ const Cart = () => {
     }
   }, [url, isCartEmpty, isDisabled]);
 
-  // Select 6 random products from popular products
   useEffect(() => {
     if (popularProducts.length > 0 && !isDisabled) {
       const shuffled = [...popularProducts].sort(() => 0.5 - Math.random());
@@ -427,15 +514,12 @@ const Cart = () => {
     }
   }, [popularProducts, isDisabled]);
 
-  // Function to handle adding popular product to cart
   const handleAddPopularProduct = (product) => {
-    // ✅ Verifică dacă nota a fost cerută sau session-ul a expirat înainte de a adăuga în coș
     if (!canAddToCart()) {
       return;
     }
 
     try {
-      // Verificări extinse
       if (!product || typeof product !== "object") {
         console.error("Invalid product object:", product);
         toast.error("Error adding product to cart");
@@ -451,20 +535,17 @@ const Cart = () => {
         return;
       }
 
-      // Caută produsul în lista completă de mâncăruri
       const completeFoodItem = food_list.find((item) => {
         if (!item || typeof item !== "object") return false;
         return item._id === productId || item.name === productName;
       });
 
       if (completeFoodItem && typeof completeFoodItem === "object") {
-        // Deschide modalul pentru produs în loc să-l adauge direct
         setSelectedFood(completeFoodItem);
         setSelectedFoodQuantity(1);
         setSelectedFoodInstructions("");
         setIsFoodModalOpen(true);
       } else {
-        // Fallback - creează un item de bază
         const fallbackItem = {
           _id: productId,
           name: productName,
@@ -485,7 +566,6 @@ const Cart = () => {
     }
   };
 
-  // În funcția findFoodItem, asigură-te că incluzi câmpurile pentru discount
   const findFoodItem = (itemId, cartItem) => {
     let baseFoodId = "";
 
@@ -506,7 +586,6 @@ const Cart = () => {
     return foodItem || null;
   };
 
-  // ✅ FUNCȚIE: Calculează prețul cu discount pentru un item
   const getItemPriceWithDiscount = (foodItem, cartItem) => {
     if (!foodItem)
       return {
@@ -520,13 +599,11 @@ const Cart = () => {
     const rawPrice = parseFloat(foodItem.price) || 0;
     const discountPercentage = parseFloat(foodItem.discountPercentage) || 0;
 
-    // Calculează prețul cu discount
     const discountedPrice =
       discountPercentage > 0
         ? rawPrice * (1 - discountPercentage / 100)
         : rawPrice;
 
-    // Adaugă prețul extraselor
     const extrasPrice = cartItem?.itemData?.extrasPrice || 0;
 
     return {
@@ -538,7 +615,6 @@ const Cart = () => {
     };
   };
 
-  // ✅ FUNCȚIE NOUĂ: Calculează subtotal-ul ORIGINAL (fără discount)
   const getOriginalSubtotal = () => {
     let originalSubtotal = 0;
 
@@ -548,7 +624,6 @@ const Cart = () => {
         const foodItem = findFoodItem(itemId, cartItem);
         if (foodItem) {
           const priceInfo = getItemPriceWithDiscount(foodItem, cartItem);
-          // Folosim prețul original pentru subtotal
           originalSubtotal += priceInfo.originalPrice * cartItem.quantity;
         }
       }
@@ -557,7 +632,6 @@ const Cart = () => {
     return originalSubtotal;
   };
 
-  // ✅ FUNCȚIE NOUĂ: Calculează discount-ul total pentru toate produsele din coș
   const getTotalDiscountAmount = () => {
     let totalDiscount = 0;
 
@@ -568,7 +642,6 @@ const Cart = () => {
         if (foodItem) {
           const priceInfo = getItemPriceWithDiscount(foodItem, cartItem);
           if (priceInfo.hasDiscount) {
-            // Calculează discount-ul pentru acest item
             const originalTotal = priceInfo.originalPrice * cartItem.quantity;
             const discountedTotal = priceInfo.totalPrice;
             const itemDiscount = originalTotal - discountedTotal;
@@ -587,7 +660,6 @@ const Cart = () => {
   };
 
   const openFoodModal = (itemId, cartItem) => {
-    // ✅ Verifică dacă nota a fost cerută sau session-ul a expirat înainte de a deschide modalul
     if (!canAddToCart()) {
       return;
     }
@@ -608,7 +680,6 @@ const Cart = () => {
     setSelectedFoodInstructions("");
   };
 
-  // Verifică dacă un produs popular este deja în coș - VERSIUNE SIMPLĂ
   const getPopularProductQuantity = (product) => {
     if (!product || typeof product !== "object") return 0;
 
@@ -617,16 +688,13 @@ const Cart = () => {
 
     if (!productId && !productName) return 0;
 
-    // Caută în toate item-ile din coș
     for (const [itemId, itemData] of Object.entries(cartItems)) {
       const baseFoodId = itemId.split("__")[0];
 
-      // Verifică după ID
       if (productId && baseFoodId === productId) {
         return itemData.quantity;
       }
 
-      // Verifică după nume (fallback)
       if (productName) {
         const foodItem = findFoodItem(itemId, itemData);
         if (foodItem && foodItem.name === productName) {
@@ -663,7 +731,6 @@ const Cart = () => {
   const placeOrder = async (event) => {
     if (event) event.preventDefault();
 
-    // ✅ Verifică dacă nota a fost cerută sau session-ul a expirat înainte de a plasa comanda
     if (!canAddToCart()) {
       return;
     }
@@ -709,7 +776,7 @@ const Cart = () => {
       }
     });
 
-    const totalAmount = getTotalCartAmount(); // Folosește getTotalCartAmount care deja include discount-urile
+    const totalAmount = getTotalCartAmount();
 
     const orderData = {
       userId: token,
@@ -722,7 +789,6 @@ const Cart = () => {
     };
 
     try {
-      // Dacă nu este selectată nicio metodă de plată, folosește cashPOS ca default
       const selectedPaymentMethod = paymentMethod || "cashPOS";
 
       if (selectedPaymentMethod === "creditCard") {
@@ -737,7 +803,6 @@ const Cart = () => {
           setIsPlacingOrder(false);
         }
       } else {
-        // Pentru cashPOS sau când nu este selectată nicio metodă
         const response = await axios.post(
           url + "/api/order/place-cash",
           orderData,
@@ -768,7 +833,6 @@ const Cart = () => {
   };
 
   const handleTouchStart = (e, id) => {
-    // ✅ Verifică dacă nota a fost cerută sau session-ul a expirat înainte de a permite swipe
     if (isDisabled) return;
 
     swipeData.current[id] = {
@@ -779,7 +843,6 @@ const Cart = () => {
   };
 
   const handleTouchMove = (e, id) => {
-    // ✅ Verifică dacă nota a fost cerută sau session-ul a expirat
     if (isDisabled) return;
 
     const current = swipeData.current[id];
@@ -804,7 +867,6 @@ const Cart = () => {
   };
 
   const handleTouchEnd = (id) => {
-    // ✅ Verifică dacă nota a fost cerută sau session-ul a expirat
     if (isDisabled) return;
 
     const current = swipeData.current[id];
@@ -872,7 +934,6 @@ const Cart = () => {
       <div className="cart-header-section">
         <button className="back-button" onClick={() => navigate(-1)}>
           <FaArrowLeft />
-          {/* <span>{t("cart.back")}</span> */}
         </button>
 
         <h1 className="cart-title">{t("cart.your_order")}</h1>
@@ -889,6 +950,7 @@ const Cart = () => {
           <div className="clear-cart-placeholder"></div>
         )}
       </div>
+      
       {/* Warning Banner pentru Session Expired sau Bill Requested */}
       {isDisabled && blockedMessage && (
         <motion.div
@@ -909,7 +971,7 @@ const Cart = () => {
         </motion.div>
       )}
 
-      {/* Empty Cart State - SE AFIȘEAZĂ DOAR DACĂ NU E PLASATĂ COMANDA */}
+      {/* Empty Cart State */}
       {isCartEmpty && !orderPlaced ? (
         <motion.div
           className="empty-cart-state"
@@ -1135,13 +1197,11 @@ const Cart = () => {
                                 {isTranslatingProductNames && (
                                   <span className="translating-indicator">
                                     {" "}
-                                    🔄
                                   </span>
                                 )}
                               </h3>
                             </button>
 
-                            {/* DESCRIEREA SUB TITLU */}
                             <button
                               className="item-description-button"
                               onClick={() => openFoodModal(itemId, cartItem)}
@@ -1156,13 +1216,11 @@ const Cart = () => {
                                 {isTranslatingDescriptions && (
                                   <span className="translating-indicator">
                                     {" "}
-                                    🔄
                                   </span>
                                 )}
                               </p>
                             </button>
 
-                            {/* NOTE + EXTRAS SUB DESCRIERE */}
                             {itemInstructions && (
                               <div className="item-special-instructions">
                                 <span className="instructions-label">
@@ -1181,27 +1239,19 @@ const Cart = () => {
                                   {cartItem.selectedOptions.join(", ")}
                                   <span className="extras-price">
                                     (+
-                                    {(
-                                      cartItem.itemData?.extrasPrice || 0
-                                    ).toFixed(2)}{" "}
-                                    €)
+                                    {formatPrice(cartItem.itemData?.extrasPrice || 0)}
                                   </span>
                                 </div>
                               )}
 
-                            {/* SECȚIUNEA DE PREȚ CU DISCOUNT */}
                             <div className="item-price-section">
                               {priceInfo.hasDiscount ? (
                                 <div className="discount-price-wrapper-cart">
                                   <span className="original-price-line">
-                                    {(
-                                      priceInfo.originalPrice *
-                                      cartItem.quantity
-                                    ).toFixed(2)}{" "}
-                                    €
+                                    {formatPrice(priceInfo.originalPrice * cartItem.quantity)}
                                   </span>
                                   <span className="discounted-price-cart">
-                                    {priceInfo.totalPrice.toFixed(2)} €
+                                    {formatPrice(priceInfo.totalPrice)}
                                   </span>
                                   <div className="discount-badge-cart">
                                     -{priceInfo.discountPercentage}%
@@ -1209,7 +1259,7 @@ const Cart = () => {
                                 </div>
                               ) : (
                                 <span className="regular-price-cart">
-                                  {priceInfo.totalPrice.toFixed(2)} €
+                                  {formatPrice(priceInfo.totalPrice)}
                                 </span>
                               )}
                             </div>
@@ -1254,7 +1304,7 @@ const Cart = () => {
               </AnimatePresence>
             </div>
 
-            {/* Add More Button - doar dacă nota nu este cerută sau session-ul nu a expirat */}
+            {/* Add More Button */}
             {!isDisabled && (
               <div className="add-more-button-container">
                 <button
@@ -1268,7 +1318,7 @@ const Cart = () => {
             )}
           </div>
 
-          {/* Popular Products Section - DOAR DACĂ COȘUL NU ESTE GOL ȘI NOTA NU ESTE CERUTĂ ȘI SESSION-UL NU A EXPIRAT */}
+          {/* Popular Products Section */}
           {!isCartEmpty &&
             displayedPopularProducts.length > 0 &&
             !isDisabled && (
@@ -1390,7 +1440,7 @@ const Cart = () => {
                           >
                             {getTranslatedPopularProductName(product)}
                             {isTranslatingPopular && (
-                              <span className="translating-indicator"> 🔄</span>
+                              <span className="translating-indicator"></span>
                             )}
                           </h4>
 
@@ -1398,15 +1448,15 @@ const Cart = () => {
                             {priceInfo.hasDiscount ? (
                               <div className="popular-product-price-with-discount">
                                 <span className="popular-product-original-price">
-                                  {priceInfo.originalPrice.toFixed(2)} €
+                                  {formatPrice(priceInfo.originalPrice)}
                                 </span>
                                 <span className="popular-product-price discounted">
-                                  {priceInfo.discountedPrice.toFixed(2)} €
+                                  {formatPrice(priceInfo.discountedPrice)}
                                 </span>
                               </div>
                             ) : (
                               <span className="popular-product-price">
-                                {priceInfo.originalPrice.toFixed(2)} €
+                                {formatPrice(priceInfo.originalPrice)}
                               </span>
                             )}
                           </div>
@@ -1426,7 +1476,7 @@ const Cart = () => {
               </motion.div>
             )}
 
-          {/* Special Instructions globale - doar dacă nota nu este cerută sau session-ul nu a expirat */}
+          {/* Special Instructions globale */}
           {!isDisabled && (
             <div className="special-instructions-section">
               <h2 className="section-title">
@@ -1451,14 +1501,14 @@ const Cart = () => {
             <div className="summary-details">
               <div className="summary-row">
                 <span>{t("cart.subtotal")}</span>
-                <span>{getOriginalSubtotal().toFixed(2)} €</span>
+                <span>{formatPrice(getOriginalSubtotal())}</span>
               </div>
 
               {getTotalDiscountAmount() > 0 && (
                 <div className="summary-row discount-row">
                   <span className="discount-label">{t("cart.discount")}</span>
                   <span className="discount-amount">
-                    -{getTotalDiscountAmount().toFixed(2)} €
+                    -{formatPrice(getTotalDiscountAmount())}
                   </span>
                 </div>
               )}
@@ -1467,10 +1517,7 @@ const Cart = () => {
               <div className="summary-row total">
                 <span>{t("cart.total")}</span>
                 <span>
-                  {(getOriginalSubtotal() - getTotalDiscountAmount()).toFixed(
-                    2
-                  )}{" "}
-                  €
+                  {formatPrice(getOriginalSubtotal() - getTotalDiscountAmount())}
                 </span>
               </div>
             </div>
@@ -1478,36 +1525,17 @@ const Cart = () => {
         </div>
       )}
 
-      {/* Floating Checkout Button - doar dacă nota nu este cerută sau session-ul nu a expirat */}
-      {showFloatingCheckout && !isDisabled && (
-        <div
-          className={`floating-checkout ${
-            isPlacingOrder || orderPlaced ? "placing-order" : ""
-          }`}
-          onClick={!(isPlacingOrder || orderPlaced) ? placeOrder : undefined}
-        >
-          <div className="checkout-content">
-            {!(isPlacingOrder || orderPlaced) ? (
-              <>
-                <div className="item-count">{getTotalItemCount()}</div>
-                <div className="checkout-text">{t("cart.place_order")}</div>
-                <div className="checkout-total">
-                  {getTotalCartAmount().toFixed(2)} €
-                </div>
-              </>
-            ) : (
-              <div className="order-placed-message">
-                <motion.div
-                  className="smooth-spinner"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                />
-                <span>{t("cart.processing_order")}...</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Modern Checkout Button */}
+      <ModernCheckoutButton
+        show={showFloatingCheckout && !isDisabled}
+        isDisabled={isDisabled}
+        isProcessing={isPlacingOrder || orderPlaced}
+        itemCount={getTotalItemCount()}
+        totalAmount={getTotalCartAmount()}
+        onClick={placeOrder}
+        t={t}
+        formatPrice={formatPrice}
+      />
 
       {/* Confirmation Modals */}
       <AnimatePresence>

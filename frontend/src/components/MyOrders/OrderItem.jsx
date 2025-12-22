@@ -59,7 +59,7 @@ const OrderItem = ({
             <h3 className="order-item-name">
               {getTranslatedProductName(foodItem) || item.name}
               {isTranslatingProductNames && (
-                <span className="translating-badge">🔄</span>
+                <span className="translating-badge"></span>
               )}
             </h3>
             

@@ -16,11 +16,16 @@ const Welcome = () => {
         image: '',
         restaurantName: t('welcome.our_restaurant'),
         slogan: t('welcome.exquisite_dining'),
-        openingHours: {}
+        openingHours: {},
+        contactEmail: '',
+        contactPhone: '',
+        facebook: '',
+        instagram: ''
     });
 
     const [isLoaded, setIsLoaded] = useState(false);
     const [isHoursOpen, setIsHoursOpen] = useState(false);
+    const [showContactModal, setShowContactModal] = useState(false);
     const canvasRef = useRef(null);
 
     useEffect(() => {
@@ -125,6 +130,76 @@ const Welcome = () => {
         setIsHoursOpen(!isHoursOpen);
     };
 
+    const handleContactClick = () => {
+        // Verificăm dacă avem ambele metode de contact disponibile
+        const hasEmail = restaurantData.contactEmail && restaurantData.contactEmail.trim() !== '';
+        const hasPhone = restaurantData.contactPhone && restaurantData.contactPhone.trim() !== '';
+        
+        // Dacă avem doar unul, folosim direct acel contact method
+        if (hasEmail && !hasPhone) {
+            window.location.href = `mailto:${restaurantData.contactEmail}`;
+            return;
+        }
+        
+        if (!hasEmail && hasPhone) {
+            window.location.href = `tel:${restaurantData.contactPhone}`;
+            return;
+        }
+        
+        // Dacă avem ambele, afișăm modalul
+        if (hasEmail && hasPhone) {
+            setShowContactModal(true);
+        }
+    };
+
+    const handleEmailClick = () => {
+        if (restaurantData.contactEmail) {
+            window.location.href = `mailto:${restaurantData.contactEmail}`;
+            setShowContactModal(false);
+        }
+    };
+
+    const handlePhoneClick = () => {
+        if (restaurantData.contactPhone) {
+            window.location.href = `tel:${restaurantData.contactPhone}`;
+            setShowContactModal(false);
+        }
+    };
+
+    const closeModal = (e) => {
+        if (e.target.classList.contains('contact-modal-overlay')) {
+            setShowContactModal(false);
+        }
+    };
+
+    // Funcții pentru deschiderea linkurilor sociale
+    const handleFacebookClick = () => {
+        if (restaurantData.facebook) {
+            // Asigură-te că linkul începe cu https://
+            let facebookUrl = restaurantData.facebook;
+            if (!facebookUrl.startsWith('http://') && !facebookUrl.startsWith('https://')) {
+                facebookUrl = `https://${facebookUrl}`;
+            }
+            window.open(facebookUrl, '_blank', 'noopener,noreferrer');
+        }
+    };
+
+    const handleInstagramClick = () => {
+        if (restaurantData.instagram) {
+            // Asigură-te că linkul începe cu https://
+            let instagramUrl = restaurantData.instagram;
+            if (!instagramUrl.startsWith('http://') && !instagramUrl.startsWith('https://')) {
+                instagramUrl = `https://${instagramUrl}`;
+            }
+            window.open(instagramUrl, '_blank', 'noopener,noreferrer');
+        }
+    };
+
+    const hasSocialLinks = () => {
+        return (restaurantData.facebook && restaurantData.facebook.trim() !== '') || 
+               (restaurantData.instagram && restaurantData.instagram.trim() !== '');
+    };
+
     const containerAnimation = {
         hidden: { opacity: 0 },
         visible: {
@@ -164,6 +239,32 @@ const Welcome = () => {
             transition: {
                 duration: 0.4,
                 ease: "easeInOut"
+            }
+        }
+    };
+
+    const modalAnimation = {
+        hidden: { 
+            opacity: 0,
+            scale: 0.9,
+            y: -20
+        },
+        visible: { 
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            transition: {
+                type: "spring",
+                stiffness: 300,
+                damping: 25
+            }
+        },
+        exit: { 
+            opacity: 0,
+            scale: 0.9,
+            y: -20,
+            transition: {
+                duration: 0.2
             }
         }
     };
@@ -391,12 +492,68 @@ const Welcome = () => {
                         </AnimatePresence>
                     </motion.div>
                     
+       {/* Social Media Links (doar dacă există) */}
+{hasSocialLinks() && (
+    <motion.div 
+        className="welcome-social-links-minimal"
+        variants={itemAnimation}
+        initial={{ opacity: 0, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.9 }}
+    >
+        <div className="social-icons-minimal-container">
+            {restaurantData.facebook && restaurantData.facebook.trim() !== '' && (
+                <motion.button
+                    className="social-icon-minimal facebook-icon-minimal"
+                    onClick={handleFacebookClick}
+                    whileHover={{ 
+                        scale: 1.15,
+                        backgroundColor: 'rgba(24, 119, 242, 0.08)'
+                    }}
+                    whileTap={{ scale: 0.9 }}
+                    title={t('welcome.visit_facebook') || 'Visit our Facebook page'}
+                >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                </motion.button>
+            )}
+            
+            {restaurantData.instagram && restaurantData.instagram.trim() !== '' && (
+                <motion.button
+                    className="social-icon-minimal instagram-icon-minimal"
+                    onClick={handleInstagramClick}
+                    whileHover={{ 
+                        scale: 1.15,
+                        backgroundColor: 'rgba(228, 64, 95, 0.08)'
+                    }}
+                    whileTap={{ scale: 0.9 }}
+                    title={t('welcome.visit_instagram') || 'Visit our Instagram page'}
+                >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                </motion.button>
+            )}
+        </div>
+        
+        {/* <motion.p 
+            className="social-links-hint-minimal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.6 }}
+            transition={{ delay: 1.0 }}
+        >
+            {t('welcome.follow_us') || 'Follow us'}
+        </motion.p> */}
+    </motion.div>
+)}
+                    
                     {/* Buttons */}
                     <motion.div 
                         className="welcome-buttons-minimal"
                         variants={itemAnimation}
                     >
-                        <motion.button
+                        {/* <motion.button
                             className="welcome-btn-primary"
                             onClick={handleExplore}
                             whileHover={{ 
@@ -435,12 +592,12 @@ const Welcome = () => {
                                     strokeLinejoin="round"
                                 />
                             </motion.svg>
-                        </motion.button>
+                        </motion.button> */}
                         
-                        {restaurantData.contactPhone && (
+                        {(restaurantData.contactPhone || restaurantData.contactEmail) && (
                             <motion.button
                                 className="welcome-btn-secondary"
-                                onClick={() => window.location.href = `tel:${restaurantData.contactPhone}`}
+                                onClick={handleContactClick}
                                 whileHover={{ 
                                     scale: 1.05,
                                     borderColor: 'rgba(0, 0, 0, 0.3)'
@@ -454,6 +611,149 @@ const Welcome = () => {
 
                 </motion.div>
             </div>
+            
+            {/* Contact Modal */}
+            <AnimatePresence>
+                {showContactModal && (
+                    <motion.div 
+                        className="contact-modal-overlay"
+                        onClick={closeModal}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <motion.div 
+                            className="contact-modal"
+                            variants={modalAnimation}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                        >
+                            <div className="contact-modal-header">
+                                <h3>{t('welcome.choose_contact_method')}</h3>
+                                <button 
+                                    className="contact-modal-close"
+                                    onClick={() => setShowContactModal(false)}
+                                >
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path 
+                                            d="M18 6L6 18M6 6l12 12" 
+                                            stroke="currentColor" 
+                                            strokeWidth="2" 
+                                            strokeLinecap="round" 
+                                            strokeLinejoin="round"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <div className="contact-modal-content">
+                                <p className="contact-modal-description">
+                                    {t('welcome.select_preferred_contact')}
+                                </p>
+                                
+                                <div className="contact-options">
+                                    {restaurantData.contactEmail && (
+                                        <motion.button
+                                            className="contact-option"
+                                            onClick={handleEmailClick}
+                                            whileHover={{ scale: 1.03 }}
+                                            whileTap={{ scale: 0.98 }}
+                                        >
+                                            <div className="contact-option-icon">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                    <path 
+                                                        d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" 
+                                                        stroke="currentColor" 
+                                                        strokeWidth="2" 
+                                                        strokeLinecap="round" 
+                                                        strokeLinejoin="round"
+                                                    />
+                                                    <polyline 
+                                                        points="22,6 12,13 2,6" 
+                                                        stroke="currentColor" 
+                                                        strokeWidth="2" 
+                                                        strokeLinecap="round" 
+                                                        strokeLinejoin="round"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            <div className="contact-option-info">
+                                                <span className="contact-option-title">
+                                                    {t('welcome.send_email')}
+                                                </span>
+                                                <span className="contact-option-value">
+                                                    {restaurantData.contactEmail}
+                                                </span>
+                                            </div>
+                                            <div className="contact-option-arrow">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                                    <path 
+                                                        d="M9 18l6-6-6-6" 
+                                                        stroke="currentColor" 
+                                                        strokeWidth="2" 
+                                                        strokeLinecap="round" 
+                                                        strokeLinejoin="round"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        </motion.button>
+                                    )}
+                                    
+                                    {restaurantData.contactPhone && (
+                                        <motion.button
+                                            className="contact-option"
+                                            onClick={handlePhoneClick}
+                                            whileHover={{ scale: 1.03 }}
+                                            whileTap={{ scale: 0.98 }}
+                                        >
+                                            <div className="contact-option-icon">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                    <path 
+                                                        d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" 
+                                                        stroke="currentColor" 
+                                                        strokeWidth="2" 
+                                                        strokeLinecap="round" 
+                                                        strokeLinejoin="round"
+                                                    />
+                                                </svg>
+                                            </div>
+                                            <div className="contact-option-info">
+                                                <span className="contact-option-title">
+                                                    {t('welcome.call_us')}
+                                                </span>
+                                                <span className="contact-option-value">
+                                                    {restaurantData.contactPhone}
+                                                </span>
+                                            </div>
+                                            <div className="contact-option-arrow">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                                    <path 
+                                                        d="M9 18l6-6-6-6" 
+                                                        stroke="currentColor" 
+                                                        strokeWidth="2" 
+                                                        strokeLinecap="round" 
+                                                        strokeLinejoin="round"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        </motion.button>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            <div className="contact-modal-footer">
+                                <button 
+                                    className="contact-modal-cancel"
+                                    onClick={() => setShowContactModal(false)}
+                                >
+                                    {t('welcome.cancel')}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
             
         </motion.div>
     );

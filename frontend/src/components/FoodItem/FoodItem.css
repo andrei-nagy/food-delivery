@@ -100,24 +100,25 @@
 }
 
 .discount-price-wrapper {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  gap: 5px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 5px;
+    flex-wrap: nowrap;
 }
 
 .original-price {
   text-decoration: line-through;
   color: #888;
-  font-size: 17px;
+  font-size: 12px;
   font-weight: normal;
   line-height: 1;
 }
 
 .discounted-price {
-  color: #e74c3c;
+  color: #e86514;
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 600;
   line-height: 1;
 }
 

@@ -12,7 +12,8 @@ import {
     getOrderRating, 
     updatePaymentStatus, 
     payOrder, 
-    payOrderCash 
+    payOrderCash,
+    sendReceiptByEmail  // ✅ IMPORTĂ FUNCȚIA NOUĂ
 } from "../controllers/orderController.js";
 
 // ✅ IMPORTĂ SPLIT BILL CONTROLLER
@@ -32,6 +33,9 @@ orderRouter.post('/update-rating', updateOrderRating);
 orderRouter.get('/:orderId/rating', getOrderRating);
 orderRouter.post("/payment-status", updatePaymentStatus);
 orderRouter.post('/pay-order-cash', authMiddleware, payOrderCash);
+
+// ✅ RUTĂ NOUĂ PENTRU TRIMITEREA CHITANȚEI PE EMAIL
+orderRouter.post('/send-receipt', authMiddleware, sendReceiptByEmail);
 
 // ✅ RUTE NOI PENTRU SPLIT BILL
 orderRouter.post("/pay-split-bill", authMiddleware, splitBillController.paySplitBillWithCard);

@@ -695,3 +695,275 @@ body.ocu-open {
     padding: 14px 20px;
   }
 }
+
+/* ========== CLASE UNICE PENTRU TRIMITERE CHITANȚĂ ========== */
+
+/* Butonul de trimitere chitanță - CLASE NOI */
+.ocu-rcpt-button {
+    border: 2px solid #e86514;
+    color: #e86514;
+    background: rgba(232, 101, 20, 0.05);
+    padding: 18px 32px;
+    border-radius: 12px;
+    font-size: 1.125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    margin: 5px 0;
+    border: 2px solid #e86514 !important;
+    background: rgba(232, 101, 20, 0.05) !important;
+    color: #e86514 !important;
+}
+
+.ocu-rcpt-button:hover {
+    background: rgba(232, 101, 20, 0.1) !important;
+    border-color: #e86514 !important;
+    transform: translateY(-1px);
+}
+
+.ocu-rcpt-new-session {
+    border: 2px solid #38a169 !important;
+    color: #38a169 !important;
+    background: rgba(56, 161, 105, 0.05) !important;
+}
+
+.ocu-rcpt-home-button {
+    border: 2px solid #86868b !important;
+    color: #86868b !important;
+    background: rgba(134, 134, 139, 0.05) !important;
+}
+
+.ocu-rcpt-home-button:hover {
+    background: rgba(134, 134, 139, 0.1) !important;
+    border-color: #86868b !important;
+}
+
+/* Container pentru butoane - CLASĂ NOUĂ */
+.ocu-rcpt-actions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+    padding: 15px 0;
+    width: 100%;
+}
+
+/* Butoane primare și secundare - CLASE NOI */
+.ocu-rcpt-primary-button,
+.ocu-rcpt-secondary-button {
+    padding: 18px 32px;
+    border-radius: 12px;
+    font-size: 1.125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    border: none;
+    outline: none;
+}
+
+.ocu-rcpt-primary-button {
+    background: #38a169 !important;
+    color: white !important;
+}
+
+.ocu-rcpt-primary-button:hover {
+    background: #30b352 !important;
+    transform: translateY(-1px);
+}
+
+.ocu-rcpt-secondary-button {
+    background: transparent !important;
+}
+
+/* Stiluri pentru formularul de email - CLASE NOI */
+.ocu-rcpt-form-group {
+    margin-bottom: 20px;
+}
+
+.ocu-rcpt-form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #1d1d1f;
+    font-size: 0.9375rem;
+    text-align: left;
+}
+
+.ocu-rcpt-form-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #d1d1d6;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    background: white;
+}
+
+.ocu-rcpt-form-input:focus {
+    outline: none;
+    border-color: #e86514;
+    box-shadow: 0 0 0 3px rgba(232, 101, 20, 0.1);
+}
+
+.ocu-rcpt-form-input.ocu-rcpt-input-error {
+    border-color: #FF3B30;
+    background: rgba(255, 59, 48, 0.02);
+}
+
+.ocu-rcpt-error-message {
+    color: #FF3B30;
+    font-size: 0.875rem;
+    margin-top: 8px;
+    margin-bottom: 0;
+    text-align: left;
+}
+
+/* Preview comanda - CLASE NOI */
+.ocu-rcpt-order-preview {
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    text-align: left;
+}
+
+.ocu-rcpt-order-preview h4 {
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    color: #1d1d1f;
+    font-weight: 600;
+}
+
+.ocu-rcpt-preview-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ocu-rcpt-preview-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.ocu-rcpt-preview-row:not(:last-child) {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.ocu-rcpt-preview-row span:first-child {
+    color: #86868b;
+    font-size: 0.875rem;
+}
+
+.ocu-rcpt-preview-value {
+    color: #1d1d1f;
+    font-weight: 500;
+}
+
+.ocu-rcpt-preview-value.ocu-rcpt-total-highlight {
+    color: #e86514;
+    font-weight: 600;
+}
+
+/* Mesaj de succes pentru chitanță - CLASE NOI */
+.ocu-rcpt-success {
+    text-align: center;
+    padding: 30px 0;
+}
+
+.ocu-rcpt-success-icon {
+    margin-bottom: 20px;
+}
+
+.ocu-rcpt-success-icon svg {
+    animation: ocu-pulse-animation 2s infinite ease-in-out;
+}
+
+.ocu-rcpt-success-text {
+    color: #34C759;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+}
+
+.ocu-rcpt-success-subtext {
+    color: #86868b;
+    font-size: 0.9375rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Spinner mic pentru buton - CLASĂ NOUĂ */
+.ocu-rcpt-spinner-small {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: ocu-spin-animation 1s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+/* Responsive pentru mobile - CLASE NOI */
+@media (max-width: 480px) {
+    .ocu-rcpt-form-input {
+        padding: 12px 14px;
+        font-size: 0.9375rem;
+    }
+    
+    .ocu-rcpt-order-preview {
+        padding: 12px;
+    }
+    
+    .ocu-rcpt-preview-row {
+        padding: 6px 0;
+    }
+    
+    .ocu-rcpt-success {
+        padding: 20px 0;
+    }
+    
+    .ocu-rcpt-success-text {
+        font-size: 1.125rem;
+    }
+    
+    /* Ajustări pentru butoane pe mobile */
+    .ocu-rcpt-actions-container {
+        gap: 10px;
+    }
+    
+    .ocu-rcpt-primary-button,
+    .ocu-rcpt-secondary-button,
+    .ocu-rcpt-button {
+        padding: 16px 20px;
+        font-size: 1rem;
+    }
+}
+
+/* Dacă butonul tot nu apare, adaugă aceste stiluri de debug */
+.ocu-rcpt-button:after {
+    content: "📧";
+    margin-left: 8px;
+    font-size: 1.2em;
+}
+
+/* Forțează display-ul butonului */
+.ocu-rcpt-button {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}

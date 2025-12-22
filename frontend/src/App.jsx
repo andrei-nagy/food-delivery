@@ -37,6 +37,7 @@ const App = () => {
     isUserAuthenticated,
     checkUserStatus,
     forceStatusCheck,
+    restaurantData // 👈 AICI AVEM ACCES LA DEFAULT LANGUAGE
   } = useContext(StoreContext);
   const [showLogin, setShowLogin] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -49,49 +50,88 @@ const App = () => {
   const token = localStorage.getItem("token");
   const tableNumber = localStorage.getItem("tableNumber");
 
-const checkIfShouldRedirectToOrderCompleted = async () => {
-  if (!userId || !token) return false;
-
-  try {
-    const response = await axios.get(
-      `${url}/api/user/check-inactive-orders`,
-      {
-        headers: { token },
-        params: { userId },
-      }
-    );
-
-    console.log("🔍 Redirect check response:", response.data);
+  // 🔥 FUNCȚIE PENTRU A OBȚINE CODUL LIMBII
+  const getLanguageCode = (languageName) => {
+    const languageMap = {
+      'English': 'en',
+      'Français': 'fr', 
+      'Español': 'es',
+      'Italiano': 'it',
+      'Română': 'ro',
+      'en': 'en',
+      'fr': 'fr',
+      'es': 'es',
+      'it': 'it',
+      'ro': 'ro'
+    };
     
-    // ✅ LOGICA REVISATĂ: Verifică toate scenariile
-    if (response.data.success) {
-      // 1. Dacă userul este DEJA INACTIV - REDIRECT (e deja pe order-completed)
-      if (response.data.isActive === false && response.data.reason === 'user_inactive') {
-        console.log(`✅ User is already inactive - redirecting to order-completed`);
-        return true;
-      }
+    return languageMap[languageName] || 'en';
+  };
+
+  // 🔥 VERIFICĂ ȘI SETEAZĂ LIMBA DIN RESTAURANT DATA
+  useEffect(() => {
+    if (restaurantData?.defaultLanguage) {
+      const defaultLangCode = getLanguageCode(restaurantData.defaultLanguage);
+      const savedLanguage = sessionStorage.getItem("language");
       
-      // 2. Dacă backend-ul spune să redirecționezi ȘI userul a plătit personal pentru toate
-      if (response.data.shouldRedirectToOrderCompleted === true) {
-        // Verifică dacă e split bill cu alții
-        if (response.data.paymentType === 'split_bill_with_others' || 
-            response.data.userPaidForEverything === false) {
-          console.log(`⚠️ Split bill with others - NO redirect`);
-          return false;
-        }
-        
-        // Dacă ajunge aici, înseamnă că e plată completă personală
-        console.log(`✅ Full personal payment - redirecting to order-completed`);
-        return true;
+      console.log("🌍 App.js - Restaurant language:", {
+        defaultLanguage: restaurantData.defaultLanguage,
+        defaultLangCode,
+        savedLanguage,
+        shouldChange: !savedLanguage
+      });
+      
+      // Dacă nu există limbă salvată, setează limba default
+      if (!savedLanguage) {
+        sessionStorage.setItem("language", defaultLangCode);
+        console.log("🌍 App.js - Set default language to:", defaultLangCode);
       }
     }
-    
-    return false;
-  } catch (error) {
-    console.error("Error checking inactive orders:", error);
-    return false;
-  }
-};
+  }, [restaurantData]);
+
+  const checkIfShouldRedirectToOrderCompleted = async () => {
+    if (!userId || !token) return false;
+
+    try {
+      const response = await axios.get(
+        `${url}/api/user/check-inactive-orders`,
+        {
+          headers: { token },
+          params: { userId },
+        }
+      );
+
+      console.log("🔍 Redirect check response:", response.data);
+      
+      // ✅ LOGICA REVISATĂ: Verifică toate scenariile
+      if (response.data.success) {
+        // 1. Dacă userul este DEJA INACTIV - REDIRECT (e deja pe order-completed)
+        if (response.data.isActive === false && response.data.reason === 'user_inactive') {
+          console.log(`✅ User is already inactive - redirecting to order-completed`);
+          return true;
+        }
+        
+        // 2. Dacă backend-ul spune să redirecționezi ȘI userul a plătit personal pentru toate
+        if (response.data.shouldRedirectToOrderCompleted === true) {
+          // Verifică dacă e split bill cu alții
+          if (response.data.paymentType === 'split_bill_with_others' || 
+              response.data.userPaidForEverything === false) {
+            console.log(`⚠️ Split bill with others - NO redirect`);
+            return false;
+          }
+          
+          // Dacă ajunge aici, înseamnă că e plată completă personală
+          console.log(`✅ Full personal payment - redirecting to order-completed`);
+          return true;
+        }
+      }
+      
+      return false;
+    } catch (error) {
+      console.error("Error checking inactive orders:", error);
+      return false;
+    }
+  };
 
   useEffect(() => {
     const allowedRoutes = [

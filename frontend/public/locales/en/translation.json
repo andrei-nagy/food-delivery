@@ -86,11 +86,13 @@
     "remove_from_cart": "Remove from cart",
     "item_quantity": "Quantity: {{count}}",
     "view_details": "View details",
-    "price_original": "{{price}} €",
-    "price_discounted": "{{price}} €",
+    "price_discounted": "{price} {currency}",
     "description_truncated": "{{description}}...",
     "out_of_stock": "Out of stock",
-    "unavailable": "Unavailable"
+    "unavailable": "Unavailable",
+        "price_original": "{price}",
+    "currency_before": "{currency}{price}",
+    "currency_after": "{price}{currency}"
   },
   "session": {
     "expired_message": "Your session has expired. Please refresh the page to continue ordering."
@@ -146,7 +148,11 @@
     "discount": "Discount",
     "ordered_times": "Ordered {{count}} times",
     "other_products": "What others also ordered",
-    "popular_choices": "Popular choices you might like"
+    "popular_choices": "Popular choices you might like",
+          "finalize_purchase": "Finalize purchase",
+                "items": "items"
+
+
   },
   "category_page": {
     "back": "Back",
@@ -254,7 +260,9 @@
     "total_paid": "Total Paid",
     "items": "items",
     "split_bill_marketing_title": "Split with Friends, Pay Only What You Ate!",
-    "split_bill_marketing_text": "Divide the bill easily with friends. Each person pays only for what they consumed. Fast, fair, and fun!"
+    "split_bill_marketing_text": "Divide the bill easily with friends. Each person pays only for what they consumed. Fast, fair, and fun!",
+          "split_bill_cash_only": "Split bill is only available for card payment"
+
   },
   "repeat_order": {
     "title": "Order Again",
@@ -317,7 +325,15 @@
     "contact_us": "Contact Us",
     "click_to_view": "Click to view hours",
     "click_to_hide": "Click to hide hours",
-    "hours_note": "*Hours may vary during holidays"
+    "hours_note": "*Hours may vary during holidays",
+    "choose_contact_method": "Choose contact method",
+    "select_preferred_contact": "Select your preferred way to contact us",
+    "send_email": "Send email",
+    "call_us": "Call us",
+    "cancel": "Cancel",
+        "follow_us": "Follow Us",
+    "visit_facebook": "Visit our Facebook page",
+    "visit_instagram": "Visit our Instagram page"
   },
   "not_found": {
     "page_not_found": "Page Not Found",

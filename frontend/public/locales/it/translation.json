@@ -86,11 +86,13 @@
     "remove_from_cart": "Rimuovi dal carrello",
     "item_quantity": "Quantità: {{count}}",
     "view_details": "Vedi dettagli",
-    "price_original": "{{price}} €",
-    "price_discounted": "{{price}} €",
+    "price_discounted": "{price} {currency}",
     "description_truncated": "{{description}}...",
     "out_of_stock": "Esaurito",
-    "unavailable": "Non disponibile"
+    "unavailable": "Non disponibile",
+        "price_original": "{price}",
+    "currency_before": "{currency}{price}",
+    "currency_after": "{price}{currency}"
   },
   "session": {
     "expired_message": "La tua sessione è scaduta. Aggiorna la pagina per continuare a ordinare."
@@ -146,7 +148,11 @@
     "discount": "Sconto",
     "ordered_times": "Ordinato {{count}} volte",
     "other_products": "Cosa hanno ordinato anche gli altri",
-    "popular_choices": "Scelte popolari che potrebbero piacerti"
+    "popular_choices": "Scelte popolari che potrebbero piacerti",
+          "finalize_purchase": "Completa acquisto",
+                "items": "articoli"
+
+
   },
   "category_page": {
     "back": "Indietro",
@@ -254,7 +260,8 @@
     "total_paid": "Totale Pagato",
       "items": "articoli",
           "split_bill_marketing_title": "Dividi con Amici, Paga Solo Quello Che Hai Consumato!",
-    "split_bill_marketing_text": "Dividi il conto facilmente con gli amici. Ogni persona paga solo per quello che ha consumato. Veloce, equo e divertente!"
+    "split_bill_marketing_text": "Dividi il conto facilmente con gli amici. Ogni persona paga solo per quello che ha consumato. Veloce, equo e divertente!",
+     "split_bill_cash_only": "La divisione del conto è disponibile solo per il pagamento con carta"
   },
   "repeat_order": {
     "title": "Ripeti Il Tuo Ordine",
@@ -317,7 +324,15 @@
     "contact_us": "Contattaci",
     "click_to_view": "Clicca per vedere gli orari",
     "click_to_hide": "Clicca per nascondere gli orari",
-    "hours_note": "*Gli orari potrebbero variare durante le festività"
+    "hours_note": "*Gli orari potrebbero variare durante le festività",
+        "choose_contact_method": "Scegli il metodo di contatto",
+    "select_preferred_contact": "Seleziona il tuo modo preferito per contattarci",
+    "send_email": "Invia email",
+    "call_us": "Chiamaci",
+    "cancel": "Annulla",
+       "follow_us": "Seguici",
+    "visit_facebook": "Visita la nostra pagina Facebook",
+    "visit_instagram": "Visita la nostra pagina Instagram"
   },
   "not_found": {
     "page_not_found": "Pagina Non Trovata",

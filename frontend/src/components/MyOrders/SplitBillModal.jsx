@@ -1,13 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { 
-  FaTimes, 
-  FaCheck, 
-  FaReceipt, 
-  FaMoneyBillWave,
-  FaTag
-} from "react-icons/fa";
-
+import { FaTimes, FaCheck } from "react-icons/fa";
 import "./SplitBillModal.css";
 
 const SplitBillModal = ({
@@ -19,101 +11,125 @@ const SplitBillModal = ({
   getTranslatedProductName,
   placeSplitBillOrder,
   t,
-  paidItems = [], // ⚠️ ACEȘTIA SUNT ITEM-URILE DEJA PLĂTITE (ca array separat)
+  paymentMethod,
+  paidItems = [],
   url = "",
   assets = {}
 }) => {
+  // ✅ Toate hook-urile trebuie să fie la început, fără condiții înainte
   const [selectedItems, setSelectedItems] = useState({});
   const [selectAll, setSelectAll] = useState(false);
-  
   const hasInitialized = useRef(false);
-  const prevIsOpenRef = useRef(isOpen);
+  const itemCounterRef = useRef(0);
+  const itemIdMap = useRef({}); // ✅ Mutat aici, înainte de orice condiție
 
-  // ✅ LOGICA ORIGINALĂ RESTAURATĂ pentru a obține itemele disponibile
-  const getAvailableItems = useRef(() => {
-    console.log('🔍 [SplitBillModal] Getting available items...');
-    console.log('📦 Order items:', orderItems);
-    console.log('💰 Paid items:', paidItems);
+  // ✅ Funcție pentru a grupa item-ele după order
+  const groupItemsByOrder = () => {
+    if (!orderItems || !Array.isArray(orderItems)) return {};
     
-    if (!orderItems || !Array.isArray(orderItems)) return [];
+    const grouped = {};
     
-    // Filtrăm item-ele care NU sunt deja plătite
-    return orderItems.filter(item => {
-      // Verifică dacă item-ul este complet plătit prin status
-      if (item.status === 'fully_paid') {
-        console.log(`❌ Item ${item.name} is fully_paid by status`);
-        return false;
+    orderItems.forEach(item => {
+      const orderId = item.orderId;
+      if (!grouped[orderId]) {
+        grouped[orderId] = {
+          orderId: orderId,
+          orderNumber: item.orderNumber,
+          orderDate: item.orderDate,
+          items: []
+        };
       }
+      grouped[orderId].items.push(item);
+    });
+    
+    return grouped;
+  };
+
+  // ✅ Funcție pentru a obține item-ele disponibile
+  const getAvailableItems = (items, paidItemsList) => {
+    if (!items || !Array.isArray(items)) return [];
+    
+    return items.filter(item => {
+      if (item.status === 'fully_paid') return false;
       
-      // Verifică dacă item-ul este în lista de paidItems
-      const isInPaidItems = paidItems.some(paidItem => {
-        // Verificare mai strictă pentru matching
+      const isInPaidItems = paidItemsList.some(paidItem => {
         return paidItem._id === item._id || 
                paidItem.foodId === item.foodId ||
                (paidItem.name === item.name && 
                 Math.abs(paidItem.price - item.price) < 0.01);
       });
       
-      if (isInPaidItems) {
-        console.log(`❌ Item ${item.name} is in paidItems list`);
-        return false;
-      }
+      if (isInPaidItems) return false;
       
-      // Verifică dacă item-ul are plăți parțiale (paidBy)
       if (item.paidBy && item.paidBy.length > 0) {
         const totalPaid = item.paidBy.reduce((sum, payment) => sum + (payment.amount || 0), 0);
         const itemTotal = (item.price || 0) * (item.quantity || 1);
         const isFullyPaidByPayments = totalPaid >= itemTotal;
         
-        if (isFullyPaidByPayments) {
-          console.log(`❌ Item ${item.name} is fully paid by payments: ${totalPaid}/${itemTotal}`);
-          return false;
-        }
-        
-        console.log(`⚠️ Item ${item.name} is partially paid: ${totalPaid}/${itemTotal}`);
+        if (isFullyPaidByPayments) return false;
       }
       
-      console.log(`✅ Item ${item.name} is available for split`);
       return true;
     });
-  }).current;
+  };
 
-  useEffect(() => {
-    if (isOpen && !prevIsOpenRef.current) {
-      hasInitialized.current = false;
-    }
-    prevIsOpenRef.current = isOpen;
-  }, [isOpen]);
+  // ✅ Funcție pentru a formata data
+  const formatDateTime = (dateString) => {
+    if (!dateString) return 'No date';
+    const date = new Date(dateString);
+    const formattedDate = date.toLocaleDateString("en-GB");
+    const formattedTime = date.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    return `${formattedDate} ${formattedTime}`;
+  };
 
+  // ✅ Inițializare item-e pentru selecție
   useEffect(() => {
     if (isOpen && !hasInitialized.current) {
-      const availableItems = getAvailableItems();
+      itemCounterRef.current = 0; // Reset counter
+      itemIdMap.current = {}; // Reset map
       
-      console.log('📊 Available items for split:', availableItems);
+      const groupedOrders = groupItemsByOrder();
+      const allAvailableItems = [];
       
-      if (availableItems.length > 0) {
+      Object.values(groupedOrders).forEach(orderGroup => {
+        const availableInOrder = getAvailableItems(orderGroup.items, paidItems);
+        allAvailableItems.push(...availableInOrder);
+      });
+      
+      console.log('📊 All available items for split:', allAvailableItems);
+      
+      if (allAvailableItems.length > 0) {
         const initialSelection = {};
-        availableItems.forEach(item => {
-          if (item.uniqueId) {
-            // ✅ LOGICA ORIGINALĂ pentru cantitatea rămasă
-            let remainingQuantity = item.quantity;
-            
-            if (item.paidBy && item.paidBy.length > 0) {
-              const totalPaid = item.paidBy.reduce((sum, payment) => sum + (payment.amount || 0), 0);
-              const itemPrice = item.price || 0;
-              const paidQuantity = Math.floor(totalPaid / itemPrice);
-              remainingQuantity = Math.max(0, item.quantity - paidQuantity);
-            }
-            
-            initialSelection[item.uniqueId] = {
-              selected: false,
-              quantity: 1,
-              itemData: item,
-              originalQuantity: item.quantity,
-              remainingQuantity: remainingQuantity,
-              isPartiallyPaid: remainingQuantity < item.quantity
-            };
+        allAvailableItems.forEach((item) => {
+          const stableId = `item_${item._id}_${item.orderId}_${itemCounterRef.current++}`;
+          
+          let remainingQuantity = item.quantity;
+          
+          if (item.paidBy && item.paidBy.length > 0) {
+            const totalPaid = item.paidBy.reduce((sum, payment) => sum + (payment.amount || 0), 0);
+            const itemPrice = item.price || 0;
+            const paidQuantity = Math.floor(totalPaid / itemPrice);
+            remainingQuantity = Math.max(0, item.quantity - paidQuantity);
           }
+          
+          initialSelection[stableId] = {
+            selected: false,
+            quantity: 1,
+            itemData: item,
+            originalQuantity: item.quantity,
+            remainingQuantity: remainingQuantity,
+            isPartiallyPaid: remainingQuantity < item.quantity,
+            orderId: item.orderId,
+            orderNumber: item.orderNumber,
+            stableId: stableId
+          };
+          
+          // ✅ Salvează mapping-ul
+          const itemKey = `${item._id}_${item.orderId}_${item.quantity}_${item.price}`;
+          itemIdMap.current[itemKey] = stableId;
         });
         
         setSelectedItems(initialSelection);
@@ -127,7 +143,16 @@ const SplitBillModal = ({
         setSelectAll(false);
       }
     }
-  }, [isOpen, getAvailableItems]);
+  }, [isOpen, orderItems, paidItems]);
+
+  // Resetare când se închide modalul
+  useEffect(() => {
+    if (!isOpen) {
+      hasInitialized.current = false;
+      itemCounterRef.current = 0;
+      itemIdMap.current = {};
+    }
+  }, [isOpen]);
 
   // Efect pentru a sincroniza selectAll
   useEffect(() => {
@@ -150,17 +175,15 @@ const SplitBillModal = ({
       if (itemSelection?.selected) {
         const itemData = itemSelection.itemData;
         if (itemData) {
-          const foodItem = findFoodItem(itemId);
+          const foodItem = findFoodItem(itemData.uniqueId);
           if (foodItem) {
             const priceInfo = getItemPriceWithDiscount(foodItem, itemData);
             const selectedQuantity = itemSelection.quantity || 1;
             const originalQuantity = itemData.quantity;
             
-            // ✅ LOGICA ORIGINALĂ pentru calcul proporțional
             const proportion = selectedQuantity / originalQuantity;
             total += priceInfo.totalPrice * proportion;
           } else {
-            // Fallback dacă nu găsim foodItem
             const selectedQuantity = itemSelection.quantity || 1;
             total += (itemData.price || 0) * selectedQuantity;
           }
@@ -171,31 +194,33 @@ const SplitBillModal = ({
     return total;
   };
 
-  const handleItemToggle = (itemId) => {
+  const handleItemToggle = (stableId) => {
     setSelectedItems(prev => {
-      if (!prev[itemId]) return prev;
+      if (!prev[stableId]) {
+        return prev;
+      }
       
       return {
         ...prev,
-        [itemId]: {
-          ...prev[itemId],
-          selected: !prev[itemId].selected
+        [stableId]: {
+          ...prev[stableId],
+          selected: !prev[stableId].selected
         }
       };
     });
   };
 
-  const handleQuantityChange = (itemId, newQuantity) => {
+  const handleQuantityChange = (stableId, newQuantity) => {
     setSelectedItems(prev => {
-      if (!prev[itemId]) return prev;
+      if (!prev[stableId]) return prev;
       
-      const maxQuantity = prev[itemId].remainingQuantity || prev[itemId].itemData.quantity || 1;
+      const maxQuantity = prev[stableId].remainingQuantity || prev[stableId].itemData.quantity || 1;
       
       if (newQuantity >= 1 && newQuantity <= maxQuantity) {
         return {
           ...prev,
-          [itemId]: {
-            ...prev[itemId],
+          [stableId]: {
+            ...prev[stableId],
             quantity: newQuantity
           }
         };
@@ -221,66 +246,96 @@ const SplitBillModal = ({
     setSelectedItems(updatedSelection);
   };
 
-  const handlePaySelected = () => {
-    const itemsToPay = Object.keys(selectedItems)
-      .filter(itemId => selectedItems[itemId]?.selected)
-      .map(itemId => {
-        const itemSelection = selectedItems[itemId];
-        const itemData = itemSelection.itemData;
-        const selectedQuantity = itemSelection.quantity || 1;
-        const remainingQuantity = itemSelection.remainingQuantity || itemData.quantity;
-        
-        const finalQuantity = Math.min(selectedQuantity, remainingQuantity);
-        
-        return {
-          ...itemData,
-          quantity: finalQuantity,
-          originalQuantity: itemData.quantity,
-          remainingQuantity: remainingQuantity,
-          _id: itemData._id,
-          foodId: itemData.foodId,
-          baseFoodId: itemData.baseFoodId,
-          price: itemData.price,
-          name: itemData.name,
-          image: itemData.image
-        };
-      });
-    
-    if (itemsToPay.length === 0) {
-      alert("Please select at least one item to pay");
-      return;
-    }
-    
-    const selectedTotal = calculateSelectedTotal();
-    console.log('💰 Sending to placeSplitBillOrder:', {
-      items: itemsToPay,
-      total: selectedTotal
-    });
-    
-    placeSplitBillOrder(itemsToPay, selectedTotal);
+const handlePaySelected = () => {
+  // ✅ Verifică dacă payment method este card
+  if (!paymentMethod || paymentMethod !== "creditCard") {
+    // Închide modalul și arată secțiunea de payment
     onClose();
-  };
+    setTimeout(() => {
+      const paymentSection = document.getElementById("payment-method-section");
+      if (paymentSection) {
+        paymentSection.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }, 100);
+    
+    // ✅ Arată un mesaj informativ
+    setTimeout(() => {
+      alert("Split bill is only available with card payment. Please select 'Card Payment' as your payment method.");
+    }, 150);
+    
+    return;
+  }
+  
+  const itemsToPay = Object.keys(selectedItems)
+    .filter(itemId => selectedItems[itemId]?.selected)
+    .map(itemId => {
+      const itemSelection = selectedItems[itemId];
+      const itemData = itemSelection.itemData;
+      const selectedQuantity = itemSelection.quantity || 1;
+      const remainingQuantity = itemSelection.remainingQuantity || itemData.quantity;
+      
+      const finalQuantity = Math.min(selectedQuantity, remainingQuantity);
+      
+      return {
+        ...itemData,
+        quantity: finalQuantity,
+        originalQuantity: itemData.quantity,
+        remainingQuantity: remainingQuantity,
+        _id: itemData._id,
+        foodId: itemData.foodId,
+        baseFoodId: itemData.baseFoodId,
+        price: itemData.price,
+        name: itemData.name,
+        image: itemData.image
+      };
+    });
+  
+  if (itemsToPay.length === 0) {
+    alert("Please select at least one item to pay");
+    return;
+  }
+  
+  const selectedTotal = calculateSelectedTotal();
+  console.log('💰 Sending to placeSplitBillOrder:', {
+    items: itemsToPay,
+    total: selectedTotal,
+    paymentMethod: paymentMethod
+  });
+  
+  placeSplitBillOrder(itemsToPay, selectedTotal);
+  onClose();
+};
 
   const handleClose = () => {
     hasInitialized.current = false;
+    itemCounterRef.current = 0;
+    itemIdMap.current = {};
     setSelectedItems({});
     setSelectAll(false);
     onClose();
   };
 
+  // ✅ RETURN-ul cu condiția la sfârșit, după toate hook-urile
   if (!isOpen) return null;
 
-  const availableItems = getAvailableItems();
   const selectedTotal = calculateSelectedTotal();
   const selectedCount = Object.values(selectedItems).filter(s => s?.selected).length;
-  const totalAvailableItems = availableItems.length;
+  
+  // ✅ Obținem order-ele care au item-e disponibile
+  const groupedOrders = groupItemsByOrder();
+  const ordersWithAvailableItems = Object.values(groupedOrders)
+    .map(orderGroup => ({
+      ...orderGroup,
+      availableItems: getAvailableItems(orderGroup.items, paidItems)
+    }))
+    .filter(orderGroup => orderGroup.availableItems.length > 0);
 
-  console.log('📊 Modal state:', {
-    availableItemsCount: totalAvailableItems,
-    selectedCount,
-    selectedTotal,
-    selectedItems
-  });
+  const totalAvailableItems = ordersWithAvailableItems.reduce(
+    (total, order) => total + order.availableItems.length, 0
+  );
 
   return (
     <div className="split-modal-overlay" onClick={handleClose}>
@@ -291,6 +346,9 @@ const SplitBillModal = ({
             <h2 className="header-title">{t("my_orders.split_bill")}</h2>
             <p className="header-subtitle">{t("my_orders.split_bill_description")}</p>
           </div>
+          <button className="close-btn" onClick={handleClose}>
+            <FaTimes />
+          </button>
         </div>
 
         {/* Summary */}
@@ -298,7 +356,7 @@ const SplitBillModal = ({
           <div className="summary-stats">
             <div className="stat-item">
               <span className="stat-label">Items</span>
-              <span className="stat-value">{selectedCount} / {availableItems.length}</span>
+              <span className="stat-value">{selectedCount} / {totalAvailableItems}</span>
             </div>
             <div className="stat-item">
               <span className="stat-label">Total</span>
@@ -306,7 +364,7 @@ const SplitBillModal = ({
             </div>
           </div>
           
-          {availableItems.length > 0 && (
+          {totalAvailableItems > 0 && (
             <button 
               className="select-all-btn"
               onClick={handleSelectAll}
@@ -319,107 +377,126 @@ const SplitBillModal = ({
           )}
         </div>
 
-        {/* Items List */}
+        {/* Items List - Grupate după order */}
         <div className="split-items-list">
-          {availableItems.length > 0 ? (
-            <div className="items-container">
-              {availableItems.map((item) => {
-                const itemId = item.uniqueId;
-                const itemSelection = selectedItems[itemId];
-                const isSelected = itemSelection?.selected === true;
-                const selectedQuantity = itemSelection?.quantity || 1;
-                const remainingQuantity = itemSelection?.remainingQuantity || item.quantity;
-                const foodItem = findFoodItem(itemId);
-                const priceInfo = foodItem ? getItemPriceWithDiscount(foodItem, item) : null;
-                const isPartiallyPaid = remainingQuantity < item.quantity;
-                
-                // Prețuri
-                const originalPrice = item.price * item.quantity;
-                const discountedPrice = priceInfo ? priceInfo.totalPrice : originalPrice;
-                const pricePerUnit = discountedPrice / item.quantity;
-                const selectedPrice = pricePerUnit * selectedQuantity;
-
-                // Imagine
-                const imageUrl = url + "/images/" + (foodItem?.image || item.image);
-
-                return (
-                  <div
-                    key={itemId}
-                    className={`split-item ${isSelected ? 'selected' : ''}`}
-                    onClick={() => handleItemToggle(itemId)}
-                  >
-                    <div className="item-check">
-                      <div className={`check-circle ${isSelected ? 'checked' : ''}`}>
-                        {isSelected && <FaCheck />}
-                      </div>
-                    </div>
-                    
-                    <div className="item-image-container">
-                      <img
-                        src={imageUrl}
-                        alt={getTranslatedProductName(foodItem) || item.name}
-                        className="item-image"
-                        onError={(e) => {
-                          if (assets.image_coming_soon) {
-                            e.target.src = assets.image_coming_soon;
-                            e.target.style.objectFit = "cover";
-                          }
-                        }}
-                      />
-                    </div>
-                    
-                    <div className="item-content">
-                      <h3 className="item-name">
-                        {getTranslatedProductName(foodItem) || item.name}
-                      </h3>
-                      
-                      {/* ✅ AFIȘEAZĂ CANTITATEA RĂMASĂ */}
-                      {isPartiallyPaid && (
-                        <div className="partial-note">
-                          {remainingQuantity} of {item.quantity} remaining
-                        </div>
-                      )}
-                      
-                      {remainingQuantity > 1 && (
-                        <div className="quantity-controls" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            className="qty-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleQuantityChange(itemId, selectedQuantity - 1);
-                            }}
-                            disabled={selectedQuantity <= 1}
-                          >
-                            -
-                          </button>
-                          <span className="qty-display">
-                            {selectedQuantity} of {remainingQuantity}
-                          </span>
-                          <button
-                            className="qty-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleQuantityChange(itemId, selectedQuantity + 1);
-                            }}
-                            disabled={selectedQuantity >= remainingQuantity}
-                          >
-                            +
-                          </button>
-                        </div>
-                      )}
-                      
-                      <div className="item-price">
-                        {priceInfo?.hasDiscount && (
-                          <span className="discount-price">
-                            {originalPrice.toFixed(2)} €
-                          </span>
-                        )}
-                        <span>{selectedPrice.toFixed(2)} €</span>
-                      </div>
-                    </div>
+          {ordersWithAvailableItems.length > 0 ? (
+            <div className="orders-container">
+              {ordersWithAvailableItems.map((orderGroup, orderIndex) => (
+                <div key={orderGroup.orderId} className="order-group-section">
+                  {/* Order Header */}
+                  <div className="order-header">
+                    <h4 className="order-title">
+                      <span>Order #{orderGroup.orderNumber || 'N/A'}</span>
+                      <span className="order-time">{formatDateTime(orderGroup.orderDate)}</span>
+                    </h4>
                   </div>
-                );
-              })}
+
+                  {/* Items din order */}
+                  <div className="order-items-container">
+                    {orderGroup.availableItems.map((item) => {
+                      const itemKey = `${item._id}_${item.orderId}_${item.quantity}_${item.price}`;
+                      const stableId = itemIdMap.current[itemKey];
+                      
+                      if (!stableId) {
+                        console.error('❌ No stableId found for item:', item);
+                        return null;
+                      }
+                      
+                      const itemSelection = selectedItems[stableId];
+                      const isSelected = itemSelection?.selected === true;
+                      const selectedQuantity = itemSelection?.quantity || 1;
+                      const remainingQuantity = itemSelection?.remainingQuantity || item.quantity;
+                      const foodItem = findFoodItem(item.uniqueId);
+                      const priceInfo = foodItem ? getItemPriceWithDiscount(foodItem, item) : null;
+                      const isPartiallyPaid = remainingQuantity < item.quantity;
+                      
+                      const originalPrice = item.price * item.quantity;
+                      const discountedPrice = priceInfo ? priceInfo.totalPrice : originalPrice;
+                      const pricePerUnit = discountedPrice / item.quantity;
+                      const selectedPrice = pricePerUnit * selectedQuantity;
+
+                      const imageUrl = url + "/images/" + (foodItem?.image || item.image);
+
+                      return (
+                        <div
+                          key={stableId}
+                          className={`split-item-card ${isSelected ? 'selected' : ''}`}
+                          onClick={() => handleItemToggle(stableId)}
+                        >
+                          <div className="item-checkbox">
+                            <div className={`checkbox-circle ${isSelected ? 'checked' : ''}`}>
+                              {isSelected && <FaCheck />}
+                            </div>
+                          </div>
+                          
+                          <div className="item-image-wrapper">
+                            <img
+                              src={imageUrl}
+                              alt={getTranslatedProductName(foodItem) || item.name}
+                              className="item-image"
+                              onError={(e) => {
+                                if (assets.image_coming_soon) {
+                                  e.target.src = assets.image_coming_soon;
+                                  e.target.style.objectFit = "cover";
+                                }
+                              }}
+                            />
+                          </div>
+                          
+                          <div className="item-details">
+                            <h3 className="item-name">
+                              {getTranslatedProductName(foodItem) || item.name}
+                            </h3>
+                            
+                            {isPartiallyPaid && (
+                              <div className="partial-badge">
+                                {remainingQuantity} of {item.quantity} remaining
+                              </div>
+                            )}
+                            
+                           {remainingQuantity > 1 && (
+  <div className="split-qty-compact" onClick={(e) => e.stopPropagation()}>
+    <button
+      className="split-qty-btn-compact"
+      onClick={(e) => {
+        e.stopPropagation();
+        handleQuantityChange(stableId, selectedQuantity - 1);
+      }}
+      disabled={selectedQuantity <= 1}
+    >
+      -
+    </button>
+    <span className="split-qty-value-compact">
+      {selectedQuantity} / {remainingQuantity}
+    </span>
+    <button
+      className="split-qty-btn-compact"
+      onClick={(e) => {
+        e.stopPropagation();
+        handleQuantityChange(stableId, selectedQuantity + 1);
+      }}
+      disabled={selectedQuantity >= remainingQuantity}
+    >
+      +
+    </button>
+  </div>
+)}
+                            
+                            <div className="item-price-section">
+                              {priceInfo?.hasDiscount && (
+                                <span className="original-price">
+                                  {originalPrice.toFixed(2)} €
+                                </span>
+                              )}
+                              <span className="final-price">{selectedPrice.toFixed(2)} €</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="empty-state">

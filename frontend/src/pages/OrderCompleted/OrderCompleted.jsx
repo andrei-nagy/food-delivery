@@ -13,6 +13,14 @@ const OrderCompleted = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isBlockedSession, setIsBlockedSession] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  
+  // ✅ STATE-URI NOI PENTRU CHITANȚA PE EMAIL
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [isSendingReceipt, setIsSendingReceipt] = useState(false);
+  const [receiptSent, setReceiptSent] = useState(false);
+  const [receiptError, setReceiptError] = useState('');
 
   const searchParams = new URLSearchParams(location.search);
   const orderId = searchParams.get("orderId") || location.state?.orderId;
@@ -103,25 +111,91 @@ const OrderCompleted = () => {
   const handleStartNewSession = () => {
     setShowConfirmModal(true);
   };
+  
   const handleHomeSession = () => {
-   navigate('/');
+    navigate('/');
   };
 
-const confirmNewSession = () => {
-  const tableNumber = localStorage.getItem("tableNumber") || orderDetails?.tableNumber || "";
+  // ✅ FUNCȚIE NOUĂ PENTRU DESCHIDEREA MODAL-ULUI DE CHITANȚĂ
+  const handleSendReceiptClick = () => {
+    setShowReceiptModal(true);
+    setEmailError('');
+    setReceiptSent(false);
+    setReceiptError('');
+  };
+
+  // ✅ FUNCȚIE NOUĂ PENTRU TRIMITEREA CHITANȚEI PE EMAIL
+  const handleSendReceipt = async () => {
+    // Validare email
+    if (!email.trim()) {
+      setEmailError('Introduceți adresa de email');
+      return;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('Introduceți o adresă de email validă');
+      return;
+    }
+    
+    setIsSendingReceipt(true);
+    setEmailError('');
+    setReceiptError('');
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Nu sunteți autentificat');
+      }
+      
+      const response = await fetch(`${url}/api/order/send-receipt`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          token: token
+        },
+        body: JSON.stringify({
+          orderId: orderId,
+          customerEmail: email
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setReceiptSent(true);
+        // Închide modal-ul după 2 secunde
+        setTimeout(() => {
+          setShowReceiptModal(false);
+          setEmail('');
+        }, 2000);
+      } else {
+        setReceiptError(data.message || 'Eroare la trimiterea chitanței');
+      }
+    } catch (error) {
+      console.error('Eroare:', error);
+      setReceiptError('Eroare de conexiune. Încercați din nou.');
+    } finally {
+      setIsSendingReceipt(false);
+    }
+  };
+
+  const confirmNewSession = () => {
+    const tableNumber = localStorage.getItem("tableNumber") || orderDetails?.tableNumber || "";
+    
+    localStorage.removeItem("userId");
+    localStorage.removeItem("token");
+    localStorage.removeItem("tableNumber");
+    
+    setShowConfirmModal(false);
+    
+    if (tableNumber) {
+      navigate(`/register?table=${tableNumber}`);
+    } else {
+      navigate("/welcome");
+    }
+  };
   
-  localStorage.removeItem("userId");
-  localStorage.removeItem("token");
-  localStorage.removeItem("tableNumber");
-  
-  setShowConfirmModal(false);
-  
-  if (tableNumber) {
-    navigate(`/register?table=${tableNumber}`);
-  } else {
-    navigate("/welcome");
-  }
-};
   const cancelNewSession = () => {
     setShowConfirmModal(false);
   };
@@ -171,7 +245,7 @@ const confirmNewSession = () => {
 
   return (
     <>
-      {/* ✅ MODAL DE CONFIRMARE */}
+      {/* ✅ MODAL DE CONFIRMARE PENTRU NEW SESSION */}
       {showConfirmModal && (
         <motion.div
           className="ocu-modal-overlay"
@@ -232,6 +306,158 @@ const confirmNewSession = () => {
               >
                 Confirmă
               </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* ✅ MODAL PENTRU TRIMITEREA CHITANȚEI PE EMAIL */}
+      {showReceiptModal && (
+        <motion.div
+          className="ocu-modal-overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="ocu-modal-container"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", damping: 20 }}
+          >
+            <div className="ocu-modal-header">
+              <div className="ocu-modal-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" fill="rgba(232, 101, 20, 0.1)"/>
+                  <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4l-8 5-8-5V6l8 5 8-5z" 
+                        fill="#e86514"/>
+                </svg>
+              </div>
+              <h3 className="ocu-modal-title">Trimite Chitanța pe Email</h3>
+              <p className="ocu-modal-subtitle">
+                Introduceți adresa de email unde doriți să primiți chitanța
+              </p>
+            </div>
+
+            <div className="ocu-modal-content">
+              {receiptSent ? (
+                <div className="ocu-rcpt-success">
+                  <div className="ocu-rcpt-success-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" fill="rgba(52, 199, 89, 0.1)"/>
+                      <path d="M8 12L11 15L16 8" stroke="#34C759" strokeWidth="2" 
+                            strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <p className="ocu-rcpt-success-text">
+                    ✅ Chitanța a fost trimisă cu succes!
+                  </p>
+                  <p className="ocu-rcpt-success-subtext">
+                    Verificați căsuța de email și folderul Spam.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="ocu-rcpt-form-group">
+                    <label htmlFor="emailInput" className="ocu-rcpt-form-label">
+                      Adresa de Email
+                    </label>
+                    <input
+                      type="email"
+                      id="emailInput"
+                      className={`ocu-rcpt-form-input ${emailError ? 'ocu-rcpt-input-error' : ''}`}
+                      placeholder="nume@exemplu.com"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setEmailError('');
+                        setReceiptError('');
+                      }}
+                      disabled={isSendingReceipt}
+                    />
+                    {emailError && (
+                      <p className="ocu-rcpt-error-message">{emailError}</p>
+                    )}
+                    {receiptError && (
+                      <p className="ocu-rcpt-error-message">{receiptError}</p>
+                    )}
+                  </div>
+                  
+                  <div className="ocu-rcpt-order-preview">
+                    <h4>Detalii Comandă:</h4>
+                    <div className="ocu-rcpt-preview-details">
+                      <div className="ocu-rcpt-preview-row">
+                        <span>Număr Comandă:</span>
+                        <span className="ocu-rcpt-preview-value">
+                          {orderDetails?.orderNumber?.slice(-8).toUpperCase() || 'N/A'}
+                        </span>
+                      </div>
+                      <div className="ocu-rcpt-preview-row">
+                        <span>Total:</span>
+                        <span className="ocu-rcpt-preview-value ocu-rcpt-total-highlight">
+                          {orderDetails?.totalAmount?.toFixed(2) || '0.00'} €
+                        </span>
+                      </div>
+                      <div className="ocu-rcpt-preview-row">
+                        <span>Data:</span>
+                        <span className="ocu-rcpt-preview-value">
+                          {formatDate(orderDetails?.createdAt)}
+                        </span>
+                      </div>
+                      <div className="ocu-rcpt-preview-row">
+                        <span>Masa:</span>
+                        <span className="ocu-rcpt-preview-value">
+                          {orderDetails?.tableNumber || localStorage.getItem("tableNumber") || "N/A"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="ocu-modal-actions">
+              {!receiptSent && (
+                <>
+                  <button
+                    className="ocu-modal-button ocu-modal-cancel"
+                    onClick={() => {
+                      setShowReceiptModal(false);
+                      setEmail('');
+                      setEmailError('');
+                      setReceiptError('');
+                    }}
+                    disabled={isSendingReceipt}
+                  >
+                    Anulează
+                  </button>
+                  <button
+                    className="ocu-modal-button ocu-modal-confirm"
+                    onClick={handleSendReceipt}
+                    disabled={isSendingReceipt}
+                  >
+                    {isSendingReceipt ? (
+                      <>
+                        <span className="ocu-rcpt-spinner-small"></span>
+                        Se trimite...
+                      </>
+                    ) : (
+                      'Trimite Chitanța'
+                    )}
+                  </button>
+                </>
+              )}
+              {receiptSent && (
+                <button
+                  className="ocu-modal-button ocu-modal-confirm"
+                  onClick={() => {
+                    setShowReceiptModal(false);
+                    setEmail('');
+                  }}
+                >
+                  OK
+                </button>
+              )}
             </div>
           </motion.div>
         </motion.div>
@@ -330,7 +556,7 @@ const confirmNewSession = () => {
                   </p>
                 </motion.div>
 
-                {/* Status Message - în loc de countdown */}
+                {/* Status Message */}
                 <motion.div 
                   className="ocu-status-message"
                   initial={{ scale: 0, opacity: 0 }}
@@ -348,7 +574,7 @@ const confirmNewSession = () => {
                 </motion.div>
               </div>
 
-              {/* Action Buttons pentru sesiune */}
+              {/* Action Buttons pentru sesiune - DOAR 2 BUTOANE */}
               <motion.div 
                 className="ocu-actions-container"
                 initial={{ y: 10, opacity: 0 }}
@@ -364,7 +590,16 @@ const confirmNewSession = () => {
                 >
                   Start New Session
                 </motion.button>
-                   <motion.button
+                  {/* <motion.button
+    onClick={handleSendReceiptClick}
+    className="ocu-secondary-button ocu-send-receipt-button"
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+  >
+    📧 Trimite Chitanța pe Email
+  </motion.button> */}
+                <motion.button
                   onClick={handleHomeSession}
                   className="ocu-secondary-button ocu-new-session-button"
                   whileHover={{ scale: 1.02 }}
@@ -477,7 +712,7 @@ const confirmNewSession = () => {
                   <p className="ocu-bon-appetit">Poftă bună! 🍽️</p>
                 </motion.div>
 
-                {/* Status Message - în loc de countdown */}
+                {/* Status Message */}
                 <motion.div 
                   className="ocu-status-message"
                   initial={{ scale: 0, opacity: 0 }}
@@ -495,35 +730,39 @@ const confirmNewSession = () => {
                 </motion.div>
               </div>
 
-              {/* Action Buttons */}
+              {/* ✅ Action Buttons - 3 BUTOANE SEPARATE */}
               <motion.div 
                 className="ocu-actions-container"
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.9, duration: 0.5 }}
               >
+                {/* 1. BUTON START NEW SESSION */}
                 <motion.button
-                  onClick={() => navigate("/myorders")}
+                  onClick={handleStartNewSession}
                   className="ocu-primary-button ocu-view-orders-button"
                   whileHover={{ scale: 1.02, backgroundColor: "#30b352" }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 >
-                  Vezi toate comenzile
+                  Start New Session
                 </motion.button>
                 
-                <motion.button
-                  onClick={handleStartNewSession}
-                  className="ocu-secondary-button ocu-new-session-button"
+                {/* 2. BUTON TRIMITERE CHITANȚĂ PE EMAIL */}
+                {/* <motion.button
+                  onClick={handleSendReceiptClick}
+                  className="ocu-secondary-button ocu-send-receipt-button"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 >
-                  Start New Session
-                </motion.button>
-                   <motion.button
+                  📧 Trimite Chitanța pe Email
+                </motion.button> */}
+                
+                {/* 3. BUTON HOME */}
+                <motion.button
                   onClick={handleHomeSession}
-                  className="ocu-secondary-button ocu-new-session-button"
+                  className="ocu-secondary-button ocu-home-button"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   transition={{ type: "spring", stiffness: 400, damping: 17 }}

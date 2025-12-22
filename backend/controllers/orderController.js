@@ -7,6 +7,8 @@ import { clearUserCart } from "./cartHelper.js";
 import PromoCode from "../models/promoCodeModel.js";
 import splitBillController from "./splitBillController.js";
 import SplitPayment from "../models/splitPaymentModel.js";
+import nodemailer from 'nodemailer';
+
 
 dotenv.config();
 
@@ -1277,6 +1279,308 @@ const debugUserStatus = async (req, res) => {
   }
 };
 
+
+ const sendReceiptByEmail = async (req, res) => {
+    try {
+        const { orderId, customerEmail } = req.body;
+        const token = req.headers.token;
+
+        if (!token) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Token de autentificare lipsă' 
+            });
+        }
+
+        if (!orderId || !customerEmail) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID-ul comenzii și adresa de email sunt obligatorii'
+            });
+        }
+
+        // 1. Preia detaliile comenzii din baza de date
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Comanda nu a fost găsită'
+            });
+        }
+
+        // 2. Configurează transporter-ul Nodemailer
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST || 'smtp.gmail.com',
+            port: process.env.SMTP_PORT || 587,
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+            tls: {
+                rejectUnauthorized: false
+            }
+        });
+
+        // 3. Generează conținutul HTML pentru chitanță
+        const emailContent = generateReceiptHTML(order);
+
+        // 4. Configurează opțiunile email-ului
+        const mailOptions = {
+            from: `"${process.env.EMAIL_FROM_NAME || 'Restaurant'}" <${process.env.EMAIL_USER}>`,
+            to: customerEmail,
+            subject: `Chitanță Comanda #${order.orderNumber || order._id} - Restaurantul Nostru`,
+            html: emailContent,
+            text: `Mulțumim pentru comanda dvs. #${order.orderNumber}. Total: ${order.totalAmount} €. Vă așteptăm cu drag data viitoare!`
+        };
+
+        // 5. Trimite email-ul
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`📧 Email trimis către ${customerEmail}:`, info.messageId);
+
+        // 6. Salvează în baza de date că email-ul a fost trimis
+        order.receiptSent = true;
+        order.receiptSentAt = new Date();
+        order.receiptEmail = customerEmail;
+        await order.save();
+
+        res.json({
+            success: true,
+            message: 'Chitanță trimisă cu succes!',
+            messageId: info.messageId,
+            orderId: order._id
+        });
+
+    } catch (error) {
+        console.error('❌ Eroare la trimiterea chitanței:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Eroare la trimiterea chitanței',
+            error: error.message
+        });
+    }
+};
+
+// Funcție pentru generarea HTML-ului chitanței
+function generateReceiptHTML(order) {
+    const items = order.items || [];
+    const totalAmount = order.totalAmount || 0;
+    const subtotal = order.subtotal || totalAmount;
+    const tax = order.tax || 0;
+    const discount = order.discount || 0;
+    const tipAmount = order.tipAmount || 0;
+    
+    // Calculează totalul fiecărui item
+    const itemRows = items.map(item => {
+        const itemTotal = (item.price || 0) * (item.quantity || 1);
+        return `
+        <tr>
+            <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.name || 'Produs'}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity || 1}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">${(item.price || 0).toFixed(2)} €</td>
+            <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">${itemTotal.toFixed(2)} €</td>
+        </tr>
+        `;
+    }).join('');
+
+    return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Chitanță Comanda #${order.orderNumber}</title>
+        <style>
+            body {
+                font-family: 'Arial', sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                background: #f5f5f5;
+            }
+            .receipt-container {
+                background: white;
+                border-radius: 10px;
+                padding: 30px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding-bottom: 20px;
+                border-bottom: 2px solid #e86514;
+            }
+            .restaurant-name {
+                color: #e86514;
+                font-size: 24px;
+                font-weight: bold;
+                margin: 0;
+            }
+            .receipt-title {
+                color: #666;
+                margin: 10px 0;
+                font-size: 18px;
+            }
+            .order-info {
+                background: #f9f9f9;
+                padding: 15px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+            }
+            .info-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+            }
+            .info-label {
+                color: #666;
+                font-weight: 500;
+            }
+            .info-value {
+                color: #333;
+                font-weight: 600;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+            }
+            th {
+                background: #e86514;
+                color: white;
+                padding: 12px;
+                text-align: left;
+                font-weight: 600;
+            }
+            td {
+                padding: 12px;
+                border-bottom: 1px solid #eee;
+            }
+            .total-section {
+                margin-top: 20px;
+                padding-top: 20px;
+                border-top: 2px solid #eee;
+            }
+            .total-row {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10px;
+                font-size: 16px;
+            }
+            .grand-total {
+                font-size: 20px;
+                font-weight: bold;
+                color: #e86514;
+                margin-top: 10px;
+                padding-top: 10px;
+                border-top: 2px solid #e86514;
+            }
+            .footer {
+                text-align: center;
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #ddd;
+                color: #666;
+                font-size: 14px;
+            }
+            .thank-you {
+                color: #34C759;
+                text-align: center;
+                font-size: 18px;
+                margin: 20px 0;
+                font-weight: 600;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="receipt-container">
+            <div class="header">
+                <h1 class="restaurant-name">🍽️ Restaurantul Nostru</h1>
+                <h2 class="receipt-title">Chitanță Comanda</h2>
+            </div>
+            
+            <div class="order-info">
+                <div class="info-row">
+                    <span class="info-label">Număr Comandă:</span>
+                    <span class="info-value">#${order.orderNumber || order._id}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Data:</span>
+                    <span class="info-value">${new Date(order.createdAt).toLocaleString('ro-RO')}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Masa:</span>
+                    <span class="info-value">${order.tableNumber || 'N/A'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status:</span>
+                    <span class="info-value" style="color: #34C759;">${order.status || 'Completată'}</span>
+                </div>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produs</th>
+                        <th>Cantitate</th>
+                        <th>Preț unitar</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${itemRows}
+                </tbody>
+            </table>
+            
+            <div class="total-section">
+                <div class="total-row">
+                    <span>Subtotal:</span>
+                    <span>${subtotal.toFixed(2)} €</span>
+                </div>
+                ${discount > 0 ? `
+                <div class="total-row">
+                    <span>Discount:</span>
+                    <span style="color: #34C759;">-${discount.toFixed(2)} €</span>
+                </div>
+                ` : ''}
+                ${tax > 0 ? `
+                <div class="total-row">
+                    <span>Taxa:</span>
+                    <span>${tax.toFixed(2)} €</span>
+                </div>
+                ` : ''}
+                ${tipAmount > 0 ? `
+                <div class="total-row">
+                    <span>Tips:</span>
+                    <span>${tipAmount.toFixed(2)} €</span>
+                </div>
+                ` : ''}
+                <div class="total-row grand-total">
+                    <span>TOTAL PLATĂ:</span>
+                    <span>${totalAmount.toFixed(2)} €</span>
+                </div>
+            </div>
+            
+            <div class="thank-you">
+                ✅ Comanda a fost procesată cu succes!
+            </div>
+            
+            <div class="footer">
+                <p>Vă mulțumim că ați ales restaurantul nostru!</p>
+                <p>📧 Pentru întrebări: contact@restaurant.ro</p>
+                <p>📞 Telefon: +40 123 456 789</p>
+                <p>📍 Adresa: Strada Exemplu, Nr. 1, Orașul Tău</p>
+                <p>© ${new Date().getFullYear()} Restaurantul Nostru. Toate drepturile rezervate.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+}
+
+
 export {
   placeOrderCash,
   placeOrder,
@@ -1291,5 +1595,6 @@ export {
   payOrderCash,
   checkInactiveOrders,
   clearFullyPaidOrders,
-  debugUserStatus, // ✅ Adaugă aceasta
+  debugUserStatus,
+  sendReceiptByEmail
 };

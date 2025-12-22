@@ -86,11 +86,13 @@
     "remove_from_cart": "Aus Warenkorb entfernen",
     "item_quantity": "Menge: {{count}}",
     "view_details": "Details anzeigen",
-    "price_original": "{{price}} €",
-    "price_discounted": "{{price}} €",
+    "price_discounted": "{price} {currency}",
     "description_truncated": "{{description}}...",
     "out_of_stock": "Nicht vorrätig",
-    "unavailable": "Nicht verfügbar"
+    "unavailable": "Nicht verfügbar",
+      "price_original": "{price}",
+    "currency_before": "{currency}{price}",
+    "currency_after": "{price}{currency}"
   },
   "session": {
     "expired_message": "Ihre Sitzung ist abgelaufen. Bitte aktualisieren Sie die Seite, um weiter zu bestellen."
@@ -146,7 +148,11 @@
     "discount": "Rabatt",
     "ordered_times": "{{count}} mal bestellt",
     "other_products": "Was andere auch bestellt haben",
-    "popular_choices": "Beliebte Auswahl, die Ihnen gefallen könnte"
+    "popular_choices": "Beliebte Auswahl, die Ihnen gefallen könnte",
+          "finalize_purchase": "Kauf abschließen",
+                "items": "Artikel"
+
+
   },
   "category_page": {
     "back": "Zurück",
@@ -254,7 +260,9 @@
     "total_paid": "Gesamt Bezahlt",
      "items": "artikel",
          "split_bill_marketing_title": "Mit Freunden Teilen, Nur Zahlen was du Gegessen Hast!",
-    "split_bill_marketing_text": "Teilen Sie die Rechnung einfach mit Freunden. Jede Person zahlt nur für das, was sie konsumiert hat. Schnell, fair und unterhaltsam!"
+    "split_bill_marketing_text": "Teilen Sie die Rechnung einfach mit Freunden. Jede Person zahlt nur für das, was sie konsumiert hat. Schnell, fair und unterhaltsam!",
+          "split_bill_cash_only": "Rechnungsteilung ist nur für Kartenzahlung verfügbar"
+
   },
   "repeat_order": {
     "title": "Wiederholen Sie Ihre Bestellung",
@@ -317,7 +325,15 @@
     "contact_us": "Kontaktieren Sie uns",
     "click_to_view": "Klicken Sie, um die Öffnungszeiten zu sehen",
     "click_to_hide": "Klicken Sie, um die Öffnungszeiten auszublenden",
-    "hours_note": "*Öffnungszeiten können an Feiertagen abweichen"
+    "hours_note": "*Öffnungszeiten können an Feiertagen abweichen",
+       "choose_contact_method": "Kontaktmethode wählen",
+    "select_preferred_contact": "Wählen Sie Ihre bevorzugte Kontaktmethode",
+    "send_email": "E-Mail senden",
+    "call_us": "Anrufen",
+    "cancel": "Abbrechen",
+        "follow_us": "Folgen Sie uns",
+    "visit_facebook": "Besuchen Sie unsere Facebook-Seite",
+    "visit_instagram": "Besuchen Sie unsere Instagram-Seite"
   },
   "not_found": {
     "page_not_found": "Seite nicht gefunden",

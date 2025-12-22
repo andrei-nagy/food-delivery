@@ -86,11 +86,13 @@
     "remove_from_cart": "Eliminar del carrito",
     "item_quantity": "Cantidad: {{count}}",
     "view_details": "Ver detalles",
-    "price_original": "{{price}} €",
-    "price_discounted": "{{price}} €",
+    "price_discounted": "{price} {currency}",
     "description_truncated": "{{description}}...",
     "out_of_stock": "Agotado",
-    "unavailable": "No disponible"
+    "unavailable": "No disponible",
+       "price_original": "{price}",
+    "currency_before": "{currency}{price}",
+    "currency_after": "{price}{currency}"
   },
   "session": {
     "expired_message": "Su sesión ha caducado. Por favor actualice la página para continuar pidiendo."
@@ -146,7 +148,11 @@
     "discount": "Descuento",
     "ordered_times": "Pedido {{count}} veces",
     "other_products": "Lo que otros también pidieron",
-    "popular_choices": "Elecciones populares que le podrían gustar"
+    "popular_choices": "Elecciones populares que le podrían gustar",
+          "finalize_purchase": "Finalizar compra",
+                "items": "artículos"
+
+
   },
   "category_page": {
     "back": "Volver",
@@ -254,7 +260,8 @@
     "total_paid": "Total Pagado",
         "items": "artículos",
             "split_bill_marketing_title": "Divide con Amigos, ¡Paga Solo lo que Consumiste!",
-    "split_bill_marketing_text": "Divide la cuenta fácilmente con amigos. Cada persona paga solo por lo que consumió. ¡Rápido, justo y divertido!"
+    "split_bill_marketing_text": "Divide la cuenta fácilmente con amigos. Cada persona paga solo por lo que consumió. ¡Rápido, justo y divertido!",
+     "split_bill_cash_only": "La división de la cuenta solo está disponible para pago con tarjeta"
   },
   "repeat_order": {
     "title": "Repetir Su Pedido",
@@ -317,7 +324,15 @@
     "contact_us": "Contáctenos",
     "click_to_view": "Haga clic para ver los horarios",
     "click_to_hide": "Haga clic para ocultar los horarios",
-    "hours_note": "*El horario puede variar durante los días festivos"
+    "hours_note": "*El horario puede variar durante los días festivos",
+        "choose_contact_method": "Elija el método de contacto",
+    "select_preferred_contact": "Seleccione su forma preferida de contactarnos",
+    "send_email": "Enviar correo electrónico",
+    "call_us": "Llamarnos",
+    "cancel": "Cancelar",
+       "follow_us": "Síguenos",
+    "visit_facebook": "Visita nuestra página de Facebook",
+    "visit_instagram": "Visita nuestra página de Instagram"
   },
   "not_found": {
     "page_not_found": "Página No Encontrada",

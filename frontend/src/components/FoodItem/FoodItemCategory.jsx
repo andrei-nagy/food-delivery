@@ -19,7 +19,7 @@ const FoodItemCategory = ({
   discountedPrice,
   onClick,
 }) => {
-  const { cartItems, url, billRequested, userBlocked } =
+  const { cartItems, url, billRequested, userBlocked, restaurantData } =
     useContext(StoreContext);
   const { currentLanguage } = useLanguage();
 
@@ -33,8 +33,10 @@ const FoodItemCategory = ({
 
   // Combină ambele condiții pentru a bloca interacțiunea
   const isDisabled = billRequested || userBlocked;
-  const hasDiscount = discountPercentage > 0;
   const translationEnabled = currentLanguage !== "ro";
+  
+  // Extrage currency din restaurantData sau folosește € ca fallback
+  const currency = restaurantData?.currency || '€';
 
   // ✅ CALCULEAZĂ FORȚAT discountPercentage și discountedPrice
   const rawDiscountPercentage = parseFloat(discountPercentage) || 0;
@@ -48,6 +50,36 @@ const FoodItemCategory = ({
 
   // ✅ Verifică dacă ar TREBUI să afișeze discount (indiferent de ce vine din backend)
   const shouldShowDiscount = rawDiscountPercentage > 0;
+
+  // === FUNCȚIE PENTRU FORMATARE PRET ===
+  const formatPrice = (priceValue, showCurrency = true) => {
+    if (!priceValue && priceValue !== 0) return '';
+    
+    // Converție la număr dacă e string
+    const numericPrice = typeof priceValue === 'string' 
+      ? parseFloat(priceValue) 
+      : priceValue;
+    
+    // Formatare cu 2 zecimale
+    const formattedPrice = numericPrice.toFixed(2);
+    
+    // Returnează cu sau fără currency în funcție de preferință
+    if (!showCurrency) {
+      return formattedPrice;
+    }
+    
+    // Poziționare currency în funcție de convenția locală
+    const currencyPosition = restaurantData?.currencyPosition || 'after';
+    
+    // ✅ FOLOSEȘTE NON-BREAKING SPACE (\u00A0) PENTRU SPAȚIU CARE NU SE COMPRIMĂ
+    const nbsp = '\u00A0';
+    
+    if (currencyPosition === 'before') {
+      return `${currency}${nbsp}${formattedPrice}`;
+    } else {
+      return `${formattedPrice}${nbsp}${currency}`;
+    }
+  };
 
   // === FUNCȚII PENTRU TRADUCERE ===
   const translateText = async (text, targetLang) => {
@@ -379,7 +411,7 @@ const FoodItemCategory = ({
             <p className={isDisabled ? "disabled-text" : ""}>
               {getFoodName()}
               {isTranslating && (
-                <span className="translating-indicator"> 🔄</span>
+                <span className="translating-indicator"></span>
               )}
             </p>
           </div>
@@ -391,7 +423,7 @@ const FoodItemCategory = ({
                 ? getDescription().slice(0, 70) + "..."
                 : getDescription()}
               {isTranslating && (
-                <span className="translating-indicator"> 🔄</span>
+                <span className="translating-indicator"></span>
               )}
             </p>
           </div>
@@ -400,16 +432,20 @@ const FoodItemCategory = ({
               isDisabled ? "disabled-text" : ""
             }`}
           >
-            {hasDiscount ? (
+            {/* ✅ FOLOSEȘTE formatPrice pentru afișarea prețurilor */}
+            {shouldShowDiscount ? (
               <div className="discount-price-wrapper">
-                <span className="original-price">{price} €</span>
+                <span className="original-price">
+                  {formatPrice(rawPrice)}
+                </span>
                 <span className="discounted-price">
-                  {" "}
-                  {parseFloat(discountedPrice).toFixed(2)} €
+                  {formatPrice(calculatedDiscountedPrice)}
                 </span>
               </div>
             ) : (
-              <span className="regular-price">{price} €</span>
+              <span className="regular-price">
+                {formatPrice(rawPrice)}
+              </span>
             )}
           </div>
         </div>

@@ -17,10 +17,140 @@ import TipsSection from "../../components/MyOrders/TipsSection";
 import PaymentSection from "../../components/MyOrders/PaymentSection";
 import EmptyOrdersState from "../../components/MyOrders/EmptyOrdersState";
 import BillRequestedNotification from "../../components/MyOrders/BillRequestedNotification";
-import FloatingCheckout from "../../components/MyOrders/FloatingCheckout";
 import SplitBillModal from "../../components/MyOrders/SplitBillModal";
 import PaidOrdersSection from "../../components/MyOrders/PaidOrdersSection";
 import PaidItemsSection from "../../components/MyOrders/PaidItemsSection";
+import {
+  FaArrowLeft,
+  FaTag,
+  FaCheckCircle,
+  FaPercent,
+} from "react-icons/fa";
+
+// Component pentru noul design al butoanelor flotante
+const ModernFloatingButtons = ({ 
+  show, 
+  billRequested, 
+  isProcessing, 
+  itemCount, 
+  totalAmount, 
+  onPay, 
+  onSplitBill,
+  paymentMethod,
+  t 
+}) => {
+  const createRipple = (event) => {
+    const button = event.currentTarget;
+    const circle = document.createElement("span");
+    const diameter = Math.max(button.clientWidth, button.clientHeight);
+    const radius = diameter / 2;
+
+    circle.style.width = circle.style.height = `${diameter}px`;
+    circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
+    circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
+    circle.classList.add("mripple");
+
+    const ripple = button.getElementsByClassName("mripple")[0];
+    if (ripple) {
+      ripple.remove();
+    }
+
+    button.appendChild(circle);
+  };
+
+  if (!show || billRequested) return null;
+
+  return (
+    <div className="mfloating-buttons">
+      {/* Split Bill Button */}
+      <button
+        className={`mfloating-button msplit-bill-btn ${isProcessing ? 'mprocessing' : ''}`}
+        onClick={(e) => {
+          createRipple(e);
+          onSplitBill();
+        }}
+        disabled={isProcessing || paymentMethod === 'cashPOS'}
+        title={paymentMethod === 'cashPOS' ? t("my_orders.split_bill_cash_only", "Split bill is only available for card payment") : ""}
+      >
+        {isProcessing ? (
+          <div className="mprocessing-state">
+            <div className="mspinner"></div>
+            <span className="mprocessing-text">{t("my_orders.processing", "Processing...")}</span>
+          </div>
+        ) : (
+          <div className="mbtn-content">
+            <div className="mbtn-left">
+              <div className="mbtn-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 20V10M18 20V4M6 20V16" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div className="mbtn-text">
+                <span className="mbtn-title">{t("my_orders.split_bill", "Split Bill")}</span>
+                <span className="mbtn-subtitle">{t("my_orders.pay_partial", "Pay only your part")}</span>
+              </div>
+            </div>
+            {/* <div className="mbtn-right">
+              {itemCount > 0 && (
+                <div className="mitem-counter">
+                  {itemCount} {t("my_orders.items", "items")}
+                </div>
+              )}
+            </div> */}
+          </div>
+        )}
+        {paymentMethod === 'creditCard' && !isProcessing && (
+          <div className="mpayment-indicator"></div>
+        )}
+      </button>
+
+      {/* Pay Order Button */}
+      <button
+        className={`mfloating-button mpay-btn ${isProcessing ? 'mprocessing' : ''}`}
+        onClick={(e) => {
+          createRipple(e);
+          onPay();
+        }}
+        disabled={isProcessing}
+      >
+        {isProcessing ? (
+          <div className="mprocessing-state">
+            <div className="mspinner"></div>
+            <span className="mprocessing-text">{t("my_orders.placing_order", "Placing order...")}</span>
+          </div>
+        ) : (
+          <div className="mbtn-content">
+            <div className="mbtn-left">
+              <div className="mbtn-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 9V5H4V19H20V14.5M9 11H15M12 8V14" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <div className="mbtn-text">
+                <span className="mbtn-title">{t("my_orders.pay_order", "Pay Order")}</span>
+                <span className="mbtn-subtitle">
+                  {paymentMethod === 'creditCard' 
+                    ? t("my_orders.pay_now", "Pay now") 
+                    : t("my_orders.request_bill", "Request bill")}
+                </span>
+              </div>
+            </div>
+            <div className="mbtn-right">
+              {/* {itemCount > 0 && (
+                <div className="mitem-counter">
+                  {itemCount} {t("my_orders.items", "items")}
+                </div>
+              )} */}
+              <div className="mamount">
+                €{totalAmount.toFixed(2)}
+              </div>
+            </div>
+          </div>
+        )}
+      </button>
+    </div>
+  );
+};
 
 const MyOrders = () => {
   const {
@@ -79,7 +209,7 @@ const MyOrders = () => {
 
   const tableNumber = localStorage.getItem("tableNumber") || null;
 
-    // Funcție pentru a verifica dacă un item este complet plătit
+  // Funcție pentru a verifica dacă un item este complet plătit
   const isItemFullyPaid = (item) => {
     if (item.status === 'fully_paid') return true;
     
@@ -93,6 +223,7 @@ const MyOrders = () => {
     
     return false;
   };
+
   // Helper functions
   const getFlatUnpaidItems = () => {
     return unpaidOrders.flatMap(order => 
@@ -123,8 +254,6 @@ const MyOrders = () => {
       translateProductDescriptions();
     }
   }, [currentLanguage, food_list.length]);
-
-
 
   // Funcție pentru a separa ordinele plătite de cele neplătite
   const separatePaidAndUnpaidOrders = (orders) => {
@@ -179,7 +308,7 @@ const MyOrders = () => {
         setAllOrders([]);
         setUnpaidOrders([]);
         setPaidOrders([]);
-        toast.error("Failed to load orders");
+        toast.error(t("my_orders.promo_error", "Failed to load orders"));
       } finally {
         setIsLoading(false);
       }
@@ -193,7 +322,7 @@ const MyOrders = () => {
       setUnpaidOrders([]);
       setPaidOrders([]);
     }
-  }, [url, token, tableNumber]);
+  }, [url, token, tableNumber, t]);
 
   useEffect(() => {
     setShowFloatingCheckout(!isCartEmpty && !billRequested);
@@ -429,7 +558,7 @@ const MyOrders = () => {
   // Promo code functions
   const applyPromoCode = async () => {
     if (!promoCode.trim()) {
-      setPromoError("Please enter a promo code");
+      setPromoError(t("my_orders.promo_error", "Please enter a promo code"));
       return;
     }
 
@@ -459,10 +588,10 @@ const MyOrders = () => {
       }
     } catch (error) {
       console.error("Error applying promo code:", error);
-      setPromoError(t("my_orders.promo_error"));
+      setPromoError(t("my_orders.promo_error", "Invalid or expired promo code"));
       setIsPromoApplied(false);
-        setAppliedPromoCode("");
-        setDiscount(0);
+      setAppliedPromoCode("");
+      setDiscount(0);
     }
   };
 
@@ -539,10 +668,10 @@ const MyOrders = () => {
     try {
       setUnpaidOrders([]);
       setShowConfirmClear(false);
-      toast.success("All unpaid orders cleared");
+      toast.success(t("my_orders.clear_all", "All unpaid orders cleared"));
     } catch (error) {
       console.error("Error clearing unpaid orders:", error);
-      toast.error("Error clearing orders");
+      toast.error(t("my_orders.promo_error", "Error clearing orders"));
     }
   };
 
@@ -578,7 +707,7 @@ const MyOrders = () => {
     if (orderPlaced || billRequested) return;
 
     if (!paymentMethod) {
-      setPaymentError("Please select a payment method.");
+      setPaymentError(t("my_orders.payment_error", "Please select a payment method."));
       setTimeout(() => {
         const paymentSection = document.getElementById("payment-method-section");
         if (paymentSection) {
@@ -637,11 +766,10 @@ const MyOrders = () => {
 
         if (response.data.success) {
           console.log("✅ Credit card payment initiated successfully");
-          markBillAsRequested();
           window.location.replace(response.data.session_url);
         } else {
           console.error("❌ Credit card payment failed:", response.data.message);
-          alert("Error processing payment: " + (response.data.message || "Unknown error"));
+          alert(t("my_orders.promo_error", "Error processing payment: ") + (response.data.message || t("my_orders.promo_error", "Unknown error")));
           setIsPlacingOrder(false);
         }
       } else if (paymentMethod === "cashPOS") {
@@ -667,10 +795,10 @@ const MyOrders = () => {
             setShowWaiterModal(true);
             window.scrollTo(0, 0);
             
-            toast.success("Order placed successfully! Waiter has been notified.");
+            toast.success(t("my_orders.pay_order", "Order placed successfully! Waiter has been notified."));
           } else {
             console.error("❌ Cash payment failed:", response.data.message);
-            alert("Error processing cash payment: " + (response.data.message || "Unknown error"));
+            alert(t("my_orders.promo_error", "Error processing cash payment: ") + (response.data.message || t("my_orders.promo_error", "Unknown error")));
             setIsPlacingOrder(false);
           }
         } catch (cashError) {
@@ -708,13 +836,13 @@ const MyOrders = () => {
       
       if (error.response) {
         console.error("🔴 Server response error:", error.response.data);
-        alert("Error placing order: " + (error.response.data.message || "Server error"));
+        alert(t("my_orders.promo_error", "Error placing order: ") + (error.response.data.message || t("my_orders.promo_error", "Server error")));
       } else if (error.request) {
         console.error("🔴 Network error:", error.request);
-        alert("Network error. Please check your connection and try again.");
+        alert(t("my_orders.promo_error", "Network error. Please check your connection and try again."));
       } else {
         console.error("🔴 Unknown error:", error.message);
-        alert("Error placing order: " + error.message);
+        alert(t("my_orders.promo_error", "Error placing order: ") + error.message);
       }
       
       setIsPlacingOrder(false);
@@ -723,25 +851,28 @@ const MyOrders = () => {
 
   // Split Bill Functions
   const handleSplitBillClick = () => {
+    // ✅ Setează automat payment method pe "creditCard"
     if (!paymentMethod) {
-      setPaymentError("Please select a payment method first.");
-      setTimeout(() => {
-        const paymentSection = document.getElementById("payment-method-section");
-        if (paymentSection) {
-          paymentSection.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
-        }
-      }, 100);
-      return;
+      setPaymentMethod("creditCard");
+      setShowTipsSection(true);
+      setTipPercentage(0);
+      setCustomTipAmount("");
     }
+    
+    // ✅ Verifică doar dacă payment method este creditCard pentru split bill
+    if (paymentMethod !== "creditCard") {
+      setPaymentMethod("creditCard");
+      setShowTipsSection(true);
+      setTipPercentage(0);
+      setCustomTipAmount("");
+    }
+    
     setShowSplitBillModal(true);
   };
 
   const placeSplitBillOrder = async (selectedItems, selectedTotal) => {
     if (!paymentMethod) {
-      setPaymentError("Please select a payment method.");
+      setPaymentError(t("my_orders.payment_error", "Please select a payment method."));
       return;
     }
 
@@ -783,8 +914,7 @@ const MyOrders = () => {
         );
 
         if (response.data.success) {
-          markBillAsRequested();
-          toast.success(`Processing payment for ${selectedTotal.toFixed(2)} €`);
+          toast.success(t("my_orders.split_bill_success", { amount: selectedTotal.toFixed(2) }));
           window.location.replace(response.data.session_url);
         }
       } else if (paymentMethod === "cashPOS") {
@@ -796,47 +926,77 @@ const MyOrders = () => {
 
         if (response.data.success) {
           markBillAsRequested();
+          
+          // 1. Obține ID-urile item-urilor plătite
+          const paidItemIds = selectedItems.map(item => item._id);
+          
+          // 2. Actualizează local unpaidOrders - elimină produsele plătite
+          const updatedUnpaidOrders = unpaidOrders.map(order => {
+            // Verifică dacă order-ul mai are item-uri neplătite
+            const unpaidItemsInOrder = order.items.filter(item => 
+              !paidItemIds.includes(item._id) || !isItemFullyPaid(item)
+            );
+            
+            if (unpaidItemsInOrder.length === 0) {
+              return null; // Elimină order-ul dacă nu mai are item-uri neplătite
+            }
+            
+            return {
+              ...order,
+              items: unpaidItemsInOrder
+            };
+          }).filter(order => order !== null && order.items.length > 0);
+          
+          setUnpaidOrders(updatedUnpaidOrders);
+          
+          // 3. Reîncarcă orders din backend pentru sincronizare
+          setTimeout(async () => {
+            try {
+              const updatedOrders = await axios.post(
+                url + "/api/order/userOrders",
+                {},
+                { headers: { token } }
+              );
+              
+              const ordersData = updatedOrders.data?.data || updatedOrders.data || [];
+              setAllOrders(ordersData);
+              
+              // Re-separă ordinele
+              const { unpaidOrders: unpaid, paidOrders: paid } = separatePaidAndUnpaidOrders(ordersData);
+              setUnpaidOrders(unpaid);
+              setPaidOrders(paid);
+            } catch (fetchError) {
+              console.error("Error fetching updated orders:", fetchError);
+            }
+          }, 2000);
+          
           setShowWaiterModal(true);
-          toast.success(`Your part of ${selectedTotal.toFixed(2)} € has been requested!`);
-          
-          // Reîncarcă orders după split bill
-          const updatedOrders = await axios.post(
-            url + "/api/order/userOrders",
-            {},
-            { headers: { token } }
-          );
-          
-          const ordersData = updatedOrders.data?.data || updatedOrders.data || [];
-          setAllOrders(ordersData);
-          
-          // Re-separă ordinele
-          const { unpaidOrders: unpaid, paidOrders: paid } = separatePaidAndUnpaidOrders(ordersData);
-          setUnpaidOrders(unpaid);
-          setPaidOrders(paid);
+          toast.success(t("my_orders.split_payment_success", `Your part of ${selectedTotal.toFixed(2)} € has been requested!`));
           
           setIsProcessingSplitBill(false);
         }
       }
     } catch (error) {
       console.error("🔴 Split bill payment error:", error);
-      toast.error("Error processing split bill payment");
+      toast.error(t("my_orders.promo_error", "Error processing split bill payment"));
       setIsProcessingSplitBill(false);
     }
   };
-// Funcție pentru a obține item-uri plătite individual
-const getPaidItems = () => {
-  return allOrders.flatMap(order => 
-    order.items.filter(item => isItemFullyPaid(item)).map(item => ({
-      ...item,
-      orderId: order._id,
-      orderNumber: order.orderNumber,
-      orderDate: order.date,
-    }))
-  );
-};
 
-// În render, folosește:
-const paidItems = getPaidItems();
+  // Funcție pentru a obține item-uri plătite individual
+  const getPaidItems = () => {
+    return allOrders.flatMap(order => 
+      order.items.filter(item => isItemFullyPaid(item)).map(item => ({
+        ...item,
+        orderId: order._id,
+        orderNumber: order.orderNumber,
+        orderDate: order.date,
+      }))
+    );
+  };
+
+  // În render, folosește:
+  const paidItems = getPaidItems();
 
   const formatDateTime = (dateString) => {
     const date = new Date(dateString);
@@ -862,14 +1022,11 @@ const paidItems = getPaidItems();
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           />
-          <span>{t("my_orders.loading_orders")}</span>
+          <span>{t("my_orders.loading_orders", "Loading orders...")}</span>
         </div>
       </motion.div>
     );
   }
-
-  const totalUnpaidItemsCount = orderItems.length;
-  const totalPaidItemsCount = paidOrders.flatMap(order => order.items).length;
 
   return (
     <motion.div
@@ -878,11 +1035,21 @@ const paidItems = getPaidItems();
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
       className="cart-container"
+      id="my-orders-page"
     >
       {/* Header Section */}
       <div className="cart-header-section-orders">
-        <h1 className="cart-title">{t("my_orders.orders")}</h1>
-
+        <button className="back-button" onClick={() => navigate(-1)}>
+          <FaArrowLeft />
+          <span>{t("my_orders.back", "Back")}</span>
+        </button>
+        
+        <div className="cart-title-wrapper">
+          <h1 className="cart-title">{t("my_orders.orders", "My Orders")}</h1>
+        </div>
+        
+        {/* Placeholder pentru echilibru */}
+        <div className="back-button-placeholder"></div>
       </div>
 
       {/* Empty Cart State */}
@@ -901,15 +1068,6 @@ const paidItems = getPaidItems();
           {/* ✅ SECȚIUNEA ORDINILOR NEPLĂTITE */}
           {unpaidOrders.length > 0 && (
             <div className="unpaid-orders-section">
-              <div className="section-header">
-                <h2 className="section-title">
-                  {t("my_orders.unpaid_items")} ({totalUnpaidItemsCount})
-                </h2>
-                <p className="section-description">
-                  {t("my_orders.select_items_to_pay")}
-                </p>
-              </div>
-              
               <OrderList
                 orders={unpaidOrders}
                 isPaid={false}
@@ -923,23 +1081,24 @@ const paidItems = getPaidItems();
                 url={url}
                 assets={assets}
                 t={t}
+                isItemFullyPaid={isItemFullyPaid}
               />
             </div>
           )}
 
-{paidItems.length > 0 && (
-  <PaidItemsSection
-    paidItems={paidItems} // Folosește paidItems, nu paidOrders
-    food_list={food_list}
-    findFoodItem={findFoodItem}
-    getItemPriceWithDiscount={getItemPriceWithDiscount}
-    getTranslatedProductName={getTranslatedProductName}
-    formatDateTime={formatDateTime}
-    t={t}
-    url={url}
-    assets={assets}
-  />
-)}
+          {paidItems.length > 0 && (
+            <PaidItemsSection
+              paidItems={paidItems} // Folosește paidItems, nu paidOrders
+              food_list={food_list}
+              findFoodItem={findFoodItem}
+              getItemPriceWithDiscount={getItemPriceWithDiscount}
+              getTranslatedProductName={getTranslatedProductName}
+              formatDateTime={formatDateTime}
+              t={t}
+              url={url}
+              assets={assets}
+            />
+          )}
 
           {/* Order Summary - DOAR PENTRU ITEM-URILE NEPLĂTITE */}
           {unpaidOrders.length > 0 && (
@@ -1007,18 +1166,20 @@ const paidItems = getPaidItems();
         t={t}
         url={url}
         assets={assets}
+        unpaidOrders={unpaidOrders}
+        paymentMethod={paymentMethod}
       />
 
-      {/* Floating Checkout Button - DOAR DACA EXISTA ITEM-URI NEPLATITE */}
-      <FloatingCheckout
-        showFloatingCheckout={showFloatingCheckout && unpaidOrders.length > 0}
+      {/* Modern Floating Buttons - DOAR DACA EXISTA ITEM-URI NEPLATITE */}
+      <ModernFloatingButtons
+        show={showFloatingCheckout && unpaidOrders.length > 0}
         billRequested={billRequested}
-        isPlacingOrder={isPlacingOrder || isProcessingSplitBill}
-        orderPlaced={orderPlaced}
-        getTotalOrderItemCount={getTotalOrderItemCount}
-        getFinalTotalAmount={getFinalTotalAmount}
-        placeOrder={placeOrder}
-        onSplitBillClick={handleSplitBillClick}
+        isProcessing={isPlacingOrder || isProcessingSplitBill}
+        itemCount={getTotalOrderItemCount()}
+        totalAmount={getFinalTotalAmount()}
+        onPay={placeOrder}
+        onSplitBill={handleSplitBillClick}
+        paymentMethod={paymentMethod}
         t={t}
       />
 
@@ -1038,17 +1199,17 @@ const paidItems = getPaidItems();
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <h3>{t("my_orders.clear_all_orders")}</h3>
-              <p>{t("my_orders.clear_confirmation")}</p>
+              <h3>{t("my_orders.clear_all_orders", "Clear All Orders")}</h3>
+              <p>{t("my_orders.clear_confirmation", "Are you sure you want to clear all unpaid orders?")}</p>
               <div className="modal-actions">
                 <button
                   className="cancel-button"
                   onClick={() => setShowConfirmClear(false)}
                 >
-                  {t("my_orders.cancel")}
+                  {t("my_orders.cancel", "Cancel")}
                 </button>
                 <button className="confirm-button" onClick={handleClearCart}>
-                  {t("my_orders.clear_all")}
+                  {t("my_orders.clear_all", "Clear All")}
                 </button>
               </div>
             </motion.div>

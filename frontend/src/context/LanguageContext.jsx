@@ -1,48 +1,56 @@
-// src/context/LanguageContext.js
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
+import { StoreContext } from './StoreContext';
 
-const LanguageContext = createContext();
+export const LanguageContext = createContext();
+
+export const useLanguage = () => {
+  return useContext(LanguageContext);
+};
 
 export const LanguageProvider = ({ children }) => {
   const { i18n } = useTranslation();
-  const [currentLanguage, setCurrentLanguage] = useState('ro');
+  const [currentLanguage, setCurrentLanguage] = useState(() => {
+    // Încearcă să citești din sessionStorage, altfel folosește engleza ca fallback
+    return sessionStorage.getItem("language") || 'en';
+  });
 
-  // Sync with i18n and sessionStorage on initial load
+  // 🔥 SINCRONIZEAZĂ I18N CU STARE LOCALĂ
   useEffect(() => {
-    const savedLanguage = sessionStorage.getItem('language');
-    if (savedLanguage) {
-      setCurrentLanguage(savedLanguage);
-      i18n.changeLanguage(savedLanguage);
-    } else {
-      setCurrentLanguage(i18n.language);
+    if (i18n.language !== currentLanguage) {
+      i18n.changeLanguage(currentLanguage);
     }
-  }, [i18n]);
+  }, [currentLanguage, i18n]);
 
-  const updateLanguage = (lng) => {
+  // 🔥 MONITORIZEAZĂ SCHIMBĂRILE ÎN SESSION STORAGE (pentru sincronizare între tab-uri)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedLanguage = sessionStorage.getItem("language");
+      if (savedLanguage && savedLanguage !== currentLanguage) {
+        setCurrentLanguage(savedLanguage);
+        i18n.changeLanguage(savedLanguage);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [currentLanguage, i18n]);
+
+  const changeLanguage = (lng) => {
     setCurrentLanguage(lng);
+    sessionStorage.setItem("language", lng);
     i18n.changeLanguage(lng);
-    sessionStorage.setItem('language', lng);
-  };
-
-  const value = {
-    currentLanguage,
-    setCurrentLanguage: updateLanguage
   };
 
   return (
-    <LanguageContext.Provider value={value}>
+    <LanguageContext.Provider value={{ 
+      currentLanguage, 
+      setCurrentLanguage: changeLanguage 
+    }}>
       {children}
     </LanguageContext.Provider>
   );
 };
-
-export const useLanguage = () => {
-  const context = useContext(LanguageContext);
-  if (!context) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
-  }
-  return context;
-};
-
-export default LanguageContext;

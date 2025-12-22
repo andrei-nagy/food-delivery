@@ -29,7 +29,8 @@ const FoodItemBestSeller = ({
     removeFromCart, 
     url, 
     billRequested,
-    userBlocked 
+    userBlocked,
+    restaurantData // Adaugă restaurantData din context
   } = useContext(StoreContext);
   
   const [showCounterControls, setShowCounterControls] = useState(false);
@@ -45,6 +46,39 @@ const FoodItemBestSeller = ({
   const isDisabled = billRequested || userBlocked;
   const hasDiscount = discountPercentage > 0;
   const translationEnabled = currentLanguage !== 'ro';
+  
+  // Extrage currency din restaurantData sau folosește € ca fallback
+  const currency = restaurantData?.currency || '€';
+
+  // === FUNCȚII PENTRU FORMATARE PRET ===
+  const formatPrice = (priceValue, showCurrency = true) => {
+    if (!priceValue && priceValue !== 0) return '';
+    
+    // Converție la număr dacă e string
+    const numericPrice = typeof priceValue === 'string' 
+      ? parseFloat(priceValue) 
+      : priceValue;
+    
+    // Formatare cu 2 zecimale
+    const formattedPrice = numericPrice.toFixed(2);
+    
+    // Returnează cu sau fără currency în funcție de preferință
+    if (!showCurrency) {
+      return formattedPrice;
+    }
+    
+    // Poziționare currency în funcție de convenția locală
+    const currencyPosition = restaurantData?.currencyPosition || 'after';
+    
+    // ✅ FOLOSEȘTE NON-BREAKING SPACE (\u00A0) PENTRU SPAȚIU CARE NU SE COMPRIMĂ
+    const nbsp = '\u00A0';
+    
+    if (currencyPosition === 'before') {
+      return `${currency}${nbsp}${formattedPrice}`;  // ✅ SPAȚIU AICI
+    } else {
+      return `${formattedPrice}${nbsp}${currency}`;  // ✅ SPAȚIU AICI
+    }
+  };
 
   // === FUNCȚII PENTRU TRADUCERE ===
   const translateText = async (text, targetLang) => {
@@ -392,7 +426,7 @@ const FoodItemBestSeller = ({
           <p className={isDisabled ? "disabled-text" : ""}>
             {getFoodName()}
             {isTranslating && (
-              <span className="translating-indicator"> 🔄</span>
+              <span className="translating-indicator"></span>
             )}
           </p>
         </div>
@@ -407,7 +441,7 @@ const FoodItemBestSeller = ({
               })
             : getDescription()}
           {isTranslating && (
-            <span className="translating-indicator"> 🔄</span>
+            <span className="translating-indicator"></span>
           )}
         </p>
         <div
@@ -418,15 +452,15 @@ const FoodItemBestSeller = ({
           {hasDiscount ? (
             <div className="discount-price-wrapper">
               <span className="original-price">
-                {t("food_item.price_original", { price })}
+                {formatPrice(price)}
               </span>
               <span className="discounted-price">
-                {parseFloat(discountedPrice).toFixed(2)}
+                {formatPrice(discountedPrice)}
               </span>
             </div>
           ) : (
             <span className="regular-price">
-              {t("food_item.price_original", { price })}
+              {formatPrice(price)}
             </span>
           )}
         </div>

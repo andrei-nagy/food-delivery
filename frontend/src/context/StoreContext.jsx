@@ -29,6 +29,11 @@ const StoreContextProvider = (props) => {
   const ordersIntervalRef = useRef(null);
   const statusPollingIntervalRef = useRef(null);
   const sessionTimerRef = useRef(null);
+  const [restaurantData, setRestaurantData] = useState(null);
+
+  useEffect(() => {
+    fetchPersonalizationData();
+  }, []);
 
   const getApiUrl = () => {
     if (
@@ -42,12 +47,44 @@ const StoreContextProvider = (props) => {
 
   const url = getApiUrl();
 
-  // ==================== SESSION TIME MANAGEMENT SYSTEM ====================
+  const fetchPersonalizationData = async () => {
+    try {
+      const response = await axios.get(`${url}/admin/personalization/get`);
+      if (response.data.success && response.data.data) {
+        // ✅ Actualizează COMPLET restaurantData cu tot ce vine de la server
+        const data = response.data.data;
+        
+        // ✅ EXTRAGE DEFAULT LANGUAGE DIN CUSTOMIZATION MODEL
+        const defaultLanguage = data.customizationModel?.defaultLanguage || 'ro';
+        
+        setRestaurantData({
+          // ✅ Preia toate câmpurile din server
+          ...data,
+          // ✅ ADAUGĂ DEFAULT LANGUAGE LA NIVELUL SUPERIOR
+          defaultLanguage: defaultLanguage,
+          // ✅ Asigură-te că currency există, altfel folosește € ca fallback
+          currency: data.currency || '€',
+          // ✅ Asigură-te că currencyPosition există
+          currencyPosition: data.currencyPosition || 'after'
+        });
+        
+        console.log("✅ Restaurant Data loaded with defaultLanguage:", defaultLanguage);
+      }
+    } catch (error) {
+      console.error("Error fetching personalization:", error);
+      // ✅ Păstrează valorile default în caz de eroare
+      setRestaurantData({
+        defaultLanguage: "ro",
+        currency: "€",
+        currencyPosition: "after"
+      });
+    }
+  };
 
   // ✅ FUNCȚIE PENTRU A ACTUALIZA TIMPUL SESIUNII ÎN CONTEXT
   const updateSessionTime = (newExpiry) => {
     setSessionExpiry(newExpiry);
-    
+
     // Calculează timpul rămas imediat
     if (newExpiry) {
       const now = new Date();
@@ -58,7 +95,9 @@ const StoreContextProvider = (props) => {
         setSessionTimeLeft("Expired");
       } else {
         const hours = Math.floor(difference / (1000 * 60 * 60));
-        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const minutes = Math.floor(
+          (difference % (1000 * 60 * 60)) / (1000 * 60)
+        );
 
         if (hours > 0) {
           setSessionTimeLeft(`${hours}h ${minutes}m`);
@@ -150,20 +189,20 @@ const StoreContextProvider = (props) => {
       const now = new Date();
 
       // ✅ VERIFICĂ DACA STATUSUL S-A SCHIMBAT ÎNAINTE DE A SETA
-      const newBlockedStatus = isActive === false || new Date(tokenExpiry) < now;
-      
+      const newBlockedStatus =
+        isActive === false || new Date(tokenExpiry) < now;
+
       // ✅ PREVENIRE SETAREA DUPLĂ A ACELUIAȘI STATUS
       if (userBlocked !== newBlockedStatus) {
         setUserBlocked(newBlockedStatus);
       }
-      
+
       // ✅ ACTUALIZEAZĂ TIMPUL SESIUNII
       if (tokenExpiry) {
         const newExpiry = new Date(tokenExpiry);
         setSessionExpiry(newExpiry);
         calculateAndSetTime(newExpiry);
       }
-      
     } catch (error) {
       console.error(
         "Eroare la verificarea stării utilizatorului:",
@@ -179,7 +218,7 @@ const StoreContextProvider = (props) => {
   const startStatusPolling = () => {
     // Verifică imediat la start
     checkUserStatus();
-    
+
     statusPollingIntervalRef.current = setInterval(() => {
       checkUserStatus();
     }, 30000);
@@ -199,6 +238,32 @@ const StoreContextProvider = (props) => {
   };
 
   // ==================== BILL MANAGEMENT SYSTEM ====================
+  const formatPrice = (priceValue, showCurrency = true) => {
+    if (!priceValue && priceValue !== 0) return '';
+    
+    // Conversie la număr dacă e string
+    const numericPrice = typeof priceValue === 'string' 
+      ? parseFloat(priceValue) 
+      : priceValue;
+    
+    // Formatare cu 2 zecimale
+    const formattedPrice = numericPrice.toFixed(2);
+    
+    // Returnează cu sau fără currency în funcție de preferință
+    if (!showCurrency) {
+      return formattedPrice;
+    }
+    
+    // Folosește restaurantData dacă există, altfel valori default
+    const currency = restaurantData?.currency || '€';
+    const currencyPosition = restaurantData?.currencyPosition || 'after';
+    
+    if (currencyPosition === 'before') {
+      return `${currency}\u00A0${formattedPrice}`;  // \u00A0 = non-breaking space
+    } else {
+      return `${formattedPrice}\u00A0${currency}`;  // \u00A0 = non-breaking space
+    }
+  };
 
   const checkBillStatus = () => {
     const tableNumber = localStorage.getItem("tableNumber");
@@ -281,7 +346,7 @@ const StoreContextProvider = (props) => {
       }
       return false;
     }
-    
+
     if (userBlocked) {
       if (showToast) {
         toast.error(
@@ -290,7 +355,7 @@ const StoreContextProvider = (props) => {
       }
       return false;
     }
-    
+
     return true;
   };
 
@@ -1026,7 +1091,6 @@ const StoreContextProvider = (props) => {
     clearLocalCartAndLogout,
     fetchCartFromServer,
     clearCartCache,
-    // User status polling
     userBlocked,
     setUserBlocked,
     checkUserStatus,
@@ -1034,7 +1098,6 @@ const StoreContextProvider = (props) => {
     startStatusPolling,
     stopStatusPolling,
     isUserAuthenticated,
-    // Bill management
     billRequested,
     billRequestTime,
     markBillAsRequested,
@@ -1042,11 +1105,12 @@ const StoreContextProvider = (props) => {
     canAddToCart,
     getTimeSinceBillRequest,
     checkBillStatus,
-    // ✅ NOU: Session time management
     sessionTimeLeft,
     sessionExpiry,
     updateSessionTime,
     calculateAndSetTime,
+    restaurantData,
+    formatPrice,
   };
 
   return (

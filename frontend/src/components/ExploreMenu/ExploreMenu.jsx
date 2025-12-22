@@ -159,7 +159,7 @@ const ExploreMenu = ({ category, setCategory }) => {
                                 <p className={category === item.menu_name ? "active" : ""}>
                                     {getTranslatedCategoryName(item)}
                                     {isTranslating && (
-                                        <span className="translating-indicator"> 🔄</span>
+                                        <span className="translating-indicator"></span>
                                     )}
                                 </p>
                             </Link>

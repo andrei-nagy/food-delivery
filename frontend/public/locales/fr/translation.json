@@ -86,11 +86,13 @@
     "remove_from_cart": "Retirer du panier",
     "item_quantity": "Quantité : {{count}}",
     "view_details": "Voir détails",
-    "price_original": "{{price}} €",
-    "price_discounted": "{{price}} €",
+    "price_discounted": "{price} {currency}",
     "description_truncated": "{{description}}...",
     "out_of_stock": "Rupture de stock",
-    "unavailable": "Indisponible"
+    "unavailable": "Indisponible",
+      "price_original": "{price}",
+    "currency_before": "{currency}{price}",
+    "currency_after": "{price}{currency}"
   },
   "session": {
     "expired_message": "Votre session a expiré. Veuillez actualiser la page pour continuer à commander."
@@ -146,7 +148,11 @@
     "discount": "Remise",
     "ordered_times": "Commandé {{count}} fois",
     "other_products": "Ce que les autres ont aussi commandé",
-    "popular_choices": "Choix populaires que vous pourriez aimer"
+    "popular_choices": "Choix populaires que vous pourriez aimer",
+          "finalize_purchase": "Finaliser l'achat",
+                "items": "articles"
+
+
   },
   "category_page": {
     "back": "Retour",
@@ -254,7 +260,8 @@
     "total_paid": "Total Payé",
       "items": "articles",
           "split_bill_marketing_title": "Partagez entre Amis, Payez Seulement ce que Vous Avez Consommé!",
-    "split_bill_marketing_text": "Partagez l'addition facilement entre amis. Chaque personne paie seulement pour ce qu'elle a consommé. Rapide, équitable et amusant!"
+    "split_bill_marketing_text": "Partagez l'addition facilement entre amis. Chaque personne paie seulement pour ce qu'elle a consommé. Rapide, équitable et amusant!",
+      "split_bill_cash_only": "La division de l'addition est disponible uniquement pour le paiement par carte"
   },
   "repeat_order": {
     "title": "Commande Rapide",
@@ -317,7 +324,15 @@
     "contact_us": "Nous Contacter",
     "click_to_view": "Cliquez pour voir les horaires",
     "click_to_hide": "Cliquez pour masquer les horaires",
-    "hours_note": "*Les horaires peuvent varier pendant les jours fériés"
+    "hours_note": "*Les horaires peuvent varier pendant les jours fériés",
+        "choose_contact_method": "Choisissez le mode de contact",
+    "select_preferred_contact": "Sélectionnez votre moyen de contact préféré",
+    "send_email": "Envoyer un email",
+    "call_us": "Nous appeler",
+    "cancel": "Annuler",
+      "follow_us": "Suivez-nous",
+    "visit_facebook": "Visitez notre page Facebook",
+    "visit_instagram": "Visitez notre page Instagram"
   },
   "not_found": {
     "page_not_found": "Page Non Trouvée",

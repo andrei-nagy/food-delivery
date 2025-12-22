@@ -32,7 +32,8 @@ const RepeatOrder = () => {
     canAddToCart, 
     billRequested, 
     food_list,
-    userBlocked 
+    userBlocked,
+    restaurantData // ✅ ADAUGĂ restaurantData
   } = useContext(StoreContext);
   const { t } = useTranslation();
   const { currentLanguage } = useLanguage();
@@ -58,6 +59,37 @@ const RepeatOrder = () => {
 
   // Combină ambele condiții pentru a bloca interacțiunea
   const isDisabled = billRequested || userBlocked;
+  
+  // Extrage currency din restaurantData sau folosește € ca fallback
+  const currency = restaurantData?.currency || '€';
+  const currencyPosition = restaurantData?.currencyPosition || 'after';
+
+  // === FUNCȚIE PENTRU FORMATARE PRET ===
+  const formatPrice = (priceValue, showCurrency = true) => {
+    if (!priceValue && priceValue !== 0) return '';
+    
+    // Conversie la număr dacă e string
+    const numericPrice = typeof priceValue === 'string' 
+      ? parseFloat(priceValue) 
+      : priceValue;
+    
+    // Formatare cu 2 zecimale
+    const formattedPrice = numericPrice.toFixed(2);
+    
+    // Returnează cu sau fără currency în funcție de preferință
+    if (!showCurrency) {
+      return formattedPrice;
+    }
+    
+    // ✅ FOLOSEȘTE NON-BREAKING SPACE (\u00A0) PENTRU SPAȚIU CARE NU SE COMPRIMĂ
+    const nbsp = '\u00A0';
+    
+    if (currencyPosition === 'before') {
+      return `${currency}${nbsp}${formattedPrice}`;
+    } else {
+      return `${formattedPrice}${nbsp}${currency}`;
+    }
+  };
 
   useEffect(() => {
     fetchRecentOrders();
@@ -481,7 +513,7 @@ const RepeatOrder = () => {
           <div className="repeat-order-header-left">
             <span className="repeat-order-title">
               {getTranslatedTitle()}{" "}
-              {isTranslating && <span className="translating-indicator"> 🔄</span>}
+              {isTranslating && <span className="translating-indicator"></span>}
             <FaHeart style={{ color: "orange", top: "3px", position: "relative" }} />
             </span>
             <small className="repeat-order-subtitle">
@@ -524,7 +556,7 @@ const RepeatOrder = () => {
         <div className="repeat-order-header-left">
           <span className="repeat-order-title">
             {getTranslatedTitle()}{" "}
-            {isTranslating && <span className="translating-indicator"> 🔄</span>}
+            {isTranslating && <span className="translating-indicator"></span>}
             <FaHeart style={{ color: "orange", top: "3px", position: "relative" }} />
           </span>{" "}
           <small className="repeat-order-subtitle">
@@ -619,7 +651,7 @@ const RepeatOrder = () => {
                       <h3 className={`repeat-product-name-medium ${isDisabled ? 'disabled-text' : ''}`}>
                         {getTranslatedProductName(item)}
                         {isTranslatingProducts && (
-                          <span className="translating-indicator"> 🔄</span>
+                          <span className="translating-indicator"></span>
                         )}
                       </h3>
 
@@ -627,15 +659,15 @@ const RepeatOrder = () => {
                         {hasDiscount && !isDisabled ? (
                           <div className="repeat-product-price-discount-wrapper">
                             <span className="repeat-product-original-price">
-                              {priceInfo.originalPrice.toFixed(2)} €
+                              {formatPrice(priceInfo.originalPrice)}
                             </span>
                             <span className="repeat-product-final-price">
-                              {priceInfo.unitPrice.toFixed(2)} €
+                              {formatPrice(priceInfo.unitPrice)}
                             </span>
                           </div>
                         ) : (
                           <div className={`repeat-product-price-medium ${isDisabled ? 'disabled-text' : ''}`}>
-                            {priceInfo ? priceInfo.unitPrice.toFixed(2) : item.price} €
+                            {formatPrice(priceInfo ? priceInfo.unitPrice : item.price)}
                           </div>
                         )}
                       </div>
@@ -671,7 +703,7 @@ const RepeatOrder = () => {
                         disabled={isDisabled}
                       >
                         {isDisabled ? getTranslatedDisabled() : getTranslatedAdd()}
-                        {isTranslating && <span className="translating-indicator"> 🔄</span>}
+                        {isTranslating && <span className="translating-indicator"></span>}
                       </button>
                     </div>
                   </div>

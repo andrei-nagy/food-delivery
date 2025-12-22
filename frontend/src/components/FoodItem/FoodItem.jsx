@@ -24,7 +24,8 @@ const FoodItem = ({
     removeFromCart, 
     url, 
     billRequested,
-    userBlocked 
+    userBlocked,
+    restaurantData // Adaugă restaurantData din context
   } = useContext(StoreContext);
 
   const { currentLanguage } = useLanguage();
@@ -43,6 +44,37 @@ const FoodItem = ({
   const isDisabled = billRequested || userBlocked;
   const hasDiscount = discountPercentage > 0;
   const translationEnabled = currentLanguage !== 'ro';
+  
+  // Extrage currency din restaurantData sau folosește € ca fallback
+  const currency = restaurantData?.currency || '€';
+  const currencyPosition = restaurantData?.currencyPosition || 'after';
+
+  // === FUNCȚIE PENTRU FORMATARE PRET ===
+  const formatPrice = (priceValue, showCurrency = true) => {
+    if (!priceValue && priceValue !== 0) return '';
+    
+    // Conversie la număr dacă e string
+    const numericPrice = typeof priceValue === 'string' 
+      ? parseFloat(priceValue) 
+      : priceValue;
+    
+    // Formatare cu 2 zecimale
+    const formattedPrice = numericPrice.toFixed(2);
+    
+    // Returnează cu sau fără currency în funcție de preferință
+    if (!showCurrency) {
+      return formattedPrice;
+    }
+    
+    // Folosește non-breaking space (\u00A0) pentru spațiu care nu se comprimă
+    const nbsp = '\u00A0';
+    
+    if (currencyPosition === 'before') {
+      return `${currency}${nbsp}${formattedPrice}`;
+    } else {
+      return `${formattedPrice}${nbsp}${currency}`;
+    }
+  };
 
   // === FUNCȚII PENTRU TRADUCERE ===
   const translateText = async (text, targetLang) => {
@@ -151,7 +183,7 @@ const FoodItem = ({
       : name;
   };
 
-  // ✅ FUNCȚIE NOUĂ - limitează numele la 15 caractere
+  // ✅ FUNCȚIE - limitează numele la 15 caractere
   const getTruncatedFoodName = () => {
     const foodName = getFoodName();
     if (foodName.length > 15) {
@@ -394,10 +426,10 @@ const FoodItem = ({
       <div className="food-item-info">
         <div className="food-item-name-rating">
           <p className={isDisabled ? "disabled-text" : ""} title={getFoodName()}>
-            {/* ✅ FOLOSEȘTE FUNCȚIA NOUĂ PENTRU NUME TRUNCAT */}
+            {/* ✅ FOLOSEȘTE FUNCȚIA PENTRU NUME TRUNCAT */}
             {getTruncatedFoodName()}
             {isTranslating && (
-              <span className="translating-indicator"> 🔄</span>
+              <span className="translating-indicator"></span>
             )}
           </p>
         </div>
@@ -409,7 +441,7 @@ const FoodItem = ({
               ? getDescription().slice(0, 70) + "..."
               : getDescription()}
             {isTranslating && (
-              <span className="translating-indicator"> 🔄</span>
+              <span className="translating-indicator"></span>
             )}
           </p>
         </div>
@@ -420,11 +452,17 @@ const FoodItem = ({
         >
           {hasDiscount ? (
             <div className="discount-price-wrapper">
-              <span className="original-price">{price} €</span>
-              <span className="discounted-price">{parseFloat(discountedPrice).toFixed(2)} €</span>
+              <span className="original-price">
+                {formatPrice(price)}
+              </span>
+              <span className="discounted-price">
+                {formatPrice(discountedPrice)}
+              </span>
             </div>
           ) : (
-            <span className="regular-price">{price} €</span>
+            <span className="regular-price">
+              {formatPrice(price)}
+            </span>
           )}
         </div>
       </div>

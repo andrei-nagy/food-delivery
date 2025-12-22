@@ -6,7 +6,7 @@ import './FoodModal.css';
 import { assets } from "../../assets/assets";
 
 const FoodModal = ({ food, closeModal, isOpen }) => {
-    const { addToCart, url, canAddToCart, billRequested, userBlocked } = useContext(StoreContext);
+    const { addToCart, url, canAddToCart, billRequested, userBlocked, restaurantData } = useContext(StoreContext);
     const { currentLanguage } = useLanguage();
     
     const [selectedQuantity, setSelectedQuantity] = useState(1);
@@ -42,6 +42,37 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
 
     // Combină ambele condiții pentru a bloca interacțiunea
     const isDisabled = billRequested || userBlocked;
+    
+    // Extrage currency din restaurantData sau folosește € ca fallback
+    const currency = restaurantData?.currency || '€';
+    const currencyPosition = restaurantData?.currencyPosition || 'after';
+
+    // === FUNCȚIE PENTRU FORMATARE PRET ===
+    const formatPrice = (priceValue, showCurrency = true) => {
+        if (!priceValue && priceValue !== 0) return '';
+        
+        // Converție la număr dacă e string
+        const numericPrice = typeof priceValue === 'string' 
+            ? parseFloat(priceValue) 
+            : priceValue;
+        
+        // Formatare cu 2 zecimale
+        const formattedPrice = numericPrice.toFixed(2);
+        
+        // Returnează cu sau fără currency în funcție de preferință
+        if (!showCurrency) {
+            return formattedPrice;
+        }
+        
+        // ✅ FOLOSEȘTE NON-BREAKING SPACE (\u00A0) PENTRU SPAȚIU CARE NU SE COMPRIMĂ
+        const nbsp = '\u00A0';
+        
+        if (currencyPosition === 'before') {
+            return `${currency}${nbsp}${formattedPrice}`;
+        } else {
+            return `${formattedPrice}${nbsp}${currency}`;
+        }
+    };
 
     // Safe access to food properties with fallbacks
     const foodDescription = food?.description || "";
@@ -550,28 +581,28 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
         }
     };
 
-   const calculateTotalPrice = () => {
-    try {
-        if (!food) return 0;
-        
-        // Verificați toate valorile pentru a evita NaN
-        const basePrice = hasDiscount && discountedPrice ? discountedPrice : foodPrice || 0;
-        let total = (basePrice || 0) * (selectedQuantity || 1);
-        
-        selectedOptions.forEach(optionName => {
-            const extra = foodExtras.find(extra => extra.name === optionName);
-            if (extra && extra.price) {
-                total += (extra.price || 0) * (selectedQuantity || 1);
-            }
-        });
-        
-        // Asigurați-vă că returnați un număr valid
-        return isNaN(total) ? 0 : total;
-    } catch (error) {
-        console.error("Error calculating total price:", error);
-        return 0;
-    }
-};
+    const calculateTotalPrice = () => {
+        try {
+            if (!food) return 0;
+            
+            // Verificați toate valorile pentru a evita NaN
+            const basePrice = hasDiscount && discountedPrice ? discountedPrice : foodPrice || 0;
+            let total = (basePrice || 0) * (selectedQuantity || 1);
+            
+            selectedOptions.forEach(optionName => {
+                const extra = foodExtras.find(extra => extra.name === optionName);
+                if (extra && extra.price) {
+                    total += (extra.price || 0) * (selectedQuantity || 1);
+                }
+            });
+            
+            // Asigurați-vă că returnați un număr valid
+            return isNaN(total) ? 0 : total;
+        } catch (error) {
+            console.error("Error calculating total price:", error);
+            return 0;
+        }
+    };
 
     const handleAddToCart = () => {
         if (isDisabled) {
@@ -706,19 +737,19 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                 <div className="food-modal-price-discount-wrapper">
                                     <div className="food-modal-price-row">
                                         <span className="food-modal-current-price">
-                                            {discountedPrice.toFixed(2)} €
+                                            {formatPrice(discountedPrice)}
                                         </span>
                                         <span className="food-modal-discount-badge">
                                             -{discountPercentage}%
                                         </span>
                                     </div>
                                     <span className="food-modal-original-price">
-                                        {foodPrice.toFixed(2)} €
+                                        {formatPrice(foodPrice)}
                                     </span>
                                 </div>
                             ) : (
                                 <span className={`food-modal-current-price ${isDisabled ? 'disabled-text' : ''}`}>
-                                    {foodPrice.toFixed(2)} €
+                                    {formatPrice(foodPrice)}
                                 </span>
                             )}
                         </div>
@@ -800,7 +831,9 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                                 <span className={`option-modern-name ${getAnimationClass()}`}>
                                                     {extra.name}
                                                 </span>
-                                                <span className="option-modern-price">+{extra.price.toFixed(2)} €</span>
+                                                <span className="option-modern-price">
+                                                    +{formatPrice(extra.price)}
+                                                </span>
                                             </div>
                                         </div>
                                         <div className="option-modern-glow"></div>
@@ -1044,13 +1077,13 @@ const FoodModal = ({ food, closeModal, isOpen }) => {
                                 disabled={isDisabled}
                             >+</button>
                         </div>
-                      <button 
-    className={`food-modal-add-btn ${isDisabled ? 'food-modal-add-btn-disabled' : ''}`} 
-    onClick={handleAddButton}
-    disabled={isDisabled}
->
-    {isDisabled ? blockedMessage?.text : `${translationEnabled && currentLanguage === 'en' ? 'Add' : 'Adaugă'} ${calculateTotalPrice().toFixed(2)} €`}
-</button>
+                        <button 
+                            className={`food-modal-add-btn ${isDisabled ? 'food-modal-add-btn-disabled' : ''}`} 
+                            onClick={handleAddButton}
+                            disabled={isDisabled}
+                        >
+                            {isDisabled ? blockedMessage?.text : `${translationEnabled && currentLanguage === 'en' ? 'Add' : 'Adaugă'} ${formatPrice(calculateTotalPrice())}`}
+                        </button>
                     </div>
                 </div>
             </div>

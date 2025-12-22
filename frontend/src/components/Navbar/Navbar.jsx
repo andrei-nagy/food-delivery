@@ -50,13 +50,14 @@ const Navbar = ({ setShowLogin }) => {
   // 🔥 FOLOSEȘTE HOOK-UL PENTRU LIMBĂ
   const { currentLanguage, setCurrentLanguage } = useLanguage();
 
-  // 🔥 CONFIGURAȚIE LIMBI
+  // 🔥 CONFIGURAȚIE LIMBI - ADAUGĂ GERMANA
   const languageConfig = {
     en: { flag: assets.usaFlag, code: "EN", name: "English" },
     fr: { flag: assets.frFlag, code: "FR", name: "Français" },
     es: { flag: assets.esFlag, code: "ES", name: "Español" },
     it: { flag: assets.itFlag, code: "IT", name: "Italiano" },
-    ro: { flag: assets.roFlag, code: "RO", name: "Română" }
+    ro: { flag: assets.roFlag, code: "RO", name: "Română" },
+    de: { flag: assets.deFlag, code: "DE", name: "Deutsch" }
   };
 
   const currentLang = languageConfig[i18n.language] || languageConfig.en;
@@ -85,8 +86,6 @@ const Navbar = ({ setShowLogin }) => {
 
   const changeLanguage = (lng) => {
     setCurrentLanguage(lng); // 🔥 ACTUALIZEAZĂ LIMBA GLOBALĂ
-    i18n.changeLanguage(lng);
-    sessionStorage.setItem("language", lng);
     setIsDropdownOpen(false);
   };
 
@@ -322,7 +321,8 @@ const Navbar = ({ setShowLogin }) => {
         </div>
       </div>
 
-      {!isWelcomePage && (
+      {/* ✅ CONDITIONAL RENDER - NU afișa mobile footer pe MyOrders */}
+      {!isWelcomePage && !isMyOrdersPage && !isCartPage && (
         <div className="mobile-footer mobile">
           <div className="mobile-footer-item" onClick={() => navigate("/")}>
             <img

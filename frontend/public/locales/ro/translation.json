@@ -86,11 +86,13 @@
     "remove_from_cart": "Elimină din coș",
     "item_quantity": "Cantitate: {{count}}",
     "view_details": "Vezi detalii",
-    "price_original": "{{price}} €",
-    "price_discounted": "{{price}} €",
+    "price_discounted": "{price} {currency}",
     "description_truncated": "{{description}}...",
     "out_of_stock": "Stoc epuizat",
-    "unavailable": "Indisponibil"
+    "unavailable": "Indisponibil",
+         "price_original": "{price}",
+    "currency_before": "{currency}{price}",
+    "currency_after": "{price}{currency}"
   },
   "session": {
     "expired_message": "Sesiunea dvs. a expirat. Vă rugăm să reîmprospătați pagina pentru a continua comanda."
@@ -146,7 +148,10 @@
     "discount": "Reducere",
     "ordered_times": "Comandat de {{count}} ori",
     "other_products": "Ce au mai comandat și alții",
-    "popular_choices": "Produse populare care ți-ar putea plăcea"
+    "popular_choices": "Produse populare care ți-ar putea plăcea",
+          "finalize_purchase": "Finalizează achiziția",
+           "items": "produse"
+
   },
   "category_page": {
     "back": "Înapoi",
@@ -254,7 +259,9 @@
     "total_paid": "Total Plătit",
        "items": "produse",
            "split_bill_marketing_title": "Împarte cu Prietenii, Plătește Doar Ce Ai Consumat!",
-    "split_bill_marketing_text": "Împarte nota ușor cu prietenii. Fiecare persoană plătește doar pentru ce a consumat. Rapid, corect și distractiv!"
+    "split_bill_marketing_text": "Împarte nota ușor cu prietenii. Fiecare persoană plătește doar pentru ce a consumat. Rapid, corect și distractiv!",
+          "split_bill_cash_only": "Împărțirea facturii este disponibilă doar pentru plata cu cardul"
+
   },
   "repeat_order": {
     "title": "Comanda din nou",
@@ -317,7 +324,15 @@
     "contact_us": "Contactează-ne",
     "click_to_view": "Apasă pentru a vedea orele",
     "click_to_hide": "Apasă pentru a ascunde orele",
-    "hours_note": "*Programul poate varia în zilele de sărbătoare"
+    "hours_note": "*Programul poate varia în zilele de sărbătoare",
+        "choose_contact_method": "Alegeți metoda de contact",
+    "select_preferred_contact": "Selectați metoda preferată pentru a ne contacta",
+    "send_email": "Trimiteți email",
+    "call_us": "Sunați-ne",
+    "cancel": "Anulați",
+        "follow_us": "Urmăriți-ne",
+    "visit_facebook": "Vizitați pagina noastră de Facebook",
+    "visit_instagram": "Vizitați pagina noastră de Instagram"
   },
   "not_found": {
     "page_not_found": "Pagina nu a fost găsită",

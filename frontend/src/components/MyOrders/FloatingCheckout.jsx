@@ -27,7 +27,7 @@ const FloatingCheckout = ({
         disabled={isPlacingOrder || orderPlaced}
       >
         <div className="myorders-checkout-content">
-          <div className="myorders-button-icon">🤝</div>
+          <div className="myorders-button-icon"></div>
           <div className="myorders-checkout-text">{t("my_orders.split_bill")}</div>
         </div>
       </button>
