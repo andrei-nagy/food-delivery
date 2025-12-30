@@ -1,76 +1,82 @@
 import React, { useEffect, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { motion } from "framer-motion";
+import { Calendar, ChevronDown, Filter, TrendingUp, Clock, Package } from "lucide-react";
 import axios from "axios";
 import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css"; // Importing the CSS for the date picker
+import "react-datepicker/dist/react-datepicker.css";
 
 const OrdersActivityHeatmap = () => {
     const [userActivityData, setUserActivityData] = useState([]);
-    const [dateRange, setDateRange] = useState(""); // For displaying the date range
-    const [startDate, setStartDate] = useState(null); // State for start date
-    const [endDate, setEndDate] = useState(null); // State for end date
+    const [dateRange, setDateRange] = useState("");
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [isTablet, setIsTablet] = useState(window.innerWidth >= 768 && window.innerWidth < 1024);
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const url = 'https://api.orderly-app.com';
 
-    // Initialize data for the current week
+    // Initialize dates to the current week
     useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+            setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
+        };
+
+        window.addEventListener('resize', handleResize);
+        
         const today = new Date();
-        const currentDay = today.getDay(); // Ziua curentă a săptămânii (0 = duminică, 1 = luni, ..., 6 = sâmbătă)
+        const currentDay = today.getDay();
     
-        // Dacă astăzi este duminică, facem ca firstDayOfWeek să fie luni din săptămâna precedentă
         const firstDayOfWeek = new Date(today); 
-        if (currentDay === 0) { // Dacă astăzi este duminică (0)
-            firstDayOfWeek.setDate(today.getDate() - 6); // Mergem înapoi cu 6 zile
+        if (currentDay === 0) {
+            firstDayOfWeek.setDate(today.getDate() - 6);
         } else {
-            firstDayOfWeek.setDate(today.getDate() - currentDay + 1); // Mergem la prima zi a săptămânii curente
+            firstDayOfWeek.setDate(today.getDate() - currentDay + 1);
         }
     
-        const lastDayOfWeek = new Date(firstDayOfWeek); // Copiem prima zi a săptămânii
-        lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6); // Setăm ultima zi a săptămânii
+        const lastDayOfWeek = new Date(firstDayOfWeek);
+        lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6);
 
-        
         setStartDate(firstDayOfWeek);
         setEndDate(lastDayOfWeek);
+        
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
-    
-    
 
     const fetchOrders = async (start, end) => {
-        if (!start || !end) return; // Ensure both dates are set
+        if (!start || !end) return;
         try {
-            // Convert dates to the correct format for the API
             const startDateParam = start ? start.toISOString() : undefined;
             const endDateParam = end ? end.toISOString() : undefined;
     
-            // Fetch data for orders
             const ordersResponse = await axios.get(`${url}/api/order/list`, {
                 params: { startDate: startDateParam, endDate: endDateParam }
             });
     
-            // Check the response for orders
             if (ordersResponse.data.success) {
                 const ordersData = ordersResponse.data.data;
     
                 if (ordersData.length === 0) {
                     setDateRange("No data available");
-                    setUserActivityData([]); // Reset data
+                    setUserActivityData([]);
                     return;
                 }
-    
-                // Set date range
+
+                // Format date based on screen size
                 const formatDate = (date) => {
-                    if (!date) return ""; // Check if date is not null
+                    if (!date) return "";
                     const month = String(date.getMonth() + 1).padStart(2, '0');
                     const day = String(date.getDate()).padStart(2, '0');
-                    return `${month}/${day}/${date.getFullYear()}`;
+                    if (isMobile) return `${month}/${day}`;
+                    if (isTablet) return `${day}/${month}`;
+                    return `${day}/${month}/${date.getFullYear().toString().slice(2)}`;
                 };
+                
                 setDateRange(`${formatDate(start)} - ${formatDate(end)}`);
-    
-                // Generate user activity data for each day in the selected range
+
                 const userActivityData = [];
                 const currentDate = new Date(start);
-    
-                // Iterate over the date range
+
                 while (currentDate <= end) {
                     const dayData = {
                         date: formatDate(currentDate),
@@ -80,34 +86,25 @@ const OrdersActivityHeatmap = () => {
                         "12-16": 0,
                         "16-20": 0,
                         "20-24": 0,
-                        total: 0 // Add total for the respective day
+                        total: 0
                     };
     
-                    // Process orders for the current date
                     ordersData.forEach(item => {
-                        const orderDate = new Date(item.date); // Use the correct field 'date'
+                        const orderDate = new Date(item.date);
                         if (orderDate.toDateString() === currentDate.toDateString()) {
                             const hour = orderDate.getHours();
-                            // Increment the counter based on the hour
-                            if (hour >= 0 && hour < 4) {
-                                dayData["0-4"]++;
-                            } else if (hour >= 4 && hour < 8) {
-                                dayData["4-8"]++;
-                            } else if (hour >= 8 && hour < 12) {
-                                dayData["8-12"]++;
-                            } else if (hour >= 12 && hour < 16) {
-                                dayData["12-16"]++;
-                            } else if (hour >= 16 && hour < 20) {
-                                dayData["16-20"]++;
-                            } else if (hour >= 20 && hour < 24) {
-                                dayData["20-24"]++;
-                            }
-                            dayData.total++; // Increment total orders
+                            if (hour >= 0 && hour < 4) dayData["0-4"]++;
+                            else if (hour >= 4 && hour < 8) dayData["4-8"]++;
+                            else if (hour >= 8 && hour < 12) dayData["8-12"]++;
+                            else if (hour >= 12 && hour < 16) dayData["12-16"]++;
+                            else if (hour >= 16 && hour < 20) dayData["16-20"]++;
+                            else if (hour >= 20 && hour < 24) dayData["20-24"]++;
+                            dayData.total++;
                         }
                     });
     
                     userActivityData.push(dayData);
-                    currentDate.setDate(currentDate.getDate() + 1); // Move to the next day
+                    currentDate.setDate(currentDate.getDate() + 1);
                 }
     
                 setUserActivityData(userActivityData);
@@ -118,66 +115,482 @@ const OrdersActivityHeatmap = () => {
             console.error("Error fetching data:", error);
         }
     };
-    
 
     useEffect(() => {
         fetchOrders(startDate, endDate);
-    }, [startDate, endDate]); // Fetch data only when dates change
+    }, [startDate, endDate]);
+
+    // Calculate chart dimensions based on screen size
+    const getChartDimensions = () => {
+        if (isMobile) {
+            return { 
+                height: 320, 
+                margin: { top: 20, right: 10, left: 10, bottom: 40 },
+                xAxisFontSize: 10,
+                yAxisWidth: 35,
+                legendFontSize: 10
+            };
+        } else if (isTablet) {
+            return { 
+                height: 350, 
+                margin: { top: 20, right: 20, left: 20, bottom: 50 },
+                xAxisFontSize: 11,
+                yAxisWidth: 40,
+                legendFontSize: 11
+            };
+        } else {
+            return { 
+                height: 380, 
+                margin: { top: 20, right: 30, left: 30, bottom: 60 },
+                xAxisFontSize: 12,
+                yAxisWidth: 45,
+                legendFontSize: 12
+            };
+        }
+    };
+
+    const chartDims = getChartDimensions();
+
+    // Calculate statistics
+    const totalOrders = userActivityData.reduce((sum, day) => sum + day.total, 0);
+    const averagePerDay = userActivityData.length > 0 ? Math.round(totalOrders / userActivityData.length) : 0;
+    const busiestHourSlot = userActivityData.length > 0 ? 
+        Object.keys(userActivityData[0]).slice(1, -1).reduce((a, b) => 
+            userActivityData.reduce((sum, day) => sum + day[a], 0) > 
+            userActivityData.reduce((sum, day) => sum + day[b], 0) ? a : b
+        ) : "N/A";
+
+    // Mobile Date Range Display Component
+    const MobileDateRangeDisplay = () => {
+        const formatDateForDisplay = (date) => {
+            if (!date) return "";
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        };
+
+        return (
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 mb-4">
+                <div className="flex justify-between items-center mb-3">
+                    <div className="flex items-center gap-2">
+                        <Calendar className="w-5 h-5 text-gray-400" />
+                        <h3 className="text-lg font-semibold text-gray-100">Date Range</h3>
+                    </div>
+                    <button
+                        onClick={() => setShowDatePicker(!showDatePicker)}
+                        className="p-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors"
+                    >
+                        {showDatePicker ? 
+                            <ChevronDown className="w-4 h-4 text-gray-300 transform rotate-180" /> : 
+                            <Filter className="w-4 h-4 text-gray-300" />
+                        }
+                    </button>
+                </div>
+                
+                <div className="flex justify-between items-center mb-3 p-3 bg-gray-900 rounded-lg">
+                    <div className="text-center min-w-0 flex-1">
+                        <div className="text-xs text-gray-400">From</div>
+                        <div className="text-sm font-medium text-gray-100 truncate">
+                            {startDate ? formatDateForDisplay(startDate) : "Select"}
+                        </div>
+                    </div>
+                    <div className="text-gray-500 px-2">→</div>
+                    <div className="text-center min-w-0 flex-1">
+                        <div className="text-xs text-gray-400">To</div>
+                        <div className="text-sm font-medium text-gray-100 truncate">
+                            {endDate ? formatDateForDisplay(endDate) : "Select"}
+                        </div>
+                    </div>
+                </div>
+
+                {showDatePicker && (
+                    <div className="space-y-3 mt-4 pt-4 border-t border-gray-700">
+                        <div>
+                            <label className="text-xs font-medium text-gray-400 mb-1 block">Start Date</label>
+                            <DatePicker
+                                selected={startDate}
+                                onChange={(date) => {
+                                    setStartDate(date);
+                                    if (date && endDate && date > endDate) {
+                                        setEndDate(date);
+                                    }
+                                }}
+                                selectsStart
+                                startDate={startDate}
+                                endDate={endDate}
+                                placeholderText="Select start date"
+                                className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-gray-200 text-sm"
+                                dateFormat="dd/MM/yyyy"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-xs font-medium text-gray-400 mb-1 block">End Date</label>
+                            <DatePicker
+                                selected={endDate}
+                                onChange={(date) => setEndDate(date)}
+                                selectsEnd
+                                startDate={startDate}
+                                endDate={endDate}
+                                minDate={startDate}
+                                placeholderText="Select end date"
+                                className="w-full p-2 rounded bg-gray-700 border border-gray-600 text-gray-200 text-sm"
+                                dateFormat="dd/MM/yyyy"
+                            />
+                        </div>
+                        
+                        <div className="flex gap-2 pt-2">
+                            <button
+                                onClick={() => {
+                                    const today = new Date();
+                                    const weekAgo = new Date(today);
+                                    weekAgo.setDate(today.getDate() - 7);
+                                    setStartDate(weekAgo);
+                                    setEndDate(today);
+                                    setShowDatePicker(false);
+                                }}
+                                className="flex-1 px-3 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors text-sm"
+                            >
+                                Last Week
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const today = new Date();
+                                    setStartDate(today);
+                                    setEndDate(today);
+                                    setShowDatePicker(false);
+                                }}
+                                className="flex-1 px-3 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors text-sm"
+                            >
+                                Today
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    // Custom Tooltip
+    const CustomTooltip = ({ active, payload, label }) => {
+        if (active && payload && payload.length) {
+            const total = payload.reduce((sum, entry) => sum + entry.value, 0);
+            const timeSlots = ["0-4", "4-8", "8-12", "12-16", "16-20", "20-24"];
+            
+            return (
+                <div className="bg-gray-900 border border-gray-700 rounded-lg p-3 shadow-lg min-w-[220px]">
+                    <p className="text-sm font-semibold text-gray-100 mb-2">{label}</p>
+                    {payload.map((entry, index) => (
+                        <div key={index} className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                                <div 
+                                    className="w-3 h-3 rounded" 
+                                    style={{ backgroundColor: barColors[timeSlots.indexOf(entry.dataKey)] || '#ccc' }}
+                                />
+                                <span className="text-xs text-gray-300">{entry.dataKey}</span>
+                            </div>
+                            <span className="text-sm font-bold text-gray-100">{entry.value}</span>
+                        </div>
+                    ))}
+                    <div className="mt-2 pt-2 border-t border-gray-700">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-400">Total Orders:</span>
+                            <span className="text-lg font-bold text-blue-400">{total}</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        return null;
+    };
+
+    // Color palette for bars
+    const barColors = [
+        '#6366F1', // 0-4
+        '#8B5CF6', // 4-8
+        '#EC4899', // 8-12
+        '#10B981', // 12-16
+        '#F59E0B', // 16-20
+        '#3B82F6', // 20-24
+    ];
+
+    // Mobile Legend
+    const MobileLegend = () => (
+        <div className="md:hidden mt-4">
+            <h4 className="text-sm font-semibold text-gray-300 mb-2">Time Slots</h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {["0-4", "4-8", "8-12", "12-16", "16-20", "20-24"].map((slot, index) => (
+                    <div key={slot} className="flex items-center gap-2 p-2 bg-gray-900 rounded">
+                        <div 
+                            className="w-3 h-3 rounded flex-shrink-0" 
+                            style={{ backgroundColor: barColors[index] }}
+                        />
+                        <span className="text-xs text-gray-300 truncate">{slot}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 
     return (
-        <motion.div
-            className='bg-gray-800 bg-opacity-50 backdrop-blur-md shadow-lg rounded-xl p-6 border border-gray-700'
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-        >
-            <h2 className='text-xl font-semibold text-gray-100 mb-4'>Orders Activity Heatmap</h2>
-            <div className="flex space-x-4 mb-4">
-                <DatePicker
-                    selected={startDate}
-                    onChange={(date) => setStartDate(date)} // Set start date
-                    selectsStart
-                    startDate={startDate}
-                    endDate={endDate}
-                    placeholderText="Start Date"
-                    className="p-2 rounded bg-gray-700 text-gray-200"
-                />
-                <DatePicker
-                    selected={endDate}
-                    onChange={(date) => setEndDate(date)} // Set end date
-                    selectsEnd
-                    startDate={startDate}
-                    endDate={endDate}
-                    placeholderText="End Date"
-                    className="p-2 rounded bg-gray-700 text-gray-200"
-                />
+        <div className='bg-gray-800 bg-opacity-50 backdrop-blur-md shadow-lg rounded-xl p-3 md:p-4 lg:p-6 border border-gray-700 mb-8'>
+            {/* Mobile Header */}
+            <div className="md:hidden mb-4">
+                <div className="flex justify-between items-center mb-3">
+                    <div className="min-w-0">
+                        <h2 className='text-lg font-semibold text-gray-100 truncate'>Orders Activity Heatmap</h2>
+                        <p className='text-xs text-gray-400 truncate'>Time of scanning / Period: {dateRange}</p>
+                    </div>
+                </div>
+                
+                <MobileDateRangeDisplay />
+                
+                {/* Mobile Stats */}
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                    <div className="bg-gray-900 bg-opacity-30 p-3 rounded-xl border border-gray-700">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="text-xs text-gray-400">Total Orders</div>
+                                <div className="text-lg font-bold text-green-400">
+                                    {totalOrders}
+                                </div>
+                            </div>
+                            <Package className="w-6 h-6 text-green-500 flex-shrink-0" />
+                        </div>
+                    </div>
+                    
+                    <div className="bg-gray-900 bg-opacity-30 p-3 rounded-xl border border-gray-700">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="text-xs text-gray-400">Days</div>
+                                <div className="text-lg font-bold text-blue-400">
+                                    {userActivityData.length}
+                                </div>
+                            </div>
+                            <Calendar className="w-6 h-6 text-blue-500 flex-shrink-0" />
+                        </div>
+                    </div>
+                    
+                    <div className="bg-gray-900 bg-opacity-30 p-3 rounded-xl border border-gray-700">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="text-xs text-gray-400">Avg/Day</div>
+                                <div className="text-lg font-bold text-yellow-400">
+                                    {averagePerDay}
+                                </div>
+                            </div>
+                            <TrendingUp className="w-6 h-6 text-yellow-500 flex-shrink-0" />
+                        </div>
+                    </div>
+                    
+                    <div className="bg-gray-900 bg-opacity-30 p-3 rounded-xl border border-gray-700">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="text-xs text-gray-400">Busiest</div>
+                                <div className="text-lg font-bold text-purple-400 text-xs">
+                                    {busiestHourSlot}
+                                </div>
+                            </div>
+                            <Clock className="w-6 h-6 text-purple-500 flex-shrink-0" />
+                        </div>
+                    </div>
+                </div>
             </div>
-            <p className='text-gray-300 mb-4'>Time of scanning / Period: {dateRange}</p> {/* Display date range */}
-            <div style={{ width: "100%", height: 300 }}>
-                <ResponsiveContainer>
-                    <BarChart data={userActivityData}>
-                        <CartesianGrid strokeDasharray='3 3' stroke='#374151' />
-                        <XAxis dataKey='date' stroke='#9CA3AF' />
-                        <YAxis stroke='#9CA3AF' />
-                        <Tooltip
-                            contentStyle={{
-                                backgroundColor: "rgba(31, 41, 55, 0.8)",
-                                borderColor: "#4B5563",
+
+            {/* Desktop/Tablet Header */}
+            <div className='hidden md:flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 lg:mb-6 gap-3 lg:gap-4'>
+                <div className="min-w-0">
+                    <h2 className='text-lg lg:text-xl font-semibold text-gray-100 truncate'>Orders Activity Heatmap</h2>
+                    <p className='text-xs lg:text-sm text-gray-400 mt-1 truncate'>Time of scanning / Period: {dateRange}</p>
+                </div>
+                
+                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 lg:gap-4 w-full md:w-auto">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <DatePicker
+                            selected={startDate}
+                            onChange={(date) => {
+                                setStartDate(date);
+                                if (date && endDate && date > endDate) {
+                                    setEndDate(date);
+                                }
                             }}
-                            itemStyle={{ color: "#E5E7EB" }}
+                            selectsStart
+                            startDate={startDate}
+                            endDate={endDate}
+                            placeholderText="Start Date"
+                            className="p-2 rounded bg-gray-700 border border-gray-600 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm min-w-[120px]"
+                            dateFormat="dd/MM/yy"
                         />
-                        <Legend />
-                        <Bar dataKey='0-4' stackId='a' fill='#6366F1' />
-                        <Bar dataKey='4-8' stackId='a' fill='#8B5CF6' />
-                        <Bar dataKey='8-12' stackId='a' fill='#EC4899' />
-                        <Bar dataKey='12-16' stackId='a' fill='#10B981' />
-                        <Bar dataKey='16-20' stackId='a' fill='#F59E0B' />
-                        <Bar dataKey='20-24' stackId='a' fill='#3B82F6' />
-                        {/* <Bar dataKey='total' fill='#FF5722' /> Show total orders */}
+                        <span className="text-gray-500 text-sm">to</span>
+                        <DatePicker
+                            selected={endDate}
+                            onChange={(date) => setEndDate(date)}
+                            selectsEnd
+                            startDate={startDate}
+                            endDate={endDate}
+                            minDate={startDate}
+                            placeholderText="End Date"
+                            className="p-2 rounded bg-gray-700 border border-gray-600 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm min-w-[120px]"
+                            dateFormat="dd/MM/yy"
+                        />
+                    </div>
+                    
+                    <div className="flex gap-2 flex-wrap">
+                        <button
+                            onClick={() => {
+                                const today = new Date();
+                                const weekAgo = new Date(today);
+                                weekAgo.setDate(today.getDate() - 7);
+                                setStartDate(weekAgo);
+                                setEndDate(today);
+                            }}
+                            className="px-3 lg:px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors text-sm whitespace-nowrap"
+                        >
+                            Last Week
+                        </button>
+                        <button
+                            onClick={() => {
+                                const today = new Date();
+                                setStartDate(today);
+                                setEndDate(today);
+                            }}
+                            className="px-3 lg:px-4 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition-colors text-sm whitespace-nowrap"
+                        >
+                            Today
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Desktop/Tablet Stats */}
+            <div className='hidden md:grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-4 lg:mb-6'>
+                <div className='bg-gray-900 bg-opacity-30 p-3 lg:p-4 rounded-xl border border-gray-700'>
+                    <div className='flex items-center justify-between'>
+                        <div>
+                            <div className='text-xs lg:text-sm text-gray-400'>Total Orders</div>
+                            <div className='text-lg lg:text-2xl font-bold text-green-400'>
+                                {totalOrders}
+                            </div>
+                        </div>
+                        <Package className='w-6 h-6 lg:w-8 lg:h-8 text-green-500 flex-shrink-0' />
+                    </div>
+                </div>
+                
+                <div className='bg-gray-900 bg-opacity-30 p-3 lg:p-4 rounded-xl border border-gray-700'>
+                    <div className='flex items-center justify-between'>
+                        <div>
+                            <div className='text-xs lg:text-sm text-gray-400'>Days Analyzed</div>
+                            <div className='text-lg lg:text-2xl font-bold text-blue-400'>
+                                {userActivityData.length}
+                            </div>
+                        </div>
+                        <Calendar className='w-6 h-6 lg:w-8 lg:h-8 text-blue-500 flex-shrink-0' />
+                    </div>
+                </div>
+                
+                <div className='bg-gray-900 bg-opacity-30 p-3 lg:p-4 rounded-xl border border-gray-700'>
+                    <div className='flex items-center justify-between'>
+                        <div>
+                            <div className='text-xs lg:text-sm text-gray-400'>Average Per Day</div>
+                            <div className='text-lg lg:text-2xl font-bold text-yellow-400'>
+                                {averagePerDay}
+                            </div>
+                        </div>
+                        <TrendingUp className='w-6 h-6 lg:w-8 lg:h-8 text-yellow-500 flex-shrink-0' />
+                    </div>
+                </div>
+                
+                <div className='bg-gray-900 bg-opacity-30 p-3 lg:p-4 rounded-xl border border-gray-700'>
+                    <div className='flex items-center justify-between'>
+                        <div>
+                            <div className='text-xs lg:text-sm text-gray-400'>Busiest Time Slot</div>
+                            <div className='text-lg lg:text-2xl font-bold text-purple-400 text-sm lg:text-base'>
+                                {busiestHourSlot}
+                            </div>
+                        </div>
+                        <Clock className='w-6 h-6 lg:w-8 lg:h-8 text-purple-500 flex-shrink-0' />
+                    </div>
+                </div>
+            </div>
+
+            {/* Chart Container */}
+            <div className="w-full" style={{ height: chartDims.height }}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart 
+                        data={userActivityData}
+                        margin={chartDims.margin}
+                    >
+                        <CartesianGrid strokeDasharray='3 3' stroke='#374151' />
+                        <XAxis 
+                            dataKey='date' 
+                            stroke='#9CA3AF'
+                            fontSize={chartDims.xAxisFontSize}
+                            tickMargin={5}
+                            interval={0}
+                            minTickGap={-1}
+                        />
+                        <YAxis 
+                            stroke='#9CA3AF'
+                            fontSize={chartDims.xAxisFontSize}
+                            width={chartDims.yAxisWidth}
+                        />
+                        <Tooltip
+                            content={<CustomTooltip />}
+                        />
+                        {!isMobile && (
+                            <Legend 
+                                wrapperStyle={{ 
+                                    fontSize: chartDims.legendFontSize,
+                                    paddingTop: '10px'
+                                }}
+                                formatter={(value) => (
+                                    <span className="text-gray-300 text-xs">
+                                        {value}
+                                    </span>
+                                )}
+                            />
+                        )}
+                        <Bar dataKey='0-4' stackId='a' fill='#6366F1' radius={[2, 2, 0, 0]} />
+                        <Bar dataKey='4-8' stackId='a' fill='#8B5CF6' radius={[2, 2, 0, 0]} />
+                        <Bar dataKey='8-12' stackId='a' fill='#EC4899' radius={[2, 2, 0, 0]} />
+                        <Bar dataKey='12-16' stackId='a' fill='#10B981' radius={[2, 2, 0, 0]} />
+                        <Bar dataKey='16-20' stackId='a' fill='#F59E0B' radius={[2, 2, 0, 0]} />
+                        <Bar dataKey='20-24' stackId='a' fill='#3B82F6' radius={[2, 2, 0, 0]} />
                     </BarChart>
                 </ResponsiveContainer>
             </div>
-        </motion.div>
+
+            {/* Mobile Legend */}
+            {isMobile && <MobileLegend />}
+
+            {/* No Data Message */}
+            {userActivityData.length === 0 && (
+                <div className="text-center py-8 lg:py-12">
+                    <div className="text-gray-400 mb-2">No order data available for selected period</div>
+                    <div className="text-sm text-gray-500">Try selecting a different date range</div>
+                </div>
+            )}
+
+            {/* Time Slot Explanation */}
+            <div className="mt-3 lg:mt-4 text-xs text-gray-400">
+                <p className="break-words">
+                    Time slots: 0-4 (Midnight - 4AM), 4-8 (4AM - 8AM), 8-12 (8AM - Noon), 12-16 (Noon - 4PM), 16-20 (4PM - 8PM), 20-24 (8PM - Midnight)
+                </p>
+            </div>
+
+            {/* Performance Insights */}
+            {userActivityData.length > 0 && (
+                <div className="mt-4 p-3 lg:p-4 bg-gray-900 bg-opacity-30 rounded-lg border border-gray-700">
+                    <h4 className="text-sm font-semibold text-gray-300 mb-2">Insights</h4>
+                    <div className="text-xs text-gray-400 space-y-1">
+                        <p>• Total orders analyzed: <span className="text-green-400 font-medium">{totalOrders}</span></p>
+                        <p>• Average orders per day: <span className="text-yellow-400 font-medium">{averagePerDay}</span></p>
+                        <p>• Busiest time period: <span className="text-purple-400 font-medium">{busiestHourSlot}</span></p>
+                        <p>• Time frame: <span className="text-blue-400 font-medium">{dateRange}</span></p>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 
