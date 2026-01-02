@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerAdmin, loginAdmin, updateCustomization, getCustomization, getAllAdminAccounts, removeAccount, updateAccount, createQRCode, getQrCodes, removeQrCode } from '../controllers/adminController.js';
+import { registerAdmin, loginAdmin, updateCustomization, getCustomization, getAllAdminAccounts, removeAccount, updateAccount, createQRCode, getQrCodes, removeQrCode, changePassword, updateProfile, getCurrentUser } from '../controllers/adminController.js';
 import promoCodeController from '../controllers/promoCodeController.js'; 
 
 const adminRouter = express.Router();
@@ -14,6 +14,8 @@ adminRouter.post('/create-qrcode', createQRCode);
 adminRouter.get('/qrcodes', getQrCodes);
 adminRouter.post('/remove-qrcode', removeQrCode);
 adminRouter.post('/update', updateAccount);
+adminRouter.post('/change-password', changePassword);
+adminRouter.post('/update-profile', updateProfile);
 
 adminRouter.get('/promo-codes', promoCodeController.getAllPromoCodes);
 adminRouter.post('/promo-codes', promoCodeController.createPromoCode);  
@@ -22,5 +24,6 @@ adminRouter.delete('/promo-codes/:id', promoCodeController.deletePromoCode);
 adminRouter.patch('/promo-codes/:id/toggle', promoCodeController.togglePromoCode);
 
 adminRouter.post('/promo-codes/validate', promoCodeController.validatePromoCode);
+adminRouter.get('/current-user', getCurrentUser);
 
 export default adminRouter;

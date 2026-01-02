@@ -226,4 +226,121 @@ const removeQrCode = async (req, res) => {
         res.json({ success: false, message: 'error' })
     }
 }
-export { registerAdmin, loginAdmin, updateCustomization, getCustomization, getAllAdminAccounts, removeAccount, updateAccount, createQRCode, getQrCodes, removeQrCode  };
+
+// Funcție pentru a schimba parola
+const changePassword = async (req, res) => {
+    const { userId, currentPassword, newPassword } = req.body;
+
+    try {
+        // Găsește utilizatorul
+        const user = await userAdminModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found.' });
+        }
+
+        // Verifică parola curentă
+        const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        if (!isPasswordValid) {
+            return res.json({ success: false, message: 'Current password is incorrect.' });
+        }
+
+        // Hash-uiește noua parolă
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        
+        // Actualizează parola
+        user.password = hashedNewPassword;
+        await user.save();
+
+        res.json({ success: true, message: 'Password changed successfully.' });
+    } catch (error) {
+        console.error('Error changing password:', error);
+        res.status(500).json({ success: false, message: 'Server error while changing password.' });
+    }
+};
+
+// Funcție pentru a actualiza profilul (nume, email)
+const updateProfile = async (req, res) => {
+    const { userId, name, email } = req.body;
+
+    try {
+        // Verifică dacă noul email este deja folosit de altcineva
+        if (email) {
+            const existingUser = await userAdminModel.findOne({ 
+                email, 
+                _id: { $ne: userId } // exclude utilizatorul curent
+            });
+            
+            if (existingUser) {
+                return res.json({ 
+                    success: false, 
+                    message: 'Email is already in use by another account.' 
+                });
+            }
+        }
+
+        const user = await userAdminModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found.' });
+        }
+
+        // Actualizează câmpurile
+        if (name) user.name = name;
+        if (email) user.email = email;
+
+        await user.save();
+
+        // Returnează datele actualizate (fără parolă)
+        const userData = {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            userRole: user.userRole,
+            createdOn: user.createdOn
+        };
+
+        res.json({ 
+            success: true, 
+            message: 'Profile updated successfully.',
+            data: userData 
+        });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        res.status(500).json({ success: false, message: 'Server error while updating profile.' });
+    }
+};
+
+// Funcție pentru a returna datele utilizatorului curent
+const getCurrentUser = async (req, res) => {
+    try {
+        // Preluăm userId din token (trebuie să ai middleware de autentificare)
+        const userId = req.user?.id || req.user?._id;
+        
+        if (!userId) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'User not authenticated.' 
+            });
+        }
+
+        const user = await userAdminModel.findById(userId).select('-password');
+        
+        if (!user) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'User not found.' 
+            });
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            data: user 
+        });
+    } catch (error) {
+        console.error('Error fetching current user:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error while fetching user data.' 
+        });
+    }
+};
+export { registerAdmin, loginAdmin, updateCustomization, getCustomization, getAllAdminAccounts, removeAccount, updateAccount, createQRCode, getQrCodes, removeQrCode, changePassword, updateProfile, getCurrentUser  };
