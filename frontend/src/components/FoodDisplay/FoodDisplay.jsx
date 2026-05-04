@@ -240,7 +240,7 @@ const FoodDisplay = ({ category }) => {
         )}
       </div>
 
-      {shouldRender && (
+      {/* {shouldRender && (
         <div
           className={`floating-cart-circle ${isVisible ? "visible" : ""}`}
           onClick={() => {
@@ -258,7 +258,7 @@ const FoodDisplay = ({ category }) => {
           </div>
           <div className="cart-pulse-effect"></div>
         </div>
-      )}
+      )} */}
     </motion.div>
   );
 };

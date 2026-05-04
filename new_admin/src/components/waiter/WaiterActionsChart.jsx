@@ -26,7 +26,7 @@ const WaiterActionsChart = () => {
     const [viewMode, setViewMode] = useState("pie");
     const [showFilters, setShowFilters] = useState(false);
     const [maxActions, setMaxActions] = useState(5);
-    const url = 'https://api.orderly-app.com';
+    const url = 'https://api.orderly.ro';
 
     useEffect(() => {
         const handleResize = () => {

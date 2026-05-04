@@ -1,0 +1,70 @@
+/* ── Go To Top ────────────────────────────────── */
+.gtt {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 999;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  opacity: 0;
+  transform: translateY(10px) scale(0.88);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.2s;
+}
+
+.gtt--on {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+
+.gtt:hover {
+  box-shadow: 0 6px 24px rgba(230, 92, 25, 0.24);
+  transform: translateY(-2px) scale(1.04);
+}
+
+.gtt:active { transform: scale(0.96); }
+
+.gtt__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.gtt__track {
+  fill: none;
+  stroke: rgba(230, 92, 25, 0.12);
+  stroke-width: 2.5;
+}
+
+.gtt__fill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.2s linear;
+}
+
+.gtt__icon {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  position: relative;
+  z-index: 1;
+  transition: color 0.2s, transform 0.2s;
+  line-height: 1;
+}
+
+.gtt:hover .gtt__icon {
+  color: var(--accent);
+  transform: translateY(-2px);
+}

@@ -1,636 +1,492 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { FaTimes, FaCheck } from "react-icons/fa";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import "./SplitBillModal.css";
 
-const SplitBillModal = ({
-  isOpen,
+function useAnimatedNumber(target, decimals = 2) {
+  const [val, setVal] = useState(target);
+  const raf = useRef(null);
+  const from = useRef(target);
+  
+  useEffect(() => {
+    const start = from.current;
+    const diff = target - start;
+    if (Math.abs(diff) < 0.005) { 
+      setVal(target); 
+      return; 
+    }
+    
+    let t0 = null;
+    const tick = (now) => {
+      if (!t0) t0 = now;
+      const p = Math.min((now - t0) / 320, 1);
+      const e = 1 - Math.pow(1 - p, 3);
+      setVal(+(start + diff * e).toFixed(decimals));
+      if (p < 1) raf.current = requestAnimationFrame(tick);
+      else from.current = target;
+    };
+    
+    raf.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf.current);
+  }, [target, decimals]);
+  
+  return val;
+}
+
+export default function SplitBillModal({
+  isOpen = false,
   onClose,
-  orderItems,
+  orderItems = [],
   findFoodItem,
   getItemPriceWithDiscount,
   getTranslatedProductName,
   placeSplitBillOrder,
-  t,
-  paymentMethod,
+  isProcessing = false,
   paidItems = [],
-  url = "",
-  assets = {}
-}) => {
-  const [selectedItems, setSelectedItems] = useState({});
-  const [selectAll, setSelectAll] = useState(false);
-  const hasInitialized = useRef(false);
-  const itemCounterRef = useRef(0);
-  const itemIdMap = useRef({});
-  const [selectedTotal, setSelectedTotal] = useState(0);
-  const [selectedCount, setSelectedCount] = useState(0);
+  t = (_, fb) => fb,
+  appliedPromoCode = null,
+  isPromoApplied = false,
+  discount = 0,
+}) {
+  const tableLabel = (() => {
+    try { 
+      const n = localStorage.getItem("tableNumber"); 
+      return n ? `Table ${n}` : "Your Table"; 
+    } catch { 
+      return "Your Table"; 
+    }
+  })();
 
-  const groupItemsByOrder = () => {
-    if (!orderItems || !Array.isArray(orderItems)) return {};
-    
-    const grouped = {};
-    
-    orderItems.forEach(item => {
-      const orderId = item.orderId;
-      if (!grouped[orderId]) {
-        grouped[orderId] = {
-          orderId: orderId,
-          orderNumber: item.orderNumber,
-          orderDate: item.orderDate,
-          items: []
-        };
-      }
-      grouped[orderId].items.push(item);
+  const [selectedQuantities, setSelectedQuantities] = useState({});
+  const [tipPct, setTipPct] = useState(0);
+  const [visible, setVisible] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [dragOff, setDragOff] = useState(0);
+  const dragYRef = useRef(null);
+
+  const baseGroups = useMemo(() => {
+    const paidIds = new Set(paidItems.map((p) => p.uniqueId || p._id).filter(Boolean));
+    const unpaid = orderItems.filter((item) => {
+      const id = item.uniqueId || item._id;
+      return !paidIds.has(id) && item.status !== "fully_paid";
     });
     
-    return grouped;
-  };
-
-  const getAvailableItems = (items, paidItemsList) => {
-    if (!items || !Array.isArray(items)) return [];
-    
-    return items.filter(item => {
-      if (item.status === 'fully_paid') return false;
+    const map = new Map();
+    unpaid.forEach((item) => {
+      const foodItem = findFoodItem?.(item.uniqueId) ?? null;
+      const priceInfo = foodItem && getItemPriceWithDiscount
+        ? getItemPriceWithDiscount(foodItem, item) : null;
+      const name = (getTranslatedProductName ? getTranslatedProductName(foodItem) : null)
+        || item.name || "";
+      const unitPrice = priceInfo ? priceInfo.unitPrice : (item.price || 0);
+      const qty = item.quantity || 1;
+      const key = `${name}__${unitPrice}`;
       
-      const isInPaidItems = paidItemsList.some(paidItem => {
-        return paidItem._id === item._id || 
-               paidItem.foodId === item.foodId ||
-               (paidItem.name === item.name && 
-                Math.abs(paidItem.price - item.price) < 0.01);
-      });
-      
-      if (isInPaidItems) return false;
-      
-      if (item.paidBy && item.paidBy.length > 0) {
-        const totalPaid = item.paidBy.reduce((sum, payment) => sum + (payment.amount || 0), 0);
-        const itemTotal = (item.price || 0) * (item.quantity || 1);
-        const isFullyPaidByPayments = totalPaid >= itemTotal;
-        
-        if (isFullyPaidByPayments) return false;
-      }
-      
-      return true;
-    });
-  };
-
-  const formatDateTime = (dateString) => {
-    if (!dateString) return 'No date';
-    const date = new Date(dateString);
-    const formattedDate = date.toLocaleDateString("en-GB");
-    const formattedTime = date.toLocaleTimeString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-    return `${formattedDate} ${formattedTime}`;
-  };
-
-  const findFoodItemForItem = (item) => {
-    if (item.uniqueId) {
-      const found = findFoodItem(item.uniqueId);
-      if (found) return found;
-    }
-    
-    if (item._id) {
-      const found = findFoodItem(item._id);
-      if (found) return found;
-    }
-    
-    if (item.baseFoodId) {
-      const found = findFoodItem(item.baseFoodId);
-      if (found) return found;
-    }
-    
-    if (item.foodId) {
-      const found = findFoodItem(item.foodId);
-      if (found) return found;
-    }
-    
-    if (item.name) {
-      const found = findFoodItem(item.name);
-      if (found) return found;
-    }
-    
-    return null;
-  };
-
-  const calculateItemPriceForQuantity = useCallback((item, quantity) => {
-    const foodItem = findFoodItemForItem(item);
-    
-    if (!foodItem) {
-      return (item.price || 0) * quantity;
-    }
-    
-    const priceInfo = getItemPriceWithDiscount(foodItem, item);
-    
-    if (!priceInfo) {
-      return (item.price || 0) * quantity;
-    }
-    
-    const unitPriceWithDiscount = priceInfo.unitPrice;
-    
-    return unitPriceWithDiscount * quantity;
-  }, [findFoodItem, getItemPriceWithDiscount]);
-
-  const getItemKey = (item) => {
-    return `${item._id}_${item.orderId}_${item.quantity}_${item.price}_${item.foodId}`;
-  };
-
-  useEffect(() => {
-    if (isOpen && !hasInitialized.current) {
-      itemCounterRef.current = 0;
-      itemIdMap.current = {};
-      
-      const groupedOrders = groupItemsByOrder();
-      const allAvailableItems = [];
-      
-      Object.values(groupedOrders).forEach(orderGroup => {
-        const availableInOrder = getAvailableItems(orderGroup.items, paidItems);
-        allAvailableItems.push(...availableInOrder);
-      });
-      
-      if (allAvailableItems.length > 0) {
-        const initialSelection = {};
-        
-        allAvailableItems.forEach((item) => {
-          const itemKey = getItemKey(item);
-          const stableId = `item_${itemCounterRef.current++}`;
-          
-          itemIdMap.current[itemKey] = stableId;
-          
-          let remainingQuantity = item.quantity;
-          
-          if (item.paidBy && item.paidBy.length > 0) {
-            const totalPaid = item.paidBy.reduce((sum, payment) => sum + (payment.amount || 0), 0);
-            const foodItem = findFoodItemForItem(item);
-            
-            if (foodItem) {
-              const priceInfo = getItemPriceWithDiscount(foodItem, item);
-              if (priceInfo && priceInfo.unitPrice > 0) {
-                const pricePerUnit = priceInfo.unitPrice;
-                const paidQuantity = Math.floor(totalPaid / pricePerUnit);
-                remainingQuantity = Math.max(0, item.quantity - paidQuantity);
-              } else {
-                const itemPrice = item.price || 0;
-                const paidQuantity = Math.floor(totalPaid / itemPrice);
-                remainingQuantity = Math.max(0, item.quantity - paidQuantity);
-              }
-            } else {
-              const itemPrice = item.price || 0;
-              const paidQuantity = Math.floor(totalPaid / itemPrice);
-              remainingQuantity = Math.max(0, item.quantity - paidQuantity);
-            }
-          }
-          
-          const foodItem = findFoodItemForItem(item);
-          let itemPrice = item.price || 0;
-          let originalPrice = itemPrice;
-          let hasDiscount = false;
-          let discountPercentage = 0;
-          let unitPriceWithDiscount = itemPrice;
-          
-          if (foodItem) {
-            const priceInfo = getItemPriceWithDiscount(foodItem, item);
-            if (priceInfo) {
-              unitPriceWithDiscount = priceInfo.unitPrice;
-              originalPrice = priceInfo.originalPrice;
-              hasDiscount = priceInfo.hasDiscount;
-              discountPercentage = priceInfo.discountPercentage;
-            }
-          }
-          
-          initialSelection[stableId] = {
-            selected: false,
-            quantity: 1,
-            itemData: item,
-            originalQuantity: item.quantity,
-            remainingQuantity: remainingQuantity,
-            isPartiallyPaid: remainingQuantity < item.quantity,
-            orderId: item.orderId,
-            orderNumber: item.orderNumber,
-            stableId: stableId,
-            unitPriceWithDiscount: unitPriceWithDiscount,
-            unitPriceOriginal: originalPrice,
-            hasDiscount: hasDiscount,
-            discountPercentage: discountPercentage,
-            itemKey: itemKey
-          };
-        });
-        
-        setSelectedItems(initialSelection);
-        setSelectAll(false);
-        hasInitialized.current = true;
+      if (map.has(key)) {
+        map.get(key).maxQty += qty;
+        map.get(key)._raws.push({ ...item, _qty: qty });
       } else {
-        setSelectedItems({});
-        setSelectAll(false);
+        map.set(key, { 
+          key, 
+          name, 
+          unitPrice, 
+          maxQty: qty, 
+          _raws: [{ ...item, _qty: qty }] 
+        });
       }
-    }
-  }, [isOpen, orderItems, paidItems]);
+    });
+    
+    return Array.from(map.values());
+  }, [orderItems, paidItems, findFoodItem, getItemPriceWithDiscount, getTranslatedProductName]);
+
+  const groups = useMemo(() => {
+    return baseGroups.map(group => ({
+      ...group,
+      payQty: selectedQuantities[group.key] || 0
+    }));
+  }, [baseGroups, selectedQuantities]);
 
   useEffect(() => {
-    if (!isOpen) {
-      hasInitialized.current = false;
-      itemCounterRef.current = 0;
-      itemIdMap.current = {};
-      setSelectedTotal(0);
-      setSelectedCount(0);
+    if (isOpen) {
+      setSelectedQuantities({});
+      setTipPct(0);
+      setDragOff(0);
+      setReady(false);
+      requestAnimationFrame(() => {
+        setVisible(true);
+        setTimeout(() => setReady(true), 80);
+      });
+    } else {
+      setVisible(false);
+      setReady(false);
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    let total = 0;
-    let count = 0;
-    
-    Object.keys(selectedItems).forEach(itemId => {
-      const itemSelection = selectedItems[itemId];
-      if (itemSelection?.selected) {
-        const selectedQuantity = itemSelection.quantity || 1;
-        const unitPrice = itemSelection.unitPriceWithDiscount || 
-                         itemSelection.itemData.price || 0;
-        
-        total += unitPrice * selectedQuantity;
-        count++;
-      }
-    });
-    
-    setSelectedTotal(total);
-    setSelectedCount(count);
-    
-    const selectedKeys = Object.keys(selectedItems);
-    if (selectedKeys.length > 0) {
-      const allSelected = selectedKeys.every(
-        itemId => selectedItems[itemId]?.selected === true
-      );
-      setSelectAll(allSelected);
-    } else {
-      setSelectAll(false);
-    }
-  }, [selectedItems]);
-
-  const handleItemToggle = (stableId) => {
-    setSelectedItems(prev => {
-      if (!prev[stableId]) return prev;
-      
-      return {
-        ...prev,
-        [stableId]: {
-          ...prev[stableId],
-          selected: !prev[stableId].selected
-        }
-      };
-    });
-  };
-
-  const handleQuantityChange = (stableId, newQuantity) => {
-    setSelectedItems(prev => {
-      if (!prev[stableId]) return prev;
-      
-      const maxQuantity = prev[stableId].remainingQuantity || prev[stableId].itemData.quantity || 1;
-      
-      if (newQuantity >= 1 && newQuantity <= maxQuantity) {
-        return {
-          ...prev,
-          [stableId]: {
-            ...prev[stableId],
-            quantity: newQuantity
-          }
-        };
-      }
-      return prev;
-    });
-  };
-
-  const handleSelectAll = () => {
-    const allSelected = Object.keys(selectedItems).every(
-      itemId => selectedItems[itemId]?.selected === true
-    );
-    const newSelectAll = !allSelected;
-    
-    const updatedSelection = {};
-    Object.keys(selectedItems).forEach(itemId => {
-      updatedSelection[itemId] = {
-        ...selectedItems[itemId],
-        selected: newSelectAll
-      };
-    });
-    
-    setSelectedItems(updatedSelection);
-  };
-
-  const handlePaySelected = () => {
-    if (!paymentMethod || paymentMethod !== "creditCard") {
-      onClose();
-      setTimeout(() => {
-        const paymentSection = document.getElementById("payment-method-section");
-        if (paymentSection) {
-          paymentSection.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
-        }
-      }, 100);
-      
-      setTimeout(() => {
-        alert("Split bill is only available with card payment. Please select 'Card Payment' as your payment method.");
-      }, 150);
-      
-      return;
-    }
-    
-    const itemsToPay = Object.keys(selectedItems)
-      .filter(itemId => selectedItems[itemId]?.selected)
-      .map(itemId => {
-        const itemSelection = selectedItems[itemId];
-        const itemData = itemSelection.itemData;
-        const selectedQuantity = itemSelection.quantity || 1;
-        const remainingQuantity = itemSelection.remainingQuantity || itemData.quantity;
-        
-        const finalQuantity = Math.min(selectedQuantity, remainingQuantity);
-        
-        const unitPriceWithDiscount = itemSelection.unitPriceWithDiscount || 
-                                     itemData.price || 0;
-        
-        const originalPrice = itemSelection.unitPriceOriginal || 
-                             itemData.price || 0;
-        
-        const hasDiscount = itemSelection.hasDiscount || false;
-        const discountPercentage = itemSelection.discountPercentage || 0;
-        
-        const totalPriceForQuantity = unitPriceWithDiscount * finalQuantity;
-        
-        return {
-          ...itemData,
-          quantity: finalQuantity,
-          originalQuantity: itemData.quantity,
-          remainingQuantity: remainingQuantity,
-          _id: itemData._id,
-          foodId: itemData.foodId,
-          baseFoodId: itemData.baseFoodId,
-          price: unitPriceWithDiscount,
-          originalPriceValue: originalPrice,
-          totalPrice: totalPriceForQuantity,
-          hasDiscount: hasDiscount,
-          discountPercentage: discountPercentage,
-          name: itemData.name,
-          image: itemData.image,
-          isDiscountedPriceApplied: true
-        };
+  const setPayQty = useCallback((key, delta) => {
+    if (typeof delta === 'number') {
+      setSelectedQuantities(prev => {
+        const currentQty = prev[key] || 0;
+        const group = baseGroups.find(g => g.key === key);
+        if (!group) return prev;
+        const newQty = Math.min(group.maxQty, Math.max(0, currentQty + delta));
+        return { ...prev, [key]: newQty };
       });
-    
-    if (itemsToPay.length === 0) {
-      alert("Please select at least one item to pay");
-      return;
+    } else {
+      setSelectedQuantities(prev => {
+        const currentQty = prev[key] || 0;
+        const group = baseGroups.find(g => g.key === key);
+        if (!group) return prev;
+        const newQty = currentQty === 0 ? group.maxQty : 0;
+        return { ...prev, [key]: newQty };
+      });
     }
-    
-    console.log('💰 FINAL - Sending to placeSplitBillOrder:', {
-      itemsCount: itemsToPay.length,
-      total: selectedTotal,
-      paymentMethod: paymentMethod,
-      itemsDetails: itemsToPay.map(item => ({
-        name: item.name,
-        quantity: item.quantity,
-        unitPrice: item.price,
-        totalPrice: item.totalPrice,
-        hasDiscount: item.hasDiscount,
-        discountPercentage: item.discountPercentage
-      }))
+  }, [baseGroups]);
+
+  const clearAll = useCallback(() => setSelectedQuantities({}), []);
+
+  const selectAll = useCallback(() => {
+    const allSelected = {};
+    baseGroups.forEach(group => { allSelected[group.key] = group.maxQty; });
+    setSelectedQuantities(allSelected);
+  }, [baseGroups]);
+
+  useEffect(() => {
+    const btns = document.querySelector(".mfloating-buttons");
+    if (isOpen) {
+      btns?.classList.add("mfloating-buttons--hidden");
+      document.body.style.overflow = "hidden";
+    } else {
+      btns?.classList.remove("mfloating-buttons--hidden");
+      document.body.style.overflow = "";
+    }
+    return () => {
+      btns?.classList.remove("mfloating-buttons--hidden");
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  const close = useCallback(() => {
+    setVisible(false);
+    setTimeout(() => onClose?.(), 280);
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const fn = (e) => { if (e.key === "Escape") close(); };
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
+  }, [isOpen, close]);
+
+  const onPtrDown = (e) => { 
+    dragYRef.current = e.clientY; 
+    e.currentTarget.setPointerCapture(e.pointerId); 
+  };
+  const onPtrMove = (e) => { 
+    if (dragYRef.current === null) return; 
+    setDragOff(Math.max(0, e.clientY - dragYRef.current)); 
+  };
+  const onPtrUp = (e) => {
+    if (dragYRef.current === null) return;
+    const dy = e.clientY - dragYRef.current;
+    dragYRef.current = null;
+    if (dy > 80) close(); 
+    else setDragOff(0);
+  };
+
+  const tableTotal = useMemo(() => 
+    baseGroups.reduce((s, g) => s + g.unitPrice * g.maxQty, 0), [baseGroups]);
+  const mySubtotal = useMemo(() => 
+    groups.reduce((s, g) => s + g.unitPrice * g.payQty, 0), [groups]);
+  const promoAmt = useMemo(() => 
+    isPromoApplied && tableTotal > 0
+      ? +(discount * (mySubtotal / tableTotal)).toFixed(2) : 0, 
+    [isPromoApplied, tableTotal, mySubtotal, discount]);
+  const myNet = useMemo(() => 
+    +(mySubtotal - promoAmt).toFixed(2), [mySubtotal, promoAmt]);
+  const myTip = useMemo(() => 
+    +(myNet * tipPct / 100).toFixed(2), [myNet, tipPct]);
+  const myTotal = useMemo(() => 
+    +(myNet + myTip).toFixed(2), [myNet, myTip]);
+  const myTotalAnim = useAnimatedNumber(myTotal);
+  const selectedQty = useMemo(() => 
+    groups.reduce((s, g) => s + g.payQty, 0), [groups]);
+  const canPay = selectedQty > 0 && !isProcessing;
+  const allSelected = groups.length > 0 && groups.every((g) => g.payQty === g.maxQty);
+
+  const handlePay = useCallback(() => {
+    if (!canPay) return;
+    const itemsToSend = [];
+    groups.forEach((g) => {
+      if (g.payQty === 0) return;
+      let rem = g.payQty;
+      for (const raw of g._raws) {
+        if (rem <= 0) break;
+        const take = Math.min(raw._qty, rem);
+        itemsToSend.push({ 
+          ...raw, 
+          quantity: take, 
+          price: g.unitPrice, 
+          totalPrice: g.unitPrice * take 
+        });
+        rem -= take;
+      }
     });
-    
-    placeSplitBillOrder(itemsToPay, selectedTotal);
-    handleClose();
-  };
+    placeSplitBillOrder?.(itemsToSend, myTotal, promoAmt);
+    if (!isProcessing) {
+      setSelectedQuantities({});
+      setTipPct(0);
+    }
+  }, [canPay, groups, myTotal, promoAmt, placeSplitBillOrder, isProcessing]);
 
-  const handleClose = () => {
-    hasInitialized.current = false;
-    itemCounterRef.current = 0;
-    itemIdMap.current = {};
-    setSelectedItems({});
-    setSelectAll(false);
-    setSelectedTotal(0);
-    setSelectedCount(0);
-    onClose();
-  };
+  if (!isOpen && !visible) return null;
 
-  if (!isOpen) return null;
-  
-  const groupedOrders = groupItemsByOrder();
-  const ordersWithAvailableItems = Object.values(groupedOrders)
-    .map(orderGroup => ({
-      ...orderGroup,
-      availableItems: getAvailableItems(orderGroup.items, paidItems)
-    }))
-    .filter(orderGroup => orderGroup.availableItems.length > 0);
-
-  const totalAvailableItems = ordersWithAvailableItems.reduce(
-    (total, order) => total + order.availableItems.length, 0
-  );
+  /* Tip pills config */
+  const TIP_OPTIONS = [
+    { pct: 0,  label: "No tip" },
+    { pct: 10, label: "10%" },
+    { pct: 15, label: "15%" },
+    { pct: 20, label: "20%" },
+  ];
 
   return (
-    <div className="split-modal-overlay" onClick={handleClose}>
-      <div className="split-modal" onClick={(e) => e.stopPropagation()}>
+    <div
+      className={`sbm-overlay${visible ? " sbm-overlay--in" : ""}`}
+      onClick={(e) => { if (e.target === e.currentTarget) close(); }}
+    >
+      <div
+        className={`sbm-sheet${visible ? " sbm-sheet--in" : ""}`}
+        style={dragOff > 0 ? { transform: `translateY(${dragOff}px)`, transition: "none" } : undefined}
+        role="dialog" 
+        aria-modal="true"
+      >
+        {/* Drag handle */}
+        <div 
+          className="sbm-drag"
+          onPointerDown={onPtrDown} 
+          onPointerMove={onPtrMove} 
+          onPointerUp={onPtrUp}
+          onPointerCancel={() => { dragYRef.current = null; setDragOff(0); }}
+        >
+          <span className="sbm-drag__bar" />
+        </div>
+
         {/* Header */}
-        <div className="split-modal-header">
-          <div>
-            <h2 className="header-title">{t("my_orders.split_bill")}</h2>
-            <p className="header-subtitle">{t("my_orders.split_bill_description")}</p>
+        <div className="sbm-header">
+          <div className="sbm-header__left">
+            <span className="sbm-header__label">Split Bill</span>
+            <h2 className="sbm-header__table">{tableLabel}</h2>
           </div>
-          <button className="close-btn" onClick={handleClose}>
-            <FaTimes />
-          </button>
-        </div>
-
-        {/* Summary */}
-        <div className="selection-summary">
-          <div className="summary-stats">
-            <div className="stat-item">
-              <span className="stat-label">Items</span>
-              <span className="stat-value">{selectedCount} / {totalAvailableItems}</span>
+          <div className="sbm-header__total">
+            <div className="sbm-header__total-box">
+              <span className="sbm-header__total-label">Total</span>
+              <span className="sbm-header__total-value">€{tableTotal.toFixed(2)}</span>
             </div>
-            <div className="stat-item">
-              <span className="stat-label">Total</span>
-              <span className="stat-value total">{selectedTotal.toFixed(2)} €</span>
-            </div>
-          </div>
-          
-          {totalAvailableItems > 0 && (
-            <button 
-              className="select-all-btn"
-              onClick={handleSelectAll}
-            >
-              <div className={`checkbox ${selectAll ? 'checked' : ''}`}>
-                {selectAll && <FaCheck />}
-              </div>
-              <span>{selectAll ? "Deselect All" : "Select All"}</span>
+            <button className="sbm-close" onClick={close} aria-label="Close" type="button">
+              <svg viewBox="0 0 14 14" fill="none" width="14" height="14">
+                <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
             </button>
-          )}
+          </div>
         </div>
 
-        {/* Items List */}
-        <div className="split-items-list">
-          {ordersWithAvailableItems.length > 0 ? (
-            <div className="orders-container">
-              {ordersWithAvailableItems.map((orderGroup, orderIndex) => (
-                <div key={orderGroup.orderId || orderIndex} className="order-group-section">
-                  <div className="order-header">
-                    <h4 className="order-title">
-                      <span>Order #{orderGroup.orderNumber || 'N/A'}</span>
-                      <span className="order-time">{formatDateTime(orderGroup.orderDate)}</span>
-                    </h4>
-                  </div>
+        {/* Body */}
+        <div className="sbm-body">
 
-                  <div className="order-items-container">
-                    {orderGroup.availableItems.map((item) => {
-                      const itemKey = getItemKey(item);
-                      const stableId = itemIdMap.current[itemKey];
-                      
-                      if (!stableId) {
-                        return null;
-                      }
-                      
-                      const itemSelection = selectedItems[stableId];
-                      
-                      if (!itemSelection) {
-                        return null;
-                      }
-                      
-                      const isSelected = itemSelection.selected === true;
-                      const selectedQuantity = itemSelection.quantity || 1;
-                      const remainingQuantity = itemSelection.remainingQuantity || item.quantity;
-                      const foodItem = findFoodItemForItem(item);
-                      const isPartiallyPaid = remainingQuantity < item.quantity;
-                      
-                      const unitPriceWithDiscount = itemSelection.unitPriceWithDiscount || item.price || 0;
-                      const unitPriceOriginal = itemSelection.unitPriceOriginal || item.price || 0;
-                      const hasDiscount = itemSelection.hasDiscount || false;
-                      const discountPercentage = itemSelection.discountPercentage || 0;
-                      
-                      const originalPriceForSelected = unitPriceOriginal * selectedQuantity;
-                      const discountedPriceForSelected = unitPriceWithDiscount * selectedQuantity;
+          {/* Items section */}
+          <div className="sbm-section">
+            <div className="sbm-section__header">
+              <span className="sbm-section__title">
+                <span className="sbm-section__title-dot" />
+                Your items
+              </span>
+              {groups.length > 0 && (
+                <button 
+                  type="button" 
+                  className="sbm-section__action" 
+                  onClick={allSelected ? clearAll : selectAll}
+                >
+                  {allSelected ? "Clear all" : "Select all"}
+                </button>
+              )}
+            </div>
 
-                      const imageUrl = url + "/images/" + (foodItem?.image || item.image);
+            {groups.length === 0 ? (
+              <p className="sbm-empty">All items have been paid</p>
+            ) : (
+              <ul className={`sbm-list${ready ? " sbm-list--ready" : ""}`}>
+                {groups.map((g, i) => {
+                  const active = g.payQty > 0;
+                  return (
+                    <li
+                      key={g.key}
+                      className={`sbm-item${active ? " sbm-item--active" : ""}`}
+                      style={{ "--i": i }}
+                    >
+                      <button
+                        type="button"
+                        className="sbm-item__checkbox"
+                        onClick={() => setPayQty(g.key)}
+                        aria-label={active ? "Deselect" : "Select"}
+                      >
+                        <span className={`sbm-checkbox${active ? " sbm-checkbox--on" : ""}`}>
+                          {active && (
+                            <svg viewBox="0 0 12 10" fill="none" width="12" height="10">
+                              <path d="M1 5l3 3 6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          )}
+                        </span>
+                      </button>
 
-                      return (
-                        <div
-                          key={stableId}
-                          className={`split-item-card ${isSelected ? 'selected' : ''}`}
-                          onClick={() => handleItemToggle(stableId)}
-                        >
-                          <div className="item-checkbox">
-                            <div className={`checkbox-circle ${isSelected ? 'checked' : ''}`}>
-                              {isSelected && <FaCheck />}
-                            </div>
-                          </div>
-                          
-                          <div className="item-image-wrapper">
-                            <img
-                              src={imageUrl}
-                              alt={getTranslatedProductName(foodItem) || item.name}
-                              className="item-image"
-                              onError={(e) => {
-                                if (assets.image_coming_soon) {
-                                  e.target.src = assets.image_coming_soon;
-                                  e.target.style.objectFit = "cover";
-                                }
-                              }}
-                            />
-                          </div>
-                          
-                          <div className="item-details">
-                            <h3 className="item-name">
-                              {getTranslatedProductName(foodItem) || item.name}
-                            </h3>
-                            
-                            {isPartiallyPaid && (
-                              <div className="partial-badge">
-                                {remainingQuantity} of {item.quantity} remaining
-                              </div>
-                            )}
-                            
-                            {/* ✅ STRUCTURA ORIGINALĂ pentru quantity controls */}
-                            {remainingQuantity > 1 && (
-                              <div className="split-qty-compact" onClick={(e) => e.stopPropagation()}>
-                                <button
-                                  className="split-qty-btn-compact"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleQuantityChange(stableId, selectedQuantity - 1);
-                                  }}
-                                  disabled={selectedQuantity <= 1}
-                                >
-                                  -
-                                </button>
-                                <span className="split-qty-value-compact">
-                                  {selectedQuantity} / {remainingQuantity}
-                                </span>
-                                <button
-                                  className="split-qty-btn-compact"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleQuantityChange(stableId, selectedQuantity + 1);
-                                  }}
-                                  disabled={selectedQuantity >= remainingQuantity}
-                                >
-                                  +
-                                </button>
-                              </div>
-                            )}
-                            
-                            <div className="item-price-section">
-                              {hasDiscount && discountPercentage > 0 && (
-                                <div className="discount-price-display">
-                                  <span className="original-price-line">
-                                    {originalPriceForSelected.toFixed(2)} €
-                                  </span>
-                                  <span className="discounted-price">
-                                    {discountedPriceForSelected.toFixed(2)} €
-                                  </span>
-                                  <span className="discount-percentage-badge">
-                                    -{discountPercentage}%
-                                  </span>
-                                </div>
-                              )}
-                              {!hasDiscount && (
-                                <span className="regular-price">
-                                  {discountedPriceForSelected.toFixed(2)} €
-                                </span>
-                              )}
-                            </div>
-                          </div>
+                      <div className="sbm-item__content">
+                        <div className="sbm-item__info">
+                          <span className="sbm-item__name">{g.name}</span>
+                          {g.maxQty > 1 && (
+                            <span className="sbm-item__badge">
+                              {active ? `${g.payQty} of ${g.maxQty}` : `${g.maxQty} available`}
+                            </span>
+                          )}
                         </div>
-                      );
-                    })}
+
+                        <div className="sbm-item__price-section">
+                          <span className="sbm-item__price">
+                            €{(g.unitPrice * (active ? g.payQty : g.maxQty)).toFixed(2)}
+                          </span>
+
+                          {g.maxQty > 1 ? (
+                            <div className={`sbm-stepper${active ? " sbm-stepper--active" : ""}`}>
+                              <button
+                                type="button"
+                                className="sbm-stepper__btn"
+                                onClick={(e) => { e.stopPropagation(); setPayQty(g.key, -1); }}
+                                disabled={g.payQty === 0}
+                              >−</button>
+                              <span className="sbm-stepper__value">
+                                {g.payQty}
+                                <span className="sbm-stepper__max">/{g.maxQty}</span>
+                              </span>
+                              <button
+                                type="button"
+                                className="sbm-stepper__btn"
+                                onClick={(e) => { e.stopPropagation(); setPayQty(g.key, 1); }}
+                                disabled={g.payQty === g.maxQty}
+                              >+</button>
+                            </div>
+                          ) : (
+                            <span className="sbm-item__unit">€{g.unitPrice.toFixed(2)} each</span>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
+          {/* ── TIP SECTION — redesign aliniat cu TipsSection ── */}
+          {selectedQty > 0 && (
+            <div className="sbm-section sbm-fadein">
+              <div className="sbm-section__header">
+                <span className="sbm-section__title">
+                  <span className="sbm-section__title-dot" />
+                  Add a tip
+                </span>
+                {myTip > 0 && (
+                  <span className="sbm-section__aside">+€{myTip.toFixed(2)}</span>
+                )}
+              </div>
+
+              {/* Card identic cu ts-card din TipsSection */}
+              <div className="sbm-tip-card">
+                <div className="sbm-tip-card__header">
+                  <div className="sbm-tip-card__icon">🤝</div>
+                  <div className="sbm-tip-card__text">
+                    <span className="sbm-tip-card__title">Support the team</span>
+                    <span className="sbm-tip-card__sub">100% goes to our staff</span>
                   </div>
                 </div>
-              ))}
+
+                <div className="sbm-tip-pills">
+                  {TIP_OPTIONS.map(({ pct, label }) => {
+                    const isActive = tipPct === pct;
+                    const amt = pct === 0 ? null : (myNet * pct / 100).toFixed(2);
+                    return (
+                      <button
+                        key={pct}
+                        type="button"
+                        className={`sbm-tip-pill${isActive ? " sbm-tip-pill--active" : ""}`}
+                        onClick={() => setTipPct(pct)}
+                      >
+                        <span className="sbm-tip-pill__pct">
+                          {pct === 0 ? "None" : `${pct}%`}
+                        </span>
+                        {amt && (
+                          <span className="sbm-tip-pill__amt">€{amt}</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-          ) : (
-            <div className="empty-state">
-              <div className="empty-icon">✓</div>
-              <h3>All Items Paid</h3>
-              <p>There are no items available for splitting</p>
+          )}
+
+          {/* Summary */}
+          {selectedQty > 0 && (
+            <div className="sbm-summary-card sbm-fadein">
+              <div className="sbm-summary-row">
+                <span>{selectedQty} item{selectedQty !== 1 ? "s" : ""}</span>
+                <span>€{mySubtotal.toFixed(2)}</span>
+              </div>
+              {promoAmt > 0 && (
+                <div className="sbm-summary-row sbm-summary-row--green">
+                  <span>Promo {appliedPromoCode ? `(${appliedPromoCode})` : ""}</span>
+                  <span>−€{promoAmt.toFixed(2)}</span>
+                </div>
+              )}
+              {myTip > 0 && (
+                <div className="sbm-summary-row">
+                  <span>Tip ({tipPct}%)</span>
+                  <span>+€{myTip.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="sbm-summary-divider" />
+              <div className="sbm-summary-total">
+                <span>Your total</span>
+                <span className="sbm-summary-total__amount">€{myTotal.toFixed(2)}</span>
+              </div>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="split-modal-footer">
-          <button 
-            className="cancel-btn"
-            onClick={handleClose}
-          >
-            Cancel
-          </button>
-          
+        <div className="sbm-footer">
           <button
-            className="pay-btn"
-            onClick={handlePaySelected}
-            disabled={selectedCount === 0}
+            type="button"
+            className={`sbm-pay-button${canPay ? " sbm-pay-button--active" : ""}`}
+            onClick={handlePay}
+            disabled={!canPay}
           >
-            <span>Pay Selected</span>
-            <span className="pay-amount">{selectedTotal.toFixed(2)} €</span>
+            {isProcessing ? (
+              <span className="sbm-pay-button__spinner" />
+            ) : !canPay ? (
+              <span className="sbm-pay-button__idle">Select items to continue</span>
+            ) : (
+              <>
+                <div className="sbm-pay-button__info">
+                  <span className="sbm-pay-button__label">Pay my share</span>
+                  <span className="sbm-pay-button__details">
+                    {selectedQty} item{selectedQty !== 1 ? "s" : ""}
+                    {tipPct > 0 && ` · ${tipPct}% tip`}
+                  </span>
+                </div>
+                <span className="sbm-pay-button__amount">
+                  €{(+myTotalAnim).toFixed(2)}
+                </span>
+              </>
+            )}
           </button>
+          <p className="sbm-footer-note">Secured payment · Others pay separately</p>
         </div>
       </div>
     </div>
   );
-};
-
-export default SplitBillModal;
+}

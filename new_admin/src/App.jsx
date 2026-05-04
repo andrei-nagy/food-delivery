@@ -1,4 +1,4 @@
-import { Route, Routes, useLocation, useNavigate } from "react-router-dom"; // Importă Navigate
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
 import Sidebar from "./components/common/Sidebar";
@@ -26,25 +26,32 @@ import CreateAccountPage from "./pages/CreateAccountPage";
 import { ToastContainer } from "react-toastify";
 import CreateQrCodePage from "./pages/CreateQrCodePage";
 import QrCodesPage from "./pages/QRCodesPage";
-import PromoCodeTable from "./components/promoCodes/PromoCodeTable";
+import PromoCodePage from "./pages/PromoCodePage";
+import FeatureFlagsPage from "./pages/FeatureFlagsPage";
 
 function App() {
-  const location = useLocation(); // Obține locația curentă
-  const navigate = useNavigate(); // Hook pentru navigare
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  // Verifică dacă utilizatorul este pe pagina de login
   const isLoginPage = location.pathname === "/login";
   const isCreateAccountPage = location.pathname === "/create-account";
 
   useEffect(() => {
-    // Dacă nu există authToken și utilizatorul nu este pe pagina de login
     if (!localStorage.getItem("authToken") && !isLoginPage) {
-      navigate("/login"); // Redirecționează utilizatorul la pagina de login
+      navigate("/login");
     }
-  }, [navigate, isLoginPage]); // Asigură-te că include navigate și isLoginPage în dependențe
+  }, [navigate, isLoginPage]);
+
+  // Redirect unauthorized users away from /feature-flags
+  useEffect(() => {
+    const role = localStorage.getItem("userRole");
+    const allowedRoles = ["Admin", "Orderly"]; // Permite Admin și Orderly
+    if (location.pathname === "/feature-flags" && !allowedRoles.includes(role)) {
+      navigate("/");
+    }
+  }, [location.pathname, navigate]);
 
   return (
-    // <ThemeProvider> {/* Mutăm ThemeProvider aici */}
     <UrlProvider>
       <AppVersionProvider>
         <div
@@ -54,19 +61,17 @@ function App() {
               : "flex h-screen bg-gray-900 text-gray-100 overflow-hidden"
           }
         >
-          {/* BG */}
-          {/* Renderizează fundalul doar dacă nu e pe pagina de login */}
           {!isLoginPage && !isCreateAccountPage && (
             <div className="fixed inset-0 z-0">
               <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 opacity-80" />
               <div className="absolute inset-0 backdrop-blur-sm" />
             </div>
           )}
+
           <ToastContainer />
-          {/* Renderizează Sidebar doar dacă nu e pe pagina de login */}
+
           {!isLoginPage && !isCreateAccountPage && <Sidebar />}
 
-          {/* Rutele aplicației */}
           <Routes>
             <Route path="/" element={<OverviewPage />} />
             <Route path="/products" element={<ProductsPage />} />
@@ -88,7 +93,8 @@ function App() {
             <Route path="/create-qrcode" element={<CreateQrCodePage />} />
             <Route path="/qrcodes" element={<QrCodesPage />} />
             <Route path="/add-products" element={<AddProductsInOrderPage />} />
-            <Route path="/promo-codes" element={<PromoCodeTable />} />
+            <Route path="/promo-codes" element={<PromoCodePage />} />
+            <Route path="/feature-flags" element={<FeatureFlagsPage />} />
           </Routes>
         </div>
       </AppVersionProvider>

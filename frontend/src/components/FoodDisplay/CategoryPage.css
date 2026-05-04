@@ -139,13 +139,13 @@
 .category-explorer__search-wrapper {
   position: relative;
   background: var(--surface);
-  border-radius: var(--radius);
+  border-radius: 26px;
   border: 2px solid var(--border);
   transition: var(--transition);
 }
 
 .category-explorer__search-wrapper--focused {
-  border-color: var(--primary);
+  border:1px solid var(--primary);
   box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
 }
 
@@ -972,7 +972,7 @@
 
   .category-explorer__search-input-container {
     min-height: 48px;
-    padding: 0 0.75rem;
+    /* padding: 0 0.75rem; */
   }
 
   .category-explorer__search-input {

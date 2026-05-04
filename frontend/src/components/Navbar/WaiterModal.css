@@ -1,744 +1,223 @@
-/* Stiluri pentru overlay-ul modalului */
-.modal-overlay-waiter {
+/* ═══════════════════════════════════════════════════════
+   WaiterModal.css
+═══════════════════════════════════════════════════════ */
+
+.wm-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 99998;
+  animation: wmFadeIn 0.25s ease;
+}
+@keyframes wmFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+@media (min-width: 560px) { .wm-overlay { align-items: center; } }
+
+/* ── SHEET ── */
+.wm-sheet {
+  background: #ffffff;
   width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(5px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  animation: fadeIn 0.3s ease;
-  padding: 20px;
-  overflow: hidden;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* Stiluri pentru conținutul modalului */
-.modal-content-waiter {
-  background-color: #fff;
-  padding: 25px;
-  border-radius: 20px;
-  width: 90%;
-  max-width: 400px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  z-index: 1001;
-  position: relative;
-  max-height: 85vh;
+  max-width: 480px;
+  border-radius: 28px 28px 0 0;
+  padding: 0 24px 40px;
+  max-height: 90vh;
   overflow-y: auto;
-  animation: slideUp 0.4s cubic-bezier(0.18, 1.25, 0.4, 1);
-  margin: 0 auto;
+  animation: wmSlideUp 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.wm-sheet::-webkit-scrollbar { display: none; }
+@media (min-width: 560px) { .wm-sheet { border-radius: 28px; max-height: 82vh; } }
+
+@keyframes wmSlideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }
 
-@keyframes slideUp {
-  from { 
-    transform: translateY(50px);
-    opacity: 0;
-  }
-  to { 
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-/* Header styling */
-.header-myorders {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-  position: relative;
-}
-
-.modal-title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  margin: 0;
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #2d3436;
-}
-
-.menu-button-myorders {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background-color: #f8f9fa;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 500;
-}
-
-.menu-button-myorders:hover {
-  background-color: #e9ecef;
-}
-
-.close-menu-button-myorders {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* ── DRAG HANDLE ── */
+.wm-handle {
   width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #f8f9fa;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  height: 4px;
+  border-radius: 2px;
+  background: #E5E7EB;
+  margin: 14px auto 20px;
+}
+@media (min-width: 560px) { .wm-handle { display: none; } }
+
+/* ── TOPBAR ── */
+.wm-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
 }
 
-.close-menu-button-myorders:hover {
-  background-color: #e9ecef;
-  transform: rotate(90deg);
-}
+.wm-topbar-spacer { width: 32px; flex-shrink: 0; }
 
-/* Mesaj de asistență */
-.assistance-message {
+.wm-topbar-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
   text-align: center;
-  margin-bottom: 30px;
+  flex: 1;
 }
 
-.assistance-message p {
-  font-size: 1.1rem;
-  color: #636e72;
-  margin: 0;
+.wm-back-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
   font-weight: 500;
-}
-
-/* Container pentru butoanele de acțiune */
-.action-buttons {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  margin-bottom: 25px;
-}
-
-/* Stiluri pentru fiecare buton de acțiune */
-.action-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px 15px;
-  border: 2px solid #f1f3f5;
-  border-radius: 16px;
-  background: white;
+  color: #9CA3AF;
   cursor: pointer;
-  transition: all 0.3s ease;
-  min-height: 120px;
+  transition: color 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
+.wm-back-link:hover { color: #374151; }
 
-.action-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-
-.action-icon-wrapper {
+.wm-x-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #F3F4F6;
+  color: #6B7280;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.wm-x-btn:hover { background: #E5E7EB; color: #111827; }
+
+/* ── SUBTITLE ── */
+.wm-subtitle {
+  font-size: 13px;
+  color: #9CA3AF;
+  margin: 4px 0 22px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ── MAIN ACTIONS ── */
+.wm-actions { display: flex; flex-direction: column; gap: 12px; }
+
+.wm-action-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1.5px solid #F3F4F6;
+  background: #FAFAFA;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+  width: 100%;
+  text-align: left;
+}
+.wm-action-card:hover  { background: #F3F4F6; border-color: #E5E7EB; }
+.wm-action-card:active { transform: scale(0.975); }
+
+.wm-action-icon {
   width: 50px;
   height: 50px;
-  margin-bottom: 12px;
-  border-radius: 12px;
-  background: #f8f9fa;
-}
-
-.action-icon {
-  font-size: 24px;
-}
-
-.waiter-icon-actions {
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
-}
-
-.action-label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #2d3436;
-  text-align: center;
-}
-
-/* Culori specifice pentru fiecare buton */
-.call-waiter:hover {
-  border-color: #74b9ff;
-  background-color: rgba(116, 185, 255, 0.05);
-}
-
-.call-waiter .action-icon-wrapper {
-  background-color: rgba(116, 185, 255, 0.15);
-}
-
-.call-waiter .action-icon,
-.call-waiter .waiter-icon-actions {
-  color: #0984e3;
-}
-
-.pay-bill:hover {
-  border-color: #00b894;
-  background-color: rgba(0, 184, 148, 0.05);
-}
-
-.pay-bill .action-icon-wrapper {
-  background-color: rgba(0, 184, 148, 0.15);
-}
-
-.pay-bill .action-icon {
-  color: #00b894;
-}
-
-.live-chat:hover {
-  border-color: #a29bfe;
-  background-color: rgba(162, 155, 254, 0.05);
-}
-
-.live-chat .action-icon-wrapper {
-  background-color: rgba(162, 155, 254, 0.15);
-}
-
-.live-chat .action-icon {
-  color: #6c5ce7;
-}
-
-/* Sectiunea de logout */
-.logout-section {
-  border-top: 1px solid #f1f3f5;
-  padding-top: 20px;
-  margin-top: 10px;
-}
-
-.logout-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-  padding: 14px;
-  background-color: #f8f9fa;
-  border: 2px solid #f1f3f5;
-  border-radius: 12px;
-  color: #e17055;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.logout-btn:hover {
-  background-color: #ffeaea;
-  border-color: #ff7675;
-  color: #d63031;
-}
-
-/* ==================== PAYMENT OPTIONS MODAL ==================== */
-.payment-options-modal {
-  max-width: 500px;
-  width: 90%;
-}
-
-.payment-options-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 25px;
-}
-
-.payment-option-btn {
-  display: flex;
-  align-items: center;
-  padding: 24px 20px;
-  border: 2px solid #f8f9fa;
-  border-radius: 18px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  width: 100%;
-  text-align: left;
-  position: relative;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(10px) scale(0.98);
-}
-
-.payment-option-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  transition: left 0.6s ease;
-}
-
-.payment-option-btn:hover::before {
-  left: 100%;
-}
-
-.payment-option-btn:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-  border-color: #e9ecef;
-}
-
-.payment-icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-  margin-right: 20px;
-  border-radius: 16px;
-  flex-shrink: 0;
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.payment-option-btn:hover .payment-icon-wrapper {
-  transform: scale(1.08) rotate(5deg);
-}
-
-.payment-icon {
-  font-size: 26px;
-  color: white;
-  transition: transform 0.3s ease;
-}
-
-.payment-option-btn:hover .payment-icon {
-  transform: scale(1.1);
-}
-
-.payment-text-content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  flex: 1;
-}
-
-.payment-option-label {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #2d3436;
-  margin-bottom: 6px;
-  line-height: 1.2;
-}
-
-.payment-option-description {
-  font-size: 0.95rem;
-  color: #636e72;
-  line-height: 1.4;
-}
-
-/* Culori specifice pentru plăți */
-.card-payment .payment-icon-wrapper {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-}
-
-.cash-payment .payment-icon-wrapper {
-  background: linear-gradient(135deg, #f093fb, #f5576c);
-}
-
-.card-payment:hover {
-  border-color: #667eea;
-  background-color: rgba(102, 126, 234, 0.03);
-}
-
-.cash-payment:hover {
-  border-color: #f093fb;
-  background-color: rgba(240, 147, 251, 0.03);
-}
-
-/* Indicator de selecție smooth */
-.payment-option-btn::after {
-  content: '→';
-  position: absolute;
-  right: 24px;
-  top: 50%;
-  transform: translateY(-50%) scale(0.8);
-  font-size: 1.3rem;
-  color: #adb5bd;
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  opacity: 0;
-}
-
-.payment-option-btn:hover::after {
-  opacity: 1;
-  transform: translateY(-50%) scale(1) translateX(3px);
-}
-
-/* ==================== WAITER REASONS MODAL ==================== */
-.waiter-reasons-modal {
-  max-width: 500px;
-  width: 90%;
-}
-
-.waiter-reasons-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.waiter-reason-btn {
-  display: flex;
-  align-items: flex-start;
-  padding: 20px;
-  border: 2px solid #f8f9fa;
-  border-radius: 16px;
-  background: white;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  width: 100%;
-  text-align: left;
-  position: relative;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(10px) scale(0.98);
-}
-
-.waiter-reason-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  transition: left 0.6s ease;
-}
-
-.waiter-reason-btn:hover::before {
-  left: 100%;
-}
-
-.waiter-reason-btn:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-  border-color: #e9ecef;
-}
-
-.waiter-reason-icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  margin-right: 16px;
   border-radius: 14px;
-  flex-shrink: 0;
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.waiter-reason-btn:hover .waiter-reason-icon-wrapper {
-  transform: scale(1.08) rotate(5deg);
-}
-
-.waiter-reason-icon {
-  font-size: 22px;
-  color: white;
-  transition: transform 0.3s ease;
-}
-
-.waiter-reason-btn:hover .waiter-reason-icon {
-  transform: scale(1.1);
-}
-
-.waiter-reason-text-content {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  flex: 1;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.wm-waiter-img { width: 24px; height: 24px; object-fit: contain; }
+
+.wm-action-info { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.wm-action-label { font-size: 15px; font-weight: 700; color: #111827; }
+.wm-action-hint  { font-size: 12px; color: #9CA3AF; }
+.wm-action-chev  { font-size: 22px; color: #D1D5DB; line-height: 1; }
+
+/* ── WAITER REASONS ── */
+.wm-reasons { display: flex; flex-direction: column; gap: 10px; }
+
+.wm-reason-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1.5px solid #F3F4F6;
+  background: #FAFAFA;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+  animation: wmIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.wm-reason-row:hover  { background: #F3F4F6; border-color: #E5E7EB; }
+.wm-reason-row:active { transform: scale(0.975); }
+
+.wm-reason-row:nth-child(1) { animation-delay: 0.03s; }
+.wm-reason-row:nth-child(2) { animation-delay: 0.06s; }
+.wm-reason-row:nth-child(3) { animation-delay: 0.09s; }
+.wm-reason-row:nth-child(4) { animation-delay: 0.12s; }
+.wm-reason-row:nth-child(5) { animation-delay: 0.15s; }
+.wm-reason-row:nth-child(6) { animation-delay: 0.18s; }
+.wm-reason-row:nth-child(7) { animation-delay: 0.21s; }
+.wm-reason-row:nth-child(8) { animation-delay: 0.24s; }
+
+@keyframes wmIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.waiter-reason-label {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #2d3436;
-  margin-bottom: 6px;
-  line-height: 1.2;
+.wm-reason-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
+.wm-reason-text  { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.wm-reason-label { font-size: 14px; font-weight: 600; color: #111827; line-height: 1.3; }
+.wm-reason-desc  { font-size: 12px; color: #9CA3AF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wm-reason-chev  { font-size: 20px; color: #D1D5DB; flex-shrink: 0; line-height: 1; }
 
-.waiter-reason-description {
-  font-size: 0.9rem;
-  color: #636e72;
-  line-height: 1.4;
+/* ── PAYMENT OPTIONS ── */
+.wm-payments { display: flex; flex-direction: column; gap: 12px; }
+
+.wm-pay-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  border: 1.5px solid #F3F4F6;
+  background: #FAFAFA;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+  animation: wmIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+.wm-pay-card:nth-child(1) { animation-delay: 0.04s; }
+.wm-pay-card:nth-child(2) { animation-delay: 0.10s; }
+.wm-pay-card:hover  { background: #F3F4F6; border-color: #E5E7EB; }
+.wm-pay-card:active { transform: scale(0.975); }
 
-/* Culori pentru waiter options */
-.waiter-reason-btn:nth-child(1) .waiter-reason-icon-wrapper { background: linear-gradient(135deg, #ff6b6b, #ff8e8e); }
-.waiter-reason-btn:nth-child(2) .waiter-reason-icon-wrapper { background: linear-gradient(135deg, #4ecdc4, #44a08d); }
-.waiter-reason-btn:nth-child(3) .waiter-reason-icon-wrapper { background: linear-gradient(135deg, #45b7d1, #96c93d); }
-.waiter-reason-btn:nth-child(4) .waiter-reason-icon-wrapper { background: linear-gradient(135deg, #f093fb, #f5576c); }
-.waiter-reason-btn:nth-child(5) .waiter-reason-icon-wrapper { background: linear-gradient(135deg, #4facfe, #00f2fe); }
-.waiter-reason-btn:nth-child(6) .waiter-reason-icon-wrapper { background: linear-gradient(135deg, #a8edea, #fed6e3); }
-.waiter-reason-btn:nth-child(7) .waiter-reason-icon-wrapper { background: linear-gradient(135deg, #ffd89b, #19547b); }
-.waiter-reason-btn:nth-child(8) .waiter-reason-icon-wrapper { background: linear-gradient(135deg, #c2e9fb, #a1c4fd); }
-
-.waiter-reason-btn:nth-child(1):hover { border-color: #ff6b6b; }
-.waiter-reason-btn:nth-child(2):hover { border-color: #4ecdc4; }
-.waiter-reason-btn:nth-child(3):hover { border-color: #45b7d1; }
-.waiter-reason-btn:nth-child(4):hover { border-color: #f093fb; }
-.waiter-reason-btn:nth-child(5):hover { border-color: #4facfe; }
-.waiter-reason-btn:nth-child(6):hover { border-color: #a8edea; }
-.waiter-reason-btn:nth-child(7):hover { border-color: #ffd89b; }
-.waiter-reason-btn:nth-child(8):hover { border-color: #c2e9fb; }
-
-/* Indicator de selecție pentru waiter */
-.waiter-reason-btn::after {
-  content: '→';
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%) scale(0.8);
-  font-size: 1.2rem;
-  color: #adb5bd;
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  opacity: 0;
+.wm-pay-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
-
-.waiter-reason-btn:hover::after {
-  opacity: 1;
-  transform: translateY(-50%) scale(1) translateX(3px);
-}
-
-/* Animații de intrare pentru ambele modale */
-@keyframes gentleSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(15px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.payment-option-btn,
-.waiter-reason-btn {
-  animation: gentleSlideIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-/* Delay pentru animații */
-.payment-option-btn:nth-child(1) { animation-delay: 0.1s; }
-.payment-option-btn:nth-child(2) { animation-delay: 0.2s; }
-
-.waiter-reason-btn:nth-child(1) { animation-delay: 0.05s; }
-.waiter-reason-btn:nth-child(2) { animation-delay: 0.1s; }
-.waiter-reason-btn:nth-child(3) { animation-delay: 0.15s; }
-.waiter-reason-btn:nth-child(4) { animation-delay: 0.2s; }
-.waiter-reason-btn:nth-child(5) { animation-delay: 0.25s; }
-.waiter-reason-btn:nth-child(6) { animation-delay: 0.3s; }
-.waiter-reason-btn:nth-child(7) { animation-delay: 0.35s; }
-.waiter-reason-btn:nth-child(8) { animation-delay: 0.4s; }
-
-/* Responsivitate generală */
-@media (max-width: 600px) {
-  .modal-content-waiter {
-    width: 95%;
-    max-width: 95%;
-    padding: 20px;
-    border-radius: 16px;
-  }
-  
-  .action-buttons {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  
-  .action-btn {
-    min-height: 100px;
-    padding: 15px;
-  }
-  
-  .modal-title {
-    font-size: 1.2rem;
-  }
-  
-  .payment-options-modal,
-  .waiter-reasons-modal {
-    width: 95%;
-    max-width: 95%;
-  }
-  
-  .payment-option-btn {
-    padding: 20px 16px;
-    animation-duration: 0.5s;
-  }
-  
-  .payment-icon-wrapper {
-    width: 54px;
-    height: 54px;
-    margin-right: 16px;
-  }
-  
-  .payment-icon {
-    font-size: 24px;
-  }
-  
-  .payment-option-label {
-    font-size: 1.1rem;
-  }
-  
-  .payment-option-description {
-    font-size: 0.9rem;
-  }
-  
-  .waiter-reason-btn {
-    padding: 18px 16px;
-    animation-duration: 0.5s;
-  }
-  
-  .waiter-reason-icon-wrapper {
-    width: 48px;
-    height: 48px;
-    margin-right: 14px;
-  }
-  
-  .waiter-reason-icon {
-    font-size: 20px;
-  }
-  
-  .waiter-reason-label {
-    font-size: 1rem;
-  }
-  
-  .waiter-reason-description {
-    font-size: 0.85rem;
-  }
-}
-
-@media (max-width: 400px) {
-  .modal-overlay-waiter {
-    padding: 10px;
-  }
-  
-  .modal-content-waiter {
-    width: 98%;
-    max-width: 98%;
-    padding: 15px;
-  }
-  
-  .action-icon-wrapper {
-    width: 45px;
-    height: 45px;
-  }
-  
-  .action-icon {
-    font-size: 20px;
-  }
-  
-  .waiter-icon-actions {
-    width: 25px;
-    height: 25px;
-  }
-  
-  .payment-options-modal,
-  .waiter-reasons-modal {
-    width: 98%;
-    max-width: 98%;
-  }
-  
-  .payment-option-btn {
-    padding: 18px 14px;
-    animation-duration: 0.4s;
-  }
-  
-  .payment-icon-wrapper {
-    width: 48px;
-    height: 48px;
-    margin-right: 14px;
-  }
-  
-  .payment-icon {
-    font-size: 22px;
-  }
-  
-  .payment-option-label {
-    font-size: 1rem;
-  }
-  
-  .payment-option-description {
-    font-size: 0.85rem;
-  }
-  
-  .payment-option-btn::after {
-    right: 16px;
-    font-size: 1.2rem;
-  }
-  
-  .waiter-reason-btn {
-    padding: 16px 14px;
-    animation-duration: 0.4s;
-  }
-  
-  .waiter-reason-icon-wrapper {
-    width: 44px;
-    height: 44px;
-    margin-right: 12px;
-  }
-  
-  .waiter-reason-icon {
-    font-size: 18px;
-  }
-  
-  .waiter-reason-label {
-    font-size: 0.95rem;
-  }
-  
-  .waiter-reason-description {
-    font-size: 0.8rem;
-  }
-  
-  .waiter-reason-btn::after {
-    right: 14px;
-    font-size: 1.1rem;
-  }
-}
-
-/* Stiluri pentru scrollbar în interiorul modalului */
-.modal-content-waiter::-webkit-scrollbar {
-  width: 6px;
-}
-
-.modal-content-waiter::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-
-.modal-content-waiter::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 10px;
-}
-
-.modal-content-waiter::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-/* Pentru Firefox */
-.modal-content-waiter {
-  scrollbar-width: thin;
-  scrollbar-color: #c1c1c1 #f1f1f1;
-}
-
-/* Stiluri pentru header-ul modalului de plăți */
-.payment-options-modal .header-myorders {
-  margin-bottom: 30px;
-}
-
-.payment-options-modal .assistance-message {
-  margin-bottom: 25px;
-}
-
-.payment-options-modal .assistance-message p {
-  font-size: 1.15rem;
-  color: #2d3436;
-  font-weight: 600;
-}
+.wm-pay-text  { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+.wm-pay-label { font-size: 15px; font-weight: 700; color: #111827; }
+.wm-pay-desc  { font-size: 13px; color: #9CA3AF; }

@@ -548,21 +548,23 @@ button.close:hover {
 /* Stiluri pentru imaginea de fallback */
 .food-item-img.image-error {
   background-color: #f8f9fa;
-  border: 1px dashed #dee2e6;
+  /* border: 1px solid #dee2e6; */
   object-fit: contain;
 }
 
 .food-item-img[src*="coming_soon"] {
   object-fit: contain;
   background-color: #f8f9fa;
-  border: 1px dashed #dee2e6;
+  /* border: 1px dashed #dee2e6; */
 }
 
 /* Ajustare pentru cazurile cu multiple badge-uri */
 .food-item-img-container .discount-badge ~ .new-badge {
   top: 45px;
 }
-
+.Toastify__toast-container {
+  z-index: 999999 !important;
+}
 .food-item-img-container .discount-badge ~ .vegan-badge {
   top: 45px;
 }

@@ -1,0 +1,241 @@
+/* ── NavigationTerms ──────────────────────────── */
+.navt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  height: 68px;
+  background: rgba(254, 250, 243, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(230, 92, 25, 0.08);
+  transition: all 0.3s ease;
+}
+
+.navt--scrolled {
+  background: rgba(254, 250, 243, 0.98);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+/* Logo */
+.navt__logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.navt__logo-mark {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #E65C19;
+}
+
+.navt__logo-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #1a1108;
+}
+
+.navt__legal-badge {
+  padding: 4px 10px;
+  background: rgba(230,92,25,0.1);
+  border: 1px solid rgba(230,92,25,0.2);
+  border-radius: 100px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #E65C19;
+}
+
+/* Links */
+.navt__links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.navt__link {
+  padding: 7px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b5a48;
+  text-decoration: none;
+  border-radius: 100px;
+  transition: all 0.25s;
+}
+
+.navt__link:hover {
+  color: #E65C19;
+  background: rgba(230,92,25,0.07);
+}
+
+.navt__link--active {
+  color: #E65C19;
+  background: rgba(230,92,25,0.1);
+  font-weight: 600;
+}
+
+/* Actions */
+.navt__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navt__progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navt__progress-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #8b7355;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.navt__progress-track {
+  width: 80px;
+  height: 4px;
+  background: rgba(230,92,25,0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.navt__progress-fill {
+  height: 100%;
+  background: #E65C19;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+.navt__action {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(230,92,25,0.15);
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.25s;
+}
+
+.navt__action:hover {
+  background: rgba(230,92,25,0.08);
+  border-color: rgba(230,92,25,0.3);
+}
+
+.navt__back-btn {
+  padding: 9px 18px;
+  background: #1a1108;
+  color: #fdf7ee;
+  border: none;
+  border-radius: 100px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s;
+  white-space: nowrap;
+}
+
+.navt__back-btn:hover {
+  background: #E65C19;
+  transform: translateY(-1px);
+}
+
+.navt__back-btn--mobile {
+  display: none;
+}
+
+/* Burger */
+.navt__burger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.navt__burger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #1a1108;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.navt__burger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.navt__burger.open span:nth-child(2) { opacity: 0; }
+.navt__burger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+/* Mobile progress */
+.navt__progress-mobile {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .navt__links {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .navt {
+    padding: 0 20px;
+  }
+  .navt__burger { display: flex; }
+  .navt__actions { display: none; }
+  .navt__legal-badge { display: none; }
+
+  .navt__links--open {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 68px;
+    left: 0;
+    right: 0;
+    background: #FEFAF3;
+    padding: 20px;
+    border-bottom: 1px solid rgba(230,92,25,0.1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    z-index: 999;
+    gap: 4px;
+  }
+
+  .navt__progress-mobile {
+    display: flex;
+  }
+
+  .navt__back-btn--mobile {
+    display: flex;
+    justify-content: center;
+    background: #E65C19;
+    width: 100%;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 14px;
+    margin-top: 8px;
+  }
+}

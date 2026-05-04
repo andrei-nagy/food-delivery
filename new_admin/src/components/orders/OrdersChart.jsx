@@ -13,7 +13,7 @@ const OrdersActivityHeatmap = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [isTablet, setIsTablet] = useState(window.innerWidth >= 768 && window.innerWidth < 1024);
     const [showDatePicker, setShowDatePicker] = useState(false);
-    const url = 'https://api.orderly-app.com';
+    const url = 'https://api.orderly.ro';
 
     // Initialize dates to the current week
     useEffect(() => {

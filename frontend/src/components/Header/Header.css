@@ -729,7 +729,7 @@
     .header-table-button {
         font-size: 11px;
         min-width: 100px;
-        padding: 3vw 4vw;
+        padding: 3vw 8vw;
     }
     
     .header-table-button.with-timer {

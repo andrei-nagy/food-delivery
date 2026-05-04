@@ -14,7 +14,7 @@ const OverviewPage = () => {
 	const [totalProducts, setTotalProducts] = useState(0); // Starea pentru totalProducts
 	const [totalSales, setTotalSales] = useState('0€'); // Starea pentru Total Sales
 	const [newUsers, setNewUsers] = useState(0); // Starea pentru New Users
-	const url = "https://api.orderly-app.com";
+	const url = "https://api.orderly.ro";
 
 	useEffect(() => {
 		const fetchProducts = async () => {

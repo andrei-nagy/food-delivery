@@ -22,7 +22,7 @@ const targetData = [
 const RevenueChart = () => {
 	const [revenueData, setRevenueData] = useState([]);
 	const [selectedTimeRange, setSelectedTimeRange] = useState("This Year");
-	const url = 'https://api.orderly-app.com'; // URL-ul API-ului tău
+	const url = 'https://api.orderly.ro'; // URL-ul API-ului tău
 
 	useEffect(() => {
 		// Funcția de preluare a datelor din comenzile livrate

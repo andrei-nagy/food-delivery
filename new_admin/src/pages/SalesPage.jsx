@@ -21,7 +21,7 @@ const SalesPage = () => {
 	});
 	const {url} = useUrl();
 	const handleGeneratePDF = () => {
-        generatePDF("https://api.orderly-app.com/api/order/list", "Sales Raport");
+        generatePDF("https://api.orderly.ro/api/order/list", "Sales Raport");
     };
 
 

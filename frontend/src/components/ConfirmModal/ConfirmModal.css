@@ -1,0 +1,100 @@
+/* ═══════════════════════════════════════════════════════
+   ConfirmModal.css
+   Modal grafic reutilizabil — același stil ca OrderToast
+═══════════════════════════════════════════════════════ */
+
+.cm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+  transition: background 0.35s ease;
+  pointer-events: none;
+}
+.cm-overlay--in {
+  background: rgba(0, 0, 0, 0.48);
+  pointer-events: auto;
+}
+
+.cm-modal {
+  position: relative;
+  background: #ffffff;
+  border-radius: 24px;
+  width: 300px;
+  overflow: hidden;
+  text-align: center;
+  z-index: 1000000;
+
+  opacity: 0;
+  transform: scale(0.88) translateY(16px);
+  transition:
+    opacity   0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.cm-modal--in {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.cm-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 0 20px;
+}
+
+.cm-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 24px 10px;
+  line-height: 1.35;
+}
+
+.cm-sub {
+  font-size: 13px;
+  color: #4B5563;
+  margin: 0 24px 28px;
+  line-height: 1.65;
+}
+
+.cm-btn {
+  display: block;
+  width: calc(100% - 48px);
+  margin: 0 auto 24px;
+  padding: 14px 0;
+  border: none;
+  border-radius: 50px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  background: #111827;
+  color: #ffffff;
+  transition: opacity 0.15s, transform 0.12s;
+}
+.cm-btn:active {
+  opacity: 0.85;
+  transform: scale(0.97);
+}
+
+.cm-bar-wrap {
+  height: 3px;
+  background: #f0f0f0;
+}
+.cm-bar {
+  height: 100%;
+  width: 100%;
+  background: #3A7D50;
+  transform-origin: left center;
+  transform: scaleX(1);
+  transition: none;
+}
+.cm-bar--go {
+  transition-property: transform;
+  transition-timing-function: linear;
+  transform: scaleX(0);
+}

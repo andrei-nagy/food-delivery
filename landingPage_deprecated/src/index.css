@@ -46,7 +46,8 @@ html {
 .body {
   margin: 0px;
   padding: 0px;
-  background-color: var(--primary-100);
+  /* background-color: var(--primary-100); */
+  background-color: white;
 }
 
 .text-large {

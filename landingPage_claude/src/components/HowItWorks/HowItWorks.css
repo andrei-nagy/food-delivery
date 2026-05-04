@@ -1,0 +1,783 @@
+/* ── HowItWorks2 — Mona Sans + Hubot Sans ───────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Mona+Sans:ital,wdth,wght@0,75..125,200..900;1,75..125,200..900&family=Hubot+Sans:ital,wdth,wght@0,75..125,200..900;1,75..125,200..900&display=swap');
+
+:root {
+  --font-mona: 'Mona Sans', sans-serif;
+  --font-hubot: 'Hubot Sans', sans-serif;
+}
+
+/* ── Section shell ──────────────────────────────────────────────── */
+
+.hiw2 {
+  background: var(--bg-soft, #f9f9f7);
+  padding: 80px 0 96px;
+  position: relative;
+}
+
+.hiw2__container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+
+.hiw2__header {
+  margin-bottom: 52px;
+}
+
+.hiw2__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-hubot);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-50, #888);
+  margin-bottom: 18px;
+}
+
+.hiw2__label-line {
+  display: inline-block;
+  width: 24px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.4;
+}
+
+.hiw2__title {
+  font-family: var(--font-mona);
+  font-size: clamp(32px, 4.5vw, 56px);
+  font-weight: 800;
+  font-stretch: 115%;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--ink, #1a1a18);
+  margin-bottom: 14px;
+}
+
+.hiw2__title em {
+  font-style: italic;
+  font-weight: 300;
+  font-stretch: 100%;
+  color: var(--ink-50, #888);
+}
+
+.hiw2__subtitle {
+  font-family: var(--font-hubot);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--ink-50, #888);
+  line-height: 1.6;
+}
+
+/* ── Step nav ───────────────────────────────────────────────────── */
+
+.hiw2__nav {
+  display: flex;
+  gap: 0;
+  border-bottom: 0.5px solid var(--border, rgba(0,0,0,0.1));
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.hiw2__nav::-webkit-scrollbar {
+  display: none;
+}
+
+.hiw2__nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-family: var(--font-hubot);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-50, #888);
+  white-space: nowrap;
+  transition: color 0.2s, border-color 0.2s;
+  margin-bottom: -0.5px;
+  flex-shrink: 0;
+}
+
+.hiw2__nav-btn:hover {
+  color: var(--ink, #1a1a18);
+}
+
+.hiw2__nav-btn.is-active {
+  color: var(--ink, #1a1a18);
+  border-bottom-color: var(--step-accent);
+}
+
+.hiw2__nav-num {
+  font-family: var(--font-mona);
+  font-size: 10px;
+  font-weight: 700;
+  font-stretch: 115%;
+  color: var(--step-accent);
+  opacity: 0.55;
+  letter-spacing: 0.05em;
+}
+
+.hiw2__nav-btn.is-active .hiw2__nav-num {
+  opacity: 1;
+}
+
+/* ── Stage grid ─────────────────────────────────────────────────── */
+
+.hiw2__stage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* border: 0.5px solid var(--border, rgba(0,0,0,0.1)); */
+  border-top: none;
+  min-height: 400px;
+}
+
+/* ── Info pane ──────────────────────────────────────────────────── */
+
+.hiw2__info {
+  padding: 48px 48px 48px 0;
+  border-right: 0.5px solid var(--border, rgba(0,0,0,0.1));
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.hiw2__info-top {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.hiw2__step-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hiw2__step-tag {
+  font-family: var(--font-hubot);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 4px;
+  /* color and background set inline via accent */
+}
+
+.hiw2__step-time {
+  font-family: var(--font-hubot);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink-50, #888);
+}
+
+.hiw2__step-title {
+  font-family: var(--font-mona);
+  font-size: clamp(26px, 3vw, 40px);
+  font-weight: 800;
+  font-stretch: 115%;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--ink, #1a1a18);
+  margin: 0;
+}
+
+.hiw2__step-desc {
+  font-family: var(--font-hubot);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--ink-50, #888);
+  margin: 0;
+}
+
+/* ── Feature list ───────────────────────────────────────────────── */
+
+.hiw2__feats {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.hiw2__feats li {
+  font-family: var(--font-hubot);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-70, #555);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hiw2__feat-check {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--step-accent) 12%, transparent);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.hiw2__feat-check::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 3px;
+  width: 9px;
+  height: 5px;
+  border-left: 1.5px solid var(--step-accent);
+  border-bottom: 1.5px solid var(--step-accent);
+  transform: rotate(-45deg) translateY(-1px);
+}
+
+/* ── Controls ───────────────────────────────────────────────────── */
+
+.hiw2__ctrl-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hiw2__ctrl {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 0.5px solid var(--border, rgba(0,0,0,0.15));
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: var(--font-hubot);
+  color: var(--ink, #1a1a18);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.hiw2__ctrl:hover:not(:disabled) {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.25);
+}
+
+.hiw2__ctrl:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.hiw2__ctrl-count {
+  font-family: var(--font-mona);
+  font-size: 12px;
+  font-weight: 700;
+  font-stretch: 115%;
+  color: var(--ink-50, #888);
+}
+
+.hiw2__ctrl-count strong {
+  font-weight: 800;
+}
+
+/* ── Visual pane ────────────────────────────────────────────────── */
+
+.hiw2__visual-pane {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: rgba(0,0,0,0.02);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Vis card (shared shell) ────────────────────────────────────── */
+
+.hiw2__vis-card {
+  background: #fff;
+  border: 0.5px solid var(--border, rgba(0,0,0,0.1));
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: hiw2VisIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes hiw2VisIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.hiw2__vis-label {
+  font-family: var(--font-hubot);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-50, #888);
+  opacity: 0.6;
+}
+
+/* ── QR visual ──────────────────────────────────────────────────── */
+
+.hiw2__qr-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: rgba(0,0,0,0.02);
+  border-radius: 8px;
+}
+
+.hiw2__qr-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  width: 112px;
+  height: 112px;
+}
+
+.hiw2__qr-cell {
+  border-radius: 2px;
+  background: rgba(0,0,0,0.08);
+}
+
+.hiw2__qr-cell.on {
+  background: var(--ink, #1a1a18);
+}
+
+.hiw2__qr-scan-bar {
+  height: 2px;
+  background: color-mix(in srgb, var(--scan-accent, #00B37E) 30%, transparent);
+  border-radius: 1px;
+  overflow: visible;
+}
+
+.hiw2__qr-scan-bar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -1px;
+  width: 100%;
+  height: 4px;
+  background: var(--scan-accent, #00B37E);
+  border-radius: 2px;
+  animation: hiw2Scan 2s ease-in-out infinite;
+}
+
+@keyframes hiw2Scan {
+  0%, 100% { transform: translateY(-56px); opacity: 0.9; }
+  50%       { transform: translateY(56px);  opacity: 1;   }
+}
+
+.hiw2__qr-badge {
+  font-family: var(--font-hubot);
+  font-size: 12px;
+  font-weight: 600;
+  color: #16a34a;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.18);
+  padding: 5px 14px;
+  border-radius: 20px;
+}
+
+/* ── Menu visual ────────────────────────────────────────────────── */
+
+.hiw2__menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 10px;
+  border-bottom: 0.5px solid var(--border, rgba(0,0,0,0.1));
+}
+
+.hiw2__menu-title {
+  font-family: var(--font-mona);
+  font-size: 14px;
+  font-weight: 700;
+  font-stretch: 115%;
+  color: var(--ink, #1a1a18);
+}
+
+.hiw2__menu-count {
+  font-family: var(--font-hubot);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ink-50, #888);
+}
+
+.hiw2__menu-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(0,0,0,0.02);
+  border-radius: 8px;
+}
+
+.hiw2__menu-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 0.5px solid var(--border, rgba(0,0,0,0.1));
+  border-radius: 8px;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.hiw2__menu-name {
+  font-family: var(--font-hubot);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink, #1a1a18);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hiw2__menu-tag {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ink-50, #888);
+}
+
+.hiw2__menu-price {
+  font-family: var(--font-mona);
+  font-size: 14px;
+  font-weight: 700;
+  font-stretch: 115%;
+  /* color set inline via accent */
+}
+
+/* ── Order visual ───────────────────────────────────────────────── */
+
+.hiw2__order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 0.5px solid var(--border, rgba(0,0,0,0.1));
+}
+
+.hiw2__order-title {
+  font-family: var(--font-mona);
+  font-size: 14px;
+  font-weight: 700;
+  font-stretch: 115%;
+  color: var(--ink, #1a1a18);
+}
+
+.hiw2__order-table-badge {
+  font-family: var(--font-hubot);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  /* color and background set inline via accent */
+}
+
+.hiw2__order-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 0.5px solid var(--border, rgba(0,0,0,0.07));
+}
+
+.hiw2__order-qty {
+  font-family: var(--font-mona);
+  font-size: 12px;
+  font-weight: 700;
+  font-stretch: 115%;
+  width: 20px;
+  text-align: center;
+  /* color set inline via accent */
+}
+
+.hiw2__order-item-name {
+  font-family: var(--font-hubot);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink, #1a1a18);
+  flex: 1;
+}
+
+.hiw2__order-item-price {
+  font-family: var(--font-mona);
+  font-size: 13px;
+  font-weight: 700;
+  font-stretch: 115%;
+  color: var(--ink, #1a1a18);
+}
+
+.hiw2__order-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  font-family: var(--font-mona);
+  font-size: 16px;
+  font-weight: 800;
+  font-stretch: 115%;
+  color: var(--ink, #1a1a18);
+}
+
+.hiw2__order-sent {
+  font-family: var(--font-hubot);
+  font-size: 12px;
+  font-weight: 600;
+  color: #16a34a;
+  background: rgba(34, 197, 94, 0.1);
+  text-align: center;
+  padding: 8px;
+  border-radius: 8px;
+  letter-spacing: 0.02em;
+}
+
+/* ── Pay visual ─────────────────────────────────────────────────── */
+
+.hiw2__pay-card-inner {
+  border-radius: 10px;
+  padding: 20px;
+  background: var(--ink, #1a1a18);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hiw2__pay-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hiw2__pay-brand {
+  font-family: var(--font-mona);
+  font-size: 13px;
+  font-weight: 700;
+  font-stretch: 115%;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+
+.hiw2__pay-dots {
+  display: flex;
+  gap: 3px;
+}
+
+.hiw2__pay-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.hiw2__pay-amount {
+  font-family: var(--font-mona);
+  font-size: 36px;
+  font-weight: 800;
+  font-stretch: 115%;
+  color: #fff;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.hiw2__pay-methods {
+  display: flex;
+  gap: 8px;
+}
+
+.hiw2__pay-method {
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  font-family: var(--font-hubot);
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.hiw2__pay-method.is-active {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.hiw2__pay-ssl {
+  font-family: var(--font-hubot);
+  font-size: 11px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.28);
+  letter-spacing: 0.04em;
+}
+
+/* ── Actions visual ─────────────────────────────────────────────── */
+
+.hiw2__actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.hiw2__action-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(0,0,0,0.02);
+  border: 0.5px solid var(--border, rgba(0,0,0,0.1));
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.hiw2__action-btn:hover {
+  background: #fff;
+  border-color: rgba(0,0,0,0.18);
+}
+
+.hiw2__action-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  background: #fff;
+  border-radius: 7px;
+  border: 0.5px solid var(--border, rgba(0,0,0,0.1));
+  flex-shrink: 0;
+}
+
+.hiw2__action-label {
+  font-family: var(--font-hubot);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink, #1a1a18);
+}
+
+.hiw2__action-notice {
+  font-family: var(--font-hubot);
+  font-size: 12px;
+  font-weight: 600;
+  color: #b45309;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  text-align: center;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+/* ── Progress bar ───────────────────────────────────────────────── */
+
+.hiw2__progress {
+  display: flex;
+  border: 0.5px solid var(--border, rgba(0,0,0,0.1));
+  border-top: none;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  overflow: hidden;
+}
+
+.hiw2__progress-seg {
+  flex: 1;
+  height: 3px;
+  background: var(--border, rgba(0,0,0,0.08));
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s;
+  padding: 0;
+}
+
+.hiw2__progress-seg.is-done {
+  /* background set inline via accent */
+}
+
+/* ── CTA ────────────────────────────────────────────────────────── */
+
+.hiw2__cta {
+  margin-top: 52px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.hiw2__cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 28px;
+  background: var(--ink, #1a1a18);
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-family: var(--font-mona);
+  font-size: 14px;
+  font-weight: 700;
+  font-stretch: 115%;
+  letter-spacing: -0.01em;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.hiw2__cta-btn:hover {
+  opacity: 0.82;
+  transform: translateY(-1px);
+}
+
+.hiw2__cta-note {
+  font-family: var(--font-hubot);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-50, #888);
+  margin: 0;
+}
+
+.hiw2__cta-note strong {
+  font-family: var(--font-mona);
+  font-weight: 700;
+  font-stretch: 115%;
+  color: var(--ink, #1a1a18);
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+
+@media (max-width: 840px) {
+  .hiw2 { padding: 60px 0 72px; }
+  .hiw2__container { padding: 0 24px; }
+  .hiw2__stage { grid-template-columns: 1fr; }
+  .hiw2__info {
+    padding: 36px 0;
+    border-right: none;
+    border-bottom: 0.5px solid var(--border, rgba(0,0,0,0.1));
+  }
+  .hiw2__visual-pane { padding: 28px; }
+}
+
+@media (max-width: 560px) {
+  .hiw2 { padding: 48px 0 60px; }
+  .hiw2__container { padding: 0 18px; }
+  .hiw2__nav-label { display: none; }
+  .hiw2__nav-btn { padding: 12px 14px; }
+  .hiw2__title { font-size: 28px; }
+  .hiw2__step-title { font-size: 24px; }
+  .hiw2__cta { flex-direction: column; align-items: flex-start; gap: 14px; }
+}

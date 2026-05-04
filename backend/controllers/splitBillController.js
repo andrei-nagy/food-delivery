@@ -26,62 +26,39 @@ const getBaseUrl = (req) => {
     return "http://localhost:5173";
 };
 
-// ✅ MODIFICAT: Funcție helper pentru verificarea userului după split bill - FĂRĂ dezactivare
-const checkAndDeactivateUserAfterSplit = async (userId) => {
+// ✅ MODIFICAT: Funcție helper pentru calculul discountului proporțional
+const calculateProportionalPromoDiscount = (items, totalOrderAmount, promoDiscount, promoCode) => {
   try {
-    console.log(`🔍 [checkAndDeactivateUserAfterSplit] START - Checking user ${userId}`);
-    
-    // VERIFICĂ MAI ÎNTÂI DACĂ USERUL E ACTIV
-    const user = await userModel.findById(userId);
-    if (!user) {
-      console.log(`❌ [checkAndDeactivateUserAfterSplit] User ${userId} not found`);
-      return false;
+    if (!promoCode || !promoDiscount || promoDiscount <= 0 || totalOrderAmount <= 0) {
+      return 0;
     }
     
-    // ✅ IMPORTANT: NU mai facem userul inactiv aici!
-    // Doar logăm starea și lăsăm orderController să se ocupe de dezactivare
+    // Calculează subtotal-ul selectat
+    const selectedSubtotal = items.reduce((total, item) => {
+      return total + (item.price * item.quantity);
+    }, 0);
     
-    // Verifică dacă mai are comenzi neplătite în orderModel
-    const unpaidOrders = await orderModel.find({ 
-      userId: userId, 
-      payment: false 
+    // Calculează discountul proporțional
+    const discountPercentage = promoDiscount / totalOrderAmount;
+    const proportionalDiscount = selectedSubtotal * discountPercentage;
+    
+    console.log('📊 [calculateProportionalPromoDiscount]', {
+      selectedSubtotal,
+      totalOrderAmount,
+      promoDiscount,
+      discountPercentage,
+      proportionalDiscount
     });
     
-    console.log(`📊 [checkAndDeactivateUserAfterSplit] Found ${unpaidOrders.length} unpaid orders`);
-    
-    // Verifică dacă mai are split bills neplătite
-    const unpaidSplits = await SplitPayment.find({
-      userId: userId,
-      status: 'pending'
-    });
-
-    console.log(`📊 [checkAndDeactivateUserAfterSplit] Found ${unpaidSplits.length} unpaid split bills`);
-    
-    // ✅ SCHIMBARE: Doar logăm, NU facem userul inactiv
-    const totalUnpaid = unpaidOrders.length + unpaidSplits.length;
-    
-    if (totalUnpaid === 0) {
-      console.log(`✅ [checkAndDeactivateUserAfterSplit] User ${userId} could be deactivated (no unpaid orders/splits)`);
-      console.log(`   • BUT: Letting orderController handle deactivation`);
-      console.log(`   • Current isActive: ${user.isActive}`);
-      return true;
-    } else {
-      console.log(`⚠️ [checkAndDeactivateUserAfterSplit] User ${userId} still has ${totalUnpaid} unpaid items:`, {
-        orders: unpaidOrders.length,
-        splits: unpaidSplits.length
-      });
-      console.log(`   • User should remain ACTIVE`);
-      console.log(`   • Current isActive: ${user.isActive}`);
-      return false;
-    }
+    return proportionalDiscount;
   } catch (error) {
-    console.error("❌ Error in checkAndDeactivateUserAfterSplit:", error);
-    return false;
+    console.error('❌ Error calculating proportional promo discount:', error);
+    return 0;
   }
 };
 
 const splitBillController = {
-    // ✅ PLATĂ SPLIT BILL CU CARD
+    // ✅ PLATĂ SPLIT BILL CU CARD - MODIFICAT PENTRU PROMO DISCOUNT
     paySplitBillWithCard: async (req, res) => {
         const frontend_url = getBaseUrl(req);
 
@@ -89,15 +66,26 @@ const splitBillController = {
             const {
                 items,
                 amount,
+                subtotal, // ✅ ADĂUGAT: Subtotal fără discount
+                promoDiscount, // ✅ Discount proporțional calculat pe frontend
                 tipAmount,
                 originalOrderIds,
                 userId,
                 tableNo,
                 promoCode,
-                promoDiscount
+                isPromoApplied
             } = req.body;
 
-            console.log(`💳 [paySplitBillWithCard] Starting for user ${userId}, ${items.length} items, amount: ${amount}`);
+            console.log(`💳 [paySplitBillWithCard] START - User ${userId}`, {
+                itemsCount: items?.length || 0,
+                amount,
+                subtotal,
+                promoDiscount,
+                tipAmount,
+                promoCode,
+                isPromoApplied,
+                originalOrders: originalOrderIds?.length || 0
+            });
 
             // Validare
             if (!items || !Array.isArray(items) || items.length === 0) {
@@ -125,7 +113,21 @@ const splitBillController = {
 
             console.log(`📊 [paySplitBillWithCard] Found ${orders.length} orders`);
 
-            // Calculează suma totală pentru Stripe (în RON)
+            // ✅ CALCULEAZĂ TOTALUL COMENZII ORIGINALE PENTRU VERIFICARE
+            let totalOrderAmount = 0;
+            for (const order of orders) {
+                order.items.forEach(item => {
+                    totalOrderAmount += item.price * item.quantity;
+                });
+            }
+            
+            console.log('💰 [paySplitBillWithCard] Order totals:', {
+                totalOrderAmount,
+                selectedSubtotal: subtotal,
+                receivedPromoDiscount: promoDiscount
+            });
+
+            // Calculează suma totală pentru Stripe (în RON) - folosește amount care deja include discountul
             const totalAmountInRon = amount * 5.08; // Convertire EUR la RON
             const line_items = [{
                 price_data: {
@@ -155,11 +157,17 @@ const splitBillController = {
                 });
             }
 
+            // ✅ CREEAZĂ DESCRIERE PENTRU METADATA
+            const sessionDescription = `Split Bill: ${items.length} items`;
+            if (promoCode && isPromoApplied) {
+                sessionDescription += ` | Promo: ${promoCode} (-${promoDiscount?.toFixed(2) || '0'}€)`;
+            }
+
             // Crează sesiunea Stripe
             const session = await stripe.checkout.sessions.create({
                 line_items: line_items,
                 mode: "payment",
-                success_url: `${frontend_url}/verify?success=true&type=split&orderIds=${originalOrderIds.join(',')}&userId=${userId}&promoCode=${promoCode || ''}`,
+                success_url: `${frontend_url}/verify?success=true&type=split&orderIds=${originalOrderIds.join(',')}&userId=${userId}&promoCode=${promoCode || ''}&promoDiscount=${promoDiscount || 0}`,
                 cancel_url: `${frontend_url}/my-orders`,
                 metadata: {
                     userId,
@@ -168,9 +176,11 @@ const splitBillController = {
                     items: JSON.stringify(items),
                     itemCount: items.length.toString(),
                     amount: amount.toString(),
+                    subtotal: (subtotal || amount).toString(), // ✅ Trimitem și subtotal-ul
+                    promoDiscount: (promoDiscount || 0).toString(), // ✅ Trimitem discountul
                     tipAmount: tipAmount?.toString() || '0',
                     promoCode: promoCode || '',
-                    promoDiscount: promoDiscount?.toString() || '0',
+                    isPromoApplied: (isPromoApplied || false).toString(),
                     paymentType: 'split_bill'
                 }
             });
@@ -180,7 +190,9 @@ const splitBillController = {
                 userId,
                 originalOrderIds,
                 items,
-                amount,
+                amount, // Total cu discount aplicat
+                subtotal: subtotal || amount, // Subtotal fără discount
+                promoDiscount: promoDiscount || 0, // Discount proporțional
                 tipAmount: tipAmount || 0,
                 tableNo,
                 stripeSessionId: session.id,
@@ -188,19 +200,27 @@ const splitBillController = {
                 status: 'pending',
                 metadata: {
                     promoCode,
-                    promoDiscount,
+                    isPromoApplied: isPromoApplied || false,
                     itemsCount: items.length,
                     originalItems: items.map(item => ({
                         name: item.name,
                         quantity: item.quantity,
-                        price: item.price
+                        price: item.price,
+                        total: item.price * item.quantity
                     }))
                 }
             });
 
             await splitPayment.save();
 
-            console.log(`✅ [paySplitBillWithCard] Split payment ${splitPayment._id} saved for user ${userId}`);
+            console.log(`✅ [paySplitBillWithCard] Split payment saved:`, {
+                id: splitPayment._id,
+                userId,
+                amount,
+                subtotal: splitPayment.subtotal,
+                promoDiscount: splitPayment.promoDiscount,
+                itemsCount: items.length
+            });
 
             res.json({
                 success: true,
@@ -219,21 +239,32 @@ const splitBillController = {
         }
     },
 
-    // ✅ PLATĂ SPLIT BILL CU CASH
+    // ✅ PLATĂ SPLIT BILL CU CASH - MODIFICAT PENTRU PROMO DISCOUNT
     paySplitBillWithCash: async (req, res) => {
         try {
             const {
                 items,
                 amount,
+                subtotal, // ✅ ADĂUGAT: Subtotal fără discount
+                promoDiscount, // ✅ Discount proporțional calculat pe frontend
                 originalOrderIds,
                 userId,
                 tableNo,
                 tipAmount,
                 promoCode,
-                promoDiscount
+                isPromoApplied
             } = req.body;
 
-            console.log(`💵 [paySplitBillWithCash] Starting for user ${userId}, ${items.length} items, amount: ${amount}`);
+            console.log(`💵 [paySplitBillWithCash] START - User ${userId}`, {
+                itemsCount: items?.length || 0,
+                amount,
+                subtotal,
+                promoDiscount,
+                tipAmount,
+                promoCode,
+                isPromoApplied,
+                originalOrders: originalOrderIds?.length || 0
+            });
 
             // Validare
             if (!items || !Array.isArray(items) || items.length === 0) {
@@ -254,8 +285,22 @@ const splitBillController = {
 
             console.log(`📊 [paySplitBillWithCash] Processing ${orders.length} orders`);
 
-            // INCREMENTEAZĂ PROMO CODE USAGE (dacă există)
-            if (promoCode && promoCode !== "null" && promoCode !== "undefined") {
+            // ✅ CALCULEAZĂ TOTALUL COMENZII ORIGINALE PENTRU VERIFICARE
+            let totalOrderAmount = 0;
+            for (const order of orders) {
+                order.items.forEach(item => {
+                    totalOrderAmount += item.price * item.quantity;
+                });
+            }
+            
+            console.log('💰 [paySplitBillWithCash] Order totals:', {
+                totalOrderAmount,
+                selectedSubtotal: subtotal,
+                receivedPromoDiscount: promoDiscount
+            });
+
+            // ✅ INCREMENTEAZĂ PROMO CODE USAGE (dacă există și este aplicat)
+            if (promoCode && isPromoApplied && promoCode !== "null" && promoCode !== "undefined") {
                 try {
                     console.log(`🔄 [paySplitBillWithCash] Looking for promo code: ${promoCode}`);
                     const promoCodeDoc = await PromoCode.findOne({
@@ -290,13 +335,7 @@ const splitBillController = {
             // Actualizează fiecare order cu plățile parțiale
             for (const order of orders) {
                 console.log(`📝 [paySplitBillWithCash] Processing order: ${order._id}`);
-                console.log(`📊 Order ${order._id} payment status before:`, order.payment);
-                console.log(`📊 Items before:`, order.items.map(item => ({
-                    name: item.name,
-                    quantity: item.quantity,
-                    status: item.status,
-                    paidBy: item.paidBy?.length || 0
-                })));
+                console.log(`📊 Order payment status before:`, order.payment);
 
                 items.forEach(splitItem => {
                     const orderItem = order.items.find(item => 
@@ -306,12 +345,30 @@ const splitBillController = {
                     );
                     
                     if (orderItem) {
-                        console.log(`🍽️ [paySplitBillWithCash] Processing item: ${orderItem.name}, quantity: ${orderItem.quantity}`);
+                        console.log(`🍽️ [paySplitBillWithCash] Processing item: ${orderItem.name}, quantity: ${splitItem.quantity}`);
                         
                         // Inițializează paidBy dacă nu există
                         if (!orderItem.paidBy) {
                             orderItem.paidBy = [];
                         }
+
+                        // ✅ CALCULEAZĂ SUMA PENTRU ACEST ITEM (cu discount aplicat proporțional)
+                        const itemSubtotal = splitItem.price * splitItem.quantity;
+                        
+                        // Aplică discount proporțional acestui item
+                        let itemPromoDiscount = 0;
+                        if (promoDiscount > 0 && subtotal > 0) {
+                            const itemShare = itemSubtotal / subtotal;
+                            itemPromoDiscount = promoDiscount * itemShare;
+                        }
+                        
+                        const itemFinalAmount = Math.max(0, itemSubtotal - itemPromoDiscount);
+                        
+                        console.log(`💰 Item "${orderItem.name}" calculation:`, {
+                            itemSubtotal,
+                            itemPromoDiscount,
+                            itemFinalAmount
+                        });
 
                         // Verifică dacă utilizatorul a plătit deja pentru acest item
                         const existingPaymentIndex = orderItem.paidBy.findIndex(
@@ -320,7 +377,7 @@ const splitBillController = {
 
                         if (existingPaymentIndex >= 0) {
                             // Actualizează plățile existente
-                            orderItem.paidBy[existingPaymentIndex].amount += splitItem.price * splitItem.quantity;
+                            orderItem.paidBy[existingPaymentIndex].amount += itemFinalAmount;
                             orderItem.paidBy[existingPaymentIndex].quantity += splitItem.quantity;
                             orderItem.paidBy[existingPaymentIndex].paymentDate = new Date();
                             console.log(`💰 Updated existing payment for user ${userId} on item "${orderItem.name}"`);
@@ -328,12 +385,13 @@ const splitBillController = {
                             // Adaugă noua plată
                             orderItem.paidBy.push({
                                 userId,
-                                amount: splitItem.price * splitItem.quantity,
+                                amount: itemFinalAmount,
                                 quantity: splitItem.quantity,
                                 paymentDate: new Date(),
-                                paymentMethod: 'cash'
+                                paymentMethod: 'cash',
+                                promoDiscount: itemPromoDiscount // ✅ Salvează discountul aplicat acestui item
                             });
-                            console.log(`💰 Added new payment for user ${userId} on item "${orderItem.name}": ${splitItem.price * splitItem.quantity}`);
+                            console.log(`💰 Added new payment for user ${userId} on item "${orderItem.name}": ${itemFinalAmount} (with ${itemPromoDiscount} discount)`);
                         }
 
                         // Calculează totalul plătit pentru acest item
@@ -350,7 +408,7 @@ const splitBillController = {
                     }
                 });
 
-                // ✅ ADĂUGĂ: Apelează updatePaymentStatus dacă există
+                // ✅ ADĂUGĂ: Apelează updatePaymentStatus
                 if (typeof order.updatePaymentStatus === 'function') {
                     console.log(`🔄 [paySplitBillWithCash] Calling updatePaymentStatus for order ${order._id}`);
                     order.updatePaymentStatus();
@@ -371,11 +429,6 @@ const splitBillController = {
                 await order.save();
                 
                 console.log(`📊 Order ${order._id} payment status after:`, order.payment);
-                console.log(`📊 Items after:`, order.items.map(item => ({
-                    name: item.name,
-                    status: item.status,
-                    paidBy: item.paidBy?.map(p => ({ userId: p.userId, amount: p.amount })) || []
-                })));
             }
 
             // Salvează split payment pentru istoric
@@ -383,31 +436,28 @@ const splitBillController = {
                 userId,
                 originalOrderIds,
                 items,
-                amount,
+                amount, // Total cu discount aplicat
+                subtotal: subtotal || amount, // Subtotal fără discount
+                promoDiscount: promoDiscount || 0, // Discount proporțional
                 tipAmount: tipAmount || 0,
                 tableNo,
                 paymentMethod: 'cash',
                 status: 'completed',
                 metadata: {
                     promoCode,
-                    promoDiscount,
+                    isPromoApplied: isPromoApplied || false,
                     paidItems: items.map(item => ({
                         itemId: item._id,
                         name: item.name,
                         quantity: item.quantity,
-                        originalQuantity: item.originalQuantity,
+                        price: item.price,
                         amount: item.price * item.quantity
                     }))
                 }
             });
 
             await splitPayment.save();
-            console.log(`✅ [paySplitBillWithCash] Split payment ${splitPayment._id} saved`);
-
-            // ✅ VERIFICĂ DUPĂ PLATĂ DACĂ USERUL MAI ARE COMENZI NEPLĂTITE
-            if (userId) {
-                await checkAndDeactivateUserAfterSplit(userId);
-            }
+            console.log(`✅ [paySplitBillWithCash] Split payment ${splitPayment._id} saved with promo discount: ${promoDiscount || 0}`);
 
             res.json({
                 success: true,
@@ -415,6 +465,7 @@ const splitBillController = {
                 data: {
                     amountPaid: amount,
                     itemsPaid: items.length,
+                    promoDiscount: promoDiscount || 0,
                     orderIds: originalOrderIds,
                     paymentStatus: 'processed'
                 }
@@ -430,29 +481,43 @@ const splitBillController = {
         }
     },
 
-    // ✅ VERIFICARE SPLIT BILL (pentru Stripe webhook sau manual)
+    // ✅ VERIFICARE SPLIT BILL - MODIFICAT PENTRU PROMO DISCOUNT
     verifySplitBill: async (req, res) => {
-        const { orderIds, success, userId, promoCode, type } = req.body;
+        const { orderIds, success, userId, promoCode, promoDiscount, type } = req.body;
         
-        console.log(`🔍 [verifySplitBill] Starting verification for user ${userId}, orderIds: ${orderIds}`);
+        console.log(`🔍 [verifySplitBill] START verification:`, {
+            orderIds,
+            userId,
+            promoCode,
+            promoDiscount,
+            type
+        });
         
         try {
             if (success === "true" && type === "split") {
-                if (promoCode && promoCode !== "null" && promoCode !== "undefined") {
+                // ✅ INCREMENTEAZĂ PROMO CODE USAGE (dacă există)
+                if (promoCode && promoCode !== "null" && promoCode !== "undefined" && promoDiscount > 0) {
                     try {
-                        const promoCodeDoc = await PromoCode.findOne({ code: promoCode });
+                        const promoCodeDoc = await PromoCode.findOne({ 
+                            code: promoCode.toUpperCase().trim() 
+                        });
+                        
                         if (promoCodeDoc) {
-                            await PromoCode.findByIdAndUpdate(promoCodeDoc._id, {
-                                $inc: { usedCount: 1 }
-                            });
-                            console.log(`✅ Split bill promo code usage incremented: ${promoCode}`);
+                            const updatedPromo = await PromoCode.findByIdAndUpdate(
+                                promoCodeDoc._id,
+                                { $inc: { usedCount: 1 } },
+                                { new: true }
+                            );
+                            console.log(`✅ Split bill promo code usage incremented: ${promoCode} -> ${updatedPromo.usedCount}`);
+                        } else {
+                            console.log(`⚠️ Promo code not found: ${promoCode}`);
                         }
                     } catch (promoError) {
                         console.error("❌ Error incrementing split bill promo code:", promoError);
                     }
                 }
 
-                // Găsește split payment-ul după orderIds
+                // Găsește split payment-ul
                 const orderIdArray = orderIds.split(',');
                 const splitPayment = await SplitPayment.findOne({
                     originalOrderIds: { $all: orderIdArray },
@@ -473,7 +538,6 @@ const splitBillController = {
                         const order = await orderModel.findById(orderId);
                         if (order) {
                             console.log(`📝 [verifySplitBill] Processing order: ${order._id}`);
-                            console.log(`📊 Order ${order._id} payment status before:`, order.payment);
 
                             splitPayment.items.forEach(splitItem => {
                                 const orderItem = order.items.find(item => 
@@ -485,17 +549,30 @@ const splitBillController = {
                                 if (orderItem) {
                                     console.log(`🍽️ [verifySplitBill] Processing item: ${orderItem.name}`);
                                     
+                                    // ✅ CALCULEAZĂ DISCOUNTUL PENTRU ACEST ITEM
+                                    const itemSubtotal = splitItem.price * splitItem.quantity;
+                                    let itemPromoDiscount = 0;
+                                    
+                                    if (splitPayment.promoDiscount > 0 && splitPayment.subtotal > 0) {
+                                        const itemShare = itemSubtotal / splitPayment.subtotal;
+                                        itemPromoDiscount = splitPayment.promoDiscount * itemShare;
+                                    }
+                                    
+                                    const itemFinalAmount = Math.max(0, itemSubtotal - itemPromoDiscount);
+                                    
                                     if (!orderItem.paidBy) {
                                         orderItem.paidBy = [];
                                     }
 
+                                    // Adaugă plată cu discount
                                     orderItem.paidBy.push({
                                         userId,
-                                        amount: splitItem.price * splitItem.quantity,
+                                        amount: itemFinalAmount,
                                         quantity: splitItem.quantity,
                                         paymentDate: new Date(),
                                         paymentMethod: 'card',
-                                        stripeSessionId: splitPayment.stripeSessionId
+                                        stripeSessionId: splitPayment.stripeSessionId,
+                                        promoDiscount: itemPromoDiscount // ✅ Salvează discountul
                                     });
 
                                     // Calculează totalul plătit pentru acest item
@@ -503,21 +580,17 @@ const splitBillController = {
                                         sum + (payment.amount || 0), 0);
                                     const itemTotal = orderItem.price * orderItem.quantity;
                                     
-                                    console.log(`💰 Item "${orderItem.name}" paid: ${totalPaid}/${itemTotal}`);
+                                    console.log(`💰 Item "${orderItem.name}" paid: ${totalPaid}/${itemTotal} (with ${itemPromoDiscount} discount)`);
                                     
                                     orderItem.status = totalPaid >= itemTotal ? 'fully_paid' : 'partially_paid';
-                                } else {
-                                    console.log(`⚠️ [verifySplitBill] Item not found in order:`, splitItem);
                                 }
                             });
 
-                            // ✅ ADĂUGĂ: Apelează updatePaymentStatus dacă există
+                            // Actualizează statusul order-ului
                             if (typeof order.updatePaymentStatus === 'function') {
                                 console.log(`🔄 [verifySplitBill] Calling updatePaymentStatus for order ${order._id}`);
                                 order.updatePaymentStatus();
                             } else {
-                                console.log(`⚠️ [verifySplitBill] updatePaymentStatus not available, using fallback logic`);
-                                // Fallback logic
                                 const allItemsFullyPaid = order.items.every(item => 
                                     item.status === 'fully_paid'
                                 );
@@ -530,20 +603,8 @@ const splitBillController = {
                             }
 
                             await order.save();
-                            
-                            console.log(`📊 Order ${order._id} payment status after:`, order.payment);
-                            console.log(`📊 Payment details:`, {
-                                paymentType: order.paymentDetails?.paymentType,
-                                fullyPaidByUser: order.paymentDetails?.fullyPaidByUser,
-                                totalPaid: order.totalPaid,
-                                remainingAmount: order.remainingAmount
-                            });
+                            console.log(`✅ [verifySplitBill] Order ${order._id} updated successfully`);
                         }
-                    }
-
-                    // ✅ VERIFICĂ DUPĂ PLATĂ DACĂ USERUL MAI ARE COMENZI NEPLĂTITE
-                    if (userId) {
-                        await checkAndDeactivateUserAfterSplit(userId);
                     }
 
                     console.log(`✅ [verifySplitBill] Split bill payment verified for orders: ${orderIds}`);
@@ -552,7 +613,7 @@ const splitBillController = {
                         message: "Split bill payment verified successfully" 
                     });
                 } else {
-                    console.log(`❌ [verifySplitBill] Split payment not found for orderIds: ${orderIds}, userId: ${userId}`);
+                    console.log(`❌ [verifySplitBill] Split payment not found`);
                     res.status(404).json({ 
                         success: false, 
                         message: "Split payment not found" 
@@ -594,6 +655,7 @@ const splitBillController = {
             // Calculează statistici
             let totalAmount = 0;
             let paidAmount = 0;
+            let promoDiscountApplied = 0;
             const paymentDetails = [];
             const usersInvolved = new Set();
 
@@ -605,12 +667,14 @@ const splitBillController = {
                 if (item.paidBy && item.paidBy.length > 0) {
                     item.paidBy.forEach(payment => {
                         itemPaid += payment.amount || 0;
+                        promoDiscountApplied += payment.promoDiscount || 0; // ✅ Adună discounturile aplicate
                         usersInvolved.add(payment.userId);
                         
                         paymentDetails.push({
                             itemName: item.name,
                             userId: payment.userId,
                             amount: payment.amount,
+                            promoDiscount: payment.promoDiscount || 0,
                             quantity: payment.quantity,
                             paymentMethod: payment.paymentMethod,
                             paymentDate: payment.paymentDate
@@ -620,8 +684,8 @@ const splitBillController = {
                 paidAmount += itemPaid;
             });
 
-            const remainingAmount = totalAmount - paidAmount;
-            const paymentProgress = totalAmount > 0 ? (paidAmount / totalAmount) * 100 : 0;
+            const remainingAmount = totalAmount - paidAmount - promoDiscountApplied;
+            const paymentProgress = totalAmount > 0 ? ((paidAmount + promoDiscountApplied) / totalAmount) * 100 : 0;
 
             // Verifică dacă order-ul este complet plătit
             let isOrderFullyPaid = false;
@@ -638,6 +702,7 @@ const splitBillController = {
                     tableNo: order.tableNo,
                     totalAmount,
                     paidAmount,
+                    promoDiscountApplied,
                     remainingAmount,
                     paymentProgress: Math.round(paymentProgress * 100) / 100,
                     usersInvolved: Array.from(usersInvolved),

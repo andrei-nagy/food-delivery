@@ -24,8 +24,8 @@ import { AnimatePresence } from "framer-motion";
 import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
 import GlobalNotification from "./components/GlobalNotifications/GlobalNotifications";
 import NotFound from "./components/NotFound/NotFound";
-import SessionExpiredModal from "./components/SessionExpiredModal/SessionExpiredModal";
 import OrderCompleted from "./pages/OrderCompleted/OrderCompleted";
+import OrderToast from "./components/OrderToast/OrderToast";
 
 const App = () => {
   const {
@@ -37,11 +37,10 @@ const App = () => {
     isUserAuthenticated,
     checkUserStatus,
     forceStatusCheck,
-    restaurantData // 👈 AICI AVEM ACCES LA DEFAULT LANGUAGE
+    restaurantData
   } = useContext(StoreContext);
   const [showLogin, setShowLogin] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isHomePage = location.pathname === "/";
@@ -50,7 +49,6 @@ const App = () => {
   const token = localStorage.getItem("token");
   const tableNumber = localStorage.getItem("tableNumber");
 
-  // 🔥 FUNCȚIE PENTRU A OBȚINE CODUL LIMBII
   const getLanguageCode = (languageName) => {
     const languageMap = {
       'English': 'en',
@@ -68,14 +66,11 @@ const App = () => {
     return languageMap[languageName] || 'en';
   };
 
-  // 🔥 VERIFICĂ ȘI SETEAZĂ LIMBA DIN RESTAURANT DATA
   useEffect(() => {
     if (restaurantData?.defaultLanguage) {
       const defaultLangCode = getLanguageCode(restaurantData.defaultLanguage);
       const savedLanguage = sessionStorage.getItem("language");
-
       
-      // Dacă nu există limbă salvată, setează limba default
       if (!savedLanguage) {
         sessionStorage.setItem("language", defaultLangCode);
       }
@@ -93,24 +88,18 @@ const App = () => {
           params: { userId },
         }
       );
-
       
-      // ✅ LOGICA REVISATĂ: Verifică toate scenariile
       if (response.data.success) {
-        // 1. Dacă userul este DEJA INACTIV - REDIRECT (e deja pe order-completed)
         if (response.data.isActive === false && response.data.reason === 'user_inactive') {
           return true;
         }
         
-        // 2. Dacă backend-ul spune să redirecționezi ȘI userul a plătit personal pentru toate
         if (response.data.shouldRedirectToOrderCompleted === true) {
-          // Verifică dacă e split bill cu alții
           if (response.data.paymentType === 'split_bill_with_others' || 
               response.data.userPaidForEverything === false) {
             return false;
           }
           
-          // Dacă ajunge aici, înseamnă că e plată completă personală
           return true;
         }
       }
@@ -239,7 +228,6 @@ const App = () => {
 
       stopStatusPolling();
       setUserBlocked(false);
-      setShowSessionExpiredModal(false);
 
       return () => clearTimeout(timer);
     } else {
@@ -249,7 +237,6 @@ const App = () => {
         startStatusPolling();
       } else {
         setUserBlocked(false);
-        setShowSessionExpiredModal(false);
         stopStatusPolling();
       }
     }
@@ -268,53 +255,12 @@ const App = () => {
     } else {
       stopStatusPolling();
       setUserBlocked(false);
-      setShowSessionExpiredModal(false);
     }
 
     return () => {
       stopStatusPolling();
     };
   }, [token, userId, tableNumber]);
-
-  useEffect(() => {
-    if (userBlocked && isHomePage) {
-      setShowSessionExpiredModal(true);
-    } else {
-      setShowSessionExpiredModal(false);
-    }
-  }, [userBlocked, isHomePage]);
-
-  const handleCloseSessionModal = () => {
-    setShowSessionExpiredModal(false);
-  };
-
-  const handleExtendTime = async (minutes) => {
-    if (!userId) {
-      return false;
-    }
-
-    try {
-      const response = await axios.post(
-        `${url}/api/user/extend-session-expired`,
-        {
-          userId: userId,
-          minutes: minutes,
-        },
-        {
-          headers: { token },
-        }
-      );
-
-      if (response.data.success) {
-        forceStatusCheck();
-        return true;
-      } else {
-        return false;
-      }
-    } catch (error) {
-      return false;
-    }
-  };
 
   return (
     <LanguageProvider>
@@ -323,18 +269,11 @@ const App = () => {
         <>
           {showLogin ? <LoginPopup setShowLogin={setShowLogin} /> : null}
 
-          {isHomePage && (
-            <SessionExpiredModal
-              isOpen={showSessionExpiredModal}
-              onClose={handleCloseSessionModal}
-              onExtendTime={handleExtendTime}
-            />
-          )}
-
           <div className="app">
             <ToastContainer />
+            <OrderToast/>
             <ScrollToTop />
-            <GlobalNotification />
+            {/* <GlobalNotification /> */}
             <Navbar setShowLogin={setShowLogin} />
             <AnimatePresence mode="wait">
               <Routes>

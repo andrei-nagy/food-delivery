@@ -1,16 +1,13 @@
+/* ══════════════════════════════════════════
+   NAVBAR — stiluri de bază
+══════════════════════════════════════════ */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.logo .navbar {
-  width: 150px;
-}
-
-.logo {
-  width: 150px;
-}
+.logo { width: 150px; }
 
 .navbar-menu {
   display: flex;
@@ -30,716 +27,451 @@
 .navbar-menu a::after {
   content: "";
   position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 0;
-  height: 2px;
+  bottom: 0; left: 50%;
+  width: 0; height: 2px;
   background: #000;
   transition: width 0.3s ease, left 0.3s ease;
 }
 
-.navbar-menu a:hover::after {
-  width: 100%;
-  left: 0;
+.navbar-menu a:hover::after { width: 100%; left: 0; }
+
+.navbar-menu a.active { color: #ff5722 !important; font-weight: 600; }
+.navbar-menu a.active::after {
+  content: ""; position: absolute; bottom: 0; left: 0;
+  width: 100%; height: 2px; background: #ff5722;
 }
 
-.navbar-right {
-  display: flex;
-  align-items: center;
-  gap: 40px;
-}
+.navbar-right { display: flex; align-items: center; gap: 40px; }
 
 .navbar button {
-  background: transparent;
-  font-size: 16px;
-  color: #49557e;
-  border: 1px solid #d7d7d7;
-  padding: 10px 30px;
-  border-radius: 50px;
-  cursor: pointer;
-  transition: 0.3s;
+  background: transparent; font-size: 16px; color: #49557e;
+  border: 1px solid #d7d7d7; padding: 10px 30px;
+  border-radius: 50px; cursor: pointer; transition: 0.3s;
 }
 
-.language-switcher {
-  position: relative;
-  cursor: pointer;
-}
-
-.arrow_down_language{
-  width: 12px;
-  margin: 5px;
-}
+/* Language */
+.language-switcher { position: relative; cursor: pointer; }
 
 .language-dropdown {
-  display: flex;
-  align-items: center;
-  padding: 5px 8px;
-  background-color: transparent;
-  font-size: 15px;
-  border-radius: 5px;
+  display: flex; align-items: center;
+  padding: 5px 8px; background-color: transparent;
+  font-size: 15px; border-radius: 5px;
 }
 
-.language-selected {
-  display: flex;
-  align-items: center;
-}
-
-.language-selected .flag {
-  width: 20px;
-  height: 20px;
-  margin-right: 5px;
-}
-
-.language-selected img {
-  object-fit: cover;
-}
+.language-selected { display: flex; align-items: center; }
+.language-selected .flag { width: 20px; height: 20px; margin-right: 5px; }
+.language-selected img { object-fit: cover; }
 
 .dropdown-options {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background-color: white;
-  border: 1px solid #ccc;
-  width: 100%;
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
- padding: 8px 2px; /* ADAUGĂ MAI MULT SPAȚIU AICI */
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  min-width: 75px; /* ASIGURĂ-TE CĂ E SUFICIENT DE LAT */
-left: -15px;
-}
-
-.arrow_down_language {
-  width: 12px;
-  margin: 5px;
-  transition: transform 0.3s ease;
-}
-
-.arrow_down_language.rotated {
-  transform: rotate(180deg);
-}
-
-.dropdown-options {
+  position: absolute; top: 100%; left: -15px;
+  background-color: white; border: 1px solid #ccc;
+  min-width: 75px; z-index: 9999;
+  display: flex; flex-direction: column;
+  padding: 8px 2px; border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   overflow: hidden;
 }
 
 .dropdown-option {
-  display: flex;
-  align-items: center;
-  padding: 5px 10px;
-  font-size: 14px;
-  cursor: pointer;
+  display: flex; align-items: center;
+  padding: 5px 10px; font-size: 14px; cursor: pointer;
 }
+.dropdown-option:hover { background-color: #f0f0f0; }
+.dropdown-option .flag { width: 20px; height: 20px; margin-right: 5px; object-fit: cover; }
 
-.dropdown-option:hover {
-  background-color: #f0f0f0;
-}
-
-.dropdown-option .flag {
-  width: 20px;
-  height: 20px;
-  margin-right: 5px;
-  object-fit: cover;
-}
-
-.navbar li {
-  cursor: pointer
-}
-
-.navbar-cart {
-  position: relative;
-  cursor: pointer;
-}
-
-/* === ANIMAȚII ȘI STILURI MODERNE PENTRU CART INDICATOR === */
-
-/* Indicator pentru desktop */
-.navbar-cart .dot {
-  position: absolute;
-  min-width: 20px;
-  min-height: 20px;
-  background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-  border-radius: 50%;
-  top: -8px;
-  right: -8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
-  border: 2px solid white;
-  box-shadow: 0 3px 8px rgba(255, 107, 107, 0.4);
-  animation: dotPulse 0.6s ease-out;
-  transform-origin: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Indicator pentru mobile footer */
-.mobile-footer-item .dot {
-  position: absolute;
-  min-width: 20px;
-  min-height: 20px;
-  background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-  border-radius: 50%;
-  top: -5px;
-  right: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
-  border: 2px solid white;
-  box-shadow: 0 3px 8px rgba(255, 107, 107, 0.4);
-  animation: dotPulse 0.6s ease-out;
-  transform-origin: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Animatie pentru cand apare un nou produs */
-@keyframes dotPulse {
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* Animatie pentru hover */
-.navbar-cart:hover .dot,
-.mobile-footer-item:hover .dot {
-  transform: scale(1.1);
-  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.6);
-}
-
-/* Varianta mai mare pentru numere mai mari */
-.navbar-cart .dot.large-number,
-.mobile-footer-item .dot.large-number {
-  min-width: 20px;
-  min-height: 20px;
-  font-size: 10px;
-}
-
-/* Varianta foarte mare pentru numere foarte mari */
-.navbar-cart .dot.xlarge-number,
-.mobile-footer-item .dot.xlarge-number {
-  min-width: 22px;
-  min-height: 22px;
-  font-size: 9px;
-}
-
-/* Stil special pentru 0 - ascuns elegant */
-.navbar-cart .dot.zero,
-.mobile-footer-item .dot.zero {
-  transform: scale(0);
-  opacity: 0;
-}
-
-/* === STILURI PENTRU DOTPRODUCTS (cea din partea de pay) === */
-.mobile-footer-item .dotProducts {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  width: 22px;
-  height: 22px;
-  background: linear-gradient(135deg, #4ecdc4, #44a08d);
-  color: white;
-  border-radius: 50%;
-  font-size: 11px;
-  font-weight: 700;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 2px solid white;
-  box-shadow: 0 3px 8px rgba(78, 205, 196, 0.4);
-  animation: dotSlideIn 0.5s ease-out;
-  transform-origin: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes dotSlideIn {
-  0% {
-    transform: translateY(-10px) scale(0);
-    opacity: 0;
-  }
-  70% {
-    transform: translateY(2px) scale(1.1);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-
-.mobile-footer-item:hover .dotProducts {
-  transform: scale(1.1);
-  box-shadow: 0 5px 15px rgba(78, 205, 196, 0.6);
-}
-
-/* Variante pentru numere mai mari */
-.mobile-footer-item .dotProducts.large-number {
-  width: 20px;
-  height: 20px;
-  font-size: 10px;
-}
-
-.mobile-footer-item .dotProducts.xlarge-number {
-  width: 22px;
-  height: 22px;
-  font-size: 9px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .navbar-cart .dot {
-    min-width: 20px;
-    min-height: 20px;
-    font-size: 10px;
-    top: -5px;
-    right: -5px;
-  }
-  
-  .mobile-footer-item .dot {
-    min-width: 20px;
-    min-height: 20px;
-    font-size: 12px;
-    top: -3px;
-    right: 12px;
-  }
-  
-  .mobile-footer-item .dotProducts {
-    width: 20px;
-    height: 20px;
-    font-size: 12px;
-  }
-}
-
-.navbar-profile {
-  position: relative;
-}
-
-.nav-profile-dropdown {
-  position: absolute;
-  display: none;
-  right: 0;
-  z-index: 1;
-}
-
+/* Profile */
+.navbar-profile { position: relative; }
+.nav-profile-dropdown { position: absolute; display: none; right: 0; z-index: 1; }
 .navbar-profile:hover .nav-profile-dropdown {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background-color: #fff2ef;
-  padding: 12px 25px;
-  border-radius: 4px;
-  border: 1px solid tomato;
-  outline: 2px solid white;
-  list-style: none;
+  display: flex; flex-direction: column; gap: 10px;
+  background-color: #fff2ef; padding: 12px 25px;
+  border-radius: 4px; border: 1px solid tomato;
+  outline: 2px solid white; list-style: none;
+}
+.nav-profile-dropdown li { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.nav-profile-dropdown img { width: 20px; }
+.nav-profile-dropdown li:hover { color: tomato; }
+
+/* Desktop cart/waiter */
+.navbar-cart { position: relative; cursor: pointer; }
+.navbar-waiter img { width: 32px; }
+.navbar-waiter, .navbar-myorders { cursor: pointer; }
+.navbar-pay-icon { height: 23px; }
+.navbar-menu-icon { height: 22px !important; }
+
+.navbar-cart .dot {
+  position: absolute; min-width: 20px; min-height: 20px;
+  background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+  border-radius: 50%; top: -8px; right: -8px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 11px; font-weight: 700;
+  border: 2px solid white;
+  box-shadow: 0 3px 8px rgba(255,107,107,0.4);
+  animation: dotPulse 0.6s ease-out;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
 }
 
-.nav-profile-dropdown li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
+.navbar-cart .dot.zero { transform: scale(0); opacity: 0; }
+
+@keyframes dotPulse {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-.nav-profile-dropdown img {
-  width: 20px;
+/* Visibility */
+.mobile { display: none; }
+.desktop { display: block; }
+.hide-menu { display: none !important; }
+.welcome-navbar { display: flex; justify-content: center; align-items: center; height: 100%; width: 100%; }
+
+/* ══════════════════════════════════════════
+   SHARED BADGE + RIPPLE
+══════════════════════════════════════════ */
+.mf-badge {
+  position: absolute;
+  top: -4px; right: -2px;
+  min-width: 16px; height: 16px;
+  background: #f97316; color: #fff;
+  font-size: 9px; font-weight: 700;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #fff;
+  padding: 0 3px;
+  font-family: 'Inter', system-ui, sans-serif;
+  animation: mfBadgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 2;
+}
+.mf-badge--teal { background: #0f6e56; }
+.mf-badge--hidden { display: none; }
+
+@keyframes mfBadgePop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
 }
 
-.nav-profile-dropdown li:hover {
-  color: tomato
+.mf-ripple {
+  position: absolute;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: rgba(249,115,22,0.35);
+  pointer-events: none;
+  left: 50%; top: 50%;
+  margin-left: -10px; margin-top: -10px;
+  animation: mfRipple 0.45s ease-out forwards;
+}
+@keyframes mfRipple {
+  from { transform: scale(0); opacity: 1; }
+  to   { transform: scale(3.5); opacity: 0; }
 }
 
-.waiter-img {
-  width: 30px;
-  height: 30px;
-}
-
-/* === MOBILE FOOTER CU EFECTE DE ACTIVE === */
-
-.mobile-footer {
-  display: none;
+/* ══════════════════════════════════════════
+   VARIANTA 1 — Pill portocaliu solid
+══════════════════════════════════════════ */
+.mf-v1 {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background-color: #fff;
+  bottom: 0; left: 0; right: 0;
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
+  padding: 8px 8px max(10px, env(safe-area-inset-bottom));
   display: flex;
-  justify-content: space-around;
   align-items: center;
-  border-top: 1px solid #ccc;
-  /* padding: 10px 10px; */
+  justify-content: space-between;
+  gap: 4px;
   z-index: 1000;
 }
 
-.mobile-footer-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+.mf-v1-item {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer; padding: 4px 2px; border-radius: 12px;
   position: relative;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 8px 12px;
-  border-radius: 12px;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Efectul de active pentru item-urile mobile */
-.mobile-footer-item.active {
-  transform: scale(1.1);
-  background: linear-gradient(135deg, rgba(255, 87, 34, 0.1), rgba(255, 87, 34, 0.05));
-  box-shadow: 0 4px 12px rgba(255, 87, 34, 0.15);
-}
-
-.mobile-footer-item.active img {
-  transform: scale(1.15);
-  filter: drop-shadow(0 2px 4px rgba(255, 87, 34, 0.3));
-}
-
-.mobile-footer-item.active span {
-  color: #ff5722;
-  font-weight: 600;
-  text-shadow: 0 1px 2px rgba(255, 87, 34, 0.2);
-}
-
-.mobile-footer-item img {
-  height: 25px;
-  margin-bottom: 5px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  top: 1px;
+.mf-v1-ico {
+  width: 42px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 11px;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
+  color: #b0b8c4;
 }
 
-.mobile-footer-item span {
-  font-size: 15px;
-  color: #333;
-  transition: all 0.3s ease;
+.mf-v1-ico svg { transition: all 0.2s ease; }
+
+.mf-v1-lbl {
+  font-size: 9px; font-weight: 500; color: #b0b8c4;
+  transition: all 0.18s; line-height: 1;
+  font-family: 'Inter', 'Outfit', system-ui, sans-serif;
 }
 
-/* Efect de hover pentru item-urile neactive */
-.mobile-footer-item:not(.active):hover {
+/* Active */
+.mf-v1-item.active .mf-v1-ico {
+  background: #f97316;
+  box-shadow: 0 4px 14px rgba(249,115,22,0.30);
   transform: translateY(-2px);
-  background: rgba(255, 87, 34, 0.05);
+  color: #fff;
+}
+.mf-v1-item.active .mf-v1-lbl { color: #f97316; font-weight: 700; }
+
+/* Hover non-active */
+.mf-v1-item:not(.active):not(.mf-v1-order):hover .mf-v1-ico { color: #f97316; }
+.mf-v1-item:not(.active):not(.mf-v1-order):hover .mf-v1-lbl { color: #f97316; }
+
+/* Order button */
+.mf-v1-order { flex: 1.2; }
+.mf-v1-order .mf-v1-ico {
+  width: 48px; height: 38px; border-radius: 14px;
+  background: #f97316;
+  box-shadow: 0 4px 14px rgba(249,115,22,0.28);
+  color: #fff;
+}
+.mf-v1-order .mf-v1-lbl { color: #f97316; font-weight: 700; }
+.mf-v1-order.active .mf-v1-ico {
+  transform: translateY(-3px) scale(1.06);
+  box-shadow: 0 6px 20px rgba(249,115,22,0.40);
+  background: #e8650a;
 }
 
-.mobile-footer-item:not(.active):hover img {
-  transform: scale(1.08);
+/* ══════════════════════════════════════════
+   VARIANTA 2 — Buton central ridicat
+══════════════════════════════════════════ */
+.mf-v2 {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
+  padding: 10px 4px max(4px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  z-index: 1000;
 }
 
-.mobile-footer-item:not(.active):hover span {
-  color: #ff5722;
+.mf-v2-item {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  cursor: pointer; position: relative; padding: 2px 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.navbar-waiter img{
-  width: 32px;
+.mf-v2-ico {
+  width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: #727478;
 }
 
-/* Default (Desktop) */
-.mobile {
+.mf-v2-dot {
+  position: absolute; bottom: -7px; left: 50%;
+  transform: translateX(-50%) scale(0);
+  width: 5px; height: 5px; border-radius: 50%; background: #f97316;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mf-v2-lbl {
+  font-size: 9px; font-weight: 500; color: #727478;
+  transition: all 0.18s; margin-top: 9px; line-height: 1;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.mf-v2-item.active .mf-v2-ico { transform: translateY(-2px); color: #f97316; }
+.mf-v2-item.active .mf-v2-dot { transform: translateX(-50%) scale(1); }
+.mf-v2-item.active .mf-v2-lbl { color: #f97316; font-weight: 700; }
+
+/* Order ring */
+.mf-v2-order { flex: 1.3; }
+.mf-v2-order .mf-v2-lbl { margin-top: 6px; }
+
+.mf-v2-ring {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: #f97316;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(249,115,22,0.32);
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  margin-top: -20px;
+  color: #fff;
+}
+
+.mf-v2-order.active .mf-v2-ring {
+  transform: scale(1.1);
+  box-shadow: 0 6px 22px rgba(249,115,22,0.42);
+  background: #e8650a;
+}
+
+/* ══════════════════════════════════════════
+   VARIANTA 3 — Pill expandabil cu label
+══════════════════════════════════════════ */
+.mf-v3 {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
+  padding: 8px 10px max(10px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  z-index: 1000;
+}
+
+.mf-v3-item {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  cursor: pointer; padding: 10px 8px; border-radius: 16px;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  color: #b0b8c4;
+}
+
+.mf-v3-item svg { flex-shrink: 0; transition: all 0.2s; }
+
+.mf-v3-lbl {
+  font-size: 12px; font-weight: 600; color: #b0b8c4;
+  transition: all 0.2s; white-space: nowrap;
   display: none;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
-.desktop {
-  display: block;
+/* Active — expand */
+.mf-v3-item.active {
+  background: #fff4ec;
+  flex: 2;
+  color: #f97316;
+}
+.mf-v3-item.active .mf-v3-lbl { display: block; color: #f97316; }
+
+/* Non-active hover */
+.mf-v3-item:not(.active):not(.mf-v3-order):hover { color: #f97316; background: #fff9f5; }
+
+/* Order — always filled circle */
+.mf-v3-order {
+  flex: 0 0 44px;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: #f97316;
+  box-shadow: 0 4px 14px rgba(249,115,22,0.28);
+  color: #fff;
+  padding: 0;
+}
+.mf-v3-order.active {
+  background: #e8650a;
+  transform: scale(1.08);
+  flex: 0 0 44px;
 }
 
-/* Vizibilitatea doar pe ecrane mici, sub 1024px */
+/* ══════════════════════════════════════════
+   VARIANTA 4 — Dark floating pill
+══════════════════════════════════════════ */
+.mf-v4-wrap {
+  position: fixed;
+  bottom: 10px;
+  left: 10px; right: 10px;
+  background: #1a1d23;
+  border-radius: 22px;
+  padding: 8px 10px max(10px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  z-index: 1000;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+
+.mf-v4-item {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer; padding: 4px 2px; border-radius: 12px;
+  position: relative;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mf-v4-ico {
+  width: 38px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  color: #4a5060;
+}
+
+.mf-v4-lbl {
+  font-size: 9px; font-weight: 500; color: #4a5060;
+  transition: all 0.18s; line-height: 1;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Active */
+.mf-v4-item.active .mf-v4-ico {
+  background: #f97316;
+  box-shadow: 0 4px 16px rgba(249,115,22,0.40);
+  transform: translateY(-2px);
+  color: #fff;
+}
+.mf-v4-item.active .mf-v4-lbl { color: #f97316; font-weight: 700; }
+
+.mf-v4-item:not(.active):not(.mf-v4-order):hover .mf-v4-ico { color: #818898; }
+.mf-v4-item:not(.active):not(.mf-v4-order):hover .mf-v4-lbl { color: #818898; }
+
+/* Order */
+.mf-v4-order { flex: 1.2; }
+.mf-v4-order .mf-v4-ico {
+  width: 48px; height: 38px; border-radius: 14px;
+  background: #f97316;
+  box-shadow: 0 4px 14px rgba(249,115,22,0.32);
+  color: #fff;
+}
+.mf-v4-order .mf-v4-lbl { color: #f97316; font-weight: 700; }
+.mf-v4-order.active .mf-v4-ico {
+  transform: translateY(-3px) scale(1.08);
+  box-shadow: 0 8px 24px rgba(249,115,22,0.46);
+  background: #e8650a;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
 @media only screen and (max-width: 1024px) {
-  .language-dropdown {
-    display: flex;
-    align-items: center;
-    padding: 3px 4px;
-    background-color: transparent;
-    font-size: 15px;
-    border-radius: 5px;
-  }
-  .mobile-footer {
-    display: flex;
-    justify-content: space-evenly;
-  }
-  .desktop{
-    display: none;
-  }
+  .mobile-footer, .mf-v1, .mf-v2, .mf-v3, .mf-v4-wrap { display: flex; }
+  .desktop { display: none; }
+  .language-dropdown { padding: 3px 4px; }
 }
 
-/* Ascunde secțiunea pe ecrane mai mari */
 @media only screen and (min-width: 1025px) {
-  .mobile-footer {
-    display: none;
-    justify-content: space-around;
-    align-items: center;
-    margin: 20px auto;
-    padding: 10px 20px;
-    max-width: 800px;
-    background-color: #f8f9fa;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    max-height: 100px;
-  }
-
-  .mobile-footer:hover {
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  }
-
-  .mobile-footer-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-  }
-
-  .mobile-footer-item img {
-    width: 50px;
-    height: 50px;
-    margin-bottom: 5px;
-    transition: transform 0.3s ease;
-  }
-
-  .mobile-footer-item span {
-    font-size: 16px;
-    font-weight: 500;
-    color: #333;
-  }
-
-  .mobile-footer-item:hover img {
-    transform: scale(1.1);
-  }
-
-  .mobile-footer-item:hover span {
-    color: #ff5722;
-  }
-
-  /* Specific for larger screens */
-  @media (min-width: 1024px) {
-    .mobile-footer {
-      max-width: 1000px;
-      padding: 20px;
-    }
-
-    .mobile-footer-item img {
-      width: 60px;
-      height: 60px;
-    }
-
-    .mobile-footer-item span {
-      font-size: 18px;
-    }
-  }
+  .mf-v1, .mf-v2, .mf-v3, .mf-v4-wrap { display: none !important; }
 }
 
 @media (max-width: 1050px) {
-  .navbar .logo {
-    width: 115px;
-    top: 5px;
-    position: relative;
-  }
-
-  .navbar-menu {
-    gap: 20px;
-    font-size: 17px;
-  }
-
-  .navbar-right {
-    gap: 30px;
-  }
-
-  .navbar-right img {
-    width: 22px;
-  }
-
-  .navbar-right button {
-    padding: 8px 25px;
-  }
+  .navbar .logo { width: 115px; top: 5px; position: relative; }
+  .navbar-menu { gap: 20px; font-size: 17px; }
+  .navbar-right { gap: 30px; }
+  .navbar-right img { width: 22px; }
 }
 
 @media (max-width: 900px) {
-  .navbar .logo {
-    width: 110px;
-    top: 5px;
-    position: relative;
-  }
-
-  .navbar-menu {
-    gap: 15px;
-    font-size: 16px;
-  }
-
-  .navbar-right {
-    gap: 20px;
-  }
-
-  .navbar-right img {
-    width: 20px;
-  }
-
-  .navbar-right button {
-    padding: 7px 20px;
-    font-size: 15px;
-  }
+  .navbar .logo { width: 105px; top: 5px; position: relative; }
+  .navbar-menu { gap: 15px; font-size: 16px; }
+  .navbar-right { gap: 20px; }
+  .navbar-right img { width: 20px; }
 }
 
-@media (max-width: 750px) {
-  .navbar-menu {
-    display: none;
-  }
-}
+@media (max-width: 750px) { .navbar-menu { display: none; } }
 
-/* Stiluri pentru dispozitive mobile (sub 768px lățime) */
 @media (max-width: 768px) {
   .navbar-cart {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
-    background-color: white;
-    padding: 10px;
-    border-radius: 20%;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border: 1px solid #ff634759;
+    position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+    background-color: white; padding: 10px; border-radius: 20%;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #ff634759;
   }
-
-  .navbar-cart img {
-    width: 24px;
-    height: 24px;
-  }
-
-  .navbar-cart .dot {
-    top: -4px;
-    right: -4px;
-    min-width: 20px;
-    min-height: 20px;
-  }
-
-  .mobile-footer-item .dot {
-    top: -4px;
-    right: -4px;
-    min-width: 20px;
-    min-height: 20px;
-  }
-
+  .navbar-cart img { width: 24px; height: 24px; }
   .navbar-waiter {
-    position: fixed;
-    bottom: 80px;
-    right: 20px;
-    z-index: 1000;
-    background-color: white;
-    padding: 10px;
-    border-radius: 20%;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border: 1px solid #ff634759;
+    position: fixed; bottom: 80px; right: 20px; z-index: 1000;
+    background-color: white; padding: 10px; border-radius: 20%;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid #ff634759;
   }
-
-  .navbar-waiter img {
-    width: 24px;
-    height: 24px;
-  }
-
-  .navbar-waiter .dot {
-    top: -4px;
-    right: -4px;
-    min-width: 20px;
-    min-height: 20px;
-  }
-
-  .mobile-footer-item .dot {
-    top: 5px;
-    right: 10px;
-    min-width: 20px;
-    min-height: 20px;
-  }
+  .navbar-waiter img { width: 24px; height: 24px; }
 }
-
-.mobile-footer-item .dotProducts {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 20px;
-  height: 20px;
-  background-color: tomato;
-  color: white;
-  border-radius: 50%;
-  font-size: 12px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.mobile-footer-item .dotProducts.empty {
-  display: none;
-}
-
-.navbar-waiter, .navbar-myorders{
-  cursor: pointer;
-}
-
-.hide-menu {
-  display: none !important;
-}
-
-.welcome-navbar{
-  display: flex;
-  justify-content: center;
-  align-items: center;   
-  height: 100%;         
-  width: 100%;    
-}
-
-
-.navbar-menu-icon{
-  height: 22px !important;
-}
-
-.navbar-menu a.active {
-  color: #ff5722 !important; /* sau orice culoare portocalie ai */
-  font-weight: 600;
-  position: relative;
-}
-
-.navbar-menu a.active::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: #ff5722;
-  transition: width 0.3s ease;
-}
-
-/* Stiluri pentru span-ul de contact */
-.navbar-menu span.active {
-  color: #ff5722 !important;
-  font-weight: 600;
-  position: relative;
-}
-
-.navbar-menu span.active::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: #ff5722;
-}
-
-.navbar-pay-icon {
-  height: 23px;
-}
-
-

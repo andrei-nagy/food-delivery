@@ -1,28 +1,32 @@
 import express from 'express';
-import { getCustomization, updateCustomization, addCustomization } from '../controllers/customizationController.js';
+import {
+    getCustomization,
+    updateCustomization,
+    addCustomization,
+    updatePartnerPlan,
+    updateFeatureFlags,
+} from '../controllers/customizationController.js';
 import multer from "multer";
 
 const customizationRouter = express.Router();
 
-// Configurarea storage-ului pentru multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "uploads"); // Folderul în care se salvează imaginile
+        cb(null, "uploads");
     },
     filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`); // Nume unic pentru fișier
+        cb(null, `${Date.now()}-${file.originalname}`);
     }
 });
 
 const upload = multer({ storage });
 
-// Route pentru a obține datele de personalizare
-customizationRouter.get('/get', getCustomization); // GET /admin/personalization
+customizationRouter.get('/get', getCustomization);
+customizationRouter.post('/add', upload.single("image"), addCustomization);
+customizationRouter.put('/update', upload.single("image"), updateCustomization);
 
-// Route pentru a adăuga o nouă personalizare
-customizationRouter.post('/add', upload.single("image"), addCustomization); // POST /admin/personalization/add
-
-// Route pentru a actualiza datele de personalizare
-customizationRouter.put('/update', upload.single("image"), updateCustomization); // POST /admin/personalization
+// Rute noi pentru Feature Flags
+customizationRouter.post('/update-plan', updatePartnerPlan);
+customizationRouter.post('/update-features', updateFeatureFlags);
 
 export default customizationRouter;

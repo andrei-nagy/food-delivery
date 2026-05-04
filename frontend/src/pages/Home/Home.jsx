@@ -7,6 +7,7 @@ import Loader from "../../components/Loader/Loader";
 import { motion } from "framer-motion";
 import { StoreContext } from "../../context/StoreContext";
 import RepeatOrder from "../../components/RepeatOrder/RepeatOrder";
+import ActiveOrder from "../../components/ActiveOrder/ActiveOrder";
 
 const Home = () => {
   const [category, setCategory] = useState("All");
@@ -31,8 +32,10 @@ const Home = () => {
       ) : (
         <>
           <Header />
-          <RepeatOrder />
           <ExploreMenu category={category} setCategory={setCategory} />
+                    <ActiveOrder/>
+
+          <RepeatOrder />
           <FoodDisplay category={category} />
         </>
       )}

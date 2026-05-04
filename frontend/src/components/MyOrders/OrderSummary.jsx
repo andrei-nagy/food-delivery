@@ -2,6 +2,10 @@ import React from "react";
 import PromoCodeSection from "./PromoCodeSection";
 import './OrderSummary.css';
 
+/**
+ * OrderSummary — redesign
+ * Props identice cu versiunea anterioară.
+ */
 const OrderSummary = ({
   billRequested,
   getOriginalSubtotal,
@@ -17,84 +21,87 @@ const OrderSummary = ({
   promoError,
   appliedPromoCode,
   calculateTipAmount,
-  t
+  t,
 }) => {
-  const tipAmount = calculateTipAmount ? calculateTipAmount() : 0;
-  
-  return (
-    <div className="order-summary-section-cart">
-      <h2 className="section-title">{t("my_orders.order_summary")}</h2>
+  const tipAmount      = calculateTipAmount ? calculateTipAmount() : 0;
+  const totalSaved     = (getTotalProductDiscountAmount?.() || 0) + (discount || 0);
+  const hasSavings     = totalSaved > 0;
 
-      {/* Promo Code Section */}
+  return (
+    <div className="os-card">
+
+      {/* Header */}
+      <div className="os-header">
+        <span className="os-title">{t("my_orders.order_summary")}</span>
+      </div>
+
+      {/* Promo code — integrat ca strip */}
       {!billRequested && (
-        <PromoCodeSection
-          promoCode={promoCode}
-          setPromoCode={setPromoCode}
-          applyPromoCode={applyPromoCode}
-          removePromoCode={removePromoCode}
-          promoError={promoError}
-          appliedPromoCode={appliedPromoCode}
-          isPromoApplied={isPromoApplied}
-          t={t}
-        />
+        <div className="os-promo-strip">
+          <span className="os-promo-emoji">🏷️</span>
+          <PromoCodeSection
+            promoCode={promoCode}
+            setPromoCode={setPromoCode}
+            applyPromoCode={applyPromoCode}
+            removePromoCode={removePromoCode}
+            promoError={promoError}
+            appliedPromoCode={appliedPromoCode}
+            isPromoApplied={isPromoApplied}
+            t={t}
+          />
+        </div>
       )}
 
-      <div className="summary-details">
-        <div className="summary-row">
-          <span>{t("my_orders.subtotal")}</span>
-          <span>{getOriginalSubtotal().toFixed(2)} €</span>
+      {/* Rânduri */}
+      <div className="os-rows">
+        <div className="os-row">
+          <span className="os-row-label">{t("my_orders.subtotal")}</span>
+          <span className="os-row-value">{getOriginalSubtotal().toFixed(2)} €</span>
         </div>
 
-        {/* Product discounts section */}
         {getTotalProductDiscountAmount() > 0 && (
-          <div className="summary-row discount-row">
-            <span className="discount-label">
-              {t("my_orders.product_discounts")}
-            </span>
-            <span className="discount-amount">
+          <div className="os-row">
+            <span className="os-row-label">{t("my_orders.product_discounts")}</span>
+            <span className="os-row-value os-row-value--green">
               -{getTotalProductDiscountAmount().toFixed(2)} €
             </span>
           </div>
         )}
 
-        {/* Promo code discount section */}
         {isPromoApplied && (
-          <div className="summary-row promo-discount">
-            <span className="promo-label">
-              {t("my_orders.promo_discount")}
-            </span>
-            <span className="promo-discount-amount">
-              -{discount.toFixed(2)}€
+          <div className="os-row">
+            <span className="os-row-label">{t("my_orders.promo_discount")}</span>
+            <span className="os-row-value os-row-value--green">
+              -{discount.toFixed(2)} €
             </span>
           </div>
         )}
 
-        {/* Tips section - BLACK COLOR */}
         {tipAmount > 0 && (
-          <div className="summary-row tips-row">
-            <span className="tips-label">{t("my_orders.tip_label")}</span>
-            <span className="tips-amount">+{tipAmount.toFixed(2)} €</span>
-          </div>
-        )}
-
-        {/* Total saved section */}
-        {(getTotalProductDiscountAmount() > 0 || isPromoApplied) && (
-          <div className="summary-row saved-amount">
-            <span className="saved-label">
-              {t("my_orders.total_saved")}
-            </span>
-            <span className="saved-amount-value">
-              {(getTotalProductDiscountAmount() + discount).toFixed(2)} €
+          <div className="os-row">
+            <span className="os-row-label">{t("my_orders.tip_label")}</span>
+            <span className="os-row-value os-row-value--orange">
+              +{tipAmount.toFixed(2)} €
             </span>
           </div>
         )}
-
-        <div className="summary-divider"></div>
-        <div className="summary-row total">
-          <span>{t("my_orders.total")}</span>
-          <span>{getFinalTotalAmount().toFixed(2)} €</span>
-        </div>
       </div>
+
+      {/* Banner economisit */}
+      {hasSavings && (
+        <div className="os-saved-banner">
+          <span className="os-saved-label">🎉 {t("my_orders.total_saved")}</span>
+          <span className="os-saved-value">{totalSaved.toFixed(2)} €</span>
+        </div>
+      )}
+
+      {/* Divider + Total */}
+      <div className="os-divider" />
+      <div className="os-total-row">
+        <span className="os-total-label">{t("my_orders.total")}</span>
+        <span className="os-total-value">{getFinalTotalAmount().toFixed(2)} €</span>
+      </div>
+
     </div>
   );
 };

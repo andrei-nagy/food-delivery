@@ -42,7 +42,7 @@ const StoreContextProvider = (props) => {
     ) {
       return "http://localhost:4000";
     }
-    return "https://api.orderly-app.com";
+    return "https://api.orderly.ro";
   };
 
   const url = getApiUrl();

@@ -41,6 +41,60 @@ const OrdersToCloseTable = () => {
   const ordersPerPage = 10;
   const filtersRef = useRef(null);
 
+  // Helper function to calculate discounted price for base product
+  const getDiscountedPrice = (price, discountPercentage) => {
+    if (discountPercentage && discountPercentage > 0) {
+      return price * (1 - discountPercentage / 100);
+    }
+    return price;
+  };
+
+const getItemTotal = (item) => {
+  const quantity = parseInt(item.quantity) || 1;
+  const extrasPrice = parseFloat(item.extrasPrice) || 0;
+  // Folosește discountedPrice dacă există, altfel folosește price
+  const basePrice = parseFloat(item.discountedPrice) || parseFloat(item.price) || 0;
+  const totalPerUnit = basePrice + extrasPrice;
+  return totalPerUnit * quantity;
+};
+
+const getBasePriceWithDiscount = (item) => {
+  return parseFloat(item.discountedPrice) || parseFloat(item.price) || 0;
+};
+const formatPriceDisplay = (item) => {
+  const price = parseFloat(item.price) || 0;
+  const discountedPrice = parseFloat(item.discountedPrice) || price;
+  const extrasPrice = parseFloat(item.extrasPrice) || 0;
+  const discountPercentage = parseFloat(item.discountPercentage) || 0;
+  
+  const finalUnitPrice = discountedPrice + extrasPrice;
+  const originalUnitPrice = price + extrasPrice;
+  
+  if (discountPercentage > 0 && discountedPrice < price) {
+    return (
+      <div className="flex flex-col">
+        <span className="line-through text-gray-500 text-xs">
+          ${originalUnitPrice.toFixed(2)}
+        </span>
+        <span className="text-green-400 font-medium">
+          ${finalUnitPrice.toFixed(2)}
+        </span>
+        <span className="text-xs text-green-500">
+          -{discountPercentage}%
+        </span>
+      </div>
+    );
+  }
+  return <span>${finalUnitPrice.toFixed(2)}</span>;
+};
+  // Helper function to get extras text for display
+  const getExtrasText = (item) => {
+    if (item.selectedOptions && item.selectedOptions.length > 0) {
+      return ` (+${item.selectedOptions.join(", ")})`;
+    }
+    return "";
+  };
+
   // Layout configuration for tables - Mobile version has 3 columns
   const tableLayoutMobile = [
     [1, 2, 3],
@@ -132,9 +186,7 @@ const OrdersToCloseTable = () => {
           userOrders.forEach((order) => {
             if (order.items && Array.isArray(order.items)) {
               order.items.forEach((item) => {
-                const price = parseFloat(item.price) || 0;
-                const quantity = parseInt(item.quantity) || 1;
-                totalAmount += price * quantity;
+                totalAmount += getItemTotal(item);
               });
             }
           });
@@ -290,9 +342,7 @@ const OrdersToCloseTable = () => {
       userOrders.forEach((order) => {
         if (order.items && Array.isArray(order.items)) {
           order.items.forEach((item) => {
-            const price = parseFloat(item.price) || 0;
-            const quantity = parseInt(item.quantity) || 1;
-            totalAmount += price * quantity;
+            totalAmount += getItemTotal(item);
           });
         }
       });
@@ -388,9 +438,7 @@ const OrdersToCloseTable = () => {
       userOrders.forEach((order) => {
         if (order.items && Array.isArray(order.items)) {
           order.items.forEach((item) => {
-            const price = parseFloat(item.price) || 0;
-            const quantity = parseInt(item.quantity) || 1;
-            totalAmount += price * quantity;
+            totalAmount += getItemTotal(item);
           });
         }
       });
@@ -471,12 +519,21 @@ const OrdersToCloseTable = () => {
     relatedOrders.forEach((order) => {
       if (order.items && Array.isArray(order.items)) {
         order.items.forEach((item) => {
-          const price = parseFloat(item.price) || 0;
-          const quantity = parseInt(item.quantity) || 1;
-          total += price * quantity;
+          total += getItemTotal(item);
         });
       }
     });
+    return total.toFixed(2);
+  };
+
+  // Calculate order total with discounts and extras
+  const calculateOrderTotal = (order) => {
+    let total = 0;
+    if (order.items && Array.isArray(order.items)) {
+      order.items.forEach((item) => {
+        total += getItemTotal(item);
+      });
+    }
     return total.toFixed(2);
   };
 
@@ -1565,14 +1622,7 @@ const OrdersToCloseTable = () => {
                 </thead>
                 <tbody className="divide divide-gray-700">
                   {relatedOrders.map((order) => {
-                    let orderTotal = 0;
-                    if (order.items && Array.isArray(order.items)) {
-                      order.items.forEach((item) => {
-                        const price = parseFloat(item.price) || 0;
-                        const quantity = parseInt(item.quantity) || 1;
-                        orderTotal += price * quantity;
-                      });
-                    }
+                    const orderTotal = calculateOrderTotal(order);
                     
                     return (
                       <tr key={order._id}>
@@ -1583,8 +1633,20 @@ const OrdersToCloseTable = () => {
                           {order.items && order.items.length > 0 ? (
                             <div className="space-y-1">
                               {order.items.map((item, index) => (
-                                <div key={index} className="flex justify-between">
-                                  <span>{item.name} x {item.quantity}</span>
+                                <div key={index} className="flex justify-between items-center">
+                                  <div>
+                                    <span>{item.name} x {item.quantity}</span>
+                                    {item.selectedOptions && item.selectedOptions.length > 0 && (
+                                      <span className="text-xs text-gray-400 ml-1">
+                                        (+{item.selectedOptions.join(", ")})
+                                      </span>
+                                    )}
+                                  </div>
+                                  {item.discountPercentage > 0 && (
+                                    <span className="text-xs text-green-500 ml-2">
+                                      -{item.discountPercentage}%
+                                    </span>
+                                  )}
                                 </div>
                               ))}
                             </div>
@@ -1597,7 +1659,7 @@ const OrdersToCloseTable = () => {
                             <div className="space-y-1">
                               {order.items.map((item, index) => (
                                 <div key={index}>
-                                  ${parseFloat(item.price || 0).toFixed(2)}
+                                  {formatPriceDisplay(item)}
                                 </div>
                               ))}
                             </div>
@@ -1606,7 +1668,7 @@ const OrdersToCloseTable = () => {
                           )}
                         </td>
                         <td className="px-4 md:px-6 py-4 whitespace-nowrap text-sm font-bold text-green-300">
-                          ${orderTotal.toFixed(2)}
+                          ${orderTotal}
                         </td>
                         <td className="px-4 md:px-6 py-4 whitespace-nowrap">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${

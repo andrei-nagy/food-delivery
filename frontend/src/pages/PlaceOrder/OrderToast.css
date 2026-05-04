@@ -1,0 +1,124 @@
+/* ═══════════════════════════════════════════════════════
+   OrderToast.css
+   Modal centrat · checkmark verde · confetti smooth · progress bar
+═══════════════════════════════════════════════════════ */
+
+:root {
+  --ot-green:  #3A7D50;
+  --ot-ink:    #111827;
+  --ot-ink2:   #4B5563;
+  --ot-bg:     #ffffff;
+  --ot-spring: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── OVERLAY ─────────────────────────────────────────── */
+.ot-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  transition: background 0.35s ease;
+  pointer-events: none;
+}
+.ot-overlay--in {
+  background: rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+}
+
+/* ── CONFETTI CANVAS ─────────────────────────────────── */
+.ot-confetti-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 100000;
+}
+
+/* ── MODAL ───────────────────────────────────────────── */
+.ot-modal {
+  position: relative;
+  background: var(--ot-bg);
+  border-radius: 24px;
+  width: 300px;
+  overflow: hidden;
+  text-align: center;
+  z-index: 100001;
+
+  opacity: 0;
+  transform: scale(0.88) translateY(16px);
+  transition:
+    opacity   0.4s var(--ot-spring),
+    transform 0.4s var(--ot-spring);
+}
+.ot-modal--in {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* ── ICON ────────────────────────────────────────────── */
+.ot-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 0 20px;
+}
+
+/* ── TEXT ────────────────────────────────────────────── */
+.ot-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ot-ink);
+  margin: 0 24px 10px;
+  line-height: 1.35;
+}
+
+.ot-sub {
+  font-size: 13px;
+  color: var(--ot-ink2);
+  margin: 0 24px 28px;
+  line-height: 1.65;
+}
+
+/* ── BUTTON ──────────────────────────────────────────── */
+.ot-btn {
+  display: block;
+  width: calc(100% - 48px);
+  margin: 0 auto 24px;
+  padding: 14px 0;
+  border: none;
+  border-radius: 50px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  background: #111827;
+  color: #ffffff;
+  transition: opacity 0.15s, transform 0.12s;
+}
+.ot-btn:active {
+  opacity: 0.85;
+  transform: scale(0.97);
+}
+
+/* ── PROGRESS BAR ────────────────────────────────────── */
+.ot-bar-wrap {
+  height: 3px;
+  background: #f0f0f0;
+}
+.ot-bar {
+  height: 100%;
+  width: 100%;
+  background: var(--ot-green);
+  transform-origin: left center;
+  transform: scaleX(1);
+  transition: none;
+}
+.ot-bar--go {
+  transition-property: transform;
+  transition-timing-function: linear;
+  transform: scaleX(0);
+}

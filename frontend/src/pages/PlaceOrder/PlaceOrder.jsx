@@ -6,14 +6,15 @@ import axios from 'axios';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-
 const PlaceOrder = () => {
   const { getTotalCartAmount, token, food_list, cartItems, url } = useContext(StoreContext);
   const location = useLocation();
-  const discount = location.state?.discount || 0; // Preia discountul
-  const promoCode = location.state?.promoCode || ''; // Preia promo-code-ul
-  const tableNumber = localStorage.getItem("tableNumber") ? localStorage.getItem("tableNumber") : null;
-  const specialInstructions = location.state?.specialInstructions || '';
+  const navigate = useNavigate();
+
+  const discount             = location.state?.discount             || 0;
+  const promoCode            = location.state?.promoCode            || '';
+  const tableNumber          = localStorage.getItem("tableNumber")  || null;
+  const specialInstructions  = location.state?.specialInstructions  || '';
 
   const [data, setData] = useState({
     firstName: "",
@@ -23,13 +24,11 @@ const PlaceOrder = () => {
     tableNo: "",
   });
 
-  // Adăugăm o stare pentru a stoca metoda de plată selectată
   const [paymentMethod, setPaymentMethod] = useState('');
 
   const onChangeHandler = (event) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    setData(data => ({ ...data, [name]: value }));
+    const { name, value } = event.target;
+    setData(d => ({ ...d, [name]: value }));
   };
 
   const handlePaymentMethodChange = (event) => {
@@ -40,75 +39,54 @@ const PlaceOrder = () => {
     event.preventDefault();
 
     let orderItems = [];
-    food_list.map((item) => {
+    food_list.forEach((item) => {
       if (cartItems[item._id] > 0) {
-        let itemInfo = item;
-        itemInfo["quantity"] = cartItems[item._id];
-        orderItems.push(itemInfo);
+        orderItems.push({ ...item, quantity: cartItems[item._id] });
       }
     });
 
-    const totalAmount = getTotalCartAmount() - discount; // Totalul cu discount aplicat
+    const totalAmount = getTotalCartAmount() - discount;
 
-    let orderData = {
+    const orderData = {
       tableNo: tableNumber,
       userData: data,
       items: orderItems,
       amount: totalAmount,
-      specialInstructions: specialInstructions
+      specialInstructions,
     };
 
-
-
-    // Verificăm metoda de plată selectată
     if (paymentMethod === 'creditCard') {
-
-      // Plată online prin Stripe
-      let response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
-      console.log({
-        url: url,
-        orderData: orderData,
-        response: response
-      })
-
+      const response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
       if (response.data.success) {
-        const { session_url } = response.data;
-        window.location.replace(session_url);
+        window.location.replace(response.data.session_url);
       } else {
         alert("Error processing payment.");
       }
+
     } else if (paymentMethod === 'cashPOS') {
+      const response = await axios.post(url + "/api/order/place-cash", orderData, { headers: { token } });
 
-      // Plasare comanda fără Stripe (pentru Cash/POS)
-      let response = await axios.post(url + "/api/order/place-cash", orderData, { headers: { token } });
-      console.log({
-        url: url,
-        orderData: orderData,
-        response: response
-      })
       if (response.data.success) {
-        const { orderId, session_url } = response.data;
+        const shortId = String(response.data.orderId || "").slice(-6).toUpperCase();
 
-        // toast.success("Order placed successfully!");
-        navigate("/thank-you", {
-          state: {
-            tableNo: orderData.tableNo,
-            orderId: orderId // Trimitem orderId în state
-          }
-        });
-        // Setăm flag-ul pentru reload
         localStorage.setItem("isReloadNeeded", "true");
-        toast.success("Order placed successfully!");
+
+        // Trimite event pentru toast-ul de confirmare (același mecanism ca la livrare)
+        window.dispatchEvent(new CustomEvent("order:placed", {
+          detail: { shortId }
+        }));
+
+        // Navighează pe home după un scurt delay ca toastul să fie vizibil
+        setTimeout(() => navigate("/"), 400);
 
       } else {
         alert("Error placing order.");
       }
+
     } else {
       alert("Please select a payment method.");
     }
   };
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!token) {
@@ -125,11 +103,12 @@ const PlaceOrder = () => {
           <p className="title">Delivery Information</p>
           <div className="multi-fields">
             <input required name="firstName" onChange={onChangeHandler} value={data.firstName} type="text" placeholder='First Name' />
-            <input required name="lastName" onChange={onChangeHandler} value={data.lastName} type="text" placeholder='Last Name' />
+            <input required name="lastName"  onChange={onChangeHandler} value={data.lastName}  type="text" placeholder='Last Name' />
           </div>
           <input required name="email" onChange={onChangeHandler} value={data.email} type="email" placeholder='Email address' />
-          <input required name="phone" onChange={onChangeHandler} value={data.phone} type="text" placeholder='Phone number' />
+          <input required name="phone" onChange={onChangeHandler} value={data.phone} type="text"  placeholder='Phone number' />
         </div>
+
         <div className="place-order-right col-md-12">
           <div className="cart-total">
             <h2>Cart Total</h2>
@@ -141,7 +120,7 @@ const PlaceOrder = () => {
               <hr />
               <div className="cart-total-details">
                 <p>Promo Code</p>
-                <p>{promoCode && discount > 0 ? promoCode + " (" + discount + " €)" : 0}</p>
+                <p>{promoCode && discount > 0 ? `${promoCode} (${discount} €)` : 0}</p>
               </div>
               <hr />
               <div className="cart-total-details">
@@ -149,6 +128,7 @@ const PlaceOrder = () => {
                 <b>{getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() - discount} €</b>
               </div>
             </div>
+
             <div>
               <h3>Select your payment method:</h3>
               <label className='label-payment-method'>
@@ -160,6 +140,7 @@ const PlaceOrder = () => {
                 Pay cash / POS
               </label>
             </div>
+
             <button type='submit'>
               {paymentMethod === 'creditCard' ? 'PROCEED TO PAYMENT' : 'PLACE ORDER'}
             </button>

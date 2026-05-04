@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, Filter, Menu, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Search, Filter, X, ChevronDown, ChevronUp, FileText } from "lucide-react";
 import axios from "axios";
 import { useUrl } from "../context/UrlContext";
+import OrderReceiptButton from './OrderReceipt';
 
 const OrdersHistoryTable = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -298,6 +299,11 @@ const OrdersHistoryTable = () => {
                             <p className="text-gray-300 text-sm">{order.specialInstructions}</p>
                         </div>
                     )}
+
+                    {/* Buton Bon Fiscal pentru Mobile */}
+                    <div className="flex justify-center pt-2">
+                        <OrderReceiptButton order={order} />
+                    </div>
                 </motion.div>
             )}
         </motion.div>
@@ -367,25 +373,27 @@ const OrdersHistoryTable = () => {
                 <table className='min-w-full divide-y divide-gray-700'>
                     <thead>
                         <tr>
-                            {['Order Number', 'Table No.', 'Items', 'Instructions', 'Total', 'Payment Method', 'Paid?', 'Date', 'Status'].map((header) => (
+                            {['Order Number', 'Table No.', 'Items', 'Instructions', 'Total', 'Payment Method', 'Paid?', 'Date', 'Status', 'Actions'].map((header) => (
                                 <th key={header} className='px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider'>
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-1">
-                                            {header === 'Order Number' && <Filter size={14} />}
+                                            {header === 'Actions' && <FileText size={14} />}
                                             {header}
                                         </div>
-                                        <input
-                                            type="text"
-                                            placeholder={`Filter ${header.toLowerCase()}...`}
-                                            className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
-                                            value={columnFilters[header.replace(/[\s?]/g, '').toLowerCase().replace('no.', 'no').replace('paid?', 'payment')]}
-                                            onChange={(e) => handleColumnFilter(
-                                                header.replace(/[\s?]/g, '').toLowerCase()
-                                                    .replace('no.', 'no')
-                                                    .replace('paid?', 'payment'), 
-                                                e.target.value
-                                            )}
-                                        />
+                                        {header !== 'Actions' && (
+                                            <input
+                                                type="text"
+                                                placeholder={`Filter ${header.toLowerCase()}...`}
+                                                className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 text-xs"
+                                                value={columnFilters[header.replace(/[\s?]/g, '').toLowerCase().replace('no.', 'no').replace('paid?', 'payment')]}
+                                                onChange={(e) => handleColumnFilter(
+                                                    header.replace(/[\s?]/g, '').toLowerCase()
+                                                        .replace('no.', 'no')
+                                                        .replace('paid?', 'payment'), 
+                                                    e.target.value
+                                                )}
+                                            />
+                                        )}
                                     </div>
                                 </th>
                             ))}
@@ -447,6 +455,9 @@ const OrdersHistoryTable = () => {
                                     ) : (
                                         <span className="text-red-500">✗</span>
                                     )}
+                                </td>
+                                <td className='px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-100'>
+                                    <OrderReceiptButton order={order} />
                                 </td>
                             </motion.tr>
                         ))}

@@ -884,7 +884,7 @@ const CategoryPage = () => {
       </div>
 
       {/* ✅ Floating Cart Circle - ACELAȘI DESIGN CA ÎN FOODDISPLAY */}
-      {shouldRender && (
+      {/* {shouldRender && (
         <div
           className={`floating-cart-circle ${isVisible ? "visible" : ""}`}
           onClick={() => {
@@ -902,7 +902,7 @@ const CategoryPage = () => {
           </div>
           <div className="cart-pulse-effect"></div>
         </div>
-      )}
+      )} */}
 
       {/* Food Modal */}
       {isModalOpen && selectedFood && (

@@ -1,7 +1,7 @@
 import userModel from "../models/userModel.js";
 import tableModel from "../models/tableModel.js";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import validator from "validator";
 import mongoose from "mongoose";
 import orderModel from "../models/orderModel.js";
@@ -153,7 +153,7 @@ const autoRegister = async (req, res) => {
     const token = createToken(tempUser._id);
 
     // Setează expirarea tokenului
-    const tokenExpiry = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 ore
+    const tokenExpiry = new Date(Date.now() + 5 * 60 * 60 * 1000); // 2 ore
     // const tokenExpiry = new Date(Date.now() + 2 * 60 * 1000); // 2 minute
 
     // Creează utilizatorul cu toate câmpurile necesare
@@ -275,7 +275,7 @@ const registerUser = async (req, res) => {
 
     // Generare token și expirare peste 2 ore
     // const token = createToken(email);
-    const tokenExpiry = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 ore
+    const tokenExpiry = new Date(Date.now() + 5 * 60 * 60 * 1000); // 2 ore
 
     const newUser = new userModel({
       name: name,

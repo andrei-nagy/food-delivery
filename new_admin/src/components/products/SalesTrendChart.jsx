@@ -15,7 +15,7 @@ const SalesTrendChart = () => {
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [viewMode, setViewMode] = useState("line"); // "line" or "bar"
     const [timeframe, setTimeframe] = useState("week"); // "day", "week", "month"
-    const url = 'https://api.orderly-app.com';
+    const url = 'https://api.orderly.ro';
 
     // Initialize dates
     useEffect(() => {
